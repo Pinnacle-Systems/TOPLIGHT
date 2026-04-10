@@ -1,0 +1,189 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/BarlowCondensed-Regular.ttf",
+      "sha1": "341759b9be0c543c624a7dfbd0b0063aa4b8480a"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-Bold.ttf",
+      "sha1": "25a595a20d3b85078565a8918d4aa0a3356be2a1"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-BoldItalic.ttf",
+      "sha1": "a4f427294197d9defa6a475bd81e31b3c10564e6"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-Italic.ttf",
+      "sha1": "738a0f7caf7ffa748f0dd78eaeb552fe0bf755e7"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-Light.ttf",
+      "sha1": "79bcaf2402f97b4eb961b5fdccc841dc290abdce"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-LightItalic.ttf",
+      "sha1": "fcb843b52a09d048cafa4894ebef1dcc29fdcdd2"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-Medium.ttf",
+      "sha1": "2757a4a3e557b1954f4c15ec7e596451fb31128a"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-MediumItalic.ttf",
+      "sha1": "97f7986ad60bbfba20bd7940a0faf2cbd5a47d15"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-Regular.ttf",
+      "sha1": "66751e1086c7318ba69bfe95e0d6690c2174c516"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-SemiBold.ttf",
+      "sha1": "b83023477a9aa4da95d87b248825ab064bcaba27"
+    },
+    {
+      "path": "assets/fonts/CormorantGaramond-SemiBoldItalic.ttf",
+      "sha1": "a5b950c3778efc47641a59a7fa94ee14058993bd"
+    },
+    {
+      "path": "assets/fonts/Delius-Regular.ttf",
+      "sha1": "49ee4a09aa824e4b36701b7ca2edde5fe8364750"
+    },
+    {
+      "path": "assets/fonts/Dosis-Bold.ttf",
+      "sha1": "3fae80a73da8e4fae927d964bc47e99bebc63c99"
+    },
+    {
+      "path": "assets/fonts/Dosis-ExtraBold.ttf",
+      "sha1": "7034944c1abbd822d924f31d4613294e7edcfe59"
+    },
+    {
+      "path": "assets/fonts/Dosis-ExtraLight.ttf",
+      "sha1": "ac06dea30b682a73020a42eaaaa7b986ea9369d9"
+    },
+    {
+      "path": "assets/fonts/Dosis-Light.ttf",
+      "sha1": "77a04a68939bf4d980f040c58f734d0b0cd874a7"
+    },
+    {
+      "path": "assets/fonts/Dosis-Medium.ttf",
+      "sha1": "578d6da16e913f4a30862576d7558576fe1e9fa3"
+    },
+    {
+      "path": "assets/fonts/Dosis-Regular.ttf",
+      "sha1": "cdd999544bb4bf3ab342292eb1f2d59d0979d96c"
+    },
+    {
+      "path": "assets/fonts/Dosis-SemiBold.ttf",
+      "sha1": "97a1ecc96a925a93c57ca3bab64bc964bad78ea0"
+    },
+    {
+      "path": "assets/fonts/Inter_24pt-Regular.ttf",
+      "sha1": "b9984093c0b2b612da5e58e4d4e1ba8c255353dc"
+    },
+    {
+      "path": "assets/fonts/Nunito-Regular.ttf",
+      "sha1": "465c464793593babb53e51e2a56562cdd79c237d"
+    },
+    {
+      "path": "assets/fonts/OpenSans_Condensed-Bold.ttf",
+      "sha1": "5ca9b1fed6fa826bcd74a90624fe0fa2d9b10db9"
+    },
+    {
+      "path": "assets/fonts/OpenSans_Condensed-Italic.ttf",
+      "sha1": "d2366db9c0ac58643156c629409edba4097f36d7"
+    },
+    {
+      "path": "assets/fonts/OpenSans_Condensed-Regular.ttf",
+      "sha1": "02ff457da3d6a5cbd9b724d67ddfe04a475629e4"
+    },
+    {
+      "path": "assets/fonts/Poppins-Italic.ttf",
+      "sha1": "e2bfcd56016c3c915221ef1c5fc1a17b0776eb91"
+    },
+    {
+      "path": "assets/fonts/Poppins-Regular.ttf",
+      "sha1": "fdd3002e7d814ee47c1c1b8487c72c6bbb3a2d00"
+    },
+    {
+      "path": "assets/fonts/Roboto_Condensed-Bold.ttf",
+      "sha1": "b872ba48fedf30d87dd5353b5e4b58285aef964b"
+    },
+    {
+      "path": "assets/fonts/SmoochSans-Regular.ttf",
+      "sha1": "8267c5bced1b772b24c1be4e95cbd15e7ed2597a"
+    },
+    {
+      "path": "assets/fonts/Tektur-Black.ttf",
+      "sha1": "5bb402ffe7b6f08a9fb36f45228f8a66f1cc326a"
+    },
+    {
+      "path": "assets/fonts/Tektur-Bold.ttf",
+      "sha1": "852d42e3dd0786bfbf7d100d972e509a698f32c8"
+    },
+    {
+      "path": "assets/fonts/Tektur-ExtraBold.ttf",
+      "sha1": "cf34de25393a691f18c1583bab3d83d7892d2c2e"
+    },
+    {
+      "path": "assets/fonts/Tektur-Medium.ttf",
+      "sha1": "661533021a6f51a945289e1a8f51dee33c44a9c1"
+    },
+    {
+      "path": "assets/fonts/Tektur-Regular.ttf",
+      "sha1": "c12a2982d2d7ca086d59b9ae7ceba679aec2cf6b"
+    },
+    {
+      "path": "assets/fonts/Tektur-SemiBold.ttf",
+      "sha1": "75a58408110b7a8f18c10929f296f69e2160c201"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-Black.ttf",
+      "sha1": "4de720419a86d865b457e6fc6ac753998bd2ca2b"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-Bold.ttf",
+      "sha1": "b2d18197719783963db485b8af1bf34b474e072d"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-ExtraBold.ttf",
+      "sha1": "1c2b5b248656f2c51bcd56e812bc9ccb3a782327"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-Medium.ttf",
+      "sha1": "0126b5e57fed94cbbc8ab01d84f24d3474d07963"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-Regular.ttf",
+      "sha1": "3496786485ae4ed8bdcf3bcf868dc579f4ab98c0"
+    },
+    {
+      "path": "assets/fonts/Tektur_Condensed-SemiBold.ttf",
+      "sha1": "cbea5d41f2a87f7386c341c4bc0dfa6116940644"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-Black.ttf",
+      "sha1": "3c54234fed56d0348bbba23f3ded0ad63ff004b7"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-Bold.ttf",
+      "sha1": "3a4e8ef16787e05db1795b92dc2680c45fbd59cc"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-ExtraBold.ttf",
+      "sha1": "598922a92662fefb3d7d709bbc09ed1b155b877d"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-Medium.ttf",
+      "sha1": "be335208d7372d6cf5903f6caa80b4c827b0239d"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-Regular.ttf",
+      "sha1": "40c9c96ce9124610ea0919d4c7c267936834bff5"
+    },
+    {
+      "path": "assets/fonts/Tektur_SemiCondensed-SemiBold.ttf",
+      "sha1": "8f92a60d2b0c2f86d7883c48a2ea8d61c4192287"
+    }
+  ]
+}

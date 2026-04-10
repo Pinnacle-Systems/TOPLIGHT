@@ -1,0 +1,1 @@
+export const IN_HAND = 'In Hand';

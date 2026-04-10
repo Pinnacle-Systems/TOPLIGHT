@@ -1,0 +1,1 @@
+git@github.com:Pinnacle-Systems/BS-Apparels.git

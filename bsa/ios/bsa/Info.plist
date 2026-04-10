@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<key>CFBundleDisplayName</key>
+	<string>bsa</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone for video recording</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+
+
+	<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>We need your location for live tracking</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location for live tracking</string>
+<key>UIBackgroundModes</key>
+<array>
+  <string>location</string>
+</array>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to your location</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs access to your location even in the background</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs access to your location</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>BarlowCondensed-Regular.ttf</string>
+		<string>CormorantGaramond-Bold.ttf</string>
+		<string>CormorantGaramond-BoldItalic.ttf</string>
+		<string>CormorantGaramond-Italic.ttf</string>
+		<string>CormorantGaramond-Light.ttf</string>
+		<string>CormorantGaramond-LightItalic.ttf</string>
+		<string>CormorantGaramond-Medium.ttf</string>
+		<string>CormorantGaramond-MediumItalic.ttf</string>
+		<string>CormorantGaramond-Regular.ttf</string>
+		<string>CormorantGaramond-SemiBold.ttf</string>
+		<string>CormorantGaramond-SemiBoldItalic.ttf</string>
+		<string>Delius-Regular.ttf</string>
+		<string>Dosis-Bold.ttf</string>
+		<string>Dosis-ExtraBold.ttf</string>
+		<string>Dosis-ExtraLight.ttf</string>
+		<string>Dosis-Light.ttf</string>
+		<string>Dosis-Medium.ttf</string>
+		<string>Dosis-Regular.ttf</string>
+		<string>Dosis-SemiBold.ttf</string>
+		<string>Inter_24pt-Regular.ttf</string>
+		<string>Nunito-Regular.ttf</string>
+		<string>OpenSans_Condensed-Bold.ttf</string>
+		<string>OpenSans_Condensed-Italic.ttf</string>
+		<string>OpenSans_Condensed-Regular.ttf</string>
+		<string>Poppins-Italic.ttf</string>
+		<string>Poppins-Regular.ttf</string>
+		<string>Roboto_Condensed-Bold.ttf</string>
+		<string>SmoochSans-Regular.ttf</string>
+		<string>Tektur-Black.ttf</string>
+		<string>Tektur-Bold.ttf</string>
+		<string>Tektur-ExtraBold.ttf</string>
+		<string>Tektur-Medium.ttf</string>
+		<string>Tektur-Regular.ttf</string>
+		<string>Tektur-SemiBold.ttf</string>
+		<string>Tektur_Condensed-Black.ttf</string>
+		<string>Tektur_Condensed-Bold.ttf</string>
+		<string>Tektur_Condensed-ExtraBold.ttf</string>
+		<string>Tektur_Condensed-Medium.ttf</string>
+		<string>Tektur_Condensed-Regular.ttf</string>
+		<string>Tektur_Condensed-SemiBold.ttf</string>
+		<string>Tektur_SemiCondensed-Black.ttf</string>
+		<string>Tektur_SemiCondensed-Bold.ttf</string>
+		<string>Tektur_SemiCondensed-ExtraBold.ttf</string>
+		<string>Tektur_SemiCondensed-Medium.ttf</string>
+		<string>Tektur_SemiCondensed-Regular.ttf</string>
+		<string>Tektur_SemiCondensed-SemiBold.ttf</string>
+	</array>
+</dict>
+</plist>
