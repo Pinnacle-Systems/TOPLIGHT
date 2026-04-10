@@ -14,65 +14,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model settings {
-  SettingId    Int      @id @default(autoincrement())
-  UserId       String   @unique
-  user         User     @relation(fields: [UserId], references: [Idcard])
-  Notification Boolean?
-  BioMatrics   Boolean?
-  COMPCODE     String?
+
+
+model settings{
+   SettingId    Int @id @default(autoincrement())
+   UserId  String @unique
+   user User @relation(fields: [UserId], references: [Idcard])
+   Notification  Boolean?
+   BioMatrics  Boolean?
+   COMPCODE    String?
 }
 
-model NotifyApprovalGroup {
-  id       Int     @id @default(autoincrement())
-  Idcard   String?
-  COMPCODE String?
-  User     User[]
+model NotifyApprovalGroup{
+id Int @id @default(autoincrement())
+Idcard String?
+COMPCODE String?
+User User[]
 }
+
+
 
 //Used
 model User {
-  id                            Int                   @id @default(autoincrement())
-  username                      String                @unique
-  pic                           String?
-  email                         String?
-  otpemail                      String?
-  approval                      String                @default("HOD")
-  password                      String?
-  Idcard                        String?               @unique
-  role                          Role?                 @relation(fields: [roleId], references: [name], onDelete: SetNull)
-  roleId                        String?
-  otp                           String?
-  hod                           String?
-  hr                            String?
-  optional_notify               NotifyApprovalGroup[]
-  level                         String                @default("user")
-  Permission                    PermissionEntry[]
-  verificationOtp               String?
-  expiresAt                     DateTime?
-  createdAt                     DateTime?             @default(now())
-  active                        Boolean               @default(true)
-  UserOnBranch                  UserOnBranch[]
-  employeeId                    Int?
-  Companies                     CompanyCode[]
-  Employee                      Employee?             @relation(fields: [employeeId], references: [id])
-  isAllParty                    Boolean               @default(false)
-  isAdmin                       Boolean               @default(false)
-  partyCreatedBy                Party[]               @relation(name: "createdBy")
-  partyUpdatedBy                Party[]               @relation(name: "updatedBy")
-  CostingCreatedBy              Costing[]             @relation(name: "createdBy")
-  CostingUpdatedBy              Costing[]             @relation(name: "updatedBy")
-  UserPartyDetails              UserPartyDetails[]
-  NotificationSender            Notification[]        @relation(name: "sender")
-  NotificationReceiver          Notification[]        @relation(name: "receiver")
-  CostingAdminResaved           Costing[]             @relation(name: "adminResaved")
-  UserAdminDet                  UserAdminDet[]        @relation("UserRelation")
-  AdminDet                      UserAdminDet[]        @relation("AdminRelation")
-  fcm                           String?               @default("")
-  PermissionEntry               PermissionEntry[]     @relation("PermissionHod")
-  PermissionEntry_create_user   PermissionEntry[]     @relation("create_User")
-  PermissionEntry_Modified_user PermissionEntry[]     @relation("modified_User")
-  PermissionEntryUser           PermissionEntry[]     @relation("User")
+  id                   Int                @id @default(autoincrement())
+  username             String             @unique
+  pic                  String?
+  email                String?
+  otpemail             String?
+  approval             String   @default("HOD")
+  password             String?
+  Idcard               String?             @unique
+  role                 Role?              @relation(fields: [roleId], references: [name], onDelete: SetNull)
+  roleId               String?
+  otp                  String?
+  hod                  String?
+  hr                   String?
+  optional_notify      NotifyApprovalGroup[]
+  level                String @default("user")
+  Permission           PermissionEntry[]
+  verificationOtp      String?
+  expiresAt            DateTime?
+  createdAt            DateTime?          @default(now())
+  active               Boolean            @default(true)
+  UserOnBranch         UserOnBranch[]
+  employeeId           Int?
+  Companies             CompanyCode[]
+  Employee             Employee?          @relation(fields: [employeeId], references: [id])
+  isAllParty           Boolean            @default(false)
+  isAdmin              Boolean            @default(false)
+  partyCreatedBy       Party[]            @relation(name: "createdBy")
+  partyUpdatedBy       Party[]            @relation(name: "updatedBy")
+  CostingCreatedBy     Costing[]          @relation(name: "createdBy")
+  CostingUpdatedBy     Costing[]          @relation(name: "updatedBy")
+  UserPartyDetails     UserPartyDetails[]
+  NotificationSender   Notification[]     @relation(name: "sender")
+  NotificationReceiver Notification[]     @relation(name: "receiver")
+  CostingAdminResaved  Costing[]          @relation(name: "adminResaved")
+  UserAdminDet         UserAdminDet[]     @relation("UserRelation")
+  AdminDet             UserAdminDet[]     @relation("AdminRelation")
+  fcm                  String?             @default("")
+  PermissionEntry PermissionEntry[] @relation("PermissionHod")
+  PermissionEntry_create_user PermissionEntry[] @relation("create_User")
+PermissionEntry_Modified_user PermissionEntry[] @relation("modified_User") 
+  PermissionEntryUser PermissionEntry[] @relation("User")
 
   LeaveEntry LeaveEntry[] @relation("leave_created_by")
 
@@ -99,95 +103,98 @@ model User {
   chat chat[] @relation("chat")
 }
 
-model onduty {
-  id              Int           @id @default(autoincrement())
-  docid           String        @unique @db.VarChar(50)
-  docdate         DateTime      @default(now())
-  idcard          String        @db.VarChar(200)
-  empname         String?       @db.VarChar(100)
-  hod             String?
-  hr              String?
-  Svechilekm      String?
-  Evechilekm      String?
-  approvalStatus  String        @default("pending")
-  userId          String?
-  others          String?
-  userdata        User?         @relation("User", fields: [userId], references: [Idcard], onDelete: Cascade)
-  group           String        @default("onduty")
-  in_time         String?
-  out_time        String?
-  inout           String        @default("IN")
-  photo           String?
-  reject_reason   String?
-  compCode        String
-  updatedOn       DateTime?
-  in_location     String?
-  in_latitude     String?
-  in_longtiude    String?
-  vechileno       String?
-  bunk            String?
-  start_km        String?
-  end_km          String?
-  out_location    String?
-  out_latitude    String?
-  out_longtiude   String?
-  to_onduty       Boolean       @default(false)
-  createdBy       String?
-  createdBy_user  User?         @relation("create_User", fields: [createdBy], references: [Idcard], onDelete: Cascade)
-  modified_By     String?
-  modifiedBy_user User?         @relation("modified_User", fields: [modified_By], references: [Idcard], onDelete: Cascade)
-  rejectBy        String?       @default("")
-  approvedBy      String?       @default("")
-  create          Int           @default(0)
-  update          Int           @default(0)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @default(now())
-  category        Int?          @default(1)
-  category_data   OndutyMaster? @relation(fields: [category], references: [id])
-  //  OndutyMaster OndutyMaster[] @relation("onduty_Category")
+
+
+model onduty{
+     id          Int      @id @default(autoincrement())
+     docid       String   @unique @db.VarChar(50)
+     docdate     DateTime @default(now())
+     idcard      String   @db.VarChar(200)
+     empname     String?   @db.VarChar(100)
+     hod               String?
+     hr                   String?
+     Svechilekm           String?
+     Evechilekm            String?
+     approvalStatus  String    @default("pending")
+     userId          String?
+     others          String?
+    userdata          User? @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade) 
+     group            String @default("onduty")
+     in_time         String?
+     out_time        String?
+     inout           String @default("IN")
+     photo           String?
+     reject_reason    String?
+     compCode        String
+      updatedOn        DateTime? 
+      in_location       String?
+     in_latitude       String?
+     in_longtiude         String?
+      vechileno            String?
+      bunk                String?
+      start_km           String?  
+      end_km           String? 
+       out_location       String?
+      out_latitude       String?
+       out_longtiude        String?
+       to_onduty            Boolean @default(false)
+       createdBy                  String?
+      createdBy_user   User?  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+      modified_By        String ?
+       modifiedBy_user   User?  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+      rejectBy        String? @default("")
+      approvedBy  String?   @default("")
+      create          Int @default(0)
+       update          Int @default(0)
+       createdAt       DateTime @default(now())
+       updatedAt       DateTime @default(now())
+        category  Int?      @default(1)
+       category_data         OndutyMaster?  @relation( fields: [category], references: [id])
+      //  OndutyMaster OndutyMaster[] @relation("onduty_Category")
 }
 
+
 model AdvanceRequest {
-  id              Int              @id @default(autoincrement())
-  docid           String           @unique @db.VarChar(50)
-  docdate         DateTime         @default(now())
-  idcard          String           @db.VarChar(200)
-  fromDate        DateTime?        @default(now())
-  toDate          DateTime         @default(now())
-  empname         String           @db.VarChar(100)
-  finyear         String           @db.VarChar(10)
-  advtype         String           @db.VarChar(30)
-  total           Float            @default(0)
-  paytype         String?
-  hod             String
-  hr              String?
-  group           String           @default("Advance")
-  isCancelled     Boolean          @default(false)
+  id          Int      @id @default(autoincrement())
+  docid       String   @unique @db.VarChar(50)
+  docdate     DateTime @default(now())
+  idcard      String   @db.VarChar(200)
+  fromDate    DateTime?  @default(now())
+  toDate      DateTime @default(now())
+  empname     String   @db.VarChar(100)
+  finyear     String   @db.VarChar(10)
+  advtype     String   @db.VarChar(30)
+  total       Float     @default(0)
+  paytype     String?
+   hod               String
+    hr                   String?
+   group            String @default("Advance")
+  isCancelled     Boolean   @default(false)
   userId          String
-  preloan         Int?             @default(0)
-  totalloan       Float            @default(0)
-  predue          String?          @default("0") @db.VarChar(200)
-  ins             Int              @default(0)
-  due             Int              @default(0)
-  remark          String           @db.VarChar(500)
-  approvalStatus  String           @default("pending")
-  compCode        String
-  createdOn       DateTime         @default(now())
-  updatedOn       DateTime         @default(now())
-  createdBy       String
-  userdata        User             @relation("User", fields: [userId], references: [Idcard], onDelete: Cascade)
-  mobile          String?
-  create          Int              @default(0)
-  update          Int              @default(0)
-  createdBy_user  User             @relation("create_User", fields: [createdBy], references: [Idcard], onDelete: Cascade)
-  modified_By     String
-  modifiedBy_user User             @relation("modified_User", fields: [modified_By], references: [Idcard], onDelete: Cascade)
-  rejectBy        String?          @default("")
-  approvedBy      String?          @default("")
-  category        Int              @default(1)
-  fincode         BigInt
-  paycode         BigInt
-  category_data   PermissionMaster @relation("Advance_Category", fields: [category], references: [id])
+  preloan     Int?       @default(0)
+  totalloan   Float    @default(0)
+  predue      String?   @db.VarChar(200) @default("0")
+  ins         Int      @default(0)
+  due         Int       @default(0)
+  remark      String   @db.VarChar(500)
+  approvalStatus  String    @default("pending")
+  compCode    String   
+  createdOn   DateTime @default(now()) 
+  updatedOn   DateTime   @default(now()) 
+  createdBy       String   
+  userdata          User @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade) 
+   mobile          String?
+  create          Int @default(0)
+  update          Int @default(0)
+   createdBy_user   User  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+   modified_By       String 
+    modifiedBy_user   User  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+    rejectBy        String? @default("")
+   approvedBy  String?   @default("")
+   category          Int @default(1)
+   fincode          BigInt
+   paycode            BigInt
+   category_data          PermissionMaster   @relation("Advance_Category", fields: [category], references: [id])
 
   @@index([idcard])
   @@index([finyear])
@@ -195,184 +202,203 @@ model AdvanceRequest {
   @@map("advance_requests")
 }
 
+
 //used 
 
-model CompanyCode {
-  id          Int     @id @default(autoincrement())
-  Idcard      String
-  companyCode String
-  GCOMP       String?
-  User        User    @relation(fields: [Idcard], references: [Idcard], onDelete: Cascade)
-  companyid   String
-
-  @@index([Idcard])
+model CompanyCode{
+     id          Int    @id @default(autoincrement())
+    Idcard      String 
+    companyCode String
+    GCOMP        String?
+     User        User   @relation(fields: [Idcard], references: [Idcard],onDelete: Cascade)
+    companyid   String
+     @@index([Idcard])
 }
 
-model UserLog {
-  id         Int      @id @default(autoincrement())
-  User       String?
-  MobileName String?
-  date       DateTime @default(now())
-  MobileIP   String?
-  type       String
-  Idcard     String?
-  COMPCODE   String?
+
+  model UserLog{
+    id Int @id @default(autoincrement())
+    User String?
+    MobileName  String?
+    date     DateTime @default(now())
+    MobileIP       String?
+    type     String
+    Idcard  String?
+    COMPCODE String?
+  }
+
+
+model PermissionDocID{
+   id          Int          @id @default(autoincrement())
+ count        Int 
 }
 
-model PermissionDocID {
-  id    Int @id @default(autoincrement())
-  count Int
-}
-
-model PermissionMaster {
-  id              Int               @id @default(autoincrement())
-  name            String
-  active          String
-  ptype           String?
-  COMPCODE        String            @default("null")
+model PermissionMaster{
+  id  Int @id @default(autoincrement())
+  name String
+  active String
+  ptype  String?
+  COMPCODE String @default("null")
   PermissionEntry PermissionEntry[] @relation("permision_Category")
+
 
   LeaveEntry LeaveEntry[] @relation("leave_Category")
 
   AdvanceRequest AdvanceRequest[] @relation("Advance_Category")
 }
 
-model OndutyMaster {
-  id       Int    @id @default(autoincrement())
-  name     String
-  active   String
+
+
+
+model OndutyMaster{
+  id  Int @id @default(autoincrement())
+  name String
+  active String
   COMPCODE String @default("null")
 
   onduty onduty[]
 }
 
+
+
+
 model Location {
-  id        Int      @id @default(autoincrement())
-  latitude  Float
-  longitude Float
-  timestamp BigInt
-  accuracy  Float?
-  speed     Float?
-  bearing   Float?
-  altitude  Float?
-  provider  String?
-  COMPCODE  String?
-  userId    String?
-  docId     String?
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  latitude   Float
+  longitude  Float
+  timestamp  BigInt
+  accuracy   Float?
+  speed      Float?
+  bearing    Float?
+  altitude   Float?
+  provider   String?
+  COMPCODE String?
+  userId   String?
+  docId   String?
+  createdAt  DateTime @default(now())
 }
 
 model PermissionEntry {
-  id              Int              @id @default(autoincrement())
-  createdOn       DateTime         @default(now())
-  createdBy       String
-  createdBy_user  User             @relation("create_User", fields: [createdBy], references: [Idcard], onDelete: Cascade)
-  modified_By     String
-  modifiedBy_user User             @relation("modified_User", fields: [modified_By], references: [Idcard], onDelete: Cascade)
-  modifiedOn      DateTime?        @default(now())
-  group           String           @default("Permission")
-  isCancelled     Boolean          @default(false)
+  id              Int       @id @default(autoincrement())
+  createdOn       DateTime  @default(now())
+  createdBy       String    
+  createdBy_user   User  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+   modified_By       String 
+   modifiedBy_user   User  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+  modifiedOn      DateTime? @default(now())
+  group            String @default("Permission")
+  isCancelled     Boolean   @default(false)
   userId          String
   compCode        String
-  docid           String           @unique
+  docid            String @unique
   docDate         DateTime
   fTime           String
   tTime           String
   thrs            String
   mobile          String?
-  create          Int              @default(0)
-  update          Int              @default(0)
-  approvedBy      String?          @default("")
-  rejectBy        String?          @default("")
-  permissionId    String           @default(uuid())
-  username        String?          @default("")
+  create          Int @default(0)
+  update          Int @default(0)
+  approvedBy      String? @default("")
+  rejectBy        String? @default("")
+  permissionId    String   @default(uuid())
+  username         String? @default("")
   reason          String?
-  approvalStatus  String           @default("pending")
-  hod             String
-  hr              String?
-  category        Int              @default(1)
-  category_data   PermissionMaster @relation("permision_Category", fields: [category], references: [id])
-  hodId           User             @relation("PermissionHod", fields: [hod], references: [Idcard], onDelete: Cascade)
-  userdata        User             @relation("User", fields: [userId], references: [Idcard], onDelete: Cascade)
-  User            User[]
+  approvalStatus  String    @default("pending")
+  hod               String
+   hr                   String?
+  category          Int @default(1)
+ category_data          PermissionMaster   @relation("permision_Category", fields: [category], references: [id])
+  hodId             User    @relation("PermissionHod", fields: [hod], references: [Idcard],onDelete: Cascade)
+  userdata          User @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade)
+   @@map("PermissionEntry") // optional: map to actual table name if needed
+   User User[] 
+ 
+}
+  
 
-  @@map("PermissionEntry") // optional: map to actual table name if needed
+
+model trackers{
+  id              Int       @id @default(autoincrement()) 
+  UserId          String? @unique
+  isLive          Boolean @default(false)
+  COMPCODE        String?
+  docid           String? @unique
+  empname         String?
+  endDocid        String?
 }
 
-model trackers {
-  id       Int     @id @default(autoincrement())
-  UserId   String? @unique
-  isLive   Boolean @default(false)
-  COMPCODE String?
-  docid    String? @unique
-  empname  String?
-  endDocid String?
-}
 
-model chat {
-  id       Int      @id @default(autoincrement())
-  groupId  String?
-  COMPCODE String?
+model  chat{
+
+  id Int @id @default(autoincrement())
+  groupId   String?
+  COMPCODE  String?
   text     String?
   sender   String
-  userdata User     @relation("chat", fields: [sender], references: [Idcard])
-  createAt DateTime @default(now())
+  userdata            User      @relation("chat", fields: [sender], references: [Idcard])
+  createAt  DateTime @default(now())
+
 }
 
-model vechilekm {
-  id        Int     @id @default(autoincrement())
-  VEHICLENO String? @unique
-  COMPCODE  String?
-  km        String?
+
+
+model vechilekm{
+  id              Int       @id @default(autoincrement()) 
+  VEHICLENO       String?   @unique
+  COMPCODE        String?
+  km              String?
 }
 
-model LeaveEntry {
-  id              Int              @id @default(autoincrement())
-  createdOn       DateTime         @default(now())
-  createdBy       String
-  createdBy_user  User             @relation("leave_created_by", fields: [createdBy], references: [Idcard], onDelete: Cascade)
-  modified_By     String
-  modifiedBy_user User             @relation("leave_modified_by", fields: [modified_By], references: [Idcard], onDelete: Cascade)
-  modifiedOn      DateTime?        @default(now())
-  isCancelled     Boolean          @default(false)
+
+  model LeaveEntry {
+  id              Int       @id @default(autoincrement())
+  createdOn       DateTime  @default(now())
+  createdBy       String    
+  createdBy_user  User      @relation("leave_created_by", fields: [createdBy], references: [Idcard],onDelete: Cascade)
+  modified_By     String 
+  modifiedBy_user User      @relation("leave_modified_by", fields: [modified_By], references: [Idcard],onDelete: Cascade)
+  modifiedOn      DateTime? @default(now())
+  isCancelled     Boolean   @default(false)
   userId          String
   compCode        String
-  group           String           @default("Leave")
+  group           String @default("Leave")
   finyear         String
-  docid           String           @unique
+  docid           String    @unique
   docDate         DateTime
   fromDate        DateTime
   toDate          DateTime
   totalDays       Float
-  hr              String?
-  ltype           String?
-  fltype          String?
-  tltype          String?
+   hr                   String?
+  ltype        String?
+  fltype      String?
+  tltype      String?
   mobile          String?
   reason          String?
-  approvalStatus  String           @default("pending")
-  approvedBy      String?          @default("")
-  rejectBy        String?          @default("")
+  approvalStatus  String    @default("pending")
+  approvedBy      String?   @default("")
+  rejectBy        String?   @default("")
   hod             String
-  hodId           User             @relation("LeaveHod", fields: [hod], references: [Idcard], onDelete: Cascade)
-  userdata        User             @relation("LeaveUser", fields: [userId], references: [Idcard], onDelete: Cascade)
-  leaveId         String           @default(uuid())
-  create          Int              @default(0)
-  empname         String?
-  update          Int              @default(0)
-  category_data   PermissionMaster @relation("leave_Category", fields: [category], references: [id])
-  category        Int              @default(1)
-
+  hodId           User      @relation("LeaveHod", fields: [hod], references: [Idcard],onDelete: Cascade)
+   userdata            User      @relation("LeaveUser", fields: [userId], references: [Idcard],onDelete: Cascade)
+  leaveId         String    @default(uuid())
+   create          Int @default(0)
+   empname    String?
+  update          Int @default(0)
+  category_data          PermissionMaster   @relation("leave_Category", fields: [category], references: [id])
+  category          Int @default(1)
   @@map("LeaveEntry")
 }
 
+
+
+
 model Page {
-  id          Int        @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   name        String
   link        String?
   type        PageType
-  active      Boolean    @default(true)
-  PageGroup   PageGroup? @relation(fields: [pageGroupId], references: [id])
+  active      Boolean      @default(true)
+  PageGroup   PageGroup?   @relation(fields: [pageGroupId], references: [id])
   pageGroupId Int?
 }
 
@@ -509,26 +535,29 @@ model UserOnBranch {
 
 model Role {
   id          Int          @id @default(autoincrement())
-  name        String       @unique
-  COMPCODE    String       @default("")
+  name        String     @unique  
+  COMPCODE   String  @default("")
   User        User[]
-  RoleOnPage  RoleOnPage[] @relation("RoleToRoleOnPage")
-  active      String       @default("Yes")
+  RoleOnPage  RoleOnPage[]  @relation("RoleToRoleOnPage")
+  active      String      @default("Yes")
   defaultRole Boolean      @default(false)
+
 }
 
 model RoleOnPage {
-  id        Int     @id @default(autoincrement())
-  role      Role    @relation("RoleToRoleOnPage", fields: [roleName], references: [name], onDelete: Cascade)
-  roleId    Int?
-  roleName  String
-  read      Boolean @default(false)
-  create    Boolean @default(false)
-  edit      Boolean @default(false)
-  link      String
-  delete    Boolean @default(false)
-  isdefault Boolean @default(false)
+  id     Int     @id @default(autoincrement())
+  role   Role    @relation("RoleToRoleOnPage",fields: [roleName], references: [name], onDelete: Cascade)
+  roleId Int?
+  roleName String  
+  read   Boolean @default(false)
+  create Boolean @default(false)
+  edit   Boolean @default(false)
+  link   String
+  delete Boolean @default(false)
+  isdefault  Boolean @default(false)
 }
+
+
 
 model UserAdminDet {
   id          Int     @id @default(autoincrement())
