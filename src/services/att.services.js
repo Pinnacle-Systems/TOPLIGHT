@@ -327,7 +327,7 @@ export async function getPunchSummary(req, res) {
 
     // ── Build punch pairs (IN→OUT) ──────────────────────────────────────────
     const punches       = [];
-    let   totalMinutes  = 0;
+    let   totalSeconds  = 0;
     let   pendingIn     = null;   // holds the unmatched IN row
 
     for (const [inout, atttime] of rows) {
@@ -337,18 +337,19 @@ export async function getPunchSummary(req, res) {
         pendingIn = atttime;
       } else if (statusDigit === 0 && pendingIn) {
         // OUT punch paired with previous IN
-        const inMinutes  = timeToMinutes(pendingIn);
-        const outMinutes = timeToMinutes(atttime);
-        const duration   = outMinutes - inMinutes;
+        const inSecs  = timeToSeconds(pendingIn);
+        const outSecs = timeToSeconds(atttime);
+        const durationSeconds = outSecs - inSecs;
+        const validDuration   = durationSeconds > 0 ? durationSeconds : 0;
 
         punches.push({
           inTime           : pendingIn,
           outTime          : atttime,
-          durationMinutes  : duration > 0 ? duration : 0,
-          durationFormatted: minutesToFormatted(duration > 0 ? duration : 0),
+          durationSeconds  : validDuration,
+          durationFormatted: formatDuration(validDuration),
         });
 
-        totalMinutes += duration > 0 ? duration : 0;
+        totalSeconds += validDuration;
         pendingIn     = null;
       }
     }
@@ -368,8 +369,8 @@ export async function getPunchSummary(req, res) {
       data  : {
         punches,
         totalPunches       : punches.length,
-        totalMinutesWorked : totalMinutes,
-        totalTimeFormatted : minutesToFormatted(totalMinutes),
+        totalMinutesWorked : Math.floor(totalSeconds / 60),
+        totalTimeFormatted : formatDuration(totalSeconds),
       },
     });
 
@@ -383,17 +384,25 @@ export async function getPunchSummary(req, res) {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-// "09:30:00" → 570 (minutes since midnight)
-function timeToMinutes(timeStr) {
+// "09:30:05" → 34205 (seconds since midnight)
+function timeToSeconds(timeStr) {
   if (!timeStr) return 0;
-  const [h, m] = timeStr.split(":").map(Number);
-  return h * 60 + m;
+  const [h, m, s] = timeStr.split(":").map(Number);
+  return (h * 3600) + (m * 60) + (s || 0);
 }
 
-// 570 → "09:30"
-function minutesToFormatted(totalMinutes) {
-  if (!totalMinutes || totalMinutes <= 0) return "00:00";
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+// Format seconds into "HH:mm" for summary OR "mm:ss" if less than a minute
+function formatDuration(totalSeconds) {
+  if (!totalSeconds || totalSeconds <= 0) return "00:00";
+  
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  if (h > 0) {
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+  
+  // For small intervals in the log, show mm:ss so people know it worked
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }

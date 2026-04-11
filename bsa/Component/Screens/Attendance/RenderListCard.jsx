@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import moment from 'moment';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ActivityIndicator, LayoutAnimation, UIManager, Platform,
@@ -15,6 +16,13 @@ import {
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+
+// Convert a "HH:mm:ss" UTC string from the backend to local time display
+const utcTimeToLocal = (timeStr) => {
+  if (!timeStr || timeStr === '--:--') return timeStr;
+  const m = moment.utc(timeStr, 'HH:mm:ss').local();
+  return m.isValid() ? m.format('HH:mm:ss') : timeStr;
+};
 
 function RenderListCard({ item, onRefresh }) {
   const [expanded, setExpanded]   = useState(false);
@@ -113,11 +121,11 @@ function RenderListCard({ item, onRefresh }) {
           <View style={styles.timeRow}>
             <View style={styles.timePill}>
               <MaterialCommunityIcons name="login"  size={12} color="#10b981" />
-              <Text style={styles.timeText}>{punchInTime  || '--:--'}</Text>
+              <Text style={styles.timeText}>{utcTimeToLocal(punchInTime)  || '--:--'}</Text>
             </View>
             <View style={styles.timePill}>
               <MaterialCommunityIcons name="logout" size={12} color="#ef4444" />
-              <Text style={styles.timeText}>{punchOutTime || '--:--'}</Text>
+              <Text style={styles.timeText}>{utcTimeToLocal(punchOutTime) || '--:--'}</Text>
             </View>
           </View>
         </View>
@@ -170,7 +178,7 @@ function RenderListCard({ item, onRefresh }) {
 
                 <View style={styles.logTimeBlock}>
                   <MaterialCommunityIcons name="login" size={13} color="#10b981" />
-                  <Text style={styles.logTime}>{punch.inTime || punch.INTIME || '--:--'}</Text>
+                  <Text style={styles.logTime}>{utcTimeToLocal(punch.inTime || punch.INTIME) || '--:--'}</Text>
                 </View>
 
                 <MaterialCommunityIcons name="arrow-right" size={14} color="#94a3b8" />
@@ -181,7 +189,7 @@ function RenderListCard({ item, onRefresh }) {
                     styles.logTime,
                     !(punch.outTime || punch.OUTTIME) && { color: '#f59e0b' },
                   ]}>
-                    {punch.outTime || punch.OUTTIME || 'Active'}
+                    {punch.outTime || punch.OUTTIME ? utcTimeToLocal(punch.outTime ?? punch.OUTTIME) : 'Active'}
                   </Text>
                 </View>
 
