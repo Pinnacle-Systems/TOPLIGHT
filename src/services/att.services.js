@@ -391,18 +391,13 @@ function timeToSeconds(timeStr) {
   return (h * 3600) + (m * 60) + (s || 0);
 }
 
-// Format seconds into "HH:mm" for summary OR "mm:ss" if less than a minute
+// Format seconds into "HH:mm:ss" for both summary and log rows
 function formatDuration(totalSeconds) {
-  if (!totalSeconds || totalSeconds <= 0) return "00:00";
+  if (!totalSeconds || totalSeconds <= 0) return "00:00:00";
   
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
 
-  if (h > 0) {
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  }
-  
-  // For small intervals in the log, show mm:ss so people know it worked
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
