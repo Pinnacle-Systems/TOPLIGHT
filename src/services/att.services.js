@@ -364,6 +364,21 @@ export async function getPunchSummary(req, res) {
       });
     }
 
+    // ── Calculate total span (first punch to last punch/now) ──────────────────
+    const firstRow  = rows[0];
+    const lastRow   = rows[rows.length - 1];
+    
+    const spanStart = firstRow[1]; // atttime of first punch
+    let   spanEnd   = lastRow[1];  // atttime of last punch
+    
+    // If last punch is IN (1), span ends at current time
+    if (Number(lastRow[0]) === 1) {
+      spanEnd = formatDateToOracle(new Date()).split(" ")[1];
+    }
+    
+    const spanSecs = timeToSeconds(spanEnd) - timeToSeconds(spanStart);
+    const totalSpanSeconds = spanSecs > 0 ? spanSecs : 0;
+
     return res.status(200).json({
       status: 1,
       data  : {
@@ -371,6 +386,8 @@ export async function getPunchSummary(req, res) {
         totalPunches       : punches.length,
         totalMinutesWorked : Math.floor(totalSeconds / 60),
         totalTimeFormatted : formatDuration(totalSeconds),
+        totalSpanSeconds,
+        totalSpanFormatted : formatDuration(totalSpanSeconds),
       },
     });
 

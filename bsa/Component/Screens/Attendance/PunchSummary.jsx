@@ -40,13 +40,13 @@ const PunchSummary = () => {
 
         <View style={[styles.statCard, { borderTopColor: '#10b981' }]}>
           <MaterialCommunityIcons name="clock-outline" size={28} color="#10b981" />
-          <Text style={styles.statValue}>{summary?.totalTimeFormatted ?? summary?.TOTALTIMEFORMATTED ?? '00:00'}</Text>
-          <Text style={styles.statLabel}>Hours Worked</Text>
+          <Text style={styles.statValue}>{summary?.totalSpanFormatted ?? summary?.totalTimeFormatted ?? '00:00:00'}</Text>
+          <Text style={styles.statLabel}>Total Span</Text>
         </View>
 
         <View style={[styles.statCard, { borderTopColor: '#f59e0b' }]}>
           <MaterialCommunityIcons name="timer-outline" size={28} color="#f59e0b" />
-          <Text style={styles.statValue}>{summary?.totalMinutesWorked ?? summary?.TOTALMINUTESWORKED ?? 0}</Text>
+          <Text style={styles.statValue}>{Math.floor((summary?.totalSpanSeconds ?? 0) / 60)}</Text>
           <Text style={styles.statLabel}>Minutes</Text>
         </View>
 
