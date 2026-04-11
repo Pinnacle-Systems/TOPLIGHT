@@ -1,5 +1,5 @@
 
-process.env.TZ = "Asia/Kolkata";
+
 import express from 'express';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
