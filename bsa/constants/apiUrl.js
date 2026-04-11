@@ -2,8 +2,8 @@ import { resolveHostnameCloudflare } from '../Component/Utils/DnsResolver';
 
 // ─── Base Config ────────────────────────────────────────────────────────────
 
-export const BASE_URL = 'http://192.168.1.58:8025';
-export const BASE_DOMAIN = '192.168.1.58';
+export const BASE_URL = 'https://toplightmob.pinnaclesystems.co.in';
+export const BASE_DOMAIN = 'toplightmob.pinnaclesystems.co.in';
 
 /** Set to true to skip Cloudflare DNS resolution in local/dev builds. */
 export const IS_DEV = __DEV__;
