@@ -7,12 +7,8 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useGetPunchSummaryQuery } from '../../../redux/service/AttendanceRtk';
 
-// Convert a "HH:mm:ss" UTC string from the backend to local time display
-const utcTimeToLocal = (timeStr) => {
-  if (!timeStr || timeStr === '--:--') return timeStr;
-  const m = moment.utc(timeStr, 'HH:mm:ss').local();
-  return m.isValid() ? m.format('HH:mm:ss') : timeStr;
-};
+// No conversion needed, backend sends local time
+const formatTime = (timeStr) => timeStr || '--:--';
 
 const PunchSummary = () => {
   const { data, isFetching } = useGetPunchSummaryQuery();
@@ -73,7 +69,7 @@ const PunchSummary = () => {
             <View style={styles.timeBlock}>
               <MaterialCommunityIcons name="login" size={16} color="#10b981" />
               <Text style={styles.timeLabel}>IN</Text>
-              <Text style={styles.timeValue}>{utcTimeToLocal(punch.inTime ?? punch.INTIME) ?? '--:--'}</Text>
+              <Text style={styles.timeValue}>{formatTime(punch.inTime ?? punch.INTIME)}</Text>
             </View>
 
             {/* Arrow */}
@@ -87,7 +83,7 @@ const PunchSummary = () => {
                 styles.timeValue,
                 !(punch.outTime || punch.OUTTIME) && { color: '#f59e0b' }   // amber if still active
               ]}>
-                {punch.outTime || punch.OUTTIME ? utcTimeToLocal(punch.outTime ?? punch.OUTTIME) : 'Active'}
+                {punch.outTime || punch.OUTTIME ? formatTime(punch.outTime ?? punch.OUTTIME) : 'Active'}
               </Text>
             </View>
 

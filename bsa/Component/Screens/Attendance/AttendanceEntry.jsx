@@ -25,12 +25,8 @@ import { getCurrentLocation } from '../../Utils/CustomLocation';
 import PunchSummary from './PunchSummary';
 import AttendanceList from './AttendanceList';
 
-// Convert a "HH:mm:ss" UTC string from the backend to local time display
-const utcTimeToLocal = (timeStr) => {
-  if (!timeStr || timeStr === '--:--') return timeStr;
-  const m = moment.utc(timeStr, 'HH:mm:ss').local();
-  return m.isValid() ? m.format('HH:mm:ss') : timeStr;
-};
+// No conversion needed, backend sends local time
+const formatTime = (timeStr) => timeStr || '--:--';
 
 const AttendanceEntry = () => {
   const [activeTab, setActiveTab]       = useState('SELF');
@@ -275,7 +271,7 @@ const AttendanceEntry = () => {
                 <MaterialCommunityIcons name="clock-in" size={24} color="#10b981" />
                 <Text style={styles.statusLabel}>Punch In</Text>
                 <Text style={styles.statusTime}>
-                  {utcTimeToLocal(attendanceStatus?.punchIn || attendanceStatus?.PUNCHIN) || '--:--'}
+                  {formatTime(attendanceStatus?.punchIn || attendanceStatus?.PUNCHIN)}
                 </Text>
               </View>
               <View style={styles.divider} />
@@ -283,7 +279,7 @@ const AttendanceEntry = () => {
                 <MaterialCommunityIcons name="clock-out" size={24} color="#ef4444" />
                 <Text style={styles.statusLabel}>Punch Out</Text>
                 <Text style={styles.statusTime}>
-                  {utcTimeToLocal(attendanceStatus?.punchOut || attendanceStatus?.PUNCHOUT) || '--:--'}
+                  {formatTime(attendanceStatus?.punchOut || attendanceStatus?.PUNCHOUT)}
                 </Text>
               </View>
             </View>

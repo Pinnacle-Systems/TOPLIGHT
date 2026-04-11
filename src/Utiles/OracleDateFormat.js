@@ -13,12 +13,12 @@ function formatDateToOracle(dateInput) {
 
     if (isNaN(date.getTime())) throw new Error("Invalid date input");
 
-    const year    = date.getUTCFullYear();
-    const month   = pad(date.getUTCMonth() + 1); // Months are 0-based
-    const day     = pad(date.getUTCDate());
-    const hours   = pad(date.getUTCHours());
-    const minutes = pad(date.getUTCMinutes());
-    const seconds = pad(date.getUTCSeconds());
+    const year    = date.getFullYear();
+    const month   = pad(date.getMonth() + 1); // Months are 0-based
+    const day     = pad(date.getDate());
+    const hours   = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   } catch (error) {
