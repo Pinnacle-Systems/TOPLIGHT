@@ -48,7 +48,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, atttime, us
       USERNAME, IPADD, INOUT, PMNO, UNQID, CHK,DTYPE
     ) VALUES (
       SYSDATE, :ATTTIME, :COMPCODE, :IDCARD,
-      :USERNAME, :IPADD, :INOUT, :PMNO, :UNQID,: CHK,:DTYPE
+      :USERNAME, :IPADD, :INOUT, :PMNO, :UNQID,:CHK,:DTYPE
     )
   `;
 
