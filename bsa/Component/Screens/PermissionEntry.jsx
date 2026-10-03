@@ -138,7 +138,7 @@ const PermissionEntry = () => {
 
 
 
-  if(error || isError || ref_token_error ) return <View style={{flex:1,textAlign:"center"}}>
+  if(error) return <View style={{flex:1,textAlign:"center"}}>
     <Text style={{color:"red"}}>Something Went Wrong !</Text>
   </View>
 

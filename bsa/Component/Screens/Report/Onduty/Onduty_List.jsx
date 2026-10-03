@@ -32,29 +32,27 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const parseUtcToLocal = (timeStr) => {
+// Backend stores IST directly — parse as-is, NO UTC→local conversion.
+const parseISTTime = (timeStr) => {
   if (!timeStr) return null;
-  // If it's just a time like "07:01:28", treat it as UTC and convert to local
   if (typeof timeStr === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(timeStr)) {
-    return moment.utc(timeStr, "HH:mm:ss").local();
+    return moment(timeStr, 'HH:mm:ss');
   }
-  // If the backend sends raw time missing a timezone (e.g. from a UTC database), force UTC -> Local
-  if (typeof timeStr === 'string' && !timeStr.endsWith('Z') && !timeStr.includes('+')) {
-    return moment.utc(timeStr, ["YYYY-MM-DD HH:mm:ss", moment.ISO_8601]).local();
-  }
-  return moment(timeStr);
+  return moment(timeStr, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601], true).isValid()
+    ? moment(timeStr, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601])
+    : moment(timeStr);
 };
 
 const friendlyDateTime = (timeStr) => {
   if (!timeStr) return '—';
-  const m = parseUtcToLocal(timeStr);
-  return m.isValid() ? m.format('DD MMM YYYY, hh:mm A') : timeStr;
+  const m = parseISTTime(timeStr);
+  return m && m.isValid() ? m.format('DD MMM YYYY, hh:mm A') : timeStr;
 };
 
 const friendlyTime = (timeStr) => {
   if (!timeStr) return '—';
-  const m = parseUtcToLocal(timeStr);
-  return m.isValid() ? m.format('hh:mm A') : timeStr;
+  const m = parseISTTime(timeStr);
+  return m && m.isValid() ? m.format('hh:mm A') : timeStr;
 };
 
 const OndutyList = () => {

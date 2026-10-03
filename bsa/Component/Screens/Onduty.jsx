@@ -63,24 +63,24 @@ function getTodayDisplay() {
   };
 }
 
-const parseUtcToLocal = (timeStr) => {
+// Backend stores IST directly — parse as-is, NO UTC→local conversion.
+const parseISTTime = (timeStr) => {
   if (!timeStr) return null;
-  // If it's just a time like "07:01:28", treat it as UTC and convert to local
+  // "HH:mm:ss" only — combine with today's date for full moment object
   if (typeof timeStr === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(timeStr)) {
-    return moment.utc(timeStr, 'HH:mm:ss').local();
+    return moment(timeStr, 'HH:mm:ss');
   }
-  // If we have a full string without offset, assume it was UTC from the backend
-  if (typeof timeStr === 'string' && !timeStr.endsWith('Z') && !timeStr.includes('+')) {
-    return moment.utc(timeStr, ["YYYY-MM-DD HH:mm:ss", moment.ISO_8601]).local();
-  }
-  return moment(timeStr);
+  // Full datetime string — parse directly (already IST, no offset shift)
+  return moment(timeStr, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601], true).isValid()
+    ? moment(timeStr, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601])
+    : moment(timeStr);
 };
 
 // ── User-Friendly Date/Time UI Formatter ─────────────────────────────────────
 const friendlyDateTime = (timeStr) => {
   if (!timeStr) return '—';
-  const m = parseUtcToLocal(timeStr);
-  return m.isValid() ? m.format('DD MMM YYYY, hh:mm A') : timeStr;
+  const m = parseISTTime(timeStr);
+  return m && m.isValid() ? m.format('DD MMM YYYY, hh:mm A') : timeStr;
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
