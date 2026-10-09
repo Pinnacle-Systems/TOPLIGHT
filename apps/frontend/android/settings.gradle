@@ -1,0 +1,14 @@
+pluginManagement { 
+    def resolved = ["node", "-e", "const rn = require('path').dirname(require.resolve('react-native/package.json', { paths: [process.cwd()] })); console.log(require('path').dirname(require.resolve('@react-native/gradle-plugin/package.json', { paths: [rn] })))"].execute([], rootDir).text.trim()
+    includeBuild(resolved)
+}
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'bsa'
+include ':app'
+def resolvedApp = ["node", "-e", "const rn = require('path').dirname(require.resolve('react-native/package.json', { paths: [process.cwd()] })); console.log(require('path').dirname(require.resolve('@react-native/gradle-plugin/package.json', { paths: [rn] })))"].execute([], rootDir).text.trim()
+includeBuild(resolvedApp)
+
+
+
+

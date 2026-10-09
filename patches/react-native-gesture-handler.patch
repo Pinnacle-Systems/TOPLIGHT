@@ -1,0 +1,80 @@
+diff --git a/src/specs/NativeRNGestureHandlerModule.ts b/src/specs/NativeRNGestureHandlerModule.ts
+index d9bb62d61369c0eed9825d6ed3f8ea4bbbe6f481..de5134398d74b26c655d8435725bf195b89f6b6c 100644
+--- a/src/specs/NativeRNGestureHandlerModule.ts
++++ b/src/specs/NativeRNGestureHandlerModule.ts
+@@ -1,30 +1,30 @@
+-import type { CodegenTypes, TurboModule } from 'react-native';
++import type { Double, Int32, Float, WithDefault, TurboModule } from 'react-native';
+ import { TurboModuleRegistry } from 'react-native';
+ 
+ export interface Spec extends TurboModule {
+   handleSetJSResponder: (
+-    tag: CodegenTypes.Double,
++    tag: Double,
+     blockNativeResponder: boolean
+   ) => void;
+   handleClearJSResponder: () => void;
+   createGestureHandler: (
+     handlerName: string,
+-    handlerTag: CodegenTypes.Double,
++    handlerTag: Double,
+     // Record<> is not supported by codegen
+     // eslint-disable-next-line @typescript-eslint/ban-types
+     config: Object
+   ) => void;
+   attachGestureHandler: (
+-    handlerTag: CodegenTypes.Double,
+-    newView: CodegenTypes.Double,
+-    actionType: CodegenTypes.Double
++    handlerTag: Double,
++    newView: Double,
++    actionType: Double
+   ) => void;
+   updateGestureHandler: (
+-    handlerTag: CodegenTypes.Double,
++    handlerTag: Double,
+     // eslint-disable-next-line @typescript-eslint/ban-types
+     newConfig: Object
+   ) => void;
+-  dropGestureHandler: (handlerTag: CodegenTypes.Double) => void;
++  dropGestureHandler: (handlerTag: Double) => void;
+   install: () => boolean;
+   flushOperations: () => void;
+ }
+diff --git a/src/specs/RNGestureHandlerButtonNativeComponent.ts b/src/specs/RNGestureHandlerButtonNativeComponent.ts
+index 16244216ee16dcf8bdcf27cfa256955d68422e82..a0fba5b6640d5785ad60876f5ea26a33b1b1527f 100644
+--- a/src/specs/RNGestureHandlerButtonNativeComponent.ts
++++ b/src/specs/RNGestureHandlerButtonNativeComponent.ts
+@@ -1,6 +1,5 @@
+ import { codegenNativeComponent } from 'react-native';
+-import type {
+-  CodegenTypes,
++import type { Double, Int32, Float, WithDefault,
+   HostComponent,
+   ViewProps,
+   ColorValue,
+@@ -8,17 +7,17 @@ import type {
+ 
+ // @ts-ignore - Redefining pointerEvents with WithDefault for codegen, conflicts with ViewProps type but codegen needs it
+ interface NativeProps extends ViewProps {
+-  exclusive?: CodegenTypes.WithDefault<boolean, true>;
++  exclusive?: WithDefault<boolean, true>;
+   foreground?: boolean;
+   borderless?: boolean;
+-  enabled?: CodegenTypes.WithDefault<boolean, true>;
++  enabled?: WithDefault<boolean, true>;
+   rippleColor?: ColorValue;
+-  rippleRadius?: CodegenTypes.Int32;
+-  touchSoundDisabled?: CodegenTypes.WithDefault<boolean, false>;
+-  borderWidth?: CodegenTypes.Float;
++  rippleRadius?: Int32;
++  touchSoundDisabled?: WithDefault<boolean, false>;
++  borderWidth?: Float;
+   borderColor?: ColorValue;
+-  borderStyle?: CodegenTypes.WithDefault<string, 'solid'>;
+-  pointerEvents?: CodegenTypes.WithDefault<
++  borderStyle?: WithDefault<string, 'solid'>;
++  pointerEvents?: WithDefault<
+     'box-none' | 'none' | 'box-only' | 'auto',
+     'auto'
+   >;

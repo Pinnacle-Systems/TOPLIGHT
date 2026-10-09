@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <!-- Bubble Background with Shadow -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bubble_card"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/bubble_color"
+        app:strokeColor="@color/bubble_border"
+        app:strokeWidth="1dp">
+
+        <!-- Bubble Content -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp">
+
+            <!-- Main Bubble Icon -->
+            <ImageView
+                android:id="@+id/bubble_icon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_bubble_icon"
+                android:contentDescription="@string/bubble_content_desc"
+                android:scaleType="fitCenter"/>
+
+            <!-- Notification Badge -->
+            <TextView
+                android:id="@+id/bubble_badge"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bubble_badge_background"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:visibility="gone"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Close Button (X icon) -->
+    <ImageView
+        android:id="@+id/bubble_close"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="top|end"
+        android:src="@drawable/ic_close"
+        android:visibility="gone"
+        android:contentDescription="@string/close_bubble"/>
+
+</FrameLayout>

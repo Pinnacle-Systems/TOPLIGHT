@@ -1,0 +1,16 @@
+name: TopLight Api Deployment
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Where to deploy"
+        type: choice
+        required: true
+        default: staging
+        options:
+          - staging
+          - production
+          - development
+

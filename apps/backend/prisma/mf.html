@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps API Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Maps Example</h1>
+    <div id="map"></div>
+    
+    <!-- Replace YOUR_API_KEY with your actual Google Maps API key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD03pNdzKHcOuENoCWnCWMigF9WrxlyNc0&callback=initMap" async defer></script>
+    
+    <script>
+        function initMap() {
+            // Default location (New York)
+            const location = { lat: 11.555, lng: 77.9999 };
+            
+            // Create a map centered at the location
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 12,
+                center: location
+            });
+            
+            // Add a marker at the location
+            new google.maps.Marker({
+                position: location,
+                map: map,
+                title: "New York City"
+            });
+        }
+    </script>
+</body>
+</html>

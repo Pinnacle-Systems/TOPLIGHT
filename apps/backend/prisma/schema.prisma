@@ -1,0 +1,1411 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model settings{
+   SettingId    Int @id @default(autoincrement())
+   UserId  String @unique
+   user User @relation(fields: [UserId], references: [Idcard])
+   Notification  Boolean?
+   BioMatrics  Boolean?
+   COMPCODE    String?
+}
+
+model NotifyApprovalGroup{
+id Int @id @default(autoincrement())
+Idcard String?
+COMPCODE String?
+User User[]
+}
+
+
+
+//Used
+model User {
+  id                   Int                @id @default(autoincrement())
+  username             String             @unique
+  pic                  String?
+  email                String?
+  otpemail             String?
+  approval             String   @default("HOD")
+  password             String?
+  Idcard               String?             @unique
+  role                 Role?              @relation(fields: [roleId], references: [name], onDelete: SetNull)
+  roleId               String?
+  otp                  String?
+  hod                  String?
+  hr                   String?
+  optional_notify      NotifyApprovalGroup[]
+  level                String @default("user")
+  Permission           PermissionEntry[]
+  verificationOtp      String?
+  expiresAt            DateTime?
+  createdAt            DateTime?          @default(now())
+  active               Boolean            @default(true)
+  UserOnBranch         UserOnBranch[]
+  employeeId           Int?
+  Companies             CompanyCode[]
+  Employee             Employee?          @relation(fields: [employeeId], references: [id])
+  isAllParty           Boolean            @default(false)
+  isAdmin              Boolean            @default(false)
+  partyCreatedBy       Party[]            @relation(name: "createdBy")
+  partyUpdatedBy       Party[]            @relation(name: "updatedBy")
+  CostingCreatedBy     Costing[]          @relation(name: "createdBy")
+  CostingUpdatedBy     Costing[]          @relation(name: "updatedBy")
+  UserPartyDetails     UserPartyDetails[]
+  NotificationSender   Notification[]     @relation(name: "sender")
+  NotificationReceiver Notification[]     @relation(name: "receiver")
+  CostingAdminResaved  Costing[]          @relation(name: "adminResaved")
+  UserAdminDet         UserAdminDet[]     @relation("UserRelation")
+  AdminDet             UserAdminDet[]     @relation("AdminRelation")
+  fcm                  String?             @default("")
+  PermissionEntry PermissionEntry[] @relation("PermissionHod")
+  PermissionEntry_create_user PermissionEntry[] @relation("create_User")
+PermissionEntry_Modified_user PermissionEntry[] @relation("modified_User") 
+  PermissionEntryUser PermissionEntry[] @relation("User")
+
+  LeaveEntry LeaveEntry[] @relation("leave_created_by")
+
+  LeaveEntry_modified LeaveEntry[] @relation("leave_modified_by")
+
+  LeaveEntry_hod LeaveEntry[] @relation("LeaveHod")
+
+  LeaveEntry_user LeaveEntry[] @relation("LeaveUser")
+
+  AdvanceRequest_create AdvanceRequest[] @relation("create_User")
+
+  AdvanceRequest_modified AdvanceRequest[] @relation("modified_User")
+
+  AdvanceRequest AdvanceRequest[] @relation("User")
+
+  onduty onduty[] @relation("User")
+
+  onduty_create onduty[] @relation("create_User")
+
+  onduty_modify onduty[] @relation("modified_User")
+
+  settings settings[]
+
+  chat chat[] @relation("chat")
+}
+
+
+
+model onduty{
+     id          Int      @id @default(autoincrement())
+     docid       String   @unique @db.VarChar(50)
+     docdate     DateTime @default(now())
+     idcard      String   @db.VarChar(200)
+     empname     String?   @db.VarChar(100)
+     hod               String?
+     hr                   String?
+     Svechilekm           String?
+     Evechilekm            String?
+     approvalStatus  String    @default("pending")
+     userId          String?
+     others          String?
+    userdata          User? @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade) 
+     group            String @default("onduty")
+     in_time         String?
+     out_time        String?
+     inout           String @default("IN")
+     photo           String?
+     reject_reason    String?
+     compCode        String
+      updatedOn        DateTime? 
+      in_location       String?
+     in_latitude       String?
+     in_longtiude         String?
+      vechileno            String?
+      bunk                String?
+      start_km           String?  
+      end_km           String? 
+       out_location       String?
+      out_latitude       String?
+       out_longtiude        String?
+       to_onduty            Boolean @default(false)
+       createdBy                  String?
+      createdBy_user   User?  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+      modified_By        String ?
+       modifiedBy_user   User?  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+      rejectBy        String? @default("")
+      approvedBy  String?   @default("")
+      create          Int @default(0)
+       update          Int @default(0)
+       createdAt       DateTime @default(now())
+       updatedAt       DateTime @default(now())
+        category  Int?      @default(1)
+       category_data         OndutyMaster?  @relation( fields: [category], references: [id])
+      //  OndutyMaster OndutyMaster[] @relation("onduty_Category")
+}
+
+
+model AdvanceRequest {
+  id          Int      @id @default(autoincrement())
+  docid       String   @unique @db.VarChar(50)
+  docdate     DateTime @default(now())
+  idcard      String   @db.VarChar(200)
+  fromDate    DateTime?  @default(now())
+  toDate      DateTime @default(now())
+  empname     String   @db.VarChar(100)
+  finyear     String   @db.VarChar(10)
+  advtype     String   @db.VarChar(30)
+  total       Float     @default(0)
+  paytype     String?
+   hod               String
+    hr                   String?
+   group            String @default("Advance")
+  isCancelled     Boolean   @default(false)
+  userId          String
+  preloan     Int?       @default(0)
+  totalloan   Float    @default(0)
+  predue      String?   @db.VarChar(200) @default("0")
+  ins         Int      @default(0)
+  due         Int       @default(0)
+  remark      String   @db.VarChar(500)
+  approvalStatus  String    @default("pending")
+  compCode    String   
+  createdOn   DateTime @default(now()) 
+  updatedOn   DateTime   @default(now()) 
+  createdBy       String   
+  userdata          User @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade) 
+   mobile          String?
+  create          Int @default(0)
+  update          Int @default(0)
+   createdBy_user   User  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+   modified_By       String 
+    modifiedBy_user   User  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+    rejectBy        String? @default("")
+   approvedBy  String?   @default("")
+   category          Int @default(1)
+   fincode          BigInt
+   paycode            BigInt
+   category_data          PermissionMaster   @relation("Advance_Category", fields: [category], references: [id])
+
+  @@index([idcard])
+  @@index([finyear])
+  @@index([approvalStatus])
+  @@map("advance_requests")
+}
+
+
+//used 
+
+model CompanyCode{
+     id          Int    @id @default(autoincrement())
+    Idcard      String 
+    companyCode String
+    GCOMP        String?
+     User        User   @relation(fields: [Idcard], references: [Idcard],onDelete: Cascade)
+    companyid   String
+     @@index([Idcard])
+}
+
+
+  model UserLog{
+    id Int @id @default(autoincrement())
+    User String?
+    MobileName  String?
+    date     DateTime @default(now())
+    MobileIP       String?
+    type     String
+    Idcard  String?
+    COMPCODE String?
+  }
+
+
+model PermissionDocID{
+   id          Int          @id @default(autoincrement())
+ count        Int 
+}
+
+model PermissionMaster{
+  id  Int @id @default(autoincrement())
+  name String
+  active String
+  ptype  String?
+  COMPCODE String @default("null")
+  PermissionEntry PermissionEntry[] @relation("permision_Category")
+
+
+  LeaveEntry LeaveEntry[] @relation("leave_Category")
+
+  AdvanceRequest AdvanceRequest[] @relation("Advance_Category")
+}
+
+
+
+
+model OndutyMaster{
+  id  Int @id @default(autoincrement())
+  name String
+  active String
+  COMPCODE String @default("null")
+
+  onduty onduty[]
+}
+
+
+
+
+model Location {
+  id         Int      @id @default(autoincrement())
+  latitude   Float
+  longitude  Float
+  timestamp  BigInt
+  accuracy   Float?
+  speed      Float?
+  bearing    Float?
+  altitude   Float?
+  provider   String?
+  COMPCODE String?
+  userId   String?
+  docId   String?
+  createdAt  DateTime @default(now())
+}
+
+model PermissionEntry {
+  id              Int       @id @default(autoincrement())
+  createdOn       DateTime  @default(now())
+  createdBy       String    
+  createdBy_user   User  @relation("create_User",fields: [createdBy],references: [Idcard],onDelete: Cascade)
+   modified_By       String 
+   modifiedBy_user   User  @relation("modified_User",fields: [modified_By],references: [Idcard],onDelete: Cascade)
+  modifiedOn      DateTime? @default(now())
+  group            String @default("Permission")
+  isCancelled     Boolean   @default(false)
+  userId          String
+  compCode        String
+  docid            String @unique
+  docDate         DateTime
+  fTime           String
+  tTime           String
+  thrs            String
+  mobile          String?
+  create          Int @default(0)
+  update          Int @default(0)
+  approvedBy      String? @default("")
+  rejectBy        String? @default("")
+  permissionId    String   @default(uuid())
+  username         String? @default("")
+  reason          String?
+  approvalStatus  String    @default("pending")
+  hod               String
+   hr                   String?
+  category          Int @default(1)
+ category_data          PermissionMaster   @relation("permision_Category", fields: [category], references: [id])
+  hodId             User    @relation("PermissionHod", fields: [hod], references: [Idcard],onDelete: Cascade)
+  userdata          User @relation("User", fields: [userId], references: [Idcard],onDelete: Cascade)
+   @@map("PermissionEntry") // optional: map to actual table name if needed
+   User User[] 
+ 
+}
+  
+
+
+model trackers{
+  id              Int       @id @default(autoincrement()) 
+  UserId          String? @unique
+  isLive          Boolean @default(false)
+  COMPCODE        String?
+  docid           String? @unique
+  empname         String?
+  endDocid        String?
+}
+
+
+model  chat{
+
+  id Int @id @default(autoincrement())
+  groupId   String?
+  COMPCODE  String?
+  text     String?
+  sender   String
+  userdata            User      @relation("chat", fields: [sender], references: [Idcard])
+  createAt  DateTime @default(now())
+
+}
+
+
+
+model vechilekm{
+  id              Int       @id @default(autoincrement()) 
+  VEHICLENO       String?   @unique
+  COMPCODE        String?
+  km              String?
+}
+
+
+  model LeaveEntry {
+  id              Int       @id @default(autoincrement())
+  createdOn       DateTime  @default(now())
+  createdBy       String    
+  createdBy_user  User      @relation("leave_created_by", fields: [createdBy], references: [Idcard],onDelete: Cascade)
+  modified_By     String 
+  modifiedBy_user User      @relation("leave_modified_by", fields: [modified_By], references: [Idcard],onDelete: Cascade)
+  modifiedOn      DateTime? @default(now())
+  isCancelled     Boolean   @default(false)
+  userId          String
+  compCode        String
+  group           String @default("Leave")
+  finyear         String
+  docid           String    @unique
+  docDate         DateTime
+  fromDate        DateTime
+  toDate          DateTime
+  totalDays       Float
+   hr                   String?
+  ltype        String?
+  fltype      String?
+  tltype      String?
+  mobile          String?
+  reason          String?
+  approvalStatus  String    @default("pending")
+  approvedBy      String?   @default("")
+  rejectBy        String?   @default("")
+  hod             String
+  hodId           User      @relation("LeaveHod", fields: [hod], references: [Idcard],onDelete: Cascade)
+   userdata            User      @relation("LeaveUser", fields: [userId], references: [Idcard],onDelete: Cascade)
+  leaveId         String    @default(uuid())
+   create          Int @default(0)
+   empname    String?
+  update          Int @default(0)
+  category_data          PermissionMaster   @relation("leave_Category", fields: [category], references: [id])
+  category          Int @default(1)
+  @@map("LeaveEntry")
+}
+
+
+
+
+model Page {
+  id          Int          @id @default(autoincrement())
+  name        String
+  link        String?
+  type        PageType
+  active      Boolean      @default(true)
+  PageGroup   PageGroup?   @relation(fields: [pageGroupId], references: [id])
+  pageGroupId Int?
+}
+
+model InfoTerm {
+  id        Int       @id @default(autoincrement())
+  name      String
+  Branch    Branch?   @relation(fields: [branchId], references: [id])
+  branchId  Int?
+  Company   Company?  @relation(fields: [companyId], references: [id])
+  companyId Int?
+  active    Boolean
+  Costing   Costing[]
+  Party     Party[]
+}
+
+model Article {
+  id                          Int                           @id @default(autoincrement())
+  name                        String                        @unique
+  isDefault                   Boolean                       @default(false)
+  Company                     Company?                      @relation(fields: [companyId], references: [id])
+  companyId                   Int?
+  active                      Boolean
+  selectedType                String?
+  YarnCostingDetails          YarnCostingDetails[]
+  FabricCostingDetails        FabricCostingDetails[]
+  AccessoryCostingDetails     AccessoryCostingDetails[]
+  SFTYarnCostingDetails       SFTYarnCostingDetails[]
+  SFTFabricCostingDetails     SFTFabricCostingDetails[]
+  SFTAccessoryCostingDetails  SFTAccessoryCostingDetails[]
+  ArticleProcessPriceTemplate ArticleProcessPriceTemplate[]
+  StyleFabricTemplateFabric   StyleFabricTemplate[]         @relation("fabricId")
+  StyleFabricTemplate         StyleFabricTemplate[]         @relation("yarnId")
+  CostingStyleItemDetails     CostingStyleItemDetails[]
+}
+
+model Company {
+  id                Int                 @id @default(autoincrement())
+  companyId         String              @unique @default(uuid())
+  name              String
+  code              String?
+  gstNo             String?
+  panNo             String?
+  contactName       String?
+  contactMobile     BigInt
+  contactEmail      String?
+  bankName          String?
+  accNo             String?
+  branchName        String?
+  ifscCode          String?
+  branch            Branch[]
+  country           Country[]
+  active            Boolean             @default(true)
+  Department        Department[]
+  Subscription      Subscription[]
+  finYear           FinYear[]
+  PartyCategory     PartyCategory[]
+  Currency          Currency[]
+  Party             Party[]
+  Hsn               Hsn[]
+  Color             Color[]
+  UnitOfMeasurement UnitOfMeasurement[]
+  PayTerm           PayTerm[]
+  Process           Process[]
+  Style             Style[]
+  PriceTemplate     PriceTemplate[]
+  InfoTerm          InfoTerm[]
+  Article           Article[]
+  ProcessGroup      ProcessGroup[]
+  Size              Size[]
+  SizeTemplate      SizeTemplate[]
+  Portion           Portion[]
+  FieldMaster       FieldMaster[]
+  Ratio             Ratio[]
+  Design            Design[]
+  trimFabric        trimFabric[]
+  Combo             Combo[]
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  Company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId Int
+  validFrom DateTime
+  expireAt  DateTime
+  code      String
+  maxUsers  Int
+}
+
+model Portion {
+  id             Int              @id @default(autoincrement())
+  name           String
+  Company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId      Int
+  active         Boolean          @default(true)
+  StyleOnPortion StyleOnPortion[]
+}
+
+model Branch {
+  id                  Int                   @id @default(autoincrement())
+  branchName          String
+  branchCode          String?
+  contactName         String?
+  contactMobile       BigInt
+  contactEmail        String?
+  company             Company               @relation(fields: [companyId], references: [id])
+  companyId           Int
+  active              Boolean               @default(true)
+  EmployeeCategory    EmployeeCategory[]
+  UserOnBranch        UserOnBranch[]
+  Employee            Employee[]
+  idPrefix            String?
+  idSequence          String?
+  tempPrefix          String?
+  tempSequence        String?
+  prefixCategory      PrefixCategory?
+  address             String?
+  gstNo               String?
+  panNo               String?
+  logo                String?
+  InfoTerm            InfoTerm[]
+  ConsumptionTemplate ConsumptionTemplate[]
+  Costing             Costing[]
+  Party               Party[]
+  StyleFabricTemplate StyleFabricTemplate[]
+}
+
+model UserOnBranch {
+  id       Int    @id @default(autoincrement())
+  Branch   Branch @relation(fields: [branchId], references: [id])
+  branchId Int
+  User     User   @relation(fields: [userId], references: [id])
+  userId   Int
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String     @unique  
+  COMPCODE   String  @default("")
+  User        User[]
+  RoleOnPage  RoleOnPage[]  @relation("RoleToRoleOnPage")
+  active      String      @default("Yes")
+  defaultRole Boolean      @default(false)
+
+}
+
+model RoleOnPage {
+  id     Int     @id @default(autoincrement())
+  role   Role    @relation("RoleToRoleOnPage",fields: [roleName], references: [name], onDelete: Cascade)
+  roleId Int?
+  roleName String  
+  read   Boolean @default(false)
+  create Boolean @default(false)
+  edit   Boolean @default(false)
+  link   String
+  delete Boolean @default(false)
+  isdefault  Boolean @default(false)
+}
+
+
+
+model UserAdminDet {
+  id          Int     @id @default(autoincrement())
+  userId      Int?
+  userAdminId Int?
+  label       String?
+  user        User?   @relation("UserRelation", fields: [userId], references: [id])
+  admin       User?   @relation("AdminRelation", fields: [userAdminId], references: [id])
+}
+
+model UserPartyDetails {
+  id      Int   @id @default(autoincrement())
+  User    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  Party   Party @relation(fields: [partyId], references: [id])
+  partyId Int
+}
+
+model Employee {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  email              String            @unique
+  regNo              String            @unique
+  chamberNo          String
+  department         Department?       @relation(fields: [departmentId], references: [id])
+  departmentId       Int?
+  joiningDate        DateTime
+  fatherName         String?
+  dob                DateTime?
+  gender             Gender?
+  maritalStatus      MaritalStatus?
+  bloodGroup         BloodGroup?
+  panNo              String?
+  consultFee         String?
+  salaryPerMonth     String
+  commissionCharges  String?
+  mobile             BigInt?
+  accountNo          String?
+  ifscNo             String?
+  branchName         String?
+  degree             String?
+  specialization     String?
+  localAddress       String?
+  localCity          City              @relation("localCity", fields: [localCityId], references: [id])
+  localCityId        Int
+  localPincode       Int?
+  permAddress        String?
+  permCity           City?             @relation("permCity", fields: [permCityId], references: [id])
+  permCityId         Int?
+  permPincode        Int?
+  active             Boolean           @default(true)
+  image              Bytes?            @db.LongBlob
+  Branch             Branch?           @relation(fields: [branchId], references: [id])
+  branchId           Int?
+  EmployeeCategory   EmployeeCategory? @relation(fields: [employeeCategoryId], references: [id])
+  employeeCategoryId Int?
+  permanent          Boolean           @default(false)
+  leavingReason      String?
+  leavingDate        DateTime?
+  canRejoin          Boolean           @default(true)
+  rejoinReason       String?
+  User               User[]
+}
+
+model FinYear {
+  id        Int      @id @default(autoincrement())
+  from      DateTime
+  to        DateTime
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId Int?
+  active    Boolean  @default(true)
+}
+
+model EmployeeCategory {
+  id              Int        @id @default(autoincrement())
+  name            String
+  code            String
+  Branch          Branch?    @relation(fields: [branchId], references: [id])
+  branchId        Int?
+  active          Boolean    @default(true)
+  defaultCategory Boolean    @default(false)
+  Employee        Employee[]
+}
+
+model Country {
+  id        Int     @id @default(autoincrement())
+  name      String
+  code      String
+  state     State[]
+  active    Boolean @default(true)
+  Company   Company @relation(fields: [companyId], references: [id])
+  companyId Int
+}
+
+model Commercial {
+  id        Int      @id @default(autoincrement())
+  Process   Process? @relation(fields: [processId], references: [id])
+  processId Int?
+  type      String?
+  value     Float?
+  active    Boolean  @default(true)
+}
+
+model trimFabric {
+  id                      Int                       @id @default(autoincrement())
+  name                    String
+  active                  Boolean                   @default(true)
+  Company                 Company                   @relation(fields: [companyId], references: [id])
+  companyId               Int
+  CostingStyleItemDetails CostingStyleItemDetails[]
+}
+
+model State {
+  id        Int     @id @default(autoincrement())
+  name      String
+  code      String
+  gstNo     String
+  country   Country @relation(fields: [countryId], references: [id])
+  countryId Int
+  city      City[]
+  active    Boolean @default(true)
+}
+
+model City {
+  id              Int        @id @default(autoincrement())
+  name            String?
+  code            String
+  state           State      @relation(fields: [stateId], references: [id])
+  stateId         Int
+  active          Boolean    @default(true)
+  doctorLocalCity Employee[] @relation(name: "localCity")
+  doctorPermCity  Employee[] @relation(name: "permCity")
+  Party           Party[]
+}
+
+model Department {
+  id        Int        @id @default(autoincrement())
+  name      String
+  code      String
+  active    Boolean    @default(true)
+  doctor    Employee[] @relation()
+  Company   Company    @relation(fields: [companyId], references: [id])
+  companyId Int
+}
+
+enum PageType {
+  Masters
+  Transactions
+  Reports
+  AdminAccess
+}
+
+model PageGroup {
+  id     Int      @id @default(autoincrement())
+  type   PageType
+  name   String
+  Page   Page[]
+  active Boolean  @default(true)
+}
+
+enum PrefixCategory {
+  Default
+  Specific
+}
+
+enum BloodGroup {
+  AP
+  BP
+  AN
+  BN
+  ABP
+  ABN
+  OP
+  ON
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  SEPARATED
+}
+
+// PS TEX Tables
+model PartyCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId Int?
+  active    Boolean  @default(true)
+}
+
+model Currency {
+  id          Int       @id @default(autoincrement())
+  name        String
+  currency    Float?
+  code        String?
+  icon        String?
+  Company     Company?  @relation(fields: [companyId], references: [id])
+  companyId   Int?
+  active      Boolean   @default(true)
+  subCurrency String?
+  Party       Party[]
+  Costing     Costing[]
+}
+
+model Party {
+  id                Int                @id @default(autoincrement())
+  name              String
+  code              String?
+  aliasName         String?
+  displayName       String?
+  address           String?
+  City              City?              @relation(fields: [cityId], references: [id])
+  cityId            Int?
+  pincode           Int?
+  panNo             String?
+  tinNo             String?
+  cstNo             String?
+  cstDate           DateTime?          @db.Date
+  cinNo             String?
+  faxNo             String?
+  email             String?
+  website           String?
+  contactPersonName String?
+  gstNo             String?
+  Currency          Currency?          @relation(fields: [currencyId], references: [id])
+  currencyId        Int?
+  costCode          String?
+  active            Boolean            @default(true)
+  contactMobile     BigInt             @default(0)
+  yarn              Boolean            @default(false)
+  fabric            Boolean            @default(false)
+  accessoryGroup    Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdBy         User               @relation("createdBy", fields: [createdById], references: [id])
+  createdById       Int
+  updatedBy         User?              @relation("updatedBy", fields: [updatedById], references: [id])
+  updatedById       Int?
+  PriceTemplate     PriceTemplate?     @relation(fields: [priceTemplateId], references: [id])
+  priceTemplateId   Int?
+  PartyOnProcess    PartyOnProcess[]
+  Costing           Costing[]
+  Company           Company?           @relation(fields: [companyId], references: [id])
+  companyId         Int?
+  Branch            Branch?            @relation(fields: [branchId], references: [id])
+  branchId          Int?
+  PayTerm           PayTerm?           @relation(fields: [payTermId], references: [id])
+  payTermId         Int?
+  IncoTerm          InfoTerm?          @relation(fields: [incoTermId], references: [id])
+  incoTermId        Int?
+  UserPartyDetails  UserPartyDetails[]
+}
+
+model Hsn {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId Int?
+  active    Boolean  @default(true)
+}
+
+model Color {
+  id           Int            @id @default(autoincrement())
+  name         String
+  pantone      String
+  Company      Company        @relation(fields: [companyId], references: [id])
+  companyId    Int
+  active       Boolean        @default(true)
+  isGrey       Boolean        @default(false)
+  StyleOnColor StyleOnColor[]
+}
+
+model UnitOfMeasurement {
+  id                         Int                          @id @default(autoincrement())
+  name                       String
+  Company                    Company                      @relation(fields: [companyId], references: [id])
+  companyId                  Int
+  active                     Boolean                      @default(true)
+  isCutting                  Boolean                      @default(false)
+  YarnCostingDetails         YarnCostingDetails[]
+  FabricCostingDetails       FabricCostingDetails[]
+  AccessoryCostingDetails    AccessoryCostingDetails[]
+  CmtCostingDetails          CmtCostingDetails[]
+  SFTYarnCostingDetails      SFTYarnCostingDetails[]
+  SFTFabricCostingDetails    SFTFabricCostingDetails[]
+  SFTAccessoryCostingDetails SFTAccessoryCostingDetails[]
+  SFTCmtCostingDetails       SFTCmtCostingDetails[]
+}
+
+model PayTerm {
+  id                 Int     @id @default(autoincrement())
+  name               String
+  days               Int
+  Company            Company @relation(fields: [companyId], references: [id])
+  companyId          Int
+  active             Boolean @default(true)
+  financeCostPercent String?
+  Party              Party[]
+}
+
+enum ProcessIO {
+  GY_GY
+  GY_DY
+  GY_GF
+  DY_DY
+  DY_DF
+  GF_DF
+  DF_DF
+}
+
+model Process {
+  id                               Int                           @id @default(autoincrement())
+  name                             String                        @unique
+  code                             String
+  io                               ProcessIO?
+  isCutting                        Boolean                       @default(false)
+  isPacking                        Boolean                       @default(false)
+  isPcsStage                       Boolean                       @default(false)
+  isYarn                           Boolean                       @default(false)
+  isFabric                         Boolean                       @default(false)
+  isTrims                          Boolean                       @default(false)
+  isCmt                            Boolean                       @default(false)
+  isCommercial                     Boolean                       @default(false)
+  isPrintingAndEmb                 Boolean                       @default(false)
+  isTransportation                 Boolean                       @default(false)
+  isOversHeads                     Boolean                       @default(false)
+  isFinance                        Boolean                       @default(false)
+  isProcessLoss                    Boolean                       @default(false)
+  isFinish                         Boolean                       @default(false)
+  isSpecialFinish                  Boolean                       @default(false)
+  isPurchase                       Boolean                       @default(false)
+  isKnitting                       Boolean                       @default(false)
+  isDyeing                         Boolean                       @default(false)
+  isDefault                        Boolean                       @default(false)
+  active                           Boolean                       @default(true)
+  Company                          Company                       @relation(fields: [companyId], references: [id])
+  companyId                        Int
+  rate                             Int                           @default(0)
+  loss                             Int                           @default(0)
+  PartyOnProcess                   PartyOnProcess[]
+  isPrintingJobWork                Boolean                       @default(false)
+  ProcessGroupDetails              ProcessGroupDetails[]
+  CommercialCostingDetails         CommercialCostingDetails[]
+  YarnCostingDetails               YarnCostingDetails[]
+  FabricCostingDetails             FabricCostingDetails[]
+  AccessoryCostingDetails          AccessoryCostingDetails[]
+  CmtCostingDetails                CmtCostingDetails[]
+  SFTYarnCostingDetails            SFTYarnCostingDetails[]
+  SFTFabricCostingDetails          SFTFabricCostingDetails[]
+  SFTAccessoryCostingDetails       SFTAccessoryCostingDetails[]
+  SFTCmtCostingDetails             SFTCmtCostingDetails[]
+  ArticleProcessPriceTemplate      ArticleProcessPriceTemplate[]
+  StyleFabricTemplateFinish        StyleFabricTemplate[]         @relation("finish")
+  StyleFabricTemplateSpecialFinish StyleFabricTemplate[]         @relation("specialFinish")
+  commercial                       Commercial[]
+}
+
+model ProcessGroup {
+  id     Int     @id @default(autoincrement())
+  name   String
+  active Boolean @default(true)
+
+  ProcessGroupDetails ProcessGroupDetails[]
+  Company             Company?              @relation(fields: [companyId], references: [id])
+  companyId           Int?
+}
+
+model ProcessGroupDetails {
+  id             Int          @id @default(autoincrement())
+  ProcessGroup   ProcessGroup @relation(fields: [processGroupId], references: [id], onDelete: Cascade)
+  processGroupId Int
+  Process        Process      @relation(fields: [processId], references: [id])
+  processId      Int
+  sequence       String?
+}
+
+model PartyOnProcess {
+  id        Int     @id @default(autoincrement())
+  Party     Party   @relation(fields: [partyId], references: [id])
+  partyId   Int
+  Process   Process @relation(fields: [processId], references: [id])
+  processId Int
+}
+
+model Style {
+  id           Int            @id @default(autoincrement())
+  name         String
+  sku          String?
+  productType  String?
+  seoTitle     String?
+  image        Bytes?         @db.LongBlob
+  sleeve       String?
+  pattern      String?
+  occasion     String?
+  material     String?
+  washCare     String?
+  active       Boolean        @default(true)
+  Company      Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId    Int
+  hsn          String?
+  StyleOnColor StyleOnColor[]
+
+  SizeTemplate                  SizeTemplate?                   @relation(fields: [sizeTemplateId], references: [id])
+  sizeTemplateId                Int?
+  PriceTemplateStyleWiseDetails PriceTemplateStyleWiseDetails[]
+  CostingStyleItemDetails       CostingStyleItemDetails[]
+  StyleOnPortion                StyleOnPortion[]
+  StyleFabricTemplate           StyleFabricTemplate[]
+}
+
+model StyleOnColor {
+  id      Int   @id @default(autoincrement())
+  Style   Style @relation(fields: [styleId], references: [id], onDelete: Cascade)
+  styleId Int
+  Color   Color @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  colorId Int
+}
+
+enum PaymentType {
+  AgainstBill
+  Advance
+}
+
+enum PaymentMode {
+  Check
+  Online
+  Upi
+  Cash
+  Credit
+  NEFT
+  RDGS
+  IMVS
+  IMPS
+}
+
+model PriceTemplate {
+  id               Int                             @id @default(autoincrement())
+  name             String
+  styleWiseDetails PriceTemplateStyleWiseDetails[]
+  Company          Company                         @relation(fields: [companyId], references: [id])
+  companyId        Int
+  active           Boolean                         @default(true)
+  Party            Party[]
+}
+
+model PriceTemplateStyleWiseDetails {
+  id    Int   @id @default(autoincrement())
+  Style Style @relation(fields: [styleId], references: [id])
+
+  styleId         Int
+  PriceTemplate   PriceTemplate @relation(fields: [priceTemplateId], references: [id], onDelete: Cascade)
+  priceTemplateId Int
+}
+
+model Size {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  isAccessory        Boolean              @default(false)
+  Company            Company?             @relation(fields: [companyId], references: [id])
+  companyId          Int?
+  active             Boolean              @default(true)
+  SizeTemplateOnSize SizeTemplateOnSize[]
+}
+
+model SizeTemplate {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  count              Int                  @default(0)
+  Company            Company?             @relation(fields: [companyId], references: [id])
+  companyId          Int?
+  active             Boolean              @default(true)
+  SizeTemplateOnSize SizeTemplateOnSize[]
+  Style              Style[]
+  Costing            Costing[]
+}
+
+model SizeTemplateOnSize {
+  id             Int          @id @default(autoincrement())
+  SizeTemplate   SizeTemplate @relation(fields: [sizeTemplateId], references: [id])
+  sizeTemplateId Int
+  Size           Size         @relation(fields: [sizeId], references: [id])
+  sizeId         Int
+}
+
+model FieldMaster {
+  id                                Int                                 @id @default(autoincrement())
+  name                              String
+  Company                           Company?                            @relation(fields: [companyId], references: [id])
+  companyId                         Int?
+  active                            Boolean                             @default(true)
+  ConsumptionTemplateDetails        ConsumptionTemplateDetails[]
+  ConsumptionDetailsTemplateDetails ConsumptionDetailsTemplateDetails[]
+}
+
+model ConsumptionTemplate {
+  id                         Int                          @id @default(autoincrement())
+  name                       String
+  Branch                     Branch                       @relation(fields: [branchId], references: [id])
+  branchId                   Int
+  active                     Boolean                      @default(true)
+  formula                    String                       @default("")
+  ConsumptionTemplateDetails ConsumptionTemplateDetails[]
+  Costing                    Costing[]
+}
+
+model ConsumptionTemplateDetails {
+  id                    Int                 @id @default(autoincrement())
+  FieldMaster           FieldMaster         @relation(fields: [fieldId], references: [id])
+  fieldId               Int
+  formula               String?
+  ConsumptionTemplate   ConsumptionTemplate @relation(fields: [consumptionTemplateId], references: [id], onDelete: Cascade)
+  consumptionTemplateId Int
+  sequence              Int?
+  defaultValue          String?
+}
+
+model Costing {
+  id                       Int                        @id @default(autoincrement())
+  docId                    String
+  userDocDate              DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime?                  @updatedAt
+  CreatedBy                User                       @relation("createdBy", fields: [createdById], references: [id])
+  createdById              Int
+  UpdatedBy                User?                      @relation("updatedBy", fields: [updatedById], references: [id])
+  updatedById              Int?
+  AdminResaved             User?                      @relation("adminResaved", fields: [adminResavedId], references: [id])
+  adminResavedId           Int?
+  styleRefNo               String?
+  ConsumptionTemplate      ConsumptionTemplate?       @relation(fields: [consumptionTemplateId], references: [id])
+  consumptionTemplateId    Int?
+  Party                    Party                      @relation(fields: [partyId], references: [id])
+  partyId                  Int
+  orderQty                 String?
+  targetRate               String?
+  finalPrice               String?
+  conversionValue          String?
+  conversionValue1         String?
+  SizeTemplate             SizeTemplate?              @relation(fields: [sizeTemplateId], references: [id])
+  sizeTemplateId           Int?
+  size                     String?
+  styleImage               String?                    @db.LongText
+  IncoTerm                 InfoTerm?                  @relation(fields: [incoTermId], references: [id])
+  incoTermId               Int?
+  Branch                   Branch                     @relation(fields: [branchId], references: [id])
+  branchId                 Int
+  Currency                 Currency?                  @relation(fields: [currencyId], references: [id])
+  currencyId               Int?
+  fabricDesc               String?
+  isApproved               Boolean                    @default(false)
+  submitToApproval         Boolean                    @default(false)
+  isOrderConfirmed         Boolean                    @default(false)
+  remarks                  String?
+  costingRemarks           String?
+  Ratio                    Ratio?                     @relation(fields: [ratioId], references: [id])
+  ratioId                  Int?
+  ratio                    String?
+  CommercialCostingDetails CommercialCostingDetails[]
+  CostingAttachments       CostingAttachments[]
+  CostingStyleItemDetails  CostingStyleItemDetails[]
+  PrevCosting              Costing?                   @relation("Prev", fields: [prevCostingId], references: [id])
+  prevCostingId            Int?                       @unique
+  AmendmentCosting         Costing?                   @relation("Prev")
+  garmentLossPercent       String?
+  transportCostPercent     String?
+  marginPercent            String?
+  overHeadCost             String?
+  profitOrLoss             String?
+  Notification             Notification[]
+}
+
+model CostingAttachments {
+  id        Int     @id @default(autoincrement())
+  Costing   Costing @relation(fields: [costingId], references: [id], onDelete: Cascade)
+  costingId Int
+  name      String?
+  filePath  String?
+}
+
+model CommercialCostingDetails {
+  id             Int     @id @default(autoincrement())
+  Costing        Costing @relation(fields: [costingId], references: [id], onDelete: Cascade)
+  costingId      Int
+  Process        Process @relation(fields: [processId], references: [id])
+  processId      Int
+  consumptionQty String?
+  type           String?
+  rate           String?
+}
+
+model CostingStyleItemDetails {
+  id                      Int                                 @id @default(autoincrement())
+  Costing                 Costing                             @relation(fields: [costingId], references: [id], onDelete: Cascade)
+  costingId               Int
+  Style                   Style                               @relation(fields: [styleId], references: [id])
+  styleId                 Int
+  StyleFabricTemplate     StyleFabricTemplate?                @relation(fields: [fabricId], references: [id])
+  fabricId                Int?
+  isTrimFabric            Boolean                             @default(false)
+  consumption             String?
+  manualConsumption       String?
+  consumptionQty          String?
+  templateFields          ConsumptionDetailsTemplateDetails[]
+  yarnCostingDetails      YarnCostingDetails[]
+  fabricCostingDetails    FabricCostingDetails[]
+  accessoryCostingDetails AccessoryCostingDetails[]
+  cmtCostingDetails       CmtCostingDetails[]
+  trimFabric              trimFabric?                         @relation(fields: [trimFabricId], references: [id])
+  trimFabricId            Int?
+  Design                  Design?                             @relation(fields: [designId], references: [id])
+  gsm                     Int?
+  designId                Int?
+  Article                 Article?                            @relation(fields: [articleId], references: [id])
+  articleId               Int?
+  Combo                   Combo?                              @relation(fields: [comboId], references: [id])
+  comboId                 Int?
+  fabricDescription       String?                             @db.LongText
+  lengthOne               Int?
+  lengthTwo               Int?
+  lengthThree             Int?
+  gradeOne                Int?
+  gradeTwo                Int?
+  gradeThree              Int?
+}
+
+model ConsumptionDetailsTemplateDetails {
+  id                        Int                     @id @default(autoincrement())
+  CostingStyleItemDetails   CostingStyleItemDetails @relation(fields: [costingStyleItemDetailsId], references: [id], onDelete: Cascade)
+  costingStyleItemDetailsId Int
+  FieldMaster               FieldMaster             @relation(fields: [fieldId], references: [id])
+  fieldId                   Int
+  value                     String?
+}
+
+model YarnCostingDetails {
+  id                        Int                     @id @default(autoincrement())
+  CostingStyleItemDetails   CostingStyleItemDetails @relation(fields: [costingStyleItemDetailsId], references: [id], onDelete: Cascade)
+  costingStyleItemDetailsId Int
+  Process                   Process                 @relation(fields: [processId], references: [id])
+  processId                 Int
+  Article                   Article                 @relation(fields: [articleId], references: [id])
+  articleId                 Int
+  Uom                       UnitOfMeasurement       @relation(fields: [uomId], references: [id])
+  uomId                     Int
+  rate                      String?
+  loss                      String?
+  gain                      String?
+}
+
+model FabricCostingDetails {
+  id                        Int                     @id @default(autoincrement())
+  CostingStyleItemDetails   CostingStyleItemDetails @relation(fields: [costingStyleItemDetailsId], references: [id], onDelete: Cascade)
+  costingStyleItemDetailsId Int
+  Process                   Process                 @relation(fields: [processId], references: [id])
+  processId                 Int
+  Article                   Article?                @relation(fields: [articleId], references: [id])
+  articleId                 Int?
+  Uom                       UnitOfMeasurement       @relation(fields: [uomId], references: [id])
+  uomId                     Int
+  rate                      String?
+  loss                      String?
+}
+
+model AccessoryCostingDetails {
+  id                        Int                     @id @default(autoincrement())
+  CostingStyleItemDetails   CostingStyleItemDetails @relation(fields: [costingStyleItemDetailsId], references: [id], onDelete: Cascade)
+  costingStyleItemDetailsId Int
+  Process                   Process                 @relation(fields: [processId], references: [id])
+  processId                 Int
+  Article                   Article                 @relation(fields: [articleId], references: [id])
+  articleId                 Int
+  Uom                       UnitOfMeasurement       @relation(fields: [uomId], references: [id])
+  uomId                     Int
+  consumptionQty            String?
+  rate                      String?
+  loss                      String?
+}
+
+model CmtCostingDetails {
+  id                        Int                     @id @default(autoincrement())
+  CostingStyleItemDetails   CostingStyleItemDetails @relation(fields: [costingStyleItemDetailsId], references: [id], onDelete: Cascade)
+  costingStyleItemDetailsId Int
+  Process                   Process                 @relation(fields: [processId], references: [id])
+  processId                 Int
+  Uom                       UnitOfMeasurement       @relation(fields: [uomId], references: [id])
+  uomId                     Int
+  consumptionQty            String?
+  rate                      String?
+  loss                      String?
+}
+
+model StyleOnPortion {
+  id        Int     @id @default(autoincrement())
+  Style     Style   @relation(fields: [styleId], references: [id])
+  Portion   Portion @relation(fields: [portionId], references: [id])
+  portionId Int
+  styleId   Int
+}
+
+model Fabric {
+  id        Int     @id @default(autoincrement())
+  name      String
+  companyId Int?
+  active    Boolean
+}
+
+model Notification {
+  id         Int     @id @default(autoincrement())
+  Costing    Costing @relation(fields: [costingId], references: [id], onDelete: Cascade)
+  costingId  Int
+  Sender     User    @relation("sender", fields: [senderId], references: [id])
+  senderId   Int
+  Receiver   User?   @relation("receiver", fields: [receiverId], references: [id])
+  receiverId Int?
+  type       String?
+  message    String?
+  isRead     Boolean @default(false)
+}
+
+model Ratio {
+  id        Int       @id @default(autoincrement())
+  name      String
+  count     Int       @default(0)
+  Company   Company?  @relation(fields: [companyId], references: [id])
+  companyId Int?
+  active    Boolean   @default(true)
+  Costing   Costing[]
+}
+
+model StyleFabricTemplate {
+  id                      Int                          @id @default(autoincrement())
+  name                    String?                      @unique
+  Style                   Style?                       @relation(fields: [styleId], references: [id])
+  styleId                 Int?
+  Fabric                  Article?                     @relation("fabricId", fields: [fabricId], references: [id])
+  fabricId                Int?
+  Yarn                    Article?                     @relation("yarnId", fields: [yarnId], references: [id])
+  yarnId                  Int?
+  isTrimFabric            Boolean                      @default(false)
+  Branch                  Branch                       @relation(fields: [branchId], references: [id])
+  branchId                Int
+  yarnCostingDetails      SFTYarnCostingDetails[]
+  fabricCostingDetails    SFTFabricCostingDetails[]
+  accessoryCostingDetails SFTAccessoryCostingDetails[]
+  cmtCostingDetails       SFTCmtCostingDetails[]
+  Design                  Design?                      @relation(fields: [designId], references: [id])
+  designId                Int?
+  Finish                  Process?                     @relation("finish", fields: [finishId], references: [id])
+  finishId                Int?
+  SpecialFinish           Process?                     @relation("specialFinish", fields: [specialFinishId], references: [id])
+  specialFinishId         Int?
+  gsm                     String?
+  CostingStyleItemDetails CostingStyleItemDetails[]
+}
+
+model SFTYarnCostingDetails {
+  id                    Int                 @id @default(autoincrement())
+  StyleFabricTemplate   StyleFabricTemplate @relation(fields: [styleFabricTemplateId], references: [id], onDelete: Cascade)
+  Process               Process             @relation(fields: [processId], references: [id])
+  processId             Int
+  Article               Article             @relation(fields: [articleId], references: [id])
+  articleId             Int
+  Uom                   UnitOfMeasurement   @relation(fields: [uomId], references: [id])
+  uomId                 Int
+  rate                  String?
+  loss                  String?
+  styleFabricTemplateId Int
+}
+
+model SFTFabricCostingDetails {
+  id                    Int                 @id @default(autoincrement())
+  StyleFabricTemplate   StyleFabricTemplate @relation(fields: [styleFabricTemplateId], references: [id], onDelete: Cascade)
+  Process               Process             @relation(fields: [processId], references: [id])
+  processId             Int
+  Article               Article?            @relation(fields: [articleId], references: [id])
+  articleId             Int?
+  Uom                   UnitOfMeasurement   @relation(fields: [uomId], references: [id])
+  uomId                 Int
+  rate                  String?
+  loss                  String?
+  styleFabricTemplateId Int
+}
+
+model SFTAccessoryCostingDetails {
+  id                    Int                 @id @default(autoincrement())
+  StyleFabricTemplate   StyleFabricTemplate @relation(fields: [styleFabricTemplateId], references: [id], onDelete: Cascade)
+  Process               Process             @relation(fields: [processId], references: [id])
+  processId             Int
+  Article               Article             @relation(fields: [articleId], references: [id])
+  articleId             Int
+  Uom                   UnitOfMeasurement   @relation(fields: [uomId], references: [id])
+  uomId                 Int
+  consumptionQty        String?
+  rate                  String?
+  loss                  String?
+  styleFabricTemplateId Int
+}
+
+model SFTCmtCostingDetails {
+  id                    Int                 @id @default(autoincrement())
+  StyleFabricTemplate   StyleFabricTemplate @relation(fields: [styleFabricTemplateId], references: [id], onDelete: Cascade)
+  Process               Process             @relation(fields: [processId], references: [id])
+  processId             Int
+  Uom                   UnitOfMeasurement   @relation(fields: [uomId], references: [id])
+  uomId                 Int
+  consumptionQty        String?
+  rate                  String?
+  loss                  String?
+  styleFabricTemplateId Int
+}
+
+model ArticleProcessPriceTemplate {
+  id            Int      @id @default(autoincrement())
+  Process       Process  @relation(fields: [processId], references: [id])
+  processId     Int
+  Article       Article  @relation(fields: [articleId], references: [id])
+  articleId     Int
+  rate          String
+  loss          String
+  effectiveDate DateTime @db.Date
+}
+
+model Design {
+  id                      Int                       @id @default(autoincrement())
+  name                    String
+  Company                 Company?                  @relation(fields: [companyId], references: [id])
+  companyId               Int?
+  rate                    Int                       @default(0)
+  loss                    Int                       @default(0)
+  active                  Boolean                   @default(true)
+  StyleFabricTemplate     StyleFabricTemplate[]
+  CostingStyleItemDetails CostingStyleItemDetails[]
+}
+
+model Combo {
+  id                      Int                       @id @default(autoincrement())
+  name                    String?
+  code                    String?
+  active                  Boolean?                  @default(true)
+  Company                 Company?                  @relation(fields: [companyId], references: [id])
+  companyId               Int?
+  CostingStyleItemDetails CostingStyleItemDetails[]
+}

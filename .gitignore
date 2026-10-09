@@ -1,0 +1,64 @@
+# ---------- Dependencies ----------
+node_modules/
+
+# ---------- Secrets / Firebase ----------
+.env
+.env.*
+!.env.example
+**/serves-firebase.json
+**/*firebase-adminsdk*.json
+**/serviceAccount*.json
+**/Fcm/
+**/FCM/
+*.pem
+*.key
+.firebase/
+firebase-debug.log*
+
+# ---------- Backend (apps/backend) ----------
+/apps/backend/uploads/
+/apps/backend/src/upload/
+/apps/backend/Locations/*.gz
+/apps/backend/Locations/*.json
+
+# ---------- Frontend: Android ----------
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/app/release/
+**/android/local.properties
+**/android/captures/
+**/android/.cxx/
+*.keystore
+!debug.keystore
+*.jks
+*.apk
+*.aab
+.idea/
+*.iml
+
+# ---------- Frontend: iOS ----------
+**/ios/Pods/
+**/ios/build/
+**/ios/DerivedData/
+xcuserdata/
+*.xcuserstate
+*.ipa
+
+# ---------- Frontend: Metro / React Native / Expo ----------
+.expo/
+.metro-health-check*
+.bundle/
+*.hprof
+
+# ---------- Logs ----------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ---------- OS / editor ----------
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
