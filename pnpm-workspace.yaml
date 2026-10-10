@@ -1,13 +1,14 @@
 packages:
   - 'apps/*'
 allowBuilds:
-  '@firebase/util': set this to true or false
-  '@prisma/client': set this to true or false
-  '@prisma/engines': set this to true or false
+  '@firebase/util': true
+  '@parcel/watcher': set this to true or false
+  '@prisma/client': true
+  '@prisma/engines': true
   bcrypt: set this to true or false
-  oracledb: set this to true or false
-  prisma: set this to true or false
-  protobufjs: set this to true or false
+  oracledb: true
+  prisma: true
+  protobufjs: true
 patchedDependencies:
   react-native-gesture-handler: patches/react-native-gesture-handler.patch
   react-native-screens: patches/react-native-screens.patch

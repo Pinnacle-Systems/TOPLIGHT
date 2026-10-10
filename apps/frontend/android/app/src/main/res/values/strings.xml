@@ -1,7 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TOPLIGHT</string>
-    <string name="bubble_content_desc">Bubble</string>
-     <string name="close_bubble">Close Bubble</string>
-    
+    <string name="app_name">TopLight</string>
 </resources>

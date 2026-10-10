@@ -1,4 +1,4 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
 
 /**
@@ -7,16 +7,20 @@ const path = require('path');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
+
 const config = {
-  watchFolders: [path.resolve(__dirname, '../../node_modules')],
+  watchFolders: [
+    path.resolve(workspaceRoot, 'node_modules'),
+    path.resolve(projectRoot),
+  ],
   resolver: {
     unstable_enableSymlinks: true,
     unstable_enablePackageExports: true,
-    blockList: [
-      // Block CMake build dirs (react-native-vision-camera, etc.)
-      /node_modules\/.*\/android\/\.cxx\/.*/,
-      // Block Gradle build intermediates (firebase, etc.)
-      /node_modules\/.*\/android\/build\/.*/,
+    nodeModulesPaths: [
+      path.resolve(projectRoot, 'node_modules'),
+      path.resolve(workspaceRoot, 'node_modules'),
     ],
   },
 };

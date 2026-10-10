@@ -1,25 +1,27 @@
 {
-    "name":  "toplight-workspace",
-    "version":  "1.0.0",
-    "private":  true,
-    "scripts":  {
-                    "start:backend":  "pnpm --filter hindiformat start",
-                    "start:frontend":  "pnpm --filter frontend start",
-                    "dev:all":  "start pnpm --filter frontend android \u0026\u0026 pnpm --filter hindiformat start",
-                    "android:frontend":  "pnpm --filter frontend android",
-                    "ios:frontend":  "pnpm --filter frontend ios"
-                },
-    "pnpm":  {
-                 "onlyBuiltDependencies":  [
-                                               "@firebase/util",
-                                               "@prisma/client",
-                                               "@prisma/engines",
-                                               "oracledb",
-                                               "prisma",
-                                               "protobufjs"
-                                           ],
-                 "patchedDependencies":  {
-                                             "react-native-screens@4.28.0":  "patches/react-native-screens.patch"
-                                         }
-             }
+    "name": "toplight-workspace",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start:backend": "pnpm --filter hindiformat start",
+        "start:frontend": "pnpm --filter frontend start",
+        "dev:all": "start pnpm --filter frontend android && pnpm --filter hindiformat start",
+        "android:frontend": "pnpm --filter frontend android",
+        "ios:frontend": "pnpm --filter frontend ios"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@firebase/util",
+            "@prisma/client",
+            "@parcel/watcher",
+            "@prisma/engines",
+            "oracledb",
+            "prisma",
+            "protobufjs"
+        ],
+        "patchedDependencies": {
+            "react-native-screens@4.28.0": "patches/react-native-screens.patch"
+        }
+    },
+    "dependencies": {}
 }

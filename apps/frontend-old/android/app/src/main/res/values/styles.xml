@@ -1,0 +1,23 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <!-- <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    </style> -->
+
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+  <!-- Disable force dark mode -->
+  <item name="android:forceDarkAllowed">false</item>
+  
+  <!-- Light status bar -->
+  <item name="android:windowLightStatusBar">true</item>
+  <item name="android:statusBarColor">@android:color/white</item>
+  
+  <!-- Light navigation bar (optional) -->
+  <item name="android:windowLightNavigationBar">true</item>
+  <item name="android:navigationBarColor">@android:color/white</item>
+</style>
+
+</resources>

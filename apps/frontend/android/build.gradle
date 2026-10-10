@@ -1,34 +1,21 @@
 buildscript {
     ext {
-        buildToolsVersion = "34.0.0"
-        minSdkVersion = 28
-        compileSdkVersion = 35
-        targetSdkVersion = 35
+        buildToolsVersion = "37.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 37
+        targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
-        kotlinVersion = "2.0.21"
-        googlePlayServicesVersion = "21.2.0"
-         camerax_version = "1.1.0" 
-    //  androidMapsUtilsVersion = "3.4.0"
+        kotlinVersion = "2.2.0"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.6.1")
+        classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-      classpath 'com.google.gms:google-services:4.4.1'
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
-
-allprojects {
-    configurations.all {
-        resolutionStrategy {
-            force 'androidx.core:core:1.15.0'
-            force 'androidx.core:core-ktx:1.15.0'
-        }
-    }
-}
