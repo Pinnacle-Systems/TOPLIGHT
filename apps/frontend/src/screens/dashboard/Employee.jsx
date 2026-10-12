@@ -32,6 +32,8 @@ import LoanCard from './Card/LoanCard';
 import ExpandableSearch from './FloatSearchView';
 import CreditAnimation from './SubModules/CreditAmountAnim';
 import SalaryAdvanceCard from './Card/AdvanceCard';
+import SalarySummaryCard from './Card/SalarySummaryCard';
+import EsiPfOtCard from './Card/EsiPfOtCard';
 import { Common_Context } from '../../context/CommonContext';
 import EmptyEmployeeCard from './Card/Top_Card_Emp_empty';
 import LeaveSummaryCard from './Card/LeaveSummeryCard';
@@ -130,35 +132,24 @@ export default function Employee({navigation,route}) {
     color: '#666',
   },
     ChartContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 10,
-      gap: 3,
-      paddingBottom: 16,
+      width: "100%",
+      paddingBottom: 20,
     },
   
-    ChartView:{
+    ChartView: {
         borderRadius: 16,
-        padding: 20,
-        marginVertical: 3,
-        marginHorizontal: 16,
+        padding: 16,
+        marginVertical: 5,
+        marginHorizontal: 12,
         backgroundColor: "#FFF",
-        width: screenWidth - 32,
-        // Improved shadow
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
         shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
-        elevation: 4,
-        // Border for Android
-        borderWidth: 0.5,
-        borderColor: 'rgba(0,0,0,0.05)'
-      },
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+    },
   
     HeaderCustomText: {
       fontSize: 20,
@@ -454,27 +445,8 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
 
   <CameraModal visible={isCameraModal} USER={UserId} setVisible={setisCameraModel} onPictureTaken={onUploaddedPicture}></CameraModal>
 
-    <View style={[{ flex: 1, padding: 10, width: "100%"},tailwind`bg-[#FFF] overflow-hidden`]}>
+    <View style={[{ flex: 1, width: "100%" }, tailwind`bg-[#F8FAFC] overflow-hidden`]}>
       
-     
-   {/*   <TouchableOpacity style={ChartStyle.fab}  onPress={()=>{navigation.navigate("HOME")}}>
-        <Ionicons name="home" size={20} style={{paddingLeft:8}} color="#a4a0ad" />
-      </TouchableOpacity>*/}
-    {/*  <View style={[UserProfile?.UserDetailContainer,{width:"100%",height:"40%"}]} >
-           <View style={UserProfile?.ImageContainer}>
-            <Image width={"98%"} height={"90%"} style={{objectFit:"cover",borderRadius:19,opacity:.9}} source={{uri:"https://www.shutterstock.com/image-photo/young-smiling-successful-employee-business-600nw-2358608485.jpg"}}></Image>
-            <View style={UserProfile?.BlurView}>
-              <View style={{display:"flex",flexDirection:"row",justifyContent:"space-between"}}><CustomText style={[UserProfile?.BlurViewText,{fontSize:20,fontWeight:"bold"}]}> Harish</CustomText><CustomText style={[UserProfile?.BlurViewText,{fontSize:10,margin:10,fontWeight:"bold"}]}>20203003</CustomText></View>
-              
-              <CustomText style={UserProfile?.BlurViewText}>+91 6382158436</CustomText>
-              <CustomText style={UserProfile?.BlurViewText}> Supervisor</CustomText>
-            </View>
-            </View>
-      </View>*/}
-  
-    
-  
-
 <View style={{position:"absolute",top:0}}>
 
   <CommonModal height={"90%"} isModalVisible={leaveReportmodal} Title='Leave Report' BodyComponent={<LeaveReport UserId={filteredEmployeeId || UserId?.UserId}></LeaveReport>} setIsModalVisible={setleavereportmodal}></CommonModal>
@@ -495,11 +467,8 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
       <ScrollView alwaysBounceVertical
       showsVerticalScrollIndicator={false}
       scrollEnabled={scroll}
-      style={{ padding: 1,marginTop:-9, width: "100%" , 
-        scrollbarThumbVertical: 'red', // Thumb color (Android only)
-         scrollbarTrackVertical: '#f0f0f0',
-          // Track color (Android only)
-              }}>
+      contentContainerStyle={{ paddingBottom: 32 }}
+      style={{ flex: 1, width: "100%" }}>
 
 
 
@@ -523,379 +492,95 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
        
        
       
-        {/* Metrics Section */}
-   <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent:"center", gap: 1, marginVertical: 1}}>
-  
-
-
-
-
-  {/* Charts Section */}
+        {/* Main Dashboard Cards */}
         <View style={ChartStyle.ChartContainer}>
+          {/* Last Month Salary Card */}
+          <SalarySummaryCard
+            grossSalary={LastMonthgrossSalaryAmount}
+            netSalary={LastMonthSalaryAmount}
+            period={selectMonthSalary?.format}
+            onPress={() => SET_OPEN_MORE_SALARY(true)}
+          />
 
-            {/* Last Month Salary Card */}
-  
-  
-  <TouchableOpacity
-  onPress={() => SET_OPEN_MORE_SALARY(true)}
-  style={[{
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: screenWidth - 31,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    borderLeftWidth: 6,
-    borderLeftColor: '#15b35a',
-    marginVertical: 3,
-    
-  
-    
-  },tailwind`bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden`]}
->
-  <View style={{ flexDirection: 'column', gap: 1, flex: 1 }}>
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      <View style={{
-        backgroundColor: '#5abf11',
-        padding: 8,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <FontAwesome5 name="wallet" size={20} color="white" />
-      </View>
-      <Text style={{ 
-        fontSize: 18, 
-        fontWeight: '600', 
-        color: '#2d3436',
-        flex: 1,
-        marginLeft:10
-      }}>
-        Last Month Salary
-      </Text>
-      <MaterialIcons name="chevron-right" size={24} color="#95a5a6" />
-    </View>
+          {/* Advance Salary Card */}
+          <SalaryAdvanceCard amount={NumbertoCurrency(LastMonthSalary?.data?.adv)} />
 
-    <View style={{ 
-      flexDirection: 'row', 
-      justifyContent: 'space-between',
-      marginTop: 8
-    }}>
-      <View style={{ flexDirection: 'column', gap: 4 }}>
-        <Text style={{ 
-          color: '#7f8c8d', 
-          fontSize: 14, 
-          fontWeight: '500' 
-        }}>
-          Gross Salary
-        </Text>
-        <Text style={{ 
-          color: '#038024', 
-          fontSize: 16, 
-          fontWeight: '700' 
-        }}>
-          {LastMonthgrossSalaryAmount}
-        </Text>
-      </View>
+          {/* Loan Card & Leave Summary Card */}
+          <View style={{ width: '100%', flexDirection: isLandscape ? 'row' : 'column' }}>
+            <View style={{ flex: isLandscape ? 1 : undefined, width: '100%' }}>
+              <LoanCard
+                key={1}
+                loanName="Loan Amount"
+                data={getLoan?.data}
+                amount={1000}
+                interestRate={100}
+                term="feb 2024"
+                dueDate="Jan 2024"
+                onPress={() => console.log('Loan pressed:')}
+              />
+            </View>
 
-      <View style={{ flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-        <Text style={{ 
-          color: '#7f8c8d', 
-          fontSize: 14, 
-          fontWeight: '500' 
-        }}>
-          Net Received
-        </Text>
-        <Text style={{ 
-          fontSize: 18, 
-          fontWeight: '800', 
-          color: '#15b35a' 
-        }}>
-          {LastMonthSalaryAmount}
-        </Text>
-      </View>
-    </View>
+            <View style={{ flex: isLandscape ? 1 : undefined, width: '100%' }}>
+              <LeaveSummaryCard 
+                leaveTaken={Array.isArray(CurrentMonthLeaves?.data) ? CurrentMonthLeaves.data[0]?.LT : CurrentMonthLeaves?.data?.LT} 
+                UserId={UserId}
+                availableLeaves={Array.isArray(CurrentMonthLeaves?.data) ? CurrentMonthLeaves.data[0]?.LBAL : CurrentMonthLeaves?.data?.LBAL} 
+                openReport={setleavereportmodal}
+                attendanceStatus={UserId?.INTIME ? "Present" : "Absent"}
+                setopenLeaveModal={setYearOpenLeaveModal}
+              />
+            </View>
+          </View>
 
-    {selectMonthSalary?.format && (
-      <View style={{
-        backgroundColor: '#f5f5f5',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8,
-        alignSelf: 'flex-start',
-        marginTop: 8
-      }}>
-        <Text style={{ 
-          fontSize: 12, 
-          color: '#7f8c8d',
-          fontWeight: '500' 
-        }}>
-          {String(selectMonthSalary?.format)}
-        </Text>
-      </View>
-    )}
-  </View>
-</TouchableOpacity>
+          {/* ESI, PF & OT Card */}
+          <EsiPfOtCard
+            payperiod={esipfdataOnMonth?.PAYPERIOD || OTpfEsiPayperiod}
+            esiAmount={NumbertoCurrency(esipfdataOnMonth?.esi || 0)}
+            pfAmount={NumbertoCurrency(esipfdataOnMonth?.pf || 0)}
+            otHours={OtData?.OT}
+            otAmount={NumbertoCurrency(OtData?.OTAMT || 0)}
+            onFilterPress={() => issetOpenYMEPO(true)}
+            onEsiPress={() => issetIndividualEsiModel(true)}
+            onPfPress={() => issetIndividualPFModel(true)}
+            onOtPress={() => issetIndividualOTModel(true)}
+          />
 
+          {/* Attendance Chart */}
+          {workingdatloading ? (
+            <SkeletonLoader role="card" height={120} />
+          ) : (
+            <Animated.View style={{ opacity: animatedValue }}>
+              <View style={ChartStyle.ChartView}>
+                <TouchableOpacity 
+                  onPress={() => setyearWiseModal(true)} 
+                  style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" }}>
+                      <MaterialCommunityIcons name="calendar-clock" size={20} color="#007AFF" />
+                    </View>
+                    <View>
+                      <CustomText style={{ fontSize: 16, fontWeight: "700", color: "#0F172A" }}>Attendance Logs</CustomText>
+                      <CustomText style={{ fontSize: 11, color: "#64748B" }}>Year: {Year}</CustomText>
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#EFF6FF", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, gap: 4 }}>
+                    <MaterialCommunityIcons name="calendar-search" size={14} color="#007AFF" />
+                    <CustomText style={{ fontSize: 11, fontWeight: "700", color: "#007AFF" }}>Select Year</CustomText>
+                  </View>
+                </TouchableOpacity>
 
-   <SalaryAdvanceCard amount={NumbertoCurrency(LastMonthSalary?.data?.adv)}></SalaryAdvanceCard>
-
-   
-   <View style={{flexDirection:isLandscape? "row":"column"}}>
-    <LoanCard
-          key={1}
-          loanName={"Loan Amount"}
-          data={getLoan?.data}
-          amount={1000}
-          interestRate={100}
-          term={"feb 2024"}
-          dueDate={"Jan 2024"}
-          onPress={() => console.log('Loan pressed:')}
-        />
-
-           {/* Absent Card */}
-
-           <LeaveSummaryCard 
-      leaveTaken={Array.isArray(CurrentMonthLeaves?.data) ? CurrentMonthLeaves.data[0]?.LT : CurrentMonthLeaves?.data?.LT} 
-      UserId={UserId}
-       availableLeaves={Array.isArray(CurrentMonthLeaves?.data) ? CurrentMonthLeaves.data[0]?.LBAL : CurrentMonthLeaves?.data?.LBAL} 
-        openReport={setleavereportmodal}
-         attendanceStatus={ UserId?.INTIME ?   "Present" : "Absent"}
-        setopenLeaveModal={setYearOpenLeaveModal}
-        />
+                <WorkingDaysChart
+                  isLoading={workingdatloading}
+                  data={getWorkingDays?.data}
+                  year={Year}
+                  UserId={filteredEmployeeId || UserId}
+                  setscroll={setscroll}
+                />
+              </View>
+            </Animated.View>
+          )}
         </View>
-
-
-{/* <View
-  style={{
-    width: '100%',
-    backgroundColor: '#f8fdff',
-    borderRadius: 12,
-    padding: 18,
-    elevation: 4,
-    shadowColor: '#2ac6d1',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    borderLeftWidth: 6,
-    borderLeftColor: '#2ac6d1',
-    marginVertical: 10,
-  }}
->
-  
-  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-    <MaterialCommunityIcons 
-      name="calendar-clock" 
-      size={22} 
-      color="#11899b" 
-      style={{ marginRight: 10 }}
-    />
-    <Text style={{ 
-      fontSize: 16, 
-      fontWeight: '600', 
-      color: '#11899b',
-    }}>
-      Leave Summary
-    </Text>
-  </View>
-
-
-  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-
-    <View style={{ flex: 1 }}>
-      <Text style={{ 
-        fontSize: 13, 
-        fontWeight: '500', 
-        color: '#5a6b70',
-        marginBottom: 6
-      }}>
-        <MaterialCommunityIcons name="calendar-remove" size={14} color="#e74c3c" /> Taken
-      </Text>
-      <Text style={{
-        fontSize: 20,
-        color: typeof CurrentMonthLeaves?.data?.Leave === 'string' ? '#e74c3c' : '#e74c3c',
-        fontWeight: '700',
-      }}>
-        {typeof CurrentMonthLeaves?.data?.Leave === 'number'
-          ? CurrentMonthLeaves?.data?.Leave + ' Days'
-          : CurrentMonthLeaves?.data?.Leave}
-      </Text>
-    </View>
-
-  
-    <View style={{ width: 1, backgroundColor: '#e0e0e0', marginHorizontal: 10 }} />
-
-    
-    <View style={{ flex: 1 }}>
-      <Text style={{ 
-        fontSize: 13, 
-        fontWeight: '500', 
-        color: '#5a6b70',
-        marginBottom: 6
-      }}>
-        <MaterialCommunityIcons name="calendar-check" size={14} color="#2ecc71" /> Available
-      </Text>
-      <Text style={{
-        fontSize: 20,
-        color: '#2ecc71',
-        fontWeight: '700',
-      }}>
-        {typeof AvailableLeaves === 'number'
-          ? AvailableLeaves + ' Days'
-          : 'N/A'}
-      </Text>
-    </View>
-  </View>
-
-     <View style={ChartStyle.dueDateContainer}>
-          <MaterialIcons name="schedule" size={16} color="#666" />
-          <Text style={ChartStyle.dueDateText}>Today Status { <Text style={{color:"#c7c92e"}}>{UserId?.INTIME ?  "Today Presented" : "-----"}</Text>}</Text>
-  </View>
-</View> */}
-{/* ESI, PF, OT Block */}
-<Animated.View style={{ opacity: animatedValue }}>
-  <View style={[ChartStyle.ChartView, { justifyContent: "center", padding: 16, borderRadius: 12, backgroundColor: "#fff", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }]}>
-    {/* Header with Filter */}
-    <TouchableOpacity 
-      onPress={() => issetOpenYMEPO(true)} 
-      style={{ 
-        flexDirection: "row", 
-        alignItems: "center", 
-        justifyContent: "space-between", 
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f0f0f0"
-      }}
-    >
-      <Text style={[ChartStyle.MetricTitle, { fontWeight: "600", color: "#333", fontSize: 16 }]}>
-        ESI, PF & OT – {esipfdataOnMonth?.PAYPERIOD}
-      </Text>
-      <MaterialCommunityIcons name="filter-outline" size={20} color="#6d6d70" />
-    </TouchableOpacity>
-
-    {/* Cards Row */}
-    <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10, marginTop: 16 }}>
-      {/* ESI Card */}
-      <TouchableOpacity 
-        onPress={() => issetIndividualEsiModel(true)} 
-        style={[
-          ChartStyle.MiniCard, 
-          { 
-            backgroundColor: "#f0faf4", 
-            borderLeftWidth: 4, 
-            borderLeftColor: "#15b35a",
-            padding: 12,
-            borderRadius: 8,
-            flex: 1,
-          }
-        ]}
-      >
-        <CustomText style={[ChartStyle.MiniCard_Title, { color: "#15b35a", fontWeight: "500" }]}>ESI</CustomText>
-        <CustomText style={[ChartStyle.MiniCard_Value, { color: "#333", fontSize: 17, fontWeight: "600" }]}>
-          {NumbertoCurrency(esipfdataOnMonth?.esi || 0)}
-        </CustomText>
-      </TouchableOpacity>
-
-      {/* PF Card */}
-      <TouchableOpacity 
-        onPress={() => issetIndividualPFModel(true)} 
-        style={[
-          ChartStyle.MiniCard, 
-          { 
-            backgroundColor: "#e8f9fb", 
-            borderLeftWidth: 4, 
-            borderLeftColor: "#2ac6d1",
-            padding: 12,
-            borderRadius: 8,
-            flex: 1,
-          }
-        ]}
-      >
-        <CustomText style={[ChartStyle.MiniCard_Title, { color: "#2ac6d1", fontWeight: "500" }]}>PF</CustomText>
-        <CustomText style={[ChartStyle.MiniCard_Value, { color: "#333", fontSize: 17, fontWeight: "600" }]}>
-          {NumbertoCurrency(esipfdataOnMonth?.pf || 0)}
-        </CustomText>
-      </TouchableOpacity>
-
-      {/* OT Card */}
-      <TouchableOpacity 
-        onPress={() => issetIndividualOTModel(true)} 
-        style={[
-          ChartStyle.MiniCard, 
-          { 
-            backgroundColor: "#f5edfc", 
-            borderLeftWidth: 4, 
-            borderLeftColor: "#a159d9",
-            padding: 12,
-            borderRadius: 8,
-            flex: 1,
-          }
-        ]}
-      >
-        <CustomText style={[ChartStyle.MiniCard_Title, { color: "#a159d9", fontWeight: "500" }]}>Over Time</CustomText>
-        <CustomText style={[ChartStyle.MiniCard_Value, { color: "#333", fontSize: 18, fontWeight: "600" }]}>
-          {OtData?.OT} Hr
-        </CustomText>
-        <CustomText style={[ChartStyle.MiniCard_Value, { color: "#666", fontSize: 14, marginTop: 2 }]}>
-          {NumbertoCurrency(OtData?.OTAMT || 0)}
-        </CustomText>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Animated.View>
-
-
-
- 
-
-{/* Attendance Chart */}
-{
-  workingdatloading ? (
-    <SkeletonLoader role="card" height={120} />
-  ) : (
-    <Animated.View style={{ opacity: animatedValue }}>
-      <View style={ChartStyle.ChartView}>
-        <TouchableOpacity onPress={() => setyearWiseModal(true)} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <CustomText style={ChartStyle.MetricTitle}>Attendance Logs</CustomText>
-          <MaterialCommunityIcons name="filter-outline" size={16} color="#6d6d70" />
-        </TouchableOpacity>
-
-           <WorkingDaysChart
-             isLoading={workingdatloading}
-             data={getWorkingDays?.data}
-            year={Year}
-             UserId={filteredEmployeeId || UserId}
-             setscroll={setscroll}
-           />
-
-        <CustomText style={[ChartStyle.MetricTitle, { textAlign: "center", fontSize: 10, marginTop: 8 }]}>
-          Year: {Year}
-        </CustomText>
-      </View>
-    </Animated.View>
-  )
-}
-
-{/* Loan Progress Section */}
-{/* <Animated.View style={{ opacity: animatedValue }}>
-  <View style={[ChartStyle.ChartView, { justifyContent: "center" }]}>
-    <CustomText style={[ChartStyle.MetricTitle, { marginLeft: 10 }]}>Loan Details</CustomText>
-    <LoanProgressBar data={getLoan?.data} />
-  </View>
-</Animated.View> */}
-
-
-
-</View>
-
- 
-    </View>
 
       
 

@@ -4,6 +4,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 const SiderBarTabs = [
     { name: "Home", icon: <MaterialIcons name="home" size={24} color="#64748B" />, path: "HOME" },
+    { name: "On Duty", icon: <MaterialCommunityIcons name="clock-outline" size={24} color="#64748B" />, path: "onduty" },
     { name: "User Control", icon: <MaterialIcons name="manage-accounts" size={24} color="#64748B" />, path: "USERANDROLES" },
     { name: "DashBoard", icon: <MaterialIcons name="dashboard" size={24} color="#64748B" />, path: "DashBoard" },
     { name: "Change Password", icon: <MaterialIcons name="password" size={24} color="#64748B" />, path: "change_Password" },
@@ -11,6 +12,7 @@ const SiderBarTabs = [
     { name: "User Info", icon: <MaterialCommunityIcons name="information" size={24} color="#64748B" />, path: "uinfo" },
     { name: "User Logs", icon: <MaterialIcons name="perm-device-info" size={24} color="#64748B" />, path: "logs" },
     { name: "Chats", icon: <MaterialIcons name="chat" size={24} color="#64748B" />, path: "chats" },
+    { name: "Masters", icon: <MaterialCommunityIcons name="database-cog-outline" size={24} color="#64748B" />, path: "masters" },
     { name: "Settings", icon: <MaterialIcons name="settings" size={24} color="#64748B" />, path: "settings" }
 ];
 

@@ -72,18 +72,40 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def envFile = file("../../.env")
+def envProperties = new Properties()
+if (envFile.exists()) {
+    envFile.withReader('UTF-8') { reader ->
+        envProperties.load(reader)
+    }
+}
+def defaultApiUrl = envProperties.getProperty("API_URL") ?: "http://10.0.2.2:8025"
+def locationApiUrl = envProperties.getProperty("LOCATION_API_URL") ?: "${defaultApiUrl}/onduty/send_location"
+def locationInterval = envProperties.getProperty("LOCATION_INTERVAL") ?: "5000"
+def locationFastestInterval = envProperties.getProperty("LOCATION_FASTEST_INTERVAL") ?: "3000"
+def locationNotifTitle = envProperties.getProperty("LOCATION_NOTIFICATION_TITLE") ?: "OnDuty Active"
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.frontend"
+    buildFeatures {
+        buildConfig true
+    }
     defaultConfig {
         applicationId "com.frontend"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+
+        buildConfigField "String", "LOCATION_API_URL", "\"${locationApiUrl}\""
+        buildConfigField "String", "API_URL", "\"${defaultApiUrl}\""
+        buildConfigField "String", "LOCATION_INTERVAL", "\"${locationInterval}\""
+        buildConfigField "String", "LOCATION_FASTEST_INTERVAL", "\"${locationFastestInterval}\""
+        buildConfigField "String", "LOCATION_NOTIFICATION_TITLE", "\"${locationNotifTitle}\""
     }
     signingConfigs {
         debug {
@@ -112,6 +134,10 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

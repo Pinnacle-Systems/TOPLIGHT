@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_URL as BASE_URL } from '@env';
 import { SetHeader } from "../../utils/HeaderSet";
 
+const onduty = "/onduty";
+
 
 
 const customFetchWithTimeout = async (input, init = {}) => {
@@ -32,7 +34,7 @@ const OndutyRTk = createApi({
             return headers;
         },
     }),
-    tagTypes:  ['Onduty_DocID','Onduty_Session','get_reached','get_live_user','OndutyApproval','get__vechilekm','get_all_Onduty_reason', 'OndutyHodData',"addonduty_Master","get__Date_Wise_Fuel","get__Date_Wise_Fuel_Individual"], 
+    tagTypes:  ['Onduty_DocID','Onduty_Session','get_reached','get_live_user','OndutyApproval','get__vechilekm','get_all_Onduty_reason', 'OndutyHodData',"addonduty_Master","get__Date_Wise_Fuel","get__Date_Wise_Fuel_Individual",'get__Vechile'], 
     endpoints: (builder) => ({
         ondutyRequest:builder.mutation({
                     query: (formdata) => ({
@@ -60,6 +62,7 @@ const OndutyRTk = createApi({
                                 return {
                                     url:onduty+"/getIn",
                                     method: 'GET',
+                                    timeout: 15000,
                                     headers: {
                                         'Content-type': 'application/json; charset=UTF-8',
                                     },

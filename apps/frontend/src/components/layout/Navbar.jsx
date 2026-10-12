@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Image, Modal, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import RNRestart from 'react-native-restart';
 
@@ -37,6 +36,23 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     
     // For the enhanced UI dropdown
     const [dropdownVisible, setDropdownVisible] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 160 });
+    const selectorRef = useRef(null);
+
+    const openDropdown = () => {
+        if (selectorRef.current) {
+            selectorRef.current.measureInWindow((x, y, width, height) => {
+                setDropdownPosition({
+                    top: y + height + 6,
+                    left: x + width / 2 - 80, // center the 160px dropdown under the button
+                    width: Math.max(width, 160),
+                });
+                setDropdownVisible(true);
+            });
+        } else {
+            setDropdownVisible(true);
+        }
+    };
 
     const rotation = useSharedValue(0);
 
@@ -44,8 +60,16 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
         transform: [{ rotateZ: `${rotation.value}deg` }],
     }));
 
+    const isCompanyRestrictedLevel =
+        UserSelect?.isAdmin !== 1 &&
+        UserSelect?.isAdmin !== true &&
+        ['user', 'hod', 'hr'].includes(String(UserSelect?.level || '').toLowerCase());
+
     // Data Fetches
-    const { data: companyCode } = useGetCompanycodeQuery();
+    const { data: companyCode } = useGetCompanycodeQuery(
+        isCompanyRestrictedLevel ? { Idcard: UserSelect?.IDCARD } : undefined,
+        { skip: isCompanyRestrictedLevel && !UserSelect?.IDCARD },
+    );
     const { data: mobData, isSuccess } = useGetUserMobDataQuery({
         params: { Idcard: UserSelect?.IDCARD, GCOMPCODE: UserSelect?.GCOMPCODE },
     });
@@ -54,6 +78,27 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             ? { hod: UserSelect?.IDCARD, hr: UserSelect?.IDCARD }
             : { emp: UserSelect?.IDCARD },
     });
+    const storedAllocatedCompanies = (UserSelect?.Companies || [])
+        .filter(company => company?.companyCode)
+        .map(company => ({
+            id: company.companyCode,
+            value: company.companyCode,
+            COMPID: company.companyid,
+        }));
+    const allocatedCompanyList = storedAllocatedCompanies.length > 0
+        ? storedAllocatedCompanies
+        : companyCode?.data || [];
+    const allocatedCompanyCodes = new Set(
+        allocatedCompanyList
+            .map(company => String(company?.value || '').trim().toUpperCase())
+            .filter(Boolean),
+    );
+    const allCompanies = companyCode?.data || [];
+    const availableCompanies = isCompanyRestrictedLevel
+        ? allCompanies.filter(company =>
+            allocatedCompanyCodes.has(String(company?.value || '').trim().toUpperCase()),
+        )
+        : allCompanies;
 
     useEffect(() => {
         if (mobData?.data) {
@@ -131,6 +176,17 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
         try {
             setDropdownVisible(false);
             if (newCompanyCode === UserSelect?.GCOMPCODE) return;
+            if (
+                isCompanyRestrictedLevel &&
+                !availableCompanies.some(company => company?.value === newCompanyCode)
+            ) {
+                showMessage({
+                    message: 'Company Not Assigned',
+                    description: 'You can only switch to a company assigned to your account.',
+                    type: 'warning',
+                });
+                return;
+            }
             
             const result = await AsyncStorage.getItem('userName');
             if (result) {
@@ -145,98 +201,163 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     };
 
     return (
-        <SafeAreaView style={{ backgroundColor: '#FFFFFF' }}><View style={styles.headerContainer}>
-            {/* Left: Menu Icon + Logo */}
-            <View style={styles.leftSection}>
-                <Pressable onPress={() => setopenSidebar?.(true)} style={styles.iconBtn}>
-                    <AntDesign name="appstore-o" size={26} color="#1E293B" />
-                </Pressable>
-                
-                <Pressable style={styles.logoWrap}>
-                    <Image 
-                        source={require('../../assets/logo.png')} 
-                        style={styles.logo} 
-                        resizeMode="contain" 
-                    />
-                </Pressable>
-            </View>
-
-            {/* Center: Enhanced Company Selector */}
-            <View style={styles.centerSection}>
-                <Pressable onPress={() => setDropdownVisible(!dropdownVisible)} style={styles.companySelector}>
-                    <View style={styles.companyIconWrapper}>
-                        <MaterialIcons name="business" size={16} color="#007AFF" />
+        <>
+        <View style={styles.headerWrapper}>
+            <SafeAreaView edges={['top']} style={styles.safeArea}>
+                <View style={styles.headerContainer}>
+                    {/* Left: Menu Icon + Logo */}
+                    <View style={styles.leftSection}>
+                        <Pressable 
+                            onPress={() => setopenSidebar?.(true)} 
+                            style={({ pressed }) => [
+                                styles.iconBtn,
+                                pressed && styles.iconBtnPressed
+                            ]}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            <View style={styles.hamburgerWrap}>
+                                <View style={styles.hamburgerLineTop} />
+                                <View style={styles.hamburgerLineMid} />
+                                <View style={styles.hamburgerLineBottom} />
+                            </View>
+                        </Pressable>
+                        
+                        <Pressable style={styles.logoWrap}>
+                            <Image 
+                                source={require('../../assets/logo.png')} 
+                                style={styles.logo} 
+                                resizeMode="contain" 
+                            />
+                        </Pressable>
                     </View>
-                    <Text style={styles.companyText}>{UserSelect?.GCOMPCODE || 'Company'}</Text>
-                    <MaterialIcons name="keyboard-arrow-down" size={20} color="#64748B" />
-                </Pressable>
-                
-                {/* Minimal Dropdown implementation without external libs */}
-                {dropdownVisible && companyCode?.data && (
-                    <View style={styles.dropdownMenu}>
-                        {companyCode.data.map((comp) => (
-                            <Pressable 
-                                key={comp.companyid} 
-                                style={[
-                                    styles.dropdownItem, 
-                                    comp.companyCode === UserSelect?.GCOMPCODE && styles.activeDropdownItem
-                                ]}
-                                onPress={() => handleCompanySwitch(comp.companyCode)}
-                            >
-                                <Text style={[
-                                    styles.dropdownItemText,
-                                    comp.companyCode === UserSelect?.GCOMPCODE && styles.activeDropdownItemText
-                                ]}>
-                                    {comp.companyCode}
-                                </Text>
-                            </Pressable>
-                        ))}
+
+                    {/* Center: Enhanced Company Selector */}
+                    <View style={styles.centerSection}>
+                        <Pressable
+                            ref={selectorRef}
+                            collapsable={false}
+                            onPress={openDropdown}
+                            style={styles.companySelector}
+                        >
+                            <View style={styles.companyIconWrapper}>
+                                <MaterialIcons name="business" size={16} color="#007AFF" />
+                            </View>
+                            <Text style={styles.companyText}>{UserSelect?.GCOMPCODE || 'Company'}</Text>
+                            <MaterialIcons name="keyboard-arrow-down" size={20} color="#64748B" />
+                        </Pressable>
                     </View>
-                )}
-            </View>
 
-            {/* Right: Notifications */}
-            <View style={styles.rightActions}>
-                <Pressable onPress={() => setModalVisible(true)} style={styles.iconBtn}>
-                    {notificationCount > 0 && (
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
-                        </View>
-                    )}
-                    <Animated.View style={animatedStyle}>
-                        <Ionicons name="notifications" size={26} color="#1E293B" />
-                    </Animated.View>
-                </Pressable>
-            </View>
-
-            {/* Notification Modal Integration */}
-            {modalVisible && (
-                <NotificationModal
-                    close_modal={setModalVisible}
-                    modalVisible={modalVisible}
-                    livechange_Notifi={liveNotifi}
-                />
-            )}
+                    {/* Right: Notifications */}
+                    <View style={styles.rightActions}>
+                        <Pressable 
+                            onPress={() => setModalVisible(true)} 
+                            style={({ pressed }) => [
+                                styles.iconBtn,
+                                pressed && styles.iconBtnPressed
+                            ]}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            {notificationCount > 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
+                                </View>
+                            )}
+                            <Animated.View style={animatedStyle}>
+                                <Ionicons name="notifications" size={24} color="#1E293B" />
+                            </Animated.View>
+                        </Pressable>
+                    </View>
+                </View>
+            </SafeAreaView>
         </View>
-        </SafeAreaView>
+
+        {/* Notification Modal - outside header so it is never clipped */}
+        <NotificationModal
+            close_modal={setModalVisible}
+            setModalVisible={setModalVisible}
+            modalVisible={modalVisible}
+            livedata={liveNotifi}
+        />
+
+        {/* Company Dropdown - rendered in a transparent Modal so it floats above all content */}
+        <Modal
+            visible={dropdownVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setDropdownVisible(false)}
+        >
+            <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
+                <View style={styles.dropdownOverlay}>
+                    <View
+                        style={[
+                            styles.dropdownMenu,
+                            {
+                                position: 'absolute',
+                                top: dropdownPosition.top,
+                                left: dropdownPosition.left,
+                                width: dropdownPosition.width,
+                            },
+                        ]}
+                    >
+                        {availableCompanies.length > 0 ? (
+                            availableCompanies.map((comp) => (
+                                <Pressable
+                                    key={comp.COMPID || comp.id}
+                                    style={[
+                                        styles.dropdownItem,
+                                        comp.value === UserSelect?.GCOMPCODE && styles.activeDropdownItem,
+                                    ]}
+                                    onPress={() => handleCompanySwitch(comp.value)}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.dropdownItemText,
+                                            comp.value === UserSelect?.GCOMPCODE && styles.activeDropdownItemText,
+                                        ]}
+                                    >
+                                        {comp.value}
+                                    </Text>
+                                </Pressable>
+                            ))
+                        ) : (
+                            <Text style={[styles.dropdownItemText, { padding: 8, color: '#94a3b8' }]}>
+                                Loading...
+                            </Text>
+                        )}
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        </Modal>
+        </>
     );
 }
 
 const styles = StyleSheet.create({
+    headerWrapper: {
+        backgroundColor: '#F8FAFC',
+        zIndex: 50,
+    },
+    safeArea: {
+        backgroundColor: '#FFFFFF',
+        borderBottomLeftRadius: 26,
+        borderBottomRightRadius: 26,
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.08,
+        shadowRadius: 14,
+        elevation: 6,
+        borderBottomWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderColor: '#F1F5F9',
+    },
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#64748B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 5,
-        zIndex: 50,
+        paddingTop: 8,
+        paddingBottom: 14,
     },
     leftSection: {
         flexDirection: 'row',
@@ -251,19 +372,51 @@ const styles = StyleSheet.create({
         height: 32,
     },
     iconBtn: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 42,
+        height: 42,
+        borderRadius: 14,
         backgroundColor: '#F8FAFC',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: '#E2E8F0',
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 1,
+    },
+    iconBtnPressed: {
+        backgroundColor: '#F1F5F9',
+        transform: [{ scale: 0.96 }],
+    },
+    hamburgerWrap: {
+        width: 20,
+        height: 14,
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    hamburgerLineTop: {
+        width: 19,
+        height: 2.2,
+        borderRadius: 2,
+        backgroundColor: '#1E293B',
+    },
+    hamburgerLineMid: {
+        width: 12,
+        height: 2.2,
+        borderRadius: 2,
+        backgroundColor: '#1E293B',
+    },
+    hamburgerLineBottom: {
+        width: 16,
+        height: 2.2,
+        borderRadius: 2,
+        backgroundColor: '#1E293B',
     },
     centerSection: {
         flex: 1,
         alignItems: 'center',
-        zIndex: 100, // Important for dropdown overlapping
     },
     companySelector: {
         flexDirection: 'row',
@@ -287,18 +440,19 @@ const styles = StyleSheet.create({
         color: '#1E293B',
         marginRight: 4,
     },
+    dropdownOverlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
     dropdownMenu: {
-        position: 'absolute',
-        top: 50,
         backgroundColor: '#FFFFFF',
         borderRadius: 16,
         padding: 8,
-        width: 160,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 20,
-        elevation: 10,
+        elevation: 20,
         borderWidth: 1,
         borderColor: '#F1F5F9',
     },

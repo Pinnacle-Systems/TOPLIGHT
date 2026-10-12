@@ -734,14 +734,35 @@ export async function UpdateRoleOnPage(req, res) {
 
 
 export async function getCompanyCode(req,res) { 
-   
-    const connection = await getConnection(res)
-      try {
-        
+    const Idcard = req.query.Idcard;
+
+    if (Idcard) {
+        try {
+            const allocatedCompanies = await prisma_Connector.companyCode.findMany({
+                where: { Idcard: String(Idcard) },
+                select: { companyCode: true, companyid: true },
+                orderBy: { companyCode: 'asc' },
+            });
+
+            return res.json({
+                statusCode: 0,
+                data: allocatedCompanies.map(company => ({
+                    id: company.companyCode,
+                    value: company.companyCode,
+                    COMPID: company.companyid,
+                })),
+            });
+        } catch (err) {
+            console.error('Error retrieving allocated company codes:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+
+    const connection = await getConnection(res);
+    try {
         const sql =`SELECT A.COMPCODE "id",A.COMPCODE "value",A.GTCOMPMASTID COMPID FROM GTCOMPMAST A 
 WHERE A.PTRANSACTION = 'COMPANY' ORDER BY 1`
 
-   
         const result = await connection.execute(sql)
         
         const transformedResult = result?.rows?.map(row => {
@@ -1186,7 +1207,6 @@ const Idcard=req.query?.Idcard
     }
     
 }
-
 
 
 

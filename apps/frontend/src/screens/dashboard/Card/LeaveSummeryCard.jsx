@@ -1,229 +1,243 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Colors } from '../../../constants/Colors';
-import { screenWidth } from '../../../components/Utils/Screens';
 
 const LeaveSummaryCard = ({ 
-  leaveTaken, 
-  availableLeaves, 
-  attendanceStatus,
-  onPress,
-  openReport,
-  setopenLeaveModal,
-  onGenerateReport,
-  UserId // New prop for report generation
+    leaveTaken = 0, 
+    availableLeaves = 0, 
+    attendanceStatus,
+    onPress,
+    openReport,
+    setopenLeaveModal,
 }) => {
-  const statusColor = attendanceStatus === "Present" ? Colors.success : Colors.warning;
-    const { width, height } = useWindowDimensions()
-    const isLandscape = width > height;
+    const isPresent = attendanceStatus === 'Present';
 
+    return (
+        <View style={styles.card}>
+            {/* Left Accent Stripe */}
+            <View style={styles.accentStripe} />
 
-  const styles = StyleSheet.create({
-  cardContainer: {
-    marginVertical: 3,
-    marginHorizontal: 16,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 20,
-    backgroundColor: Colors.white,
-    width: isLandscape  ? width/2.5 :  screenWidth - 32,
-    height :  isLandscape? 360 :"auto",
-    
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-    elevation: 4,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0,0,0,0.05)',
-    justifyContent:"space-around"
-   
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  headerIconContainer: {
-    backgroundColor: 'rgba(42, 198, 209, 0.1)',
-    padding: 8,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.dark,
-    flex: 1,
-    marginLeft: 12,
-  },
-  chevron: {
-    opacity: 0.7
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 8,
-  },
-  statIconContainer: {
-    padding: 12,
-    borderRadius: 14,
-    marginBottom: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statTitle: {
-    fontSize: 14,
-    color: Colors.grayDark,
-    fontWeight: '500',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  statValue: {
-    fontSize: 17,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 6,
-  },
-  reportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor:"#5063e2",
-    padding: 14,
-    borderRadius: 12,
-    marginTop: 10,
-    width: '100%',
-  },
-  reportButtonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-});
+            <View style={styles.contentWrap}>
+                {/* Header Row */}
+                <View style={styles.headerRow}>
+                    <View style={styles.headerLeft}>
+                        <View style={styles.iconBox}>
+                            <MaterialCommunityIcons 
+                                name="calendar-month-outline" 
+                                size={22} 
+                                color="#0284C7" 
+                            />
+                        </View>
+                        <View>
+                            <Text style={styles.cardTitle}>Leave Summary</Text>
+                            <Text style={styles.cardSubtitle}>Current leave balance & deductions</Text>
+                        </View>
+                    </View>
 
-  return (
-    <View style={styles.cardContainer}>
-      <TouchableOpacity 
-        style={styles.card} 
-        onPress={onPress}
-        activeOpacity={0.95}
-      >
-        {/* Card Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIconContainer}>
-            <MaterialCommunityIcons 
-              name="calendar-month-outline" 
-              size={24} 
-              color={Colors.primary} 
-            />
-          </View>
-          <Text style={styles.headerText}>Leave Summary</Text>
-          <MaterialCommunityIcons 
-            name="chevron-right" 
-            size={24} 
-            onPress={() => setopenLeaveModal(true)}
-            color={Colors.grayLight} 
-            style={styles.chevron}
-          />
+                    {/* Filter Year Button */}
+                    <TouchableOpacity 
+                        style={styles.filterBtn}
+                        onPress={() => setopenLeaveModal?.(true)}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons name="calendar-search" size={15} color="#0284C7" />
+                        <Text style={styles.filterBtnText}>Select Year</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Two Stats Blocks */}
+                <View style={styles.statsRow}>
+                    {/* Leaves Taken */}
+                    <View style={styles.statBox}>
+                        <View style={[styles.statIconWrap, { backgroundColor: '#FEE2E2' }]}>
+                            <MaterialCommunityIcons name="calendar-remove" size={18} color="#DC2626" />
+                        </View>
+                        <Text style={styles.statLabel}>Leaves Taken</Text>
+                        <Text style={[styles.statValue, { color: '#DC2626' }]}>
+                            {typeof leaveTaken === 'number' ? `${leaveTaken} Days` : leaveTaken || '0 Days'}
+                        </Text>
+                    </View>
+
+                    <View style={styles.statDivider} />
+
+                    {/* Available Leaves */}
+                    <View style={styles.statBox}>
+                        <View style={[styles.statIconWrap, { backgroundColor: '#DCFCE7' }]}>
+                            <MaterialCommunityIcons name="calendar-check" size={18} color="#16A34A" />
+                        </View>
+                        <Text style={styles.statLabel}>Available Balance</Text>
+                        <Text style={[styles.statValue, { color: '#16A34A' }]}>
+                            {typeof availableLeaves === 'number' ? `${availableLeaves} Days` : availableLeaves || '0 Days'}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Footer Status & Report Link */}
+                <View style={styles.footerRow}>
+                    <View style={styles.statusCol}>
+                        <View style={[styles.statusDot, { backgroundColor: isPresent ? '#16A34A' : '#EAB308' }]} />
+                        <Text style={styles.statusText}>
+                            Today: <Text style={{ fontWeight: '700', color: isPresent ? '#16A34A' : '#EAB308' }}>
+                                {attendanceStatus || 'Not Recorded'}
+                            </Text>
+                        </Text>
+                    </View>
+
+                    <TouchableOpacity 
+                        style={styles.reportLinkBtn}
+                        onPress={() => openReport?.(true)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.reportLinkText}>Full Report</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={14} color="#007AFF" />
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
-
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          {/* Leave Taken */}
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 76, 76, 0.1)' }]}>
-              <MaterialCommunityIcons 
-                name="calendar-remove" 
-                size={20} 
-                color={Colors.danger} 
-              />
-            </View>
-            <Text style={styles.statTitle}>Taken</Text>
-            <Text style={[styles.statValue, { color: Colors.danger }]}>
-              {typeof leaveTaken === 'number' ? `${leaveTaken} Days` : leaveTaken || '0 Days'}
-            </Text>
-          </View>
-
-          {/* Available Leave */}
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
-              <MaterialCommunityIcons 
-                name="calendar-check" 
-                size={20} 
-                color={Colors.success} 
-              />
-            </View>
-            <Text style={styles.statTitle}>Available</Text>
-            <Text style={[styles.statValue, { color: Colors.success }]}>
-              {typeof availableLeaves === 'number' ? `${availableLeaves} Days` : 'N/A'}
-            </Text>
-          </View>
-
-          {/* Attendance Status */}
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(33, 150, 243, 0.1)' }]}>
-              <MaterialCommunityIcons 
-                name="calendar-star" 
-                size={20} 
-                color={statusColor} 
-              />
-            </View>
-            <Text style={styles.statTitle}>Today</Text>
-            <View style={styles.statusContainer}>
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-              <Text style={[styles.statValue, { color: Colors.dark }]}>
-                {attendanceStatus}
-              </Text>
-            </View>
-          </View>
-        </View>
-          <TouchableOpacity 
-        style={styles.reportButton}
-        onPress={()=> openReport(true)}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons 
-          name="file-chart" 
-          size={20} 
-          color={Colors.white} 
-        />
-        <Text style={styles.reportButtonText}>Show Report</Text>
-      </TouchableOpacity>
-      </TouchableOpacity>
-
-
-      {/* Report Button */}
-    
-    </View>
-  );
+    );
 };
 
-
+const styles = StyleSheet.create({
+    card: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        marginHorizontal: 12,
+        marginVertical: 5,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        overflow: 'hidden',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+        flexDirection: 'row',
+        alignSelf: 'stretch',
+    },
+    accentStripe: {
+        width: 4,
+        backgroundColor: '#0284C7',
+        alignSelf: 'stretch',
+    },
+    contentWrap: {
+        flex: 1,
+        padding: 16,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 14,
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    iconBox: {
+        width: 42,
+        height: 42,
+        borderRadius: 12,
+        backgroundColor: '#E0F2FE',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#0F172A',
+        letterSpacing: -0.2,
+    },
+    cardSubtitle: {
+        fontSize: 11,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    filterBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E0F2FE',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 10,
+        gap: 4,
+    },
+    filterBtnText: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#0284C7',
+    },
+    statsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8FAFC',
+        borderRadius: 12,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
+        marginBottom: 12,
+    },
+    statBox: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    statIconWrap: {
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 11,
+        color: '#64748B',
+        fontWeight: '600',
+        marginTop: 2,
+    },
+    statValue: {
+        fontSize: 17,
+        fontWeight: '800',
+        marginTop: 2,
+    },
+    statDivider: {
+        width: 1,
+        height: 44,
+        backgroundColor: '#E2E8F0',
+    },
+    footerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#F1F5F9',
+    },
+    statusCol: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    statusDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
+    statusText: {
+        fontSize: 12,
+        color: '#64748B',
+    },
+    reportLinkBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
+    },
+    reportLinkText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#007AFF',
+    },
+});
 
 export default LeaveSummaryCard;
-

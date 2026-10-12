@@ -52,8 +52,13 @@ const SplashScreen = React.memo(({ onAuthResolved }) => {
                 if (isMounted) {
                     if (result) {
                         const res = JSON.parse(result);
-                        dispatch(setUserDetails(res));
-                        SETIDCARD(res?.Id);
+                        dispatch(setUserDetails({
+                            ...res,
+                            UserId: res?.UserId || res?.Id,
+                            IDCARD: res?.IDCARD || res?.Id,
+                            level: res?.level || (res?.isAdmin ? 'top' : 'user'),
+                        }));
+                        SETIDCARD(res?.UserId || res?.Id);
                         setIsUserDataLoaded(true); // Wait for settings query now
                     } else {
                         setAuthDestination(false); // Mark destination as Login

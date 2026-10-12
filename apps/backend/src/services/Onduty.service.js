@@ -282,8 +282,11 @@ export async function getIn(req, res) {
             res.json({status:1,data:result}) 
         }
         catch (err) {
-           console.log(err);
-           
+           console.error('getIn Error:', err);
+           return res.status(500).json({
+             status: 0,
+             message: 'Failed to fetch active OnDuty session',
+           });
         }
         
     }
@@ -1428,7 +1431,6 @@ ORDER BY A.TOKENNO
         }
 }
    
-
 
 
 

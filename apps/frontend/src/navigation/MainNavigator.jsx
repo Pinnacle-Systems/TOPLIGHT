@@ -62,7 +62,7 @@ export default function MainNavigator() {
     return (
         <View style={{ flex: 1 }}>
             <Navbar openSidebar={sidebarOpen} setopenSidebar={setSidebarOpen} />
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="HOME">
                 {activeRoutes.map(route => (
                     <Stack.Screen 
                         key={route.name} 

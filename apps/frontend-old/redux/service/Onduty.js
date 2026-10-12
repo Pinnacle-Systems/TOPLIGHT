@@ -41,7 +41,7 @@ const OndutyRTk = createApi({
                         body: formdata
                         
                 }),
-                    invalidatesTags: ["Onduty_DocID","Onduty_Session","get_live_user"],
+                    invalidatesTags: ["Onduty_DocID","Onduty_Session","get_live_user","get__Vechile"],
                 }),
            getDocID: builder.query({
                             query: () => {

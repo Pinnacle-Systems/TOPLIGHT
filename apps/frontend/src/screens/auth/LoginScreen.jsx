@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -6,6 +6,8 @@ import {
     StyleSheet,
     Image,
     TouchableOpacity,
+    Pressable,
+    ScrollView,
     Animated,
     StatusBar,
     PermissionsAndroid,
@@ -41,6 +43,8 @@ const CustomizeButton = ({ onPress, disabled, style, children }) => (
 
 export default function LoginScreen() {
     const navigation = useNavigation();
+    const usernameRef = useRef(null);
+    const passwordRef = useRef(null);
     const [loginUser, { isLoading }] = useLoginUserMutation();
     const [update_fcm] = useUpdate_user_fcmMutation();
 
@@ -58,6 +62,7 @@ export default function LoginScreen() {
     const [head, setHead] = useState();
     const [hr, sethr] = useState();
     const [roleid, setrolid] = useState();
+    const [userRecord, setUserRecord] = useState(null);
 
     const [fadeAnim] = useState(new Animated.Value(0));
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -98,14 +103,33 @@ export default function LoginScreen() {
             if (data.message === 'Login Successfull') {
                 const filterdata = data?.data;
 
-                if (filterdata?.isAdmin === 1) {
+                // ── Super Admin path ───────────────────────────────────────────
+                // A super-admin has isAdmin === 1 OR is the reserved 'admin' account.
+                // They have no company / employee ID — bypass company selection entirely.
+                const isSuperAdmin =
+                    filterdata?.isAdmin === 1 ||
+                    username.trim().toLowerCase() === 'admin';
+
+                if (isSuperAdmin) {
                     await AsyncStorage.setItem('userName', JSON.stringify({
-                        userName: username, Id: filterdata?.Idcard, hod: filterdata?.hod, approval: filterdata?.approval, hr: filterdata?.hr, roleId: filterdata?.roleId, isAdmin: 1
+                        userName:  username,
+                        Id:        filterdata?.Idcard   ?? 'ADMIN',
+                        UserId:    filterdata?.Idcard   ?? 'ADMIN',
+                        IDCARD:    filterdata?.Idcard   ?? 'ADMIN',
+                        hod:       filterdata?.hod      ?? null,
+                        approval:  filterdata?.approval ?? null,
+                        hr:        filterdata?.hr       ?? null,
+                        roleId:    filterdata?.roleId   ?? null,
+                        isAdmin:   1,
+                        level:     filterdata?.level || 'top',
+                        GCOMPCODE: 'SUPERADMIN', // sentinel value — no real company needed
                     }));
                     RNRestart.restart();
                     return;
                 }
+                // ──────────────────────────────────────────────────────────────
 
+                setUserRecord(filterdata);
                 setrolid(filterdata?.roleId);
                 sethr(filterdata?.hr);
                 setId(filterdata?.Idcard);
@@ -146,11 +170,16 @@ export default function LoginScreen() {
             await AsyncStorage.setItem('userName', JSON.stringify({
                 userName: username, 
                 Id: Id, 
+                UserId: Id,
+                IDCARD: Id,
                 GCOMPCODE: company?.companyCode, 
                 COMPID: company?.companyid,
                 hr, 
                 hod: head, 
-                roleId: roleid
+                roleId: roleid,
+                level: userRecord?.level || (userRecord?.isAdmin ? 'admin' : 'user'),
+                isAdmin: userRecord?.isAdmin === 1 || userRecord?.isAdmin === true ? 1 : 0,
+                Companies: Globaldata,
             }));
             
             try {
@@ -189,132 +218,369 @@ export default function LoginScreen() {
 
     return (
         <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.container}
         >
-            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+            <StatusBar barStyle="light-content" backgroundColor="#090d16" />
             
             <LinearGradient
-                colors={['#0f172a', '#1e3a8a', '#3b82f6']}
+                colors={['#090d16', '#0f172a', '#1e3a8a']}
                 start={{x: 0, y: 0}}
                 end={{x: 1, y: 1}}
                 style={styles.background}
             >
-                <View style={styles.logoContainer}>
-                    {/* Fallback to text if image fails to load/not copied yet */}
-                    <Text style={styles.appName}>Welcome Back</Text>
-                    <Text style={styles.appSubtitle}>Sign in to your account</Text>
-                </View>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Branding & Logo Header */}
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../assets/login_logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.appName}>Welcome Back</Text>
+                        <Text style={styles.appSubtitle}>Sign in to continue to your dashboard</Text>
+                    </View>
 
-                {Global ? (
-                    <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-                        <Text style={styles.selectionTitle}>Select Your Company</Text>
-                        <View style={styles.companyList}>
-                            {Globaldata.map(comp => (
-                                <TouchableOpacity 
-                                    key={comp.companyid}
-                                    style={styles.companyItem} 
-                                    onPress={() => OnSelectCompany(comp.companyCode)}
-                                >
-                                    <Text style={styles.companyItemText}>{comp.companyCode}</Text>
-                                    <Icon name="chevron-right" size={24} color="#94a3b8" />
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </Animated.View>
-                ) : (
-                    <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-                        {error && (
-                            <View style={styles.errorBanner}>
-                                <Icon name="error-outline" size={18} color="#fff" />
-                                <Text style={styles.errorBannerText}>{error}</Text>
+                    {Global ? (
+                        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+                            <View style={styles.cardHeader}>
+                                <Icon name="business" size={24} color="#3b82f6" />
+                                <Text style={styles.selectionTitle}>Select Your Company</Text>
                             </View>
-                        )}
-                        
-                        <View style={[styles.inputContainer, isFocusedName && styles.focusedInput]}>
-                            <Icon name="person" size={20} color={isFocusedName ? "#3b82f6" : "#94a3b8"} style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Username"
-                                placeholderTextColor="#94a3b8"
-                                value={username}
-                                onChangeText={setUsername}
-                                autoCapitalize="none"
-                                onFocus={() => setIsFocusedName(true)}
-                                onBlur={() => setIsFocusedName(false)}
-                            />
-                        </View>
-                        
-                        <View style={[styles.inputContainer, isFocusedPass && styles.focusedInput]}>
-                            <Icon name="lock" size={20} color={isFocusedPass ? "#3b82f6" : "#94a3b8"} style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Password"
-                                placeholderTextColor="#94a3b8"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry={!isPasswordVisible}
-                                onFocus={() => setIsFocusedPass(true)}
-                                onBlur={() => setIsFocusedPass(false)}
-                            />
-                            <TouchableOpacity 
-                                style={styles.eyeIcon} 
-                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                            <Text style={styles.selectionSubtitle}>Choose the organization to access</Text>
+                            <View style={styles.companyList}>
+                                {Globaldata.map(comp => (
+                                    <TouchableOpacity 
+                                        key={comp.companyid || comp.companyCode}
+                                        style={styles.companyItem} 
+                                        onPress={() => OnSelectCompany(comp.companyCode)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.companyLeft}>
+                                            <View style={styles.companyIconBox}>
+                                                <Icon name="apartment" size={20} color="#2563eb" />
+                                            </View>
+                                            <Text style={styles.companyItemText}>{comp.companyCode}</Text>
+                                        </View>
+                                        <Icon name="arrow-forward" size={20} color="#3b82f6" />
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </Animated.View>
+                    ) : (
+                        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+                            {error && (
+                                <View style={styles.errorBanner}>
+                                    <Icon name="error" size={18} color="#ffffff" />
+                                    <Text style={styles.errorBannerText}>{error}</Text>
+                                </View>
+                            )}
+                            
+                            {/* Username Input */}
+                            <Text style={styles.inputLabel}>Username</Text>
+                            <Pressable 
+                                style={[styles.inputContainer, isFocusedName && styles.focusedInput]}
+                                onPress={() => usernameRef.current?.focus()}
                             >
-                                <Icon 
-                                    name={isPasswordVisible ? "visibility" : "visibility-off"} 
-                                    size={20} 
-                                    color="#94a3b8" 
+                                <View pointerEvents="none" style={[styles.iconWrapper, isFocusedName && styles.activeIconWrapper]}>
+                                    <Icon name="person" size={20} color={isFocusedName ? "#2563eb" : "#64748b"} />
+                                </View>
+                                <TextInput
+                                    ref={usernameRef}
+                                    style={styles.input}
+                                    placeholder="Enter your username"
+                                    placeholderTextColor="#94a3b8"
+                                    value={username}
+                                    onChangeText={setUsername}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    onFocus={() => setIsFocusedName(true)}
+                                    onBlur={() => setIsFocusedName(false)}
                                 />
+                            </Pressable>
+                            
+                            {/* Password Input */}
+                            <Text style={styles.inputLabel}>Password</Text>
+                            <Pressable 
+                                style={[styles.inputContainer, isFocusedPass && styles.focusedInput]}
+                                onPress={() => passwordRef.current?.focus()}
+                            >
+                                <View pointerEvents="none" style={[styles.iconWrapper, isFocusedPass && styles.activeIconWrapper]}>
+                                    <Icon name="lock" size={20} color={isFocusedPass ? "#2563eb" : "#64748b"} />
+                                </View>
+                                <TextInput
+                                    ref={passwordRef}
+                                    style={styles.input}
+                                    placeholder="Enter your password"
+                                    placeholderTextColor="#94a3b8"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!isPasswordVisible}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    onFocus={() => setIsFocusedPass(true)}
+                                    onBlur={() => setIsFocusedPass(false)}
+                                />
+                                <TouchableOpacity 
+                                    style={styles.eyeIcon} 
+                                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Icon 
+                                        name={isPasswordVisible ? "visibility" : "visibility-off"} 
+                                        size={20} 
+                                        color="#64748b" 
+                                    />
+                                </TouchableOpacity>
+                            </Pressable>
+                            
+                            <TouchableOpacity style={styles.forgotPassword} activeOpacity={0.7}>
+                                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                             </TouchableOpacity>
-                        </View>
-                        
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                        </TouchableOpacity>
-                        
-                        <CustomizeButton 
-                            style={styles.loginButton}
-                            onPress={handleLogin}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? <ActivityIndicator color="white" /> : 'Login'}
-                        </CustomizeButton>
-                    </Animated.View>
-                )}
+                            
+                            {/* Gradient Login Button */}
+                            <TouchableOpacity
+                                onPress={handleLogin}
+                                disabled={isLoading}
+                                activeOpacity={0.85}
+                                style={styles.loginButtonWrapper}
+                            >
+                                <LinearGradient
+                                    colors={['#3b82f6', '#2563eb', '#1d4ed8']}
+                                    start={{x: 0, y: 0}}
+                                    end={{x: 1, y: 0}}
+                                    style={styles.gradientButton}
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator color="#ffffff" size="small" />
+                                    ) : (
+                                        <View style={styles.buttonContent}>
+                                            <Text style={styles.buttonText}>Sign In</Text>
+                                            <Icon name="arrow-forward" size={18} color="#ffffff" style={{ marginLeft: 6 }} />
+                                        </View>
+                                    )}
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    )}
 
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>@ 2026 Pinnacle Systems All right reserved</Text>
-                </View>
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>© 2026 Pinnacle Systems • All rights reserved</Text>
+                    </View>
+                </ScrollView>
             </LinearGradient>
         </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    background: { flex: 1, justifyContent: 'center', padding: 20 },
-    logoContainer: { alignItems: 'center', marginBottom: 40 },
-    appName: { fontSize: 32, fontWeight: 'bold', color: 'white' },
-    appSubtitle: { fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 8 },
-    card: { backgroundColor: 'white', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
-    errorBanner: { flexDirection: 'row', backgroundColor: '#ef4444', padding: 12, borderRadius: 8, marginBottom: 16, alignItems: 'center' },
-    errorBannerText: { color: 'white', marginLeft: 8, fontSize: 14, flex: 1 },
-    inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 12, marginBottom: 16, paddingHorizontal: 12, borderWidth: 1, borderColor: 'transparent' },
-    focusedInput: { borderColor: '#3b82f6', backgroundColor: '#fff' },
-    inputIcon: { marginRight: 8 },
-    input: { flex: 1, height: 50, color: '#1e293b', fontSize: 16 },
-    eyeIcon: { padding: 8 },
-    forgotPassword: { alignSelf: 'flex-end', marginBottom: 24 },
-    forgotPasswordText: { color: '#3b82f6', fontWeight: '600' },
-    button: { backgroundColor: '#3b82f6', borderRadius: 12, height: 50, justifyContent: 'center', alignItems: 'center' },
-    buttonDisabled: { backgroundColor: '#94a3b8' },
-    buttonText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
-    loginButton: { marginTop: 8 },
-    selectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#1e293b', marginBottom: 16, textAlign: 'center' },
-    companyList: { maxHeight: 200 },
-    companyItem: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    companyItemText: { fontSize: 16, color: '#1e293b', fontWeight: '600' },
-    footer: { position: 'absolute', bottom: 20, left: 0, right: 0, alignItems: 'center' },
-    footerText: { color: 'rgba(255,255,255,0.6)', fontSize: 12 }
+    container: {
+        flex: 1,
+    },
+    background: {
+        flex: 1,
+        paddingHorizontal: 24,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingVertical: 30,
+    },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    logo: {
+        width: 120,
+        height: 110,
+        resizeMode: 'contain',
+        marginBottom: 16,
+    },
+    appName: {
+        fontSize: 28,
+        fontWeight: '800',
+        color: '#ffffff',
+        letterSpacing: 0.3,
+    },
+    appSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.75)',
+        marginTop: 6,
+        letterSpacing: 0.2,
+    },
+    card: {
+        backgroundColor: '#ffffff',
+        borderRadius: 24,
+        padding: 24,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.18,
+        shadowRadius: 24,
+        elevation: 10,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 4,
+    },
+    selectionTitle: {
+        fontSize: 19,
+        fontWeight: '700',
+        color: '#1e293b',
+        marginLeft: 8,
+    },
+    selectionSubtitle: {
+        fontSize: 13,
+        color: '#64748b',
+        textAlign: 'center',
+        marginBottom: 18,
+    },
+    companyList: {
+        maxHeight: 240,
+    },
+    companyItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderRadius: 14,
+        backgroundColor: '#f8fafc',
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    companyLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    companyIconBox: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#eff6ff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    companyItemText: {
+        fontSize: 15,
+        color: '#1e293b',
+        fontWeight: '700',
+    },
+    errorBanner: {
+        flexDirection: 'row',
+        backgroundColor: '#ef4444',
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 16,
+        alignItems: 'center',
+    },
+    errorBannerText: {
+        color: '#ffffff',
+        marginLeft: 8,
+        fontSize: 13,
+        fontWeight: '600',
+        flex: 1,
+    },
+    inputLabel: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#475569',
+        marginBottom: 6,
+        letterSpacing: 0.2,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: 14,
+        marginBottom: 16,
+        paddingHorizontal: 12,
+        borderWidth: 1.5,
+        borderColor: '#e2e8f0',
+        height: 52,
+    },
+    focusedInput: {
+        borderColor: '#3b82f6',
+        backgroundColor: '#ffffff',
+        shadowColor: '#3b82f6',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    iconWrapper: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 8,
+    },
+    activeIconWrapper: {
+        backgroundColor: '#eff6ff',
+    },
+    input: {
+        flex: 1,
+        height: '100%',
+        color: '#1e293b',
+        fontSize: 15,
+        fontWeight: '500',
+        paddingVertical: 0,
+        paddingHorizontal: 4,
+    },
+    eyeIcon: {
+        padding: 8,
+    },
+    forgotPassword: {
+        alignSelf: 'flex-end',
+        marginBottom: 20,
+    },
+    forgotPasswordText: {
+        color: '#2563eb',
+        fontWeight: '600',
+        fontSize: 13,
+    },
+    loginButtonWrapper: {
+        borderRadius: 14,
+        overflow: 'hidden',
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    gradientButton: {
+        height: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 14,
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '700',
+        letterSpacing: 0.4,
+    },
+    footer: {
+        marginTop: 24,
+        marginBottom: 10,
+        alignItems: 'center',
+    },
+    footerText: {
+        color: 'rgba(255, 255, 255, 0.55)',
+        fontSize: 12,
+        fontWeight: '500',
+    },
 });

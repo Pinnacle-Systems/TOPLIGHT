@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_URL as BASE_URL } from '@env';
 import { SetHeader } from "../../utils/HeaderSet";
 
+const Leave = "/leave";
+
 
 const LeaveData = createApi({
     reducerPath: 'Leave',

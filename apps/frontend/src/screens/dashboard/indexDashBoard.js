@@ -89,17 +89,8 @@ function Index_child({ route, ...props }) {
         );
     }
 
-    // ── ADMIN ──────────────────────────────────────────────────────────────
-  
-
-    // ── USER ───────────────────────────────────────────────────────────────
-    if (UserId?.level === "user") {
-        return <Employee {...props} />;
-    }
-
-
-
-     if (UserId?.level === "top" ) {
+    // ── ADMIN / TOP MANAGEMENT ────────────────────────────────────────────
+    if (UserId?.level === "top" || UserId?.level === "admin" || UserId?.isAdmin === 1 || UserId?.isAdmin === true) {
         return (
             <TabView_Wrapper
                 routes={[
@@ -134,17 +125,8 @@ function Index_child({ route, ...props }) {
         );
     }
 
-    // ✅ Catch-all fallback — always returns something
-    return (
-        <View style={tw`flex-1 justify-center items-center`}>
-            <CustomText style={tw`text-lg text-gray-700`}>
-                No Dashboard Loaded!
-            </CustomText>
-            <CustomText style={tw`text-sm text-gray-400 mt-2`}>
-                Level: {UserId?.level || 'undefined'}
-            </CustomText>
-        </View>
-    );
+    // ── USER / EMPLOYEE DASHBOARD (Default for all regular employees) ─────
+    return <Employee {...props} />;
 }
 
 

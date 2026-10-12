@@ -44,6 +44,10 @@ const MainApp = () => {
         setIsAuthenticated(isAuth);
     }, []);
 
+    const handleLogout = React.useCallback(() => {
+        setIsAuthenticated(false);
+    }, []);
+
     // Guard: If we are still determining auth state (animating Splash, checking biometrics, etc.)
     if (isAuthenticated === null) {
         return <SplashScreen onAuthResolved={handleAuthResolved} />;
@@ -57,6 +61,7 @@ const MainApp = () => {
                 page: rolesOnPage?.data || [],
                 loading: isRolesLoading,
                 admin: isAdmin,
+                logout: handleLogout,
             }}
         >
             <NavigationContainer>

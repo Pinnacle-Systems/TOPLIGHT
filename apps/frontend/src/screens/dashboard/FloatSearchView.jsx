@@ -7,12 +7,10 @@ import {
   Easing, 
   Keyboard,
   Dimensions,
-  Platform,
   StyleSheet
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import  LinearGradient  from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -78,7 +76,7 @@ const ExpandableSearch = ({
 
   const containerWidth = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [60, width],
+    outputRange: [42, width - 24],
   });
 
   const inputOpacity = animation.interpolate({
@@ -86,80 +84,35 @@ const ExpandableSearch = ({
     outputRange: [0, 0, 1],
   });
 
-  const buttonTranslateX = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -10],
-  });
-
-  const searchContainerWidth = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, width - 80],
-  });
-
-  const borderRadius = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [30, 0],
-  });
-
   if (UserId?.UserId !== UserId?.hod) return null;
 
   return (
     <Animated.View style={[
       styles.container,
-      { 
-        width: containerWidth,
-        borderRadius,
-        transform: [{ translateX: buttonTranslateX }],
-      }
+      { width: containerWidth }
     ]}>
-      <LinearGradient
-        colors={['#1a75ff', '#ff4d4d']}
-        start={{ x: 1, y: 1}}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradient}
-      >
-        {/* Search Button */}
+      <View style={styles.searchBar}>
+        {/* Search / Close Button */}
         <Animated.View style={[
-          styles.searchButton,
-          { 
-            transform: [{ scale: buttonScale }],
-            backgroundColor: expanded ? 'transparent' : '#FFF',
-          }
+          styles.iconBtnWrap,
+          { transform: [{ scale: buttonScale }] }
         ]}>
           <TouchableOpacity 
             onPress={toggleSearch}
             activeOpacity={0.8}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={styles.iconBtn}
           >
             <Feather 
               name={expanded ? "x" : "search"} 
-              size={24} 
-              color={expanded ? "#FFF" : "#1a75ff"} 
+              size={18} 
+              color={expanded ? "#DC2626" : "#007AFF"} 
             />
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Search Input */}
-        <Animated.View style={[
-          styles.searchInputContainer,
-          { 
-            opacity: inputOpacity,
-            width: searchContainerWidth,
-          }
-        ]}>
-          <Animated.View style={[
-            styles.inputWrapper,
-            {
-              borderColor: focused ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
-            }
-          ]}>
-            <MaterialCommunityIcons 
-              name="account-search-outline" 
-              size={22} 
-              color="#FFF" 
-              style={styles.searchIcon} 
-            />
-            
+        {/* Input Field when expanded */}
+        {expanded && (
+          <Animated.View style={[styles.inputArea, { opacity: inputOpacity }]}>
             <TextInput
               value={tempsearch}
               onChangeText={(text) => { 
@@ -168,36 +121,35 @@ const ExpandableSearch = ({
                 }
                 set_tempsearch(text); 
               }}
-              placeholder="Search employees..."
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              style={styles.input}
-              autoFocus={expanded}
+              placeholder="Search employee by name/ID..."
+              placeholderTextColor="#94A3B8"
+              style={styles.textInput}
+              autoFocus={true}
               returnKeyType="search"
-              underlineColorAndroid="transparent"
-              selectionColor="#FFF"
+              selectionColor="#007AFF"
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
             />
 
-            {tempsearch.length > 0 && (
+            {tempsearch?.length > 0 && (
               <TouchableOpacity 
                 onPress={() => { 
                   set_tempsearch(''); 
                   setFilteredEmpId(undefined); 
                 }} 
-                style={styles.clearButton}
+                style={styles.clearBtn}
                 activeOpacity={0.7}
               >
                 <MaterialCommunityIcons 
                   name="close-circle" 
-                  size={20} 
-                  color="rgba(255,255,255,0.7)" 
+                  size={18} 
+                  color="#94A3B8" 
                 />
               </TouchableOpacity>
             )}
           </Animated.View>
-        </Animated.View>
-      </LinearGradient>
+        )}
+      </View>
     </Animated.View>
   );
 };
@@ -205,62 +157,55 @@ const ExpandableSearch = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0,
-    height: 45,
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 10,
-    right:0,
-  
+    top: 10,
+    right: 14,
+    height: 42,
+    zIndex: 99,
   },
-  gradient: {
+  searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    borderBottomLeftRadius:20
+    backgroundColor: '#FFFFFF',
+    borderRadius: 21,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    overflow: 'hidden',
   },
-  searchButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 20,
+  iconBtnWrap: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 2,
   },
-  searchInputContainer: {
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputArea: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    paddingRight: 10,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    height: 40,
+  textInput: {
     flex: 1,
-    borderWidth: 1,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    color: '#FFF',
-    fontSize: 16,
-    height: 40,
-    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#0F172A',
     paddingVertical: 0,
+    paddingLeft: 4,
   },
-  clearButton: {
-    marginLeft: 8,
+  clearBtn: {
+    padding: 4,
   },
 });
 
 export default ExpandableSearch;
-

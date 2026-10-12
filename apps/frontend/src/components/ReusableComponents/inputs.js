@@ -11,7 +11,12 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomText from '../Text/CustomText';
+
+const PickerTickIcon = ({ style }) => (
+  <MaterialIcons name="check" size={20} color="#007AFF" style={style} />
+);
 
 export const Dropdown = ({ 
   selected, 
@@ -55,8 +60,13 @@ export const Dropdown = ({
         setValue={setSelected}
         multiple={multiple}
         setItems={setItems}
+        showTickIcon
+        TickIconComponent={PickerTickIcon}
+        selectedItemContainerStyle={styles.selectedItemContainer}
+        selectedItemLabelStyle={styles.selectedItemLabel}
         searchable={true}
         searchPlaceholder="Search options..."
+        searchPlaceholderTextColor="#64748B"
         placeholder={isLoading ? 'Loading...' : placeholder}
         dropDownDirection="AUTO"
         style={[
@@ -188,12 +198,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 2,
   },
+  selectedItemContainer: {
+    backgroundColor: '#EFF6FF',
+  },
+  selectedItemLabel: {
+    color: '#1D4ED8',
+    fontWeight: '700',
+  },
   searchTextInputStyle: {
     height: 40,
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 6,
     paddingHorizontal: 8,
+    color: '#1F2937',
   },
   dateInputContainer: {
     borderWidth: 1,

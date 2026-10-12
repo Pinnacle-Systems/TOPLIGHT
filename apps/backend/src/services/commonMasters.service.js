@@ -157,6 +157,12 @@ export async function get_chat(req, res) {
 
 }
 
+const getModel = (t) => {
+    if (!t) return null;
+    return prisma_Connector?.[t] ||
+           prisma_Connector?.[t.charAt(0).toLowerCase() + t.slice(1)] ||
+           prisma_Connector?.[t.charAt(0).toUpperCase() + t.slice(1)];
+};
   
 export async function delete_Common_Data(req, res) {
     const COMPCODE=String(req?.headers?.compcode).toUpperCase()
@@ -164,7 +170,8 @@ export async function delete_Common_Data(req, res) {
     const where=req?.body?.where
     const table=req?.body?.table
         try {
-            const result=await  prisma_Connector?.[table]?.delete({where:onlywhere ?{...where} : {COMPCODE,...where}})
+            const model = getModel(table);
+            const result=await model?.delete({where:onlywhere ?{...where} : {COMPCODE,...where}})
             res.json({status:1,data:result}) 
         }
         catch (err) {
@@ -221,7 +228,8 @@ export async function Update_Common_Data_prisma(req, res) {
        
 
         try {
-            const result=await  prisma_Connector?.[table]?.update({data,where:onlywhere ? {...where} : {COMPCODE,...where}})
+            const model = getModel(table);
+            const result=await  model?.update({data,where:onlywhere ? {...where} : {COMPCODE,...where}})
 
             res.json({status:1,data:result}) 
         }

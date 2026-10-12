@@ -9,7 +9,8 @@ import {
   Dimensions,
   FlatList,
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  Alert,
 } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -26,6 +27,7 @@ const drawerWidth = width * 0.8; // Professional slightly narrower sidebar
 export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
     const dispatch = useDispatch();
     const navigation = useNavigation();
+    const { logout } = useContext(Common_Context);
     const USER = useSelector((state) => state?.UserDetails);
     
     // Animation for sliding in from the right
@@ -42,11 +44,30 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
 
     const handleClose = () => setopenSidebar(false);
 
-    const handleLogout = async () => {
-        setopenSidebar(false);
-        await AsyncStorage.clear();
-        dispatch(setClearAll());
-        // Will automatically unmount MainNavigator since isAuthenticated becomes false
+    const handleLogout = () => {
+        Alert.alert(
+            'Confirm Logout',
+            'Are you sure you want to log out?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Log Out',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await AsyncStorage.removeItem('userName');
+                            dispatch(setClearAll());
+                            setopenSidebar(false);
+                            logout?.();
+                        } catch (error) {
+                            console.error('[Sidebar] Logout failed:', error);
+                            Alert.alert('Logout Failed', 'Unable to log out. Please try again.');
+                        }
+                    },
+                },
+            ],
+            { cancelable: true },
+        );
     };
 
     const handleNavigation = (path) => {
