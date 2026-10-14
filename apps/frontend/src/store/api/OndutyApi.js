@@ -34,7 +34,7 @@ const OndutyRTk = createApi({
             return headers;
         },
     }),
-    tagTypes:  ['Onduty_DocID','Onduty_Session','get_reached','get_live_user','OndutyApproval','get__vechilekm','get_all_Onduty_reason', 'OndutyHodData',"addonduty_Master","get__Date_Wise_Fuel","get__Date_Wise_Fuel_Individual",'get__Vechile'], 
+    tagTypes:  ['Onduty_DocID','Onduty_Session','get_reached','get_live_user','get_tracking_users','get_history_location','get_live_location','OndutyApproval','get__vechilekm','get_all_Onduty_reason', 'OndutyHodData',"addonduty_Master","get__Date_Wise_Fuel","get__Date_Wise_Fuel_Individual",'get__Vechile'], 
     endpoints: (builder) => ({
         ondutyRequest:builder.mutation({
                     query: (formdata) => ({
@@ -287,6 +287,18 @@ const OndutyRTk = createApi({
                                   pollingInterval: 5000,
                                 providesTags: ['get_live_user'],
         }),
+        get_tracking_users:builder.query({
+                              query: (params) => ({
+                                          url:onduty+"/get_tracking_users",
+                                          method: 'GET',
+                                          headers: {
+                                            'Content-type': 'application/json; charset=UTF-8',
+                                          },
+                                          params
+                                  }),
+                                  pollingInterval: 30000,
+                                  providesTags: ['get_tracking_users'],
+        }),
         get_reached:builder.query({
                               query: (params) => {
                                             return {
@@ -308,7 +320,7 @@ const OndutyRTk = createApi({
 
 export const {
 useOndutyRequestMutation,useGetDocIDQuery,useGetInQuery,useRequestOndutyOutMutation,useRequestOnduty_ApprovalMutation,useGet__Date_Wise_Fuel_IndividualQuery,useGetHod_showable_dataQuery,useAddOnduty_masterMutation,useGet_all_Onduty_reasonQuery,useOnduty_uploaded_imageQuery,useGet__VechileQuery,useGet__Date_Wise_FuelQuery,useGet__Onduty_editQuery,
-useGet_history_locationQuery,useGet_live_locationQuery,useGet_live_userQuery,useGet__vechilekmQuery,useAdd__vechilekmMutation,useStTrackMutation,useGet_reachedQuery,useRequestReachedOutMutation
+useGet_history_locationQuery,useGet_live_locationQuery,useGet_live_userQuery,useGet_tracking_usersQuery,useGet__vechilekmQuery,useAdd__vechilekmMutation,useStTrackMutation,useGet_reachedQuery,useRequestReachedOutMutation
 } = OndutyRTk;
 
 export default OndutyRTk

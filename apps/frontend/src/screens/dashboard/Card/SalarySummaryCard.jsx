@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const SalarySummaryCard = ({
     grossSalary = '₹0.00',
@@ -8,6 +9,8 @@ const SalarySummaryCard = ({
     period,
     onPress,
 }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     return (
         <TouchableOpacity 
             style={styles.card}
@@ -22,7 +25,7 @@ const SalarySummaryCard = ({
                 <View style={styles.headerRow}>
                     <View style={styles.headerLeft}>
                         <View style={styles.iconBox}>
-                            <MaterialCommunityIcons name="wallet-outline" size={22} color="#16A34A" />
+                            <MaterialCommunityIcons name="wallet-outline" size={22} color={theme.colors.success} />
                         </View>
                         <View>
                             <Text style={styles.cardTitle}>Last Month Salary</Text>
@@ -34,7 +37,7 @@ const SalarySummaryCard = ({
 
                     <View style={styles.viewMoreRow}>
                         <Text style={styles.viewMoreText}>Details</Text>
-                        <MaterialCommunityIcons name="chevron-right" size={18} color="#16A34A" />
+                        <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.success} />
                     </View>
                 </View>
 
@@ -56,7 +59,7 @@ const SalarySummaryCard = ({
                 {/* Footer hint */}
                 <View style={styles.footerRow}>
                     <View style={styles.badgePill}>
-                        <MaterialCommunityIcons name="check-decagram" size={12} color="#16A34A" />
+                        <MaterialCommunityIcons name="check-decagram" size={12} color={theme.colors.success} />
                         <Text style={styles.badgeText}>Settled & Credited</Text>
                     </View>
                     <Text style={styles.tapHint}>Tap to view payslip breakdown →</Text>
@@ -66,17 +69,17 @@ const SalarySummaryCard = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginHorizontal: 12,
         marginVertical: 5,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         overflow: 'hidden',
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 6,
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
     },
     accentStripe: {
         width: 4,
-        backgroundColor: '#16A34A',
+        backgroundColor: theme.colors.success,
         alignSelf: 'stretch',
     },
     contentWrap: {
@@ -107,25 +110,25 @@ const styles = StyleSheet.create({
         width: 42,
         height: 42,
         borderRadius: 12,
-        backgroundColor: '#DCFCE7',
+        backgroundColor: theme.colors.successSoft,
         alignItems: 'center',
         justifyContent: 'center',
     },
     cardTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         letterSpacing: -0.2,
     },
     cardSubtitle: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         marginTop: 2,
     },
     viewMoreRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#DCFCE7',
+        backgroundColor: theme.colors.successSoft,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
@@ -134,17 +137,17 @@ const styles = StyleSheet.create({
     viewMoreText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#16A34A',
+        color: theme.colors.success,
     },
     amountsRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.surfaceSunken,
         borderRadius: 12,
         padding: 12,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 10,
     },
     amountCol: {
@@ -152,7 +155,7 @@ const styles = StyleSheet.create({
     },
     amountLabel: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 0.4,
@@ -160,19 +163,19 @@ const styles = StyleSheet.create({
     grossValue: {
         fontSize: 18,
         fontWeight: '800',
-        color: '#334155',
+        color: theme.colors.text,
         marginTop: 3,
     },
     netValue: {
         fontSize: 20,
         fontWeight: '800',
-        color: '#16A34A',
+        color: theme.colors.success,
         marginTop: 3,
     },
     divider: {
         width: 1,
         height: 38,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.divider,
         marginHorizontal: 12,
     },
     footerRow: {
@@ -188,11 +191,11 @@ const styles = StyleSheet.create({
     badgeText: {
         fontSize: 11,
         fontWeight: '600',
-        color: '#16A34A',
+        color: theme.colors.success,
     },
     tapHint: {
         fontSize: 11,
-        color: '#94A3B8',
+        color: theme.colors.textMuted,
         fontWeight: '500',
     },
 });

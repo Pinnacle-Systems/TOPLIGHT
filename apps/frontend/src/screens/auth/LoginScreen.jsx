@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -27,10 +27,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 // Store imports
 import { useLoginUserMutation, useUpdate_user_fcmMutation } from '../../store/api/userApi';
+import { useAppTheme } from '../../theme';
 
 // Reusable components could go to src/components/common, but for Login completeness we ensure they are handled
 // You can extract these into `src/components/common` later
-const CustomizeButton = ({ onPress, disabled, style, children }) => (
+const CustomizeButton = ({ styles, onPress, disabled, style, children }) => (
     <TouchableOpacity 
         style={[styles.button, style, disabled && styles.buttonDisabled]} 
         onPress={onPress} 
@@ -43,6 +44,8 @@ const CustomizeButton = ({ onPress, disabled, style, children }) => (
 
 export default function LoginScreen() {
     const navigation = useNavigation();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const usernameRef = useRef(null);
     const passwordRef = useRef(null);
     const [loginUser, { isLoading }] = useLoginUserMutation();
@@ -221,10 +224,12 @@ export default function LoginScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.container}
         >
-            <StatusBar barStyle="light-content" backgroundColor="#090d16" />
+            <StatusBar barStyle="light-content" backgroundColor={theme.colors.statusBar} />
             
             <LinearGradient
-                colors={['#090d16', '#0f172a', '#1e3a8a']}
+                colors={theme.isDark
+                    ? [theme.colors.background, theme.colors.surface, theme.colors.brandSoft]
+                    : [theme.colors.brandStrong, theme.colors.brand, theme.colors.secondary]}
                 start={{x: 0, y: 0}}
                 end={{x: 1, y: 1}}
                 style={styles.background}
@@ -248,7 +253,7 @@ export default function LoginScreen() {
                     {Global ? (
                         <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
                             <View style={styles.cardHeader}>
-                                <Icon name="business" size={24} color="#3b82f6" />
+                                <Icon name="business" size={24} color={theme.colors.brand} />
                                 <Text style={styles.selectionTitle}>Select Your Company</Text>
                             </View>
                             <Text style={styles.selectionSubtitle}>Choose the organization to access</Text>
@@ -262,11 +267,11 @@ export default function LoginScreen() {
                                     >
                                         <View style={styles.companyLeft}>
                                             <View style={styles.companyIconBox}>
-                                                <Icon name="apartment" size={20} color="#2563eb" />
+                                                <Icon name="apartment" size={20} color={theme.colors.brand} />
                                             </View>
                                             <Text style={styles.companyItemText}>{comp.companyCode}</Text>
                                         </View>
-                                        <Icon name="arrow-forward" size={20} color="#3b82f6" />
+                                        <Icon name="arrow-forward" size={20} color={theme.colors.brand} />
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -275,7 +280,7 @@ export default function LoginScreen() {
                         <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
                             {error && (
                                 <View style={styles.errorBanner}>
-                                    <Icon name="error" size={18} color="#ffffff" />
+                                    <Icon name="error" size={18} color={theme.colors.danger} />
                                     <Text style={styles.errorBannerText}>{error}</Text>
                                 </View>
                             )}
@@ -287,13 +292,13 @@ export default function LoginScreen() {
                                 onPress={() => usernameRef.current?.focus()}
                             >
                                 <View pointerEvents="none" style={[styles.iconWrapper, isFocusedName && styles.activeIconWrapper]}>
-                                    <Icon name="person" size={20} color={isFocusedName ? "#2563eb" : "#64748b"} />
+                                    <Icon name="person" size={20} color={isFocusedName ? theme.colors.brand : theme.colors.textMuted} />
                                 </View>
                                 <TextInput
                                     ref={usernameRef}
                                     style={styles.input}
                                     placeholder="Enter your username"
-                                    placeholderTextColor="#94a3b8"
+                                    placeholderTextColor={theme.colors.placeholder}
                                     value={username}
                                     onChangeText={setUsername}
                                     autoCapitalize="none"
@@ -310,13 +315,13 @@ export default function LoginScreen() {
                                 onPress={() => passwordRef.current?.focus()}
                             >
                                 <View pointerEvents="none" style={[styles.iconWrapper, isFocusedPass && styles.activeIconWrapper]}>
-                                    <Icon name="lock" size={20} color={isFocusedPass ? "#2563eb" : "#64748b"} />
+                                    <Icon name="lock" size={20} color={isFocusedPass ? theme.colors.brand : theme.colors.textMuted} />
                                 </View>
                                 <TextInput
                                     ref={passwordRef}
                                     style={styles.input}
                                     placeholder="Enter your password"
-                                    placeholderTextColor="#94a3b8"
+                                    placeholderTextColor={theme.colors.placeholder}
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry={!isPasswordVisible}
@@ -333,15 +338,10 @@ export default function LoginScreen() {
                                     <Icon 
                                         name={isPasswordVisible ? "visibility" : "visibility-off"} 
                                         size={20} 
-                                        color="#64748b" 
+                                        color={theme.colors.textMuted} 
                                     />
                                 </TouchableOpacity>
                             </Pressable>
-                            
-                            <TouchableOpacity style={styles.forgotPassword} activeOpacity={0.7}>
-                                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                            </TouchableOpacity>
-                            
                             {/* Gradient Login Button */}
                             <TouchableOpacity
                                 onPress={handleLogin}
@@ -350,17 +350,17 @@ export default function LoginScreen() {
                                 style={styles.loginButtonWrapper}
                             >
                                 <LinearGradient
-                                    colors={['#3b82f6', '#2563eb', '#1d4ed8']}
+                                    colors={[theme.colors.brand, theme.colors.brandStrong, theme.colors.secondary]}
                                     start={{x: 0, y: 0}}
                                     end={{x: 1, y: 0}}
                                     style={styles.gradientButton}
                                 >
                                     {isLoading ? (
-                                        <ActivityIndicator color="#ffffff" size="small" />
+                                        <ActivityIndicator color={theme.colors.brandContrast} size="small" />
                                     ) : (
                                         <View style={styles.buttonContent}>
                                             <Text style={styles.buttonText}>Sign In</Text>
-                                            <Icon name="arrow-forward" size={18} color="#ffffff" style={{ marginLeft: 6 }} />
+                                            <Icon name="arrow-forward" size={18} color={theme.colors.brandContrast} style={{ marginLeft: 6 }} />
                                         </View>
                                     )}
                                 </LinearGradient>
@@ -377,22 +377,22 @@ export default function LoginScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
     },
     background: {
         flex: 1,
-        paddingHorizontal: 24,
+        paddingHorizontal: theme.layout.screenGutterWide,
     },
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
-        paddingVertical: 30,
+        paddingVertical: theme.spacing.xxxl,
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: theme.spacing.xxl,
     },
     logo: {
         width: 120,
@@ -401,44 +401,44 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     appName: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: '#ffffff',
-        letterSpacing: 0.3,
+        ...theme.typography.h1,
+        color: theme.colors.white,
+        letterSpacing: theme.letterSpacing.wide,
     },
     appSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.75)',
-        marginTop: 6,
-        letterSpacing: 0.2,
+        ...theme.typography.bodySmall,
+        color: theme.colors.white,
+        opacity: 0.75,
+        marginTop: theme.spacing.xs,
+        letterSpacing: theme.letterSpacing.normal,
     },
     card: {
-        backgroundColor: '#ffffff',
-        borderRadius: 24,
-        padding: 24,
-        shadowColor: '#000000',
+        ...theme.styles.card,
+        ...theme.styles.shadow,
+        borderRadius: theme.radii.xxl,
+        padding: theme.spacing.xxl,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 16 },
-        shadowOpacity: 0.18,
-        shadowRadius: 24,
-        elevation: 10,
+        shadowOpacity: theme.isDark ? 0.35 : 0.18,
+        shadowRadius: theme.spacing.xxl,
+        elevation: theme.elevation.lg,
     },
     cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 4,
+        marginBottom: theme.spacing.xs,
     },
     selectionTitle: {
-        fontSize: 19,
-        fontWeight: '700',
-        color: '#1e293b',
-        marginLeft: 8,
+        ...theme.typography.h4,
+        color: theme.colors.text,
+        marginLeft: theme.spacing.sm,
     },
     selectionSubtitle: {
-        fontSize: 13,
-        color: '#64748b',
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
         textAlign: 'center',
-        marginBottom: 18,
+        marginBottom: theme.spacing.lg,
     },
     companyList: {
         maxHeight: 240,
@@ -447,71 +447,70 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        borderRadius: 14,
-        backgroundColor: '#f8fafc',
-        marginBottom: 10,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.lg,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.backgroundSubtle,
+        marginBottom: theme.spacing.sm,
         borderWidth: 1,
-        borderColor: '#e2e8f0',
+        borderColor: theme.colors.borderSubtle,
     },
     companyLeft: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     companyIconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#eff6ff',
+        width: theme.controlSizes.avatarSm + 4,
+        height: theme.controlSizes.avatarSm + 4,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.brandSoft,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
+        marginRight: theme.spacing.md,
     },
     companyItemText: {
-        fontSize: 15,
-        color: '#1e293b',
-        fontWeight: '700',
+        ...theme.typography.subtitle,
+        color: theme.colors.text,
+        fontWeight: theme.fontWeights.bold,
     },
     errorBanner: {
         flexDirection: 'row',
-        backgroundColor: '#ef4444',
-        padding: 12,
-        borderRadius: 12,
-        marginBottom: 16,
+        backgroundColor: theme.colors.dangerSoft,
+        padding: theme.spacing.md,
+        borderRadius: theme.radii.md,
+        marginBottom: theme.spacing.lg,
         alignItems: 'center',
     },
     errorBannerText: {
-        color: '#ffffff',
-        marginLeft: 8,
-        fontSize: 13,
-        fontWeight: '600',
+        ...theme.typography.caption,
+        color: theme.colors.danger,
+        marginLeft: theme.spacing.sm,
+        fontWeight: theme.fontWeights.semiBold,
         flex: 1,
     },
     inputLabel: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: '#475569',
-        marginBottom: 6,
-        letterSpacing: 0.2,
+        ...theme.typography.label,
+        color: theme.colors.textSecondary,
+        marginBottom: theme.spacing.xs,
+        letterSpacing: theme.letterSpacing.normal,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f8fafc',
-        borderRadius: 14,
-        marginBottom: 16,
-        paddingHorizontal: 12,
+        backgroundColor: theme.colors.inputBackground,
+        borderRadius: theme.radii.md,
+        marginBottom: theme.spacing.lg,
+        paddingHorizontal: theme.spacing.md,
         borderWidth: 1.5,
-        borderColor: '#e2e8f0',
-        height: 52,
+        borderColor: theme.colors.inputBorder,
+        height: theme.controlSizes.inputHeight + theme.spacing.xs,
     },
     focusedInput: {
-        borderColor: '#3b82f6',
-        backgroundColor: '#ffffff',
-        shadowColor: '#3b82f6',
+        borderColor: theme.colors.inputBorderFocused,
+        backgroundColor: theme.colors.surface,
+        shadowColor: theme.colors.brand,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.12,
+        shadowOpacity: theme.isDark ? 0.24 : 0.12,
         shadowRadius: 6,
         elevation: 2,
     },
@@ -524,14 +523,14 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     activeIconWrapper: {
-        backgroundColor: '#eff6ff',
+        backgroundColor: theme.colors.brandSoft,
     },
     input: {
         flex: 1,
         height: '100%',
-        color: '#1e293b',
-        fontSize: 15,
-        fontWeight: '500',
+        ...theme.typography.bodySmall,
+        color: theme.colors.text,
+        fontWeight: theme.fontWeights.medium,
         paddingVertical: 0,
         paddingHorizontal: 4,
     },
@@ -540,27 +539,27 @@ const styles = StyleSheet.create({
     },
     forgotPassword: {
         alignSelf: 'flex-end',
-        marginBottom: 20,
+        marginBottom: theme.spacing.xl,
     },
     forgotPasswordText: {
-        color: '#2563eb',
-        fontWeight: '600',
-        fontSize: 13,
+        ...theme.typography.caption,
+        color: theme.colors.brand,
+        fontWeight: theme.fontWeights.semiBold,
     },
     loginButtonWrapper: {
-        borderRadius: 14,
+        borderRadius: theme.radii.md,
         overflow: 'hidden',
-        shadowColor: '#2563eb',
+        shadowColor: theme.colors.brand,
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.35,
+        shadowOpacity: theme.isDark ? 0.25 : 0.35,
         shadowRadius: 10,
-        elevation: 6,
+        elevation: theme.elevation.md,
     },
     gradientButton: {
-        height: 52,
+        height: theme.controlSizes.buttonHeight + theme.spacing.xs,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 14,
+        borderRadius: theme.radii.md,
     },
     buttonContent: {
         flexDirection: 'row',
@@ -568,19 +567,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     buttonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '700',
-        letterSpacing: 0.4,
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
+        letterSpacing: theme.letterSpacing.wide,
     },
     footer: {
-        marginTop: 24,
-        marginBottom: 10,
+        marginTop: theme.spacing.xxl,
+        marginBottom: theme.spacing.sm + 2,
         alignItems: 'center',
     },
     footerText: {
-        color: 'rgba(255, 255, 255, 0.55)',
-        fontSize: 12,
-        fontWeight: '500',
+        ...theme.typography.caption,
+        color: theme.colors.white,
+        opacity: 0.65,
+        fontWeight: theme.fontWeights.medium,
     },
 });

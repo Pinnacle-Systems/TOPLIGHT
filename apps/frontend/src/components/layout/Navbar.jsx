@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Image, Modal, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,6 +15,7 @@ import { showMessage } from 'react-native-flash-message';
 import { Notofication_Approval_handler } from '../../utils/Notification_approval_Handler';
 import NotificationModal from '../Modal/NotificationModal';
 import { useGetUserMobDataQuery } from '../../store/api/dashboardApi';
+import { useAppTheme } from '../../theme';
 
 // Reanimated for bell
 import Animated, {
@@ -26,7 +27,21 @@ const ANGLE = 15;
 const TIME = 100;
 const EASING = Easing.elastic(1.5);
 
+const normalizeCompanyCode = (value) => String(value || '').trim().toUpperCase();
+
+const removeDuplicateCompanies = (companies) => {
+    const seenCodes = new Set();
+    return companies.filter(company => {
+        const code = normalizeCompanyCode(company?.value);
+        if (!code || seenCodes.has(code)) return false;
+        seenCodes.add(code);
+        return true;
+    });
+};
+
 export default function Navbar({ openSidebar, setopenSidebar }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const dispatch = useDispatch();
     const UserSelect = useSelector((state) => state?.UserDetails);
 
@@ -73,7 +88,7 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     const { data: mobData, isSuccess } = useGetUserMobDataQuery({
         params: { Idcard: UserSelect?.IDCARD, GCOMPCODE: UserSelect?.GCOMPCODE },
     });
-    const { data: notifiData } = useGetPermissionRequestQuery({
+    const { data: notifiData, refetch: refetchNotifications } = useGetPermissionRequestQuery({
         params: (UserSelect?.IDCARD == UserSelect?.hod || UserSelect?.IDCARD == UserSelect?.hr || UserSelect?.level != 'user')
             ? { hod: UserSelect?.IDCARD, hr: UserSelect?.IDCARD }
             : { emp: UserSelect?.IDCARD },
@@ -94,11 +109,12 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             .filter(Boolean),
     );
     const allCompanies = companyCode?.data || [];
-    const availableCompanies = isCompanyRestrictedLevel
+    const filteredCompanies = isCompanyRestrictedLevel
         ? allCompanies.filter(company =>
-            allocatedCompanyCodes.has(String(company?.value || '').trim().toUpperCase()),
+            allocatedCompanyCodes.has(normalizeCompanyCode(company?.value)),
         )
         : allCompanies;
+    const availableCompanies = removeDuplicateCompanies(filteredCompanies);
 
     useEffect(() => {
         if (mobData?.data) {
@@ -132,15 +148,15 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             message: 'New Notification',
             description: `Request from ${data?.data?.userdata?.username || 'Unknown User'}`,
             type: 'success',
-            backgroundColor: '#4CAF50',
-            color: '#fff',
+            backgroundColor: theme.colors.success,
+            color: theme.colors.brandContrast,
             icon: { icon: 'success', position: 'left' },
             style: {
-                padding: 16, borderLeftWidth: 5, borderLeftColor: '#2e7d32',
+                padding: theme.spacing.lg, borderLeftWidth: 5, borderLeftColor: theme.colors.success,
                 borderRadius: 8, marginTop: 10, marginHorizontal: 10, elevation: 5,
             },
-            titleStyle: { fontSize: 16, fontWeight: 'bold' },
-            textStyle: { fontSize: 14 },
+            titleStyle: { ...theme.typography.title, color: theme.colors.brandContrast },
+            textStyle: { ...theme.typography.bodySmall, color: theme.colors.brandContrast },
             duration: 5000,
         });
     };
@@ -175,15 +191,21 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     const handleCompanySwitch = async (newCompanyCode) => {
         try {
             setDropdownVisible(false);
-            if (newCompanyCode === UserSelect?.GCOMPCODE) return;
+            if (normalizeCompanyCode(newCompanyCode) === normalizeCompanyCode(UserSelect?.GCOMPCODE)) return;
             if (
                 isCompanyRestrictedLevel &&
-                !availableCompanies.some(company => company?.value === newCompanyCode)
+                !availableCompanies.some(company =>
+                    normalizeCompanyCode(company?.value) === normalizeCompanyCode(newCompanyCode),
+                )
             ) {
                 showMessage({
                     message: 'Company Not Assigned',
                     description: 'You can only switch to a company assigned to your account.',
                     type: 'warning',
+                    backgroundColor: theme.colors.warning,
+                    color: theme.colors.brandContrast,
+                    titleStyle: { ...theme.typography.title, color: theme.colors.brandContrast },
+                    textStyle: { ...theme.typography.bodySmall, color: theme.colors.brandContrast },
                 });
                 return;
             }
@@ -240,10 +262,10 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
                             style={styles.companySelector}
                         >
                             <View style={styles.companyIconWrapper}>
-                                <MaterialIcons name="business" size={16} color="#007AFF" />
+                                <MaterialIcons name="business" size={16} color={theme.colors.brand} />
                             </View>
                             <Text style={styles.companyText}>{UserSelect?.GCOMPCODE || 'Company'}</Text>
-                            <MaterialIcons name="keyboard-arrow-down" size={20} color="#64748B" />
+                            <MaterialIcons name="keyboard-arrow-down" size={20} color={theme.colors.textMuted} />
                         </Pressable>
                     </View>
 
@@ -263,7 +285,7 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
                                 </View>
                             )}
                             <Animated.View style={animatedStyle}>
-                                <Ionicons name="notifications" size={24} color="#1E293B" />
+                                <Ionicons name="notifications" size={24} color={theme.colors.text} />
                             </Animated.View>
                         </Pressable>
                     </View>
@@ -277,6 +299,8 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             setModalVisible={setModalVisible}
             modalVisible={modalVisible}
             livedata={liveNotifi}
+            data={notifiData}
+            refresh={refetchNotifications}
         />
 
         {/* Company Dropdown - rendered in a transparent Modal so it floats above all content */}
@@ -320,7 +344,7 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
                                 </Pressable>
                             ))
                         ) : (
-                            <Text style={[styles.dropdownItemText, { padding: 8, color: '#94a3b8' }]}>
+                            <Text style={[styles.dropdownItemText, styles.loadingDropdownText]}>
                                 Loading...
                             </Text>
                         )}
@@ -332,39 +356,39 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     headerWrapper: {
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
         zIndex: 50,
     },
     safeArea: {
-        backgroundColor: '#FFFFFF',
-        borderBottomLeftRadius: 26,
-        borderBottomRightRadius: 26,
-        shadowColor: '#0F172A',
+        backgroundColor: theme.colors.surface,
+        borderBottomLeftRadius: theme.radii.xxl,
+        borderBottomRightRadius: theme.radii.xxl,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.08,
+        shadowOpacity: theme.isDark ? 0.3 : 0.08,
         shadowRadius: 14,
         elevation: 6,
         borderBottomWidth: 1,
         borderLeftWidth: 1,
         borderRightWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
     },
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 14,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingTop: theme.spacing.sm,
+        paddingBottom: theme.spacing.md + 2,
     },
     leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     logoWrap: {
-        marginLeft: 12,
+        marginLeft: theme.spacing.md,
         justifyContent: 'center',
     },
     logo: {
@@ -372,22 +396,22 @@ const styles = StyleSheet.create({
         height: 32,
     },
     iconBtn: {
-        width: 42,
-        height: 42,
-        borderRadius: 14,
-        backgroundColor: '#F8FAFC',
+        width: theme.controlSizes.avatarMd - 2,
+        height: theme.controlSizes.avatarMd - 2,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.backgroundSubtle,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#E2E8F0',
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.24 : 0.04,
         shadowRadius: 4,
         elevation: 1,
     },
     iconBtnPressed: {
-        backgroundColor: '#F1F5F9',
+        backgroundColor: theme.colors.surfaceSunken,
         transform: [{ scale: 0.96 }],
     },
     hamburgerWrap: {
@@ -400,19 +424,19 @@ const styles = StyleSheet.create({
         width: 19,
         height: 2.2,
         borderRadius: 2,
-        backgroundColor: '#1E293B',
+        backgroundColor: theme.colors.text,
     },
     hamburgerLineMid: {
         width: 12,
         height: 2.2,
         borderRadius: 2,
-        backgroundColor: '#1E293B',
+        backgroundColor: theme.colors.text,
     },
     hamburgerLineBottom: {
         width: 16,
         height: 2.2,
         borderRadius: 2,
-        backgroundColor: '#1E293B',
+        backgroundColor: theme.colors.text,
     },
     centerSection: {
         flex: 1,
@@ -421,57 +445,56 @@ const styles = StyleSheet.create({
     companySelector: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 24,
+        backgroundColor: theme.colors.backgroundSubtle,
+        paddingHorizontal: theme.spacing.lg,
+        paddingVertical: theme.spacing.sm,
+        borderRadius: theme.radii.pill,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
     },
     companyIconWrapper: {
-        backgroundColor: '#EFF6FF',
-        padding: 4,
-        borderRadius: 12,
-        marginRight: 8,
+        backgroundColor: theme.colors.brandSoft,
+        padding: theme.spacing.xs,
+        borderRadius: theme.radii.md,
+        marginRight: theme.spacing.sm,
     },
     companyText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#1E293B',
-        marginRight: 4,
+        ...theme.typography.subtitle,
+        color: theme.colors.text,
+        marginRight: theme.spacing.xs,
     },
     dropdownOverlay: {
         flex: 1,
         backgroundColor: 'transparent',
     },
     dropdownMenu: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 8,
-        shadowColor: '#000',
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.lg,
+        padding: theme.spacing.sm,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
+        shadowOpacity: theme.isDark ? 0.35 : 0.15,
         shadowRadius: 20,
         elevation: 20,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
     },
     dropdownItem: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 10,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.lg,
+        borderRadius: theme.radii.md,
     },
     activeDropdownItem: {
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.surfaceSelected,
     },
     dropdownItemText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#475569',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
     },
     activeDropdownItemText: {
-        color: '#007AFF',
-        fontWeight: '700',
+        color: theme.colors.brand,
+        fontWeight: theme.fontWeights.bold,
     },
     rightActions: {
         flexDirection: 'row',
@@ -481,20 +504,24 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: -2,
         right: -2,
-        backgroundColor: '#EF4444',
-        borderRadius: 10,
-        minWidth: 20,
-        height: 20,
+        backgroundColor: theme.colors.danger,
+        borderRadius: theme.radii.pill,
+        minWidth: theme.spacing.xl,
+        height: theme.spacing.xl,
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 10,
-        paddingHorizontal: 4,
+        paddingHorizontal: theme.spacing.xs,
         borderWidth: 2,
-        borderColor: '#FFFFFF',
+        borderColor: theme.colors.surface,
     },
     badgeText: {
-        color: 'white',
-        fontSize: 10,
-        fontWeight: 'bold',
+        color: theme.colors.brandContrast,
+        ...theme.typography.overline,
+        letterSpacing: 0,
+    },
+    loadingDropdownText: {
+        padding: theme.spacing.sm,
+        color: theme.colors.textDisabled,
     },
 });

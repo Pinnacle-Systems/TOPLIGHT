@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,12 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 import { getKmEntrySetting, setKmEntrySetting } from '../../../utils/kmSettings';
 import { setKmEntryEnabled } from '../../../store/slices/ondutyInputSlice';
+import { useAppTheme } from '../../../theme';
 
 export default function AdvancedSettings() {
   const dispatch = useDispatch();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [kmEntry, setKmEntry] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -53,7 +56,7 @@ export default function AdvancedSettings() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialCommunityIcons name="speedometer" size={22} color="#3b82f6" />
+              <MaterialCommunityIcons name="speedometer" size={22} color={theme.colors.brand} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.settingName}>Enable KM Entry</Text>
                 <Text style={styles.settingSubtext}>Show vehicle & odometer KM entry on OnDuty</Text>
@@ -62,8 +65,8 @@ export default function AdvancedSettings() {
             <Switch
               value={kmEntry}
               onValueChange={handleToggleKmEntry}
-              thumbColor={Platform.OS === 'android' ? '#ffffff' : undefined}
-              trackColor={{ true: '#3b82f6', false: '#cbd5e1' }}
+              thumbColor={Platform.OS === 'android' ? theme.colors.white : undefined}
+              trackColor={{ true: theme.colors.brand, false: theme.colors.border }}
             />
           </View>
         </View>
@@ -74,7 +77,7 @@ export default function AdvancedSettings() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Icon name="notifications" size={22} color="#3b82f6" />
+              <Icon name="notifications" size={22} color={theme.colors.brand} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.settingName}>Push Notifications</Text>
                 <Text style={styles.settingSubtext}>Receive alerts for approvals</Text>
@@ -83,14 +86,14 @@ export default function AdvancedSettings() {
             <Switch
               value={notifications}
               onValueChange={setNotifications}
-              thumbColor={Platform.OS === 'android' ? '#ffffff' : undefined}
-              trackColor={{ true: '#3b82f6', false: '#cbd5e1' }}
+              thumbColor={Platform.OS === 'android' ? theme.colors.white : undefined}
+              trackColor={{ true: theme.colors.brand, false: theme.colors.border }}
             />
           </View>
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Icon name="fingerprint" size={22} color="#3b82f6" />
+              <Icon name="fingerprint" size={22} color={theme.colors.brand} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.settingName}>Biometric Login</Text>
                 <Text style={styles.settingSubtext}>Sign in with fingerprint</Text>
@@ -99,8 +102,8 @@ export default function AdvancedSettings() {
             <Switch
               value={biometricAuth}
               onValueChange={setBiometricAuth}
-              thumbColor={Platform.OS === 'android' ? '#ffffff' : undefined}
-              trackColor={{ true: '#3b82f6', false: '#cbd5e1' }}
+              thumbColor={Platform.OS === 'android' ? theme.colors.white : undefined}
+              trackColor={{ true: theme.colors.brand, false: theme.colors.border }}
             />
           </View>
         </View>
@@ -111,14 +114,14 @@ export default function AdvancedSettings() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Icon name="storage" size={22} color="#3b82f6" />
+              <Icon name="storage" size={22} color={theme.colors.brand} />
               <Text style={styles.settingName}>Cache Size</Text>
             </View>
             <Text style={styles.cacheText}>{cacheSize}</Text>
           </View>
 
           <TouchableOpacity style={styles.clearCacheButton} onPress={clearCache}>
-            <Icon name="cleaning-services" size={18} color="#ef4444" style={{ marginRight: 6 }} />
+            <Icon name="cleaning-services" size={18} color={theme.colors.danger} style={{ marginRight: 6 }} />
             <Text style={styles.clearCacheText}>Clear Cache</Text>
           </TouchableOpacity>
         </View>
@@ -129,7 +132,7 @@ export default function AdvancedSettings() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Icon name="info" size={22} color="#3b82f6" />
+              <Icon name="info" size={22} color={theme.colors.brand} />
               <Text style={styles.settingName}>App Version</Text>
             </View>
             <Text style={styles.versionText}>TopLight v2.0</Text>
@@ -140,79 +143,71 @@ export default function AdvancedSettings() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   scrollContainer: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: theme.layout.screenGutter,
+    paddingBottom: theme.spacing.huge,
   },
   section: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    ...theme.styles.card,
+    ...theme.styles.shadow,
+    marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.borderSubtle,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
+    ...theme.typography.overline,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.md,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.divider,
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 12,
+    gap: theme.spacing.md,
   },
   settingName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1e293b',
+    ...theme.typography.subtitle,
+    color: theme.colors.text,
   },
   settingSubtext: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginTop: 2,
+    ...theme.typography.caption,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xxs,
   },
   cacheText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#64748b',
+    ...theme.typography.label,
+    color: theme.colors.textMuted,
   },
   versionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#3b82f6',
+    ...theme.typography.label,
+    color: theme.colors.brand,
   },
   clearCacheButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef2f2',
+    backgroundColor: theme.colors.dangerSoft,
     borderWidth: 1,
-    borderColor: '#fee2e2',
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 14,
+    borderColor: theme.colors.dangerSoft,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    marginTop: theme.spacing.md,
   },
   clearCacheText: {
-    color: '#ef4444',
-    fontSize: 14,
-    fontWeight: '600',
+    ...theme.typography.label,
+    color: theme.colors.danger,
   },
 });

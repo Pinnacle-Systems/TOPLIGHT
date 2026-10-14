@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import CustomText from '../Text/CustomText';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { useAppTheme } from '../../theme';
 
 export const CustomDropdownList = ({ 
   selected, 
@@ -24,54 +24,9 @@ export const CustomDropdownList = ({
   onselected,
   ...props 
 }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, disabled), [theme, disabled]);
   const [isFocus, setIsFocus] = useState(false);
-
-  const styles = StyleSheet.create({
-    container: {
-      marginVertical: 4,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '600',
-      marginBottom: 6,
-      color: '#333',
-    },
-    disabledLabel: {
-      color: '#999',
-    },
-    dropdown: {
-      height: 45,
-      borderColor: '#ddd',
-      borderWidth: 1,
-      borderRadius: 8,
-      paddingHorizontal:5,
-      backgroundColor: disabled ? '#f5f5f5' : '#fff',
-    },
-    placeholderStyle: {
-      fontSize: 14,
-      color: '#999',
-    },
-    selectedTextStyle: {
-      fontSize: 14,
-      color: disabled ? '#999' : '#333',
-    },
-    iconStyle: {
-      width: 20,
-      height: 20,
-    },
-    inputSearchStyle: {
-      height: 40,
-      fontSize: 14,
-    },
-    dropdownContainer: {
-      borderRadius: 8,
-      borderColor: '#ddd',
-      marginTop: 4,
-    },
-    icon: {
-      marginRight: 5,
-    },
-  });
 
   // Transform data to required format
   const transformedData = (options?.data || []).map(item => ({
@@ -114,15 +69,15 @@ export const CustomDropdownList = ({
         renderLeftIcon={() => (
           <AntDesign
             style={styles.icon}
-            color={isFocus ? '#667eea' : '#999'}
+            color={isFocus ? theme.colors.brand : theme.colors.placeholder}
             name="search1"
             size={20}
           />
         )}
         disable={disabled}
         containerStyle={styles.dropdownContainer}
-        activeColor="#f0f4ff"
-        itemTextStyle={{ color: '#333' }}
+        activeColor={theme.colors.surfaceSelected}
+        itemTextStyle={styles.itemText}
         selectedTextProps={{ numberOfLines: 1 }}
         flatListProps={{
           keyboardShouldPersistTaps: 'always'
@@ -132,3 +87,56 @@ export const CustomDropdownList = ({
     </View>
   );
 };
+
+const createStyles = (theme, disabled) => StyleSheet.create({
+  container: {
+    marginVertical: theme.spacing.xs,
+  },
+  label: {
+    ...theme.typography.label,
+    marginBottom: theme.spacing.xs + 2,
+    color: theme.colors.textSecondary,
+  },
+  disabledLabel: {
+    color: theme.colors.disabledText,
+  },
+  dropdown: {
+    height: theme.controlSizes.inputHeightCompact + theme.spacing.xs,
+    borderColor: theme.colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.xs + 1,
+    backgroundColor: disabled ? theme.colors.disabledBackground : theme.colors.inputBackground,
+  },
+  placeholderStyle: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.placeholder,
+  },
+  selectedTextStyle: {
+    ...theme.typography.bodySmall,
+    color: disabled ? theme.colors.disabledText : theme.colors.text,
+  },
+  itemText: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+  },
+  iconStyle: {
+    width: theme.controlSizes.iconMd,
+    height: theme.controlSizes.iconMd,
+  },
+  inputSearchStyle: {
+    height: theme.controlSizes.inputHeightCompact,
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.inputBackground,
+  },
+  dropdownContainer: {
+    borderRadius: theme.radii.md,
+    borderColor: theme.colors.border,
+    marginTop: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+  },
+  icon: {
+    marginRight: theme.spacing.xs,
+  },
+});

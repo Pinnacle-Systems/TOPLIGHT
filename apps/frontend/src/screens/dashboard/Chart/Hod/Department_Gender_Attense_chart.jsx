@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator, TouchableOpacity, Text, Alert } from 'react-native';
 import WebView from 'react-native-webview';
+import { useAppTheme } from '../../../../theme';
 
 const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, setopenModal }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -90,7 +93,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: transparent;
+            background-color: ${theme.colors.surface};
             display: flex;
             justify-content: center;
             align-items: center;
@@ -107,13 +110,13 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
             height: 100% !important;
           }
           .error-message {
-            color: #EF4444;
+            color: ${theme.colors.danger};
             text-align: center;
             padding: 20px;
             font-size: 14px;
           }
           .loading-message {
-            color: #6B7280;
+            color: ${theme.colors.textSecondary};
             text-align: center;
             padding: 20px;
             font-size: 14px;
@@ -154,16 +157,16 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
                       label: 'Employees',
                       data: [${malePresent}, ${femalePresent}, ${maleAbsent}, ${femaleAbsent}],
                       backgroundColor: [
-                        'rgba(79, 70, 229, 0.8)',
-                        'rgba(219, 39, 119, 0.8)',
-                        'rgba(79, 70, 229, 0.5)',
-                        'rgba(219, 39, 119, 0.5)'
+                        '${theme.colors.brand}',
+                        '${theme.colors.accent}',
+                        '${theme.colors.brandStrong}',
+                        '${theme.colors.accentSoft}'
                       ],
                       borderColor: [
-                        'rgba(79, 70, 229, 1)',
-                        'rgba(219, 39, 119, 1)',
-                        'rgba(79, 70, 229, 0.8)',
-                        'rgba(219, 39, 119, 0.8)'
+                        '${theme.colors.brand}',
+                        '${theme.colors.accent}',
+                        '${theme.colors.brandStrong}',
+                        '${theme.colors.accent}'
                       ],
                       borderWidth: 1,
                       borderRadius: 4,
@@ -180,10 +183,10 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
                       },
                       tooltip: {
                         enabled: true,
-                        backgroundColor: 'rgba(31, 41, 55, 0.9)',
-                        titleColor: '#F9FAFB',
-                        bodyColor: '#F9FAFB',
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: '${theme.colors.surfaceRaised}',
+                        titleColor: '${theme.colors.text}',
+                        bodyColor: '${theme.colors.text}',
+                        borderColor: '${theme.colors.border}',
                         borderWidth: 1,
                         padding: 12,
                         cornerRadius: 8,
@@ -203,10 +206,10 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
                         beginAtZero: true,
                         grid: {
                           drawBorder: false,
-                          color: 'rgba(0, 0, 0, 0.05)'
+                          color: '${theme.colors.divider}'
                         },
                         ticks: {
-                          color: '#6B7280',
+                          color: '${theme.colors.textSecondary}',
                           font: {
                             weight: '500'
                           }
@@ -218,7 +221,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
                           drawBorder: false
                         },
                         ticks: {
-                          color: '#6B7280',
+                          color: '${theme.colors.textSecondary}',
                           font: {
                             weight: '500'
                           }
@@ -264,7 +267,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
         </script>
       </body>
     </html>
-  `, [malePresent, femalePresent, maleAbsent, femaleAbsent]);
+  `, [malePresent, femalePresent, maleAbsent, femaleAbsent, theme]);
 
   const handleWebViewMessage = useCallback((event) => {
     try {
@@ -320,7 +323,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
         ref={webViewRef}
         originWhitelist={['*']}
         source={{ html: htmlContent }}
-        style={styles.chart}
+        style={[styles.chart, { backgroundColor: theme.colors.surface }]}
         javaScriptEnabled={true}
         renderToHardwareTextureAndroid={true}
         domStorageEnabled={true}
@@ -359,7 +362,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
         onMessage={handleWebViewMessage}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4F46E5" />
+            <ActivityIndicator size="large" color={theme.colors.brand} />
             <Text style={styles.loadingText}>Loading chart...</Text>
           </View>
         )}
@@ -368,7 +371,7 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
       {(isLoading || error || showRetryPrompt) && (
         <View style={styles.overlay}>
           {isLoading && !error && !showRetryPrompt && (
-            <ActivityIndicator size="large" color="#4F46E5" />
+            <ActivityIndicator size="large" color={theme.colors.brand} />
           )}
           
           {(error || showRetryPrompt) && (
@@ -395,23 +398,24 @@ const Department_Gender_Attense_chart = ({ departmentData, setClickedGender, set
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     height: 320,
     width: '100%',
     borderRadius: 16,
     overflow: 'hidden',
     marginVertical: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.borderSubtle,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
   },
   chart: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   overlay: {
     position: 'absolute',
@@ -421,10 +425,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: theme.colors.scrim,
   },
   retryPrompt: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     padding: 20,
     borderRadius: 12,
     alignItems: 'center',
@@ -432,7 +436,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   errorText: {
-    color: '#EF4444',
+    color: theme.colors.danger,
     fontSize: 16,
     marginBottom: 16,
     textAlign: 'center',
@@ -440,18 +444,18 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#4F46E5',
+    backgroundColor: theme.colors.brand,
     borderRadius: 8,
     minWidth: 120,
   },
   retryButtonText: {
-    color: '#FFFFFF',
+    color: theme.colors.brandContrast,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
   },
   retryCountText: {
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     fontSize: 12,
     marginTop: 8,
   },
@@ -459,14 +463,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   loadingText: {
     marginTop: 12,
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     fontSize: 14,
   },
 });
 
 export default React.memo(Department_Gender_Attense_chart);
-

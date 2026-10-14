@@ -1,15 +1,13 @@
-import React, { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Common_Context } from '../context/CommonContext';
 import { APP_ROUTES } from './routes';
-import HomeScreen from '../screens/dashboard/HomeScreen';
 import { View, Text, ActivityIndicator } from 'react-native';
-
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import SidebarTabs from './SidebarTabs';
 import NoAllocatedPage from '../screens/auth/NoAllocatedPage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -38,7 +36,7 @@ export default function MainNavigator() {
     // Filter Sidebar tabs
     const filterSidebar = useMemo(() => {
         if (isAdmin === 1 || isAdmin === true) return SidebarTabs;
-        return SidebarTabs.filter(tab => allowedKeys.includes(tab.path) || tab.path === "HOME");
+        return SidebarTabs.filter(tab => allowedKeys.includes(tab.path) || tab.path === "HOME" || tab.path === "map");
     }, [isAdmin, allowedKeys]);
 
     // 0. Show a loader while the RTK Query for roles is in flight

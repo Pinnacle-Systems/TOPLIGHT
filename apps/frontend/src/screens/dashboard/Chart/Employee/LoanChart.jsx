@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Alert } from 'react-native';
 import { NumbertoCurrency } from '../../../../components/Utils/NumberToCurrency';
 import WebView from 'react-native-webview';
+import { useAppTheme } from '../../../../theme';
 
 const LoanProgressBar = ({data}) => {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
 
 const [Loandata]= data || [{}]
@@ -26,6 +29,7 @@ const screenWidth = Dimensions.get('window').width;
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
      <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
       <style>
+      html, body { background: ${theme.colors.surface}; color: ${theme.colors.text}; }
       *{
     font-family: "Delius", cursive !important;
        font-style: normal;
@@ -68,9 +72,11 @@ const screenWidth = Dimensions.get('window').width;
       <script>
         
         var options = {
+          theme: { mode: '${theme.mode}' },
           series: [${Math.round(progress * 100)}],
           chart: {
           type: 'radialBar',
+          foreColor: '${theme.colors.textSecondary}',
           offsetY: -20,
           sparkline: {
             enabled: true
@@ -81,14 +87,14 @@ const screenWidth = Dimensions.get('window').width;
             startAngle: -90,
             endAngle: 90,
             track: {
-              background: "#E8EFF4",
+              background: "${theme.colors.surfaceSunken}",
               strokeWidth: '40%',
               margin: 5, // margin is in pixels
               dropShadow: {
                 enabled: true,
                 top: 2,
                 left: 0,
-                color: '#d7e5f5',
+                color: '${theme.colors.borderSubtle}',
                 opacity: .5,
                 blur: 4
               }
@@ -139,7 +145,7 @@ const screenWidth = Dimensions.get('window').width;
   useEffect(() => {
     const currentProgress = TOTALPAID / TOTLOANAMT;
     setProgress(currentProgress);
-  }, [TOTALPAID]);
+  }, [TOTALPAID, TOTLOANAMT]);
 
   return (
     <View style={styles.container} >
@@ -167,13 +173,13 @@ const screenWidth = Dimensions.get('window').width;
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 0,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     margin:0,marginTop:-10,
   },
   header: {
@@ -185,6 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight:"bold",
     position:"absolute",
+    color: theme.colors.text,
     zIndex:10,
 
   },
@@ -195,5 +202,3 @@ const styles = StyleSheet.create({
 });
 
 export default LoanProgressBar;
-
-

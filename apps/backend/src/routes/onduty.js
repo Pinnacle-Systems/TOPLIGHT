@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { Add__vechilekm, addOnduty_master, get__Date_Wise_Fuel, get__Date_Wise_Fuel_Individual, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/Onduty.service.js';
+import { Add__vechilekm, addOnduty_master, get__Date_Wise_Fuel, get__Date_Wise_Fuel_Individual, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_tracking_users, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/Onduty.service.js';
 import { upload } from '../Utiles/Multer.js';
 
 
@@ -27,6 +27,7 @@ router?.get("/get__Date_Wise_Fuel_Individual",get__Date_Wise_Fuel_Individual)
 router?.post("/send_location",send_location)
 router?.get("/get_live_location",get_live_location)
 router?.get("/get_live_user",get_live_user)
+router?.get("/get_tracking_users",get_tracking_users)
 router?.get("/get_reached",get_reached)
 router?.get("/get__vechilekm",get__vechilekm)
 router?.post("/add__vechilekm",Add__vechilekm)

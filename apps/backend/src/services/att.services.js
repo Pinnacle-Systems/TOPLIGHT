@@ -1,6 +1,72 @@
 import { getConnection } from "../constants/db.connection.js";
 import formatDateToOracle from "../Utiles/OracleDateFormat.js";
 import { generateUniqueId_Number } from "../Utiles/UniqueNumber.js";
+import { prisma_Connector } from "../../index.js";
+
+async function resolvePunchTarget(req, res) {
+  const requesterIdcard = String(req?.headers?.idcard || "").trim();
+  const bodyIdcard = String(req?.body?.idcard || req?.body?.idCard || "").trim();
+  const targetIdcard = bodyIdcard || requesterIdcard;
+  const bodyCompCode = req?.body?.compcode || req?.body?.compCode;
+  const isDelegatedPunch =
+    targetIdcard.toUpperCase() !== requesterIdcard.toUpperCase();
+  const targetCompCode = String(
+    isDelegatedPunch
+      ? bodyCompCode || ""
+      : req?.headers?.compcode || bodyCompCode || ""
+  ).trim().toUpperCase();
+
+  if (!targetIdcard || !targetCompCode) {
+    res.status(400).json({
+      status: 0,
+      message: "Employee ID and company code are required.",
+    });
+    return null;
+  }
+
+  if (isDelegatedPunch) {
+    if (!requesterIdcard) {
+      res.status(401).json({ status: 0, message: "Requester identity is required." });
+      return null;
+    }
+
+    const requester = await prisma_Connector.user.findUnique({
+      where: { Idcard: requesterIdcard },
+      select: {
+        Idcard: true,
+        isAdmin: true,
+        Companies: { select: { companyCode: true } },
+      },
+    });
+
+    if (!requester) {
+      res.status(403).json({ status: 0, message: "Requester is not authorized to punch for employees." });
+      return null;
+    }
+
+    if (!requester.isAdmin) {
+      const hasCompanyAccess = requester.Companies.some(
+        company => String(company.companyCode || "").trim().toUpperCase() === targetCompCode
+      );
+      if (!hasCompanyAccess) {
+        res.status(403).json({ status: 0, message: "You are not authorized to punch for this company." });
+        return null;
+      }
+
+      const assignedEmployee = await prisma_Connector.user.findFirst({
+        where: { Idcard: targetIdcard, hod: requester.Idcard },
+        select: { Idcard: true },
+      });
+
+      if (!assignedEmployee) {
+        res.status(403).json({ status: 0, message: "You are not authorized to punch for this employee." });
+        return null;
+      }
+    }
+  }
+
+  return { COMPCODE: targetCompCode, Idcard: targetIdcard };
+}
 
 // ---------------------------------------------------------------------------
 // SHARED HELPER — get last punch row for today
@@ -30,7 +96,7 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
 // ---------------------------------------------------------------------------
 // SHARED HELPER — INSERT a new punch row
 // ---------------------------------------------------------------------------
-async function insertPunchRow(connection, { COMPCODE, Idcard, inout, atttime, userId, empname, location }) {
+async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, atttime, empname, location }) {
   const UNQID = String(generateUniqueId_Number());
  const now      = new Date();
   const dd       = String(now.getDate()).padStart(2, "0");
@@ -41,6 +107,8 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, atttime, us
                  + dateStr
                  + String(atttime).substring(0, 8); 
 
+
+                
 
   const sql = `
     INSERT INTO PSSATT (
@@ -59,7 +127,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, atttime, us
     USERNAME : empname  ?? null,
     IPADD    : location ?? null,
     INOUT    : inout,               // 1 = IN, 0 = OUT
-    PMNO     : userId ? Number(userId) : null,
+    PMNO     : pmno,
     UNQID,
     CHK,                                                        // ✅ max 28 chars
     DTYPE    : "MOB-BULK",    
@@ -73,22 +141,24 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, atttime, us
 // ---------------------------------------------------------------------------
 // PUNCH IN  — POST /attendance/punch-in
 // Headers : compcode, idcard
-// Body    : { userId, empname, latitude, longitude, location }
+// Body    : { idcard, compcode, empname, location }
 // ---------------------------------------------------------------------------
 export async function punchIn(req, res) {
-  const bodyCompCode = req.body?.compcode || req.body?.compCode;
-  const bodyIdcard   = req.body?.idcard   || req.body?.idCard;
-
-  const COMPCODE = String(bodyCompCode || req?.headers?.compcode || "").toUpperCase();
-  const Idcard   = String(bodyIdcard   || req?.headers?.idcard   || "");
-  const { userId, empname, latitude, longitude, location } = req.body;
-
-  const connection = await getConnection(res);
+  const { empname, location } = req.body;
+  let connection;
 
   try {
+    const target = await resolvePunchTarget(req, res);
+
+    console.log("punchIn target:", target);
+    if (!target) return;
+    const { COMPCODE, Idcard } = target;
+    connection = await getConnection(res);
+
     // 1. Check last punch — must be INOUT=0 (OUT) or no row at all to allow IN
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
 
+    
     if (lastPunch && lastPunch.inout === 1) {
       // Last punch was IN → already punched in, block duplicate
       return res.status(400).json({
@@ -107,8 +177,8 @@ export async function punchIn(req, res) {
       COMPCODE,
       Idcard,
       inout   : 1,           // IN
+      pmno    : 1,           // MOBATTLOG_TRG maps PMNO=2 to OUT; other values map to IN
       atttime : inTime,
-      userId,
       empname,
       location,
     });
@@ -150,16 +220,15 @@ export async function punchIn(req, res) {
 // Body    : { latitude, longitude, location }
 // ---------------------------------------------------------------------------
 export async function punchOut(req, res) {
-  const bodyCompCode = req.body?.compcode || req.body?.compCode;
-  const bodyIdcard   = req.body?.idcard   || req.body?.idCard;
-
-  const COMPCODE = String(bodyCompCode || req?.headers?.compcode || "").toUpperCase();
-  const Idcard   = String(bodyIdcard   || req?.headers?.idcard   || "");
   const { location } = req.body;
-
-  const connection = await getConnection(res);
+  let connection;
 
   try {
+    const target = await resolvePunchTarget(req, res);
+    if (!target) return;
+    const { COMPCODE, Idcard } = target;
+    connection = await getConnection(res);
+
     // 1. Check last punch — must be INOUT=1 (IN) to allow OUT
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
 
@@ -187,8 +256,8 @@ export async function punchOut(req, res) {
       COMPCODE,
       Idcard,
       inout   : 0,           // OUT
+      pmno    : 2,           // MOBATTLOG_TRG uses PMNO=2 to mark an OUT punch
       atttime : outTime,
-      userId  : null,        // not needed for out row
       empname : null,
       location,
     });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     TouchableOpacity,
@@ -15,8 +15,11 @@ import { BASE_URL, USERS_API } from '@env';
 import ImageViewModal from '../../components/Modal/ImageViewModal';
 import { CustomNavigation } from '../../components/Utils/NavigationRef';
 import { Current_moment_dataformat } from '../../components/Utils/FormatedDate';
+import { useAppTheme } from '../../theme';
 
 export function UserProfileCard({ USER, picture, openCamera }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const { data: data_IN } = useGetInQuery();
     const UserSelect = useSelector((state) => state?.UserDetails);
     const [openImageModal, setOpenImageModal] = useState(false);
@@ -43,10 +46,10 @@ export function UserProfileCard({ USER, picture, openCamera }) {
 
     // Status config
     const statusConfig = isOnDuty
-        ? { label: '● On Duty', bg: '#FEE2E2', text: '#DC2626', icon: 'van-quick' }
+        ? { label: '● On Duty', bg: theme.colors.dangerSoft, text: theme.colors.danger, icon: 'van-quick' }
         : isInOffice
-        ? { label: '● In Office', bg: '#DCFCE7', text: '#16A34A', icon: 'office-building-check' }
-        : { label: '● Not Punched', bg: '#F1F5F9', text: '#64748B', icon: 'clock-outline' };
+        ? { label: '● In Office', bg: theme.colors.successSoft, text: theme.colors.success, icon: 'office-building-check' }
+        : { label: '● Not Punched', bg: theme.colors.surfaceSunken, text: theme.colors.textSecondary, icon: 'clock-outline' };
 
     const photoUri = picture || `${BASE_URL}/${USERS_API}/getUserImage/${resolvedUsername?.toLowerCase()}`;
 
@@ -85,7 +88,7 @@ export function UserProfileCard({ USER, picture, openCamera }) {
                             onPress={() => openCamera(true)}
                             activeOpacity={0.8}
                         >
-                            <MaterialCommunityIcons name="camera" size={13} color="#FFFFFF" />
+                            <MaterialCommunityIcons name="camera" size={13} color={theme.colors.brandContrast} />
                         </TouchableOpacity>
 
                         {/* Status badge under avatar */}
@@ -108,7 +111,7 @@ export function UserProfileCard({ USER, picture, openCamera }) {
                         {/* ID pill */}
                         {(EmployeeDetail?.EmpId || resolvedIdcard) ? (
                             <View style={styles.idPill}>
-                                <MaterialCommunityIcons name="badge-account-outline" size={11} color="#007AFF" />
+                                <MaterialCommunityIcons name="badge-account-outline" size={11} color={theme.colors.brand} />
                                 <Text style={styles.idPillText}>
                                     {EmployeeDetail?.EmpId || resolvedIdcard}
                                 </Text>
@@ -132,7 +135,7 @@ export function UserProfileCard({ USER, picture, openCamera }) {
                         {/* Punch times row */}
                         <View style={styles.punchRow}>
                             <View style={styles.punchItem}>
-                                <MaterialCommunityIcons name="calendar-today" size={12} color="#94A3B8" />
+                                <MaterialCommunityIcons name="calendar-today" size={12} color={theme.colors.textMuted} />
                                 <Text style={styles.punchItemText}>
                                     {Current_moment_dataformat('MMM DD')}
                                 </Text>
@@ -144,8 +147,8 @@ export function UserProfileCard({ USER, picture, openCamera }) {
                                 style={styles.punchItem}
                                 onPress={isOnDuty ? () => CustomNavigation('onduty') : undefined}
                             >
-                                <MaterialCommunityIcons name="login" size={12} color="#16A34A" />
-                                <Text style={[styles.punchItemText, { color: '#16A34A' }]}>
+                                <MaterialCommunityIcons name="login" size={12} color={theme.colors.success} />
+                                <Text style={[styles.punchItemText, { color: theme.colors.success }]}>
                                     {UserSelect?.INTIME || '--:--'}
                                 </Text>
                             </TouchableOpacity>
@@ -153,8 +156,8 @@ export function UserProfileCard({ USER, picture, openCamera }) {
                             <View style={styles.punchDivider} />
 
                             <View style={styles.punchItem}>
-                                <MaterialCommunityIcons name="logout" size={12} color="#DC2626" />
-                                <Text style={[styles.punchItemText, { color: '#DC2626' }]}>
+                                <MaterialCommunityIcons name="logout" size={12} color={theme.colors.danger} />
+                                <Text style={[styles.punchItemText, { color: theme.colors.danger }]}>
                                     {UserSelect?.OUTTIME || '--:--'}
                                 </Text>
                             </View>
@@ -173,26 +176,26 @@ export function UserProfileCard({ USER, picture, openCamera }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     wrapper: {
         paddingHorizontal: 12,
         paddingVertical: 6,
     },
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         elevation: 3,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.07,
         shadowRadius: 8,
     },
     accentStripe: {
         height: 4,
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
     },
     cardBody: {
         flexDirection: 'row',
@@ -211,8 +214,8 @@ const styles = StyleSheet.create({
         height: 70,
         borderRadius: 35,
         borderWidth: 2,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
+        backgroundColor: theme.colors.surfaceSunken,
     },
     cameraBtn: {
         position: 'absolute',
@@ -221,11 +224,11 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 2,
-        borderColor: '#FFFFFF',
+        borderColor: theme.colors.surface,
     },
     statusBadge: {
         marginTop: 6,
@@ -250,14 +253,14 @@ const styles = StyleSheet.create({
     nameText: {
         fontSize: 16,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
         flex: 1,
         letterSpacing: -0.3,
     },
     idPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 3,
@@ -268,17 +271,17 @@ const styles = StyleSheet.create({
     idPillText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
     },
     designationText: {
         fontSize: 12,
-        color: '#334155',
+        color: theme.colors.text,
         fontWeight: '600',
         marginBottom: 2,
     },
     departmentText: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         marginBottom: 8,
     },
 
@@ -286,12 +289,12 @@ const styles = StyleSheet.create({
     punchRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.surfaceSunken,
         borderRadius: 10,
         paddingHorizontal: 10,
         paddingVertical: 7,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         gap: 8,
     },
     punchItem: {
@@ -304,35 +307,35 @@ const styles = StyleSheet.create({
     punchItemText: {
         fontSize: 11,
         fontWeight: '600',
-        color: '#475569',
+        color: theme.colors.textSecondary,
     },
     punchDivider: {
         width: 1,
         height: 16,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.divider,
     },
 
     // Skeleton
     skeletonCard: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         padding: 14,
         margin: 12,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         gap: 14,
     },
     skeletonAvatar: {
         width: 70,
         height: 70,
         borderRadius: 35,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.divider,
     },
     skeletonBody: { flex: 1, justifyContent: 'center' },
     skeletonLine: {
         height: 13,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.divider,
         borderRadius: 6,
         width: '80%',
     },

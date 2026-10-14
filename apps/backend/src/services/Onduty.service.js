@@ -8,12 +8,12 @@ import formatDateToOracle from "../Utiles/OracleDateFormat.js";
 import { getConnection } from "../constants/db.connection.js";
 import { generateKey } from "crypto";
 import { generateUniqueId_Number } from "../Utiles/UniqueNumber.js";
-import { decompressFile_data } from "../Utiles/decompress.js";
 import { compressedFilePaths, jsonFilePaths } from "../Utiles/Paths.js";
 import { __readStream } from "../Utiles/Streams.js";
 
 import { promises as fsp } from 'fs';
 import fetch from "node-fetch";
+import { gunzipSync } from 'fflate';
 
 async function getAddressFromCoords(lat, lon) {
     if (!lat || !lon) return null;
@@ -687,38 +687,135 @@ export async function send_location(req, res) {
 
 
 
- export async function get_live_user(req, res) {
-         const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-       
-          const dbResults = await prisma_Connector.trackers.findMany({ where: {isLive:true,COMPCODE}});
+async function getLocationAccess(req) {
+  const COMPCODE = String(req?.headers?.compcode || '').trim().toUpperCase();
+  const requesterId = String(req?.headers?.idcard || '').trim();
 
-           res.json({status:1,data:dbResults})
-  
-
+  if (!COMPCODE || !requesterId) {
+    return { error: 'Company and employee identity are required.', statusCode: 400 };
   }
 
+  const requester = await prisma_Connector.user.findFirst({
+    where: {
+      Idcard: requesterId,
+      active: true,
+      Companies: { some: { companyCode: COMPCODE } },
+    },
+    select: { Idcard: true, level: true, isAdmin: true },
+  });
 
- export async function get_live_location(req, res) {
-         const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-         const user=req?.query?.userId
-         const today = new Date();
-         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-          const dbResults = await prisma_Connector.location.findMany({
-         where: {
-        COMPCODE,
-         docId: { not: null },
-         createdAt: { gte: startOfDay },
-         userId:user
-         },
-        orderBy: {
-        createdAt: 'desc', 
-        },take: 1,
-       });
-
-    res.json(dbResults)
-  
-
+  if (!requester) {
+    return { error: 'You are not authorized for this company.', statusCode: 403 };
   }
+
+  const isCompanyAdmin = requester.isAdmin ||
+    requester.level === 'admin' ||
+    requester.level === 'top';
+  const users = await prisma_Connector.user.findMany({
+    where: {
+      active: true,
+      Companies: { some: { companyCode: COMPCODE } },
+      ...(isCompanyAdmin
+        ? {}
+        : { OR: [{ Idcard: requesterId }, { hod: requesterId }, { hr: requesterId }] }),
+    },
+    select: { Idcard: true, username: true },
+  });
+
+  const allowedUsers = users.some(user => user.Idcard === requesterId)
+    ? users
+    : [{ Idcard: requesterId, username: null }, ...users];
+
+  return {
+    COMPCODE,
+    requesterId,
+    allowedUsers,
+    allowedUserIds: allowedUsers.map(user => user.Idcard).filter(Boolean),
+  };
+}
+
+async function getPermittedTrackingUsers(access) {
+  const trackers = await prisma_Connector.trackers.findMany({
+    where: {
+      COMPCODE: access.COMPCODE,
+      UserId: { in: access.allowedUserIds },
+    },
+  });
+  const trackersByUser = new Map(trackers.map(tracker => [tracker.UserId, tracker]));
+
+  return access.allowedUsers.map(user => {
+    const tracker = trackersByUser.get(user.Idcard);
+    return {
+      ...(tracker || {}),
+      UserId: user.Idcard,
+      empname: tracker?.empname || user.username || user.Idcard,
+      isLive: Boolean(tracker?.isLive),
+      docid: tracker?.isLive ? tracker.docid : null,
+    };
+  });
+}
+
+export async function get_tracking_users(req, res) {
+  try {
+    const access = await getLocationAccess(req);
+    if (access.error) {
+      return res.status(access.statusCode).json({ status: 0, message: access.error });
+    }
+
+    return res.json({ status: 1, data: await getPermittedTrackingUsers(access) });
+  } catch (error) {
+    console.error('get_tracking_users error:', error);
+    return res.status(500).json({ status: 0, message: 'Unable to load permitted employees.' });
+  }
+}
+
+export async function get_live_user(req, res) {
+  try {
+    const access = await getLocationAccess(req);
+    if (access.error) {
+      return res.status(access.statusCode).json({ status: 0, message: access.error });
+    }
+
+    const users = await getPermittedTrackingUsers(access);
+    return res.json({ status: 1, data: users.filter(user => user.isLive) });
+  } catch (error) {
+    console.error('get_live_user error:', error);
+    return res.status(500).json({ status: 0, message: 'Unable to load active trackers.' });
+  }
+}
+
+export async function get_live_location(req, res) {
+  try {
+    const access = await getLocationAccess(req);
+    if (access.error) {
+      return res.status(access.statusCode).json({ status: 0, message: access.error });
+    }
+
+    const userId = String(req?.query?.userId || access.requesterId).trim();
+    if (!access.allowedUserIds.includes(userId)) {
+      return res.status(403).json({ status: 0, message: 'You cannot view this employee location.' });
+    }
+
+    const tracker = await prisma_Connector.trackers.findFirst({
+      where: { COMPCODE: access.COMPCODE, UserId: userId, isLive: true },
+    });
+    if (!tracker) return res.json([]);
+
+    const latestLocation = await prisma_Connector.location.findFirst({
+      where: { COMPCODE: access.COMPCODE, userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!latestLocation) return res.json([]);
+    return res.json([{
+      ...latestLocation,
+      timestamp: Number(latestLocation.timestamp),
+    }]);
+  } catch (error) {
+    console.error('get_live_location error:', error);
+    return res.status(500).json({ status: 0, message: 'Unable to load live location.' });
+  }
+}
 
 export async function requestReachedOut(req, res) {
         const {docid, VEHICLENO, ...reset} = req?.body
@@ -795,145 +892,140 @@ export async function requestReachedOut(req, res) {
   }
 
 export async function get_history_location(req, res) {
-  const COMPCODE = String(req?.headers?.compcode || '').toUpperCase();
-  const date     = req?.query?.date;
-  const userId   = req?.query?.userId; // optional filter by user
-
   try {
-    // ── 1. Date Range ─────────────────────────────────────────────────────────
-    const today      = date ? new Date(date) : new Date();
-    const startOfDay = new Date(new Date(today).setHours(0,  0,  0,   0));
-    const endOfDay   = new Date(new Date(today).setHours(23, 59, 59, 999));
-
-    // ── 2. Helper: Group by docId ─────────────────────────────────────────────
-    function groupByDocId(dataArray) {
-      return dataArray.reduce(
-        (acc, item) => {
-          if (!item.docId) return acc;
-          if (!acc.docIds.includes(item.docId)) {
-            acc.docIds.push(item.docId);
-          }
-          acc.groupedData[item.docId] = acc.groupedData[item.docId] || [];
-          acc.groupedData[item.docId].push(item);
-          return acc;
-        },
-        { groupedData: {}, docIds: [] }
-      );
+    const access = await getLocationAccess(req);
+    if (access.error) {
+      return res.status(access.statusCode).json({ status: 0, message: access.error });
     }
 
-    // ── 3. Try Live DB First ──────────────────────────────────────────────────
+    const date = String(req?.query?.date || '').trim();
+    const requestedUserId = String(req?.query?.userId || '').trim();
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ status: 0, message: 'Date must use YYYY-MM-DD format.' });
+    }
+
+    const [year, month, day] = date ? date.split('-').map(Number) : [];
+    const selectedDate = date ? new Date(year, month - 1, day) : new Date();
+    if (
+      Number.isNaN(selectedDate.getTime()) ||
+      (date && (
+        selectedDate.getFullYear() !== year ||
+        selectedDate.getMonth() !== month - 1 ||
+        selectedDate.getDate() !== day
+      ))
+    ) {
+      return res.status(400).json({ status: 0, message: 'The requested date is invalid.' });
+    }
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    if (requestedUserId && !access.allowedUserIds.includes(requestedUserId)) {
+      return res.status(403).json({ status: 0, message: 'You cannot view this employee history.' });
+    }
+
+    const allowedIds = requestedUserId ? [requestedUserId] : access.allowedUserIds;
+    const groupByDocId = dataArray => dataArray.reduce(
+      (acc, item) => {
+        if (!item.docId) return acc;
+        const docId = String(item.docId);
+        if (!acc.docIds.includes(docId)) acc.docIds.push(docId);
+        acc.groupedData[docId] = acc.groupedData[docId] || [];
+        acc.groupedData[docId].push({
+          ...item,
+          timestamp: item.timestamp == null ? null : Number(item.timestamp),
+        });
+        return acc;
+      },
+      { groupedData: {}, docIds: [] },
+    );
+
     const dbResults = await prisma_Connector.location.findMany({
       where: {
-        COMPCODE,
-        docId:     { not: null },
+        COMPCODE: access.COMPCODE,
+        userId: { in: allowedIds },
+        docId: { not: null },
         createdAt: { gte: startOfDay, lte: endOfDay },
-        ...(userId && { userId }), // ✅ optional user filter
       },
       orderBy: { createdAt: 'asc' },
     });
 
     if (dbResults.length > 0) {
       const { groupedData, docIds } = groupByDocId(dbResults);
-      return res.json({              // ✅ single return
+      return res.json({
         status: 1,
-        data:   [groupedData],
-        meta:   docIds,
+        data: [groupedData],
+        meta: docIds,
         source: 'db',
       });
     }
 
-    // ── 4. Fallback: Compressed File ──────────────────────────────────────────
-    const jsonpath      = jsonFilePaths(date);
-    const compressdata  = compressedFilePaths(date);
-
-    // Decompress if json not already extracted
-    if (!fs.existsSync(jsonpath)) {
-      const decompressed = await decompressFile_data(compressdata, jsonpath);
-      if (!decompressed || !fs.existsSync(jsonpath)) {
-        return res.json({
-          status:  0,
-          data:    [],
-          meta:    [],
-          message: 'No data found for this date.',
-        });
-      }
-    }
-
-    // ── 5. Read File ──────────────────────────────────────────────────────────
-    let fileContent;
+    const archiveDate = date || selectedDate.toISOString().slice(0, 10);
+    const jsonpath = jsonFilePaths(archiveDate);
+    const compressdata = compressedFilePaths(archiveDate);
+    let fileContent = null;
     try {
-      fileContent = await fsp.readFile(jsonpath, 'utf8');
+      if (fs.existsSync(jsonpath)) {
+        fileContent = await fsp.readFile(jsonpath, 'utf8');
+      } else if (fs.existsSync(compressdata)) {
+        fileContent = Buffer.from(gunzipSync(await fsp.readFile(compressdata))).toString('utf8');
+      }
     } catch (readErr) {
-      console.error('File read error:', readErr);
-      return res.json({
-        status:  'err',
-        data:    [],
-        meta:    [],
-        message: 'Failed to read history file.',
+      console.error('Location archive read error:', readErr);
+      return res.status(500).json({
+        status: 0,
+        data: [],
+        meta: [],
+        message: 'Failed to read location history.',
       });
     }
 
-    // ── 6. Parse JSON safely ──────────────────────────────────────────────────
+    if (!fileContent?.trim()) {
+      return res.json({ status: 0, data: [], meta: [], message: 'No data found for this date.' });
+    }
+
     let jsonData;
     try {
       const trimmed = fileContent.trim();
-      // Handle edge case: file starts with { instead of [
-      if (trimmed.startsWith('{')) {
-        jsonData = JSON.parse(`[${trimmed.replace(/}\s*{/g, '},{')}]`);
-      } else {
-        jsonData = JSON.parse(trimmed);
-      }
+      jsonData = trimmed.startsWith('{')
+        ? JSON.parse(`[${trimmed.replace(/}\s*{/g, '},{')}]`)
+        : JSON.parse(trimmed);
     } catch (parseErr) {
-      console.error('JSON parse error:', parseErr);
-      console.error('Content preview:', fileContent.substring(0, 200));
-      return res.json({
-        status:  'err',
-        data:    [],
-        meta:    [],
-        message: 'Failed to parse history file.',
+      console.error('Location archive JSON parse error:', parseErr);
+      return res.status(500).json({
+        status: 0,
+        data: [],
+        meta: [],
+        message: 'Failed to parse location history.',
       });
     }
 
-    // ── 7. Filter by userId if provided ──────────────────────────────────────
     const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
-    const filtered  = userId
-      ? dataArray.filter((item) => item.userId === userId)
-      : dataArray;
-
-    if (filtered.length === 0) {
+    const filtered = dataArray.filter(item => allowedIds.includes(String(item?.userId || '')));
+    if (!filtered.length) {
       return res.json({
-        status:  0,
-        data:    [],
-        meta:    [],
-        message: 'No location data found for this user/date.',
+        status: 0,
+        data: [],
+        meta: [],
+        message: 'No location data found for this date.',
       });
     }
 
-    // ── 8. Group & Respond ────────────────────────────────────────────────────
     const { groupedData, docIds } = groupByDocId(filtered);
-
-    // ── 9. Cleanup extracted JSON file ────────────────────────────────────────
-    try {
-      await fsp.unlink(jsonpath); // ✅ delete BEFORE responding
-    } catch (unlinkErr) {
-      console.error('File delete error:', unlinkErr); // non-fatal
-    }
-
-    return res.json({              // ✅ single return, no double response
+    return res.json({
       status: 1,
-      data:   [groupedData],
-      meta:   docIds.filter(Boolean),
+      data: [groupedData],
+      meta: docIds.filter(Boolean),
       source: 'file',
     });
-
   } catch (err) {
     console.error('get_history_location error:', err);
-    return res.json({
-      status:  'err',
-      data:    [],
-      meta:    [],
+    return res.status(500).json({
+      status: 0,
+      data: [],
+      meta: [],
       message: 'Internal server error',
-      error:   process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }
 }
@@ -1431,8 +1523,5 @@ ORDER BY A.TOKENNO
         }
 }
    
-
-
-
 
 

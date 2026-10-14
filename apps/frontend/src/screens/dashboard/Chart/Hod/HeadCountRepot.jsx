@@ -8,11 +8,13 @@ import {
   TouchableOpacity, 
   Alert
 } from 'react-native';
-import { Colors } from '../../../../constants/Colors';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
+import { useAppTheme } from '../../../../theme';
 
 const EmployeeHeadReport = ({ data: employeeData,des,dep, isLoading,gender, fetchMoreData,loading }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -61,39 +63,39 @@ const EmployeeHeadReport = ({ data: employeeData,des,dep, isLoading,gender, fetc
       
       <View style={styles.cardBody}>
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="gender-male-female" size={18} color={Colors.primary} />
+          <MaterialCommunityIcons name="gender-male-female" size={18} color={theme.colors.brand} />
           <Text style={styles.detailText}>{employee.GENDER}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="briefcase" size={18} color={Colors.primary} />
+          <MaterialCommunityIcons name="briefcase" size={18} color={theme.colors.brand} />
           <Text style={styles.detailText}>{employee.DESIGNATION}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="office-building" size={18} color={Colors.primary} />
+          <MaterialCommunityIcons name="office-building" size={18} color={theme.colors.brand} />
           <Text style={styles.detailText}>{employee.DEPARTMENT}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="account-group" size={18} color={Colors.primary} />
+          <MaterialCommunityIcons name="account-group" size={18} color={theme.colors.brand} />
           <Text style={styles.detailText}>Band: {employee.BANDID}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="calendar" size={18} color={Colors.primary} />
+          <MaterialCommunityIcons name="calendar" size={18} color={theme.colors.brand} />
           <Text style={styles.detailText}>Joined: {employee.formattedDate}</Text>
         </View>
       </View>
     </View>
-  ), []);
+  ), [styles, theme]);
 
 
   // Loading state
   if (isLoading || loadingMore) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={theme.colors.brand} />
         <Text style={styles.loadingText}>Loading employees...</Text>
       </View>
     );
@@ -106,7 +108,7 @@ const EmployeeHeadReport = ({ data: employeeData,des,dep, isLoading,gender, fetc
         <MaterialCommunityIcons 
           name="account-alert" 
           size={48} 
-          color={Colors.gray} 
+          color={theme.colors.textMuted}
         />
         <Text style={styles.emptyText}>No employees found</Text>
       </View>
@@ -133,7 +135,7 @@ const EmployeeHeadReport = ({ data: employeeData,des,dep, isLoading,gender, fetc
         ListFooterComponent={
           loadingMore || isLoading ? (
             <View style={styles.footerLoading}>
-              <ActivityIndicator size="small" color={Colors.primary} />
+              <ActivityIndicator size="small" color={theme.colors.brand} />
             </View>
           ) : null
         }
@@ -145,10 +147,10 @@ const EmployeeHeadReport = ({ data: employeeData,des,dep, isLoading,gender, fetc
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: Colors.gray,
+    color: theme.colors.textSecondary,
   },
   emptyContainer: {
     flex: 1,
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     fontSize: 16,
-    color: Colors.gray,
+    color: theme.colors.textSecondary,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -178,15 +180,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 16,
-    color: Colors.primary,
+    color: theme.colors.brand,
   },
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -198,18 +202,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
+    borderBottomColor: theme.colors.divider,
   },
   employeeName: {
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.dark,
+    color: theme.colors.text,
     marginRight: 8,
   },
   employeeId: {
     fontSize: 14,
-    color: Colors.gray,
+    color: theme.colors.textSecondary,
   },
   cardBody: {
     marginBottom: 12,
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
   detailText: {
     marginLeft: 10,
     fontSize: 14,
-    color: Colors.dark,
+    color: theme.colors.text,
   },
   footerLoading: {
     paddingVertical: 20,
@@ -230,4 +234,3 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(EmployeeHeadReport);
-

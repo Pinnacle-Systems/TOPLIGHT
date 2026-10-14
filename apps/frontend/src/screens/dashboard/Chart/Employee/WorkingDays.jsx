@@ -13,10 +13,13 @@ import CommonModal from '../../../../components/Modal/CommonModal';
 import AllMonth from "../Month";
 import DailyInOutBody from '../_Modal_BodyComponents/DailyInOutBody';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from '../../../../theme';
 
 const LOAD_TIMEOUT = 8000;
 
 function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const [isLoading, setIsLoading] = useState(true);
   const [showDaysInOutModal, setshowDaysInOutModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState();
@@ -84,6 +87,8 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
             padding: 0;
             width: 100%;
             height: 100%;
+            background-color: ${theme.colors.surfaceSunken};
+            color: ${theme.colors.text};
           }
           .chart-container {
             width: 100%;
@@ -91,7 +96,7 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: white;
+            background-color: ${theme.colors.surfaceSunken};
           }
           canvas {
             width: 100% !important;
@@ -101,7 +106,7 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
             text-align: center;
             padding: 20px;
             font-size: 16px;
-            color: #666;
+            color: ${theme.colors.textSecondary};
           }
         </style>
       </head>
@@ -130,6 +135,8 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
               if (!ctx2d) throw new Error('Canvas context not available');
               
               Chart.register(ChartDataLabels);
+              Chart.defaults.color = '${theme.colors.textSecondary}';
+              Chart.defaults.borderColor = '${theme.colors.divider}';
               
               new Chart(ctx2d, {
                 type: 'bar',
@@ -139,11 +146,11 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
                     data: [${values}],
                     backgroundColor: function(context) {
                       const value = context.dataset.data[context.dataIndex];
-                      return value < 24 ? '#f5bfbf' : '#99c2ff';
+                      return value < 24 ? '${theme.colors.dangerSoft}' : '${theme.colors.brandSoft}';
                     },
                     borderColor: function(context) {
                       const value = context.dataset.data[context.dataIndex];
-                      return value < 24 ? '#FF0000' : '#c8e3e8';
+                      return value < 24 ? '${theme.colors.danger}' : '${theme.colors.brand}';
                     },
                     borderWidth: 1,
                     borderRadius: 10,
@@ -229,11 +236,12 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
 
   if (!hasData && !GetDataLoad) {
     return (
-      <View style={[styles.noDataContainer, { 
+      <View style={[styles.noDataContainer, {
         height: isLandscape ? 400 : chartHeight - 40, 
         width: isLandscape ? "auto" : chartWidth - 20,
+        backgroundColor: theme.colors.surface,
       }]}>
-        <MaterialCommunityIcons name="chart-line" size={40} color="#ccc" />
+        <MaterialCommunityIcons name="chart-line" size={40} color={theme.colors.textMuted} />
         <Text style={styles.noDataText}>No working days data available</Text>
       </View>
     );
@@ -255,18 +263,20 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
         Title="Days List"
       />
       
-      <View style={{ 
+      <View       style={{
         height: isLandscape ? 350 : chartHeight - 40, 
         width: chartWidth - 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        overflow: 'hidden'
+      backgroundColor: theme.colors.surfaceSunken,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.borderSubtle,
+      borderRadius: 10,
+      overflow: 'hidden'
       }}>
         <WebView
           ref={webViewRef}
           originWhitelist={['*']}
           source={{ html: htmlContent }}
-          style={{ flex: 1 }}
+          style={{ flex: 1, backgroundColor: theme.colors.surfaceSunken }}
            renderToHardwareTextureAndroid={true}
         domStorageEnabled={true}
           setSupportMultipleWindows={false}
@@ -303,29 +313,31 @@ function WorkingDaysChart({ data, isLoading: GetDataLoad, UserId, year }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
     borderRadius: 10,
   },
   noDataContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surfaceSunken,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.borderSubtle,
     borderRadius: 10,
   },
   noDataText: {
     marginTop: 10,
-    color: '#666',
+    color: theme.colors.textSecondary,
     fontSize: 16,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white'
+    backgroundColor: theme.colors.surface
   },
   errorContainer: {
     position: 'absolute',
@@ -335,27 +347,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: theme.colors.scrim,
     padding: 20
   },
   errorText: {
-    color: '#FF4560',
+    color: theme.colors.danger,
     fontSize: 16,
     marginBottom: 15,
     textAlign: 'center'
   },
   retryButton: {
     padding: 12,
-    backgroundColor: '#667EEA',
+    backgroundColor: theme.colors.brand,
     borderRadius: 5,
     minWidth: 120
   },
   retryButtonText: {
-    color: 'white',
+    color: theme.colors.brandContrast,
     fontWeight: 'bold',
     textAlign: 'center'
   }
 });
 
 export default WorkingDaysChart;
-

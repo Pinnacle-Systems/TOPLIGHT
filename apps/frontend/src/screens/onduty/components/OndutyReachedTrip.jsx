@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import DateBanner from './DateBanner';
+import { useAppTheme } from '../../../theme';
 
 export default function OndutyReachedTrip({ 
     reachedData, 
@@ -19,17 +20,20 @@ export default function OndutyReachedTrip({
     reachedKm,
     onChangeReachedKm,
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     return (
         <View style={styles.container}>
             {/* Reached Hero Card */}
             <View style={styles.heroCard}>
                 <View style={styles.heroTop}>
                     <View style={styles.badge}>
-                        <MaterialCommunityIcons name="flag-checkered" size={14} color="#10B981" />
+                        <MaterialCommunityIcons name="flag-checkered" size={14} color={theme.colors.success} />
                         <Text style={styles.badgeText}>TRIP CONCLUDING</Text>
                     </View>
                     <View style={styles.heroIconBox}>
-                        <MaterialCommunityIcons name="office-building-marker" size={24} color="#10B981" />
+                        <MaterialCommunityIcons name="office-building-marker" size={24} color={theme.colors.success} />
                     </View>
                 </View>
 
@@ -45,7 +49,7 @@ export default function OndutyReachedTrip({
             {/* Trip Summary Card */}
             <View style={styles.detailsCard}>
                 <View style={styles.detailsHeader}>
-                    <MaterialCommunityIcons name="clipboard-check-outline" size={20} color="#10B981" />
+                    <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={theme.colors.success} />
                     <Text style={styles.detailsHeaderText}>Trip Summary</Text>
                 </View>
 
@@ -71,15 +75,15 @@ export default function OndutyReachedTrip({
             {isKmEntryEnabled ? (
                 <View style={styles.detailsCard}>
                     <View style={styles.detailsHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={20} color="#10B981" />
+                        <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.success} />
                         <Text style={styles.detailsHeaderText}>Final Odometer Reading</Text>
                     </View>
                     <View style={styles.kmInputWrapper}>
-                        <MaterialCommunityIcons name="counter" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
                         <TextInput
                             style={styles.singleLineInput}
                             placeholder="Enter final reached KM"
-                            placeholderTextColor="#94A3B8"
+                            placeholderTextColor={theme.colors.placeholder}
                             keyboardType="numeric"
                             value={reachedKm}
                             onChangeText={onChangeReachedKm}
@@ -101,10 +105,10 @@ export default function OndutyReachedTrip({
                 activeOpacity={0.8}
             >
                 {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator size="small" color={theme.colors.brandContrast} />
                 ) : (
                     <>
-                        <MaterialCommunityIcons name="check-circle-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="check-circle-outline" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
                         <Text style={styles.confirmBtnText}>CONFIRM REACHED OFFICE</Text>
                     </>
                 )}
@@ -113,22 +117,22 @@ export default function OndutyReachedTrip({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         paddingBottom: 40,
     },
     heroCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
         padding: 18,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         borderLeftWidth: 4,
-        borderLeftColor: '#10B981',
+        borderLeftColor: theme.colors.success,
         marginBottom: 14,
-        shadowColor: '#0F172A',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.isDark ? 0.3 : 0.05,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -141,48 +145,45 @@ const styles = StyleSheet.create({
     badge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ECFDF5',
+        backgroundColor: theme.colors.successSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 20,
         gap: 6,
     },
     badgeText: {
-        fontSize: 10,
-        fontWeight: '800',
-        color: '#10B981',
-        letterSpacing: 0.8,
+        ...theme.typography.overline,
+        color: theme.colors.success,
     },
     heroIconBox: {
         width: 40,
         height: 40,
         borderRadius: 12,
-        backgroundColor: '#ECFDF5',
+        backgroundColor: theme.colors.successSoft,
         justifyContent: 'center',
         alignItems: 'center',
     },
     heroTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: '#0F172A',
+        ...theme.typography.h3,
+        color: theme.colors.text,
         marginTop: 4,
     },
     heroSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
         marginTop: 4,
         lineHeight: 18,
     },
     detailsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
         padding: 18,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 14,
-        shadowColor: '#0F172A',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.3 : 0.04,
         shadowRadius: 6,
         elevation: 2,
     },
@@ -193,63 +194,61 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     detailsHeaderText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#0F172A',
+        ...theme.typography.title,
+        color: theme.colors.text,
     },
     infoRow: {
         marginBottom: 14,
     },
     infoLabel: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: '#94A3B8',
-        letterSpacing: 0.4,
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textDisabled,
         marginBottom: 3,
     },
     infoValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
     },
     infoValueMono: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#10B981',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.success,
         fontFamily: 'monospace',
     },
     kmInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.inputBackground,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.inputBorder,
         borderRadius: 12,
         paddingHorizontal: 12,
         height: 46,
     },
     singleLineInput: {
         flex: 1,
-        fontSize: 14,
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.text,
         padding: 0,
     },
     kmUnitText: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#94A3B8',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.textDisabled,
         marginLeft: 6,
     },
     confirmBtn: {
-        backgroundColor: '#10B981',
+        backgroundColor: theme.colors.success,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 16,
         borderRadius: 16,
-        shadowColor: '#10B981',
+        shadowColor: theme.colors.success,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
+        shadowOpacity: theme.isDark ? 0.3 : 0.25,
         shadowRadius: 8,
         elevation: 4,
         marginTop: 6,
@@ -258,9 +257,7 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     confirmBtnText: {
-        color: '#FFFFFF',
-        fontSize: 15,
-        fontWeight: '800',
-        letterSpacing: 0.5,
+        color: theme.colors.brandContrast,
+        ...theme.typography.button,
     },
 });

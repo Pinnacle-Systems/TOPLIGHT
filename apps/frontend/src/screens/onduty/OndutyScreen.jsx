@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -46,6 +46,7 @@ import OndutyReachedTrip from './components/OndutyReachedTrip';
 import OndutyEntryForm from './components/OndutyEntryForm';
 import OndutyModificationModal from './components/OndutyModificationModal';
 import CameraModal from '../../components/Modal/CameraModal';
+import { useAppTheme } from '../../theme';
 
 const IMAGE_CONFIG = {
     maxWidth: 1024,
@@ -58,6 +59,8 @@ const IMAGE_CONFIG = {
 export default function OndutyScreen() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     const UserSelect = useSelector(state => state.UserDetails);
     const formState = useSelector(state => state.ondutyInput);
@@ -77,10 +80,13 @@ export default function OndutyScreen() {
     const { data: docidData, refetch: refetchDocId } = useGetDocIDQuery();
     const { data: data_IN, error: error_IN, refetch: refetchIn, isLoading: loadingIn } = useGetInQuery();
     const { data: reachedData, refetch: refetchReached } = useGet_reachedQuery();
-    const { data: allReasons } = useGet_all_Onduty_reasonQuery();
-    const { data: allVehicles } = useGet__VechileQuery({
-        params: { where: JSON.stringify({ USEDBY: UserSelect?.EMPNAME }) },
-    });
+    const { data: allReasons, refetch: refetchAllReasons } = useGet_all_Onduty_reasonQuery();
+    const { data: allVehicles } = useGet__VechileQuery(
+        {
+            params: { where: JSON.stringify({ USEDBY: UserSelect?.EMPNAME }) },
+        },
+        { skip: !formState.isKmEntryEnabled }
+    );
 
     // Query last recorded KM when KM entry is enabled and vehicle selected
     const { data: kmData } = useGet__vechilekmQuery(
@@ -105,7 +111,9 @@ export default function OndutyScreen() {
         onStartTracking: startTracking,
         onStopTracking: stopTracking,
         setIsSubmitting,
+        setCompressedPhoto,
         setUploadProgress,
+        refetchAllReasons,
         refetchFCMTokens: {
             refToken: refToken?.data?.token,
             hodFCMToken: hodToken?.data?.fcm,
@@ -268,7 +276,7 @@ export default function OndutyScreen() {
             <View style={styles.centerContainer}>
                 <View style={styles.loadingCard}>
                     <View style={styles.loadingIconCircle}>
-                        <ActivityIndicator size="large" color="#007AFF" />
+                        <ActivityIndicator size="large" color={theme.colors.brand} />
                     </View>
                     <Text style={styles.loadingTitle}>Submitting OnDuty</Text>
                     <Text style={styles.loadingSubtitle}>Syncing trip details and initializing background GPS tracking...</Text>
@@ -285,7 +293,7 @@ export default function OndutyScreen() {
         return (
             <View style={styles.centerContainer}>
                 <View style={styles.errorCard}>
-                    <MaterialCommunityIcons name="wifi-off" size={48} color="#EF4444" />
+                    <MaterialCommunityIcons name="wifi-off" size={48} color={theme.colors.danger} />
                     <Text style={styles.errorTitle}>Connection Error</Text>
                     <Text style={styles.errorSubtitle}>Unable to connect to OnDuty service. Please check your network connection.</Text>
                     <TouchableOpacity style={styles.retryBtn} onPress={() => refetchIn()}>
@@ -300,7 +308,7 @@ export default function OndutyScreen() {
     if (loadingIn && !data_IN) {
         return (
             <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
+                <ActivityIndicator size="large" color={theme.colors.brand} />
                 <Text style={styles.initLoadingText}>Loading OnDuty session...</Text>
             </View>
         );
@@ -381,109 +389,104 @@ export default function OndutyScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
     },
     scrollContent: {
-        paddingHorizontal: 16,
-        paddingTop: 14,
-        paddingBottom: 30,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingTop: theme.spacing.md + 2,
+        paddingBottom: theme.spacing.xxxl,
     },
     centerContainer: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 24,
+        padding: theme.spacing.xxl,
     },
     loadingCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 22,
-        padding: 28,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
+        padding: theme.spacing.xxxl,
         alignItems: 'center',
         width: '100%',
         borderWidth: 1,
-        borderColor: '#E2E8F0',
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
+        shadowOpacity: theme.isDark ? 0.32 : 0.08,
         shadowRadius: 12,
         elevation: 4,
     },
     loadingIconCircle: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#EFF6FF',
+        width: theme.controlSizes.avatarXl - 8,
+        height: theme.controlSizes.avatarXl - 8,
+        borderRadius: theme.radii.circle,
+        backgroundColor: theme.colors.brandSoft,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: theme.spacing.lg,
     },
     loadingTitle: {
-        fontSize: 18,
-        fontWeight: '800',
-        color: '#0F172A',
-        marginBottom: 6,
+        ...theme.typography.h3,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs + 2,
     },
     loadingSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
         textAlign: 'center',
-        marginBottom: 20,
-        lineHeight: 18,
+        marginBottom: theme.spacing.xl,
     },
     progressBarBackground: {
         width: '100%',
         height: 6,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: theme.colors.surfaceSunken,
         borderRadius: 4,
         overflow: 'hidden',
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
         borderRadius: 4,
     },
     errorCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 22,
-        padding: 28,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
+        padding: theme.spacing.xxxl,
         alignItems: 'center',
         width: '100%',
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         elevation: 3,
     },
     errorTitle: {
-        fontSize: 18,
-        fontWeight: '800',
-        color: '#0F172A',
-        marginTop: 12,
-        marginBottom: 6,
+        ...theme.typography.h3,
+        color: theme.colors.text,
+        marginTop: theme.spacing.md,
+        marginBottom: theme.spacing.xs + 2,
     },
     errorSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
         textAlign: 'center',
-        marginBottom: 20,
-        lineHeight: 18,
+        marginBottom: theme.spacing.xl,
     },
     retryBtn: {
-        backgroundColor: '#007AFF',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 14,
+        backgroundColor: theme.colors.brand,
+        paddingHorizontal: theme.spacing.xl,
+        paddingVertical: theme.spacing.md,
+        borderRadius: theme.radii.md,
     },
     retryBtnText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '700',
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
     },
     initLoadingText: {
-        marginTop: 14,
-        fontSize: 14,
-        color: '#64748B',
+        marginTop: theme.spacing.md + 2,
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
     },
 });

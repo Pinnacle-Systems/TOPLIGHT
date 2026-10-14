@@ -26,9 +26,10 @@ import Department_Gender_Attense_chart from './Chart/Hod/Department_Gender_Atten
 import ScreenRotationWrapper from '../../components/Utils/ScreenRotateHandler';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LiveStatusCard from './Card/LiveStatusCard';
+import { useAppTheme } from '../../theme';
 
 // ── Build ApexCharts HTML for WebView ──────────────────────────────────────────
-const buildHodChart = (id, optionsJson, height = 260) => `
+const buildHodChart = (id, optionsJson, height = 260, theme) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,7 +42,11 @@ const buildHodChart = (id, optionsJson, height = 260) => `
   <div id="${id}"></div>
   <script>
     try{
-      const chart=new ApexCharts(document.querySelector('#${id}'),${optionsJson});
+      const options=${optionsJson};
+      options.theme = options.theme || { mode: '${theme?.mode || 'light'}' };
+      options.chart = options.chart || {};
+      options.chart.foreColor = '${theme?.colors?.textSecondary || '#475569'}';
+      const chart=new ApexCharts(document.querySelector('#${id}'),options);
       chart.render();
     }catch(e){document.body.innerHTML='<p style="color:red;padding:10px">'+e.message+'</p>';}
   </script>
@@ -49,23 +54,17 @@ const buildHodChart = (id, optionsJson, height = 260) => `
 </html>`;
 
 export  function HeadofDepartMent({navigation}) {
+ const { theme } = useAppTheme();
  const [animatedValue] = useState(new Animated.Value(0));
-  const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const screenWidth = Dimensions.get('window').width;
-  const chartHeight = Dimensions.get('window').height * 0.3; 
-  const chartWidth = screenWidth - 20;
   const {data, refetch: refetchSalary} = useGetYearWiseToTSalaryQuery(undefined, { pollingInterval: 60000, refetchOnMountOrArgChange: true })
   const [OpenHeadCountModel, setOpenHeadCountModal] = useState(false)
   const [selectedDepartment, setSelectedDepartment] = useState()
   const [OpenPresentModal, setOpenPresntModal] = useState(false)
-  const [OpenAbsentModal, setOpenAbsentModal] = useState(false)
   const [OpenCategoryWiseSalary, setOpenCategoryWiseSalary] = useState(false)
   const [cyear, setcyear] = useState()
   const [cMonth, setCMonth] = useState()
-  const [visibleBottomNav, setVisibleBottomNav] = useState(false)
-  const [tyear, settyear] = useState()
-  const [tMonth, settMonth] = useState()
   // showChartView: 'charts' | 'details' | 'reports'
   const [showChartView, setShowChartView] = useState('charts');
   const [department_select,setdepartment_select]=useState()
@@ -75,7 +74,6 @@ export  function HeadofDepartMent({navigation}) {
   const {data: getCateogryWiseSalary, isLoading: getCateogryWiseisLoading} = useGetCateogryToTSalaryQuery({params: {payperiod: cMonth && cyear ? cMonth+" "+cyear : LastMonthandYear,dep:  departmentname || UserId?.DEPARTMENT}})
   const [clickedGender,setClickedGender]=useState("")
   const [GenderWiseModel,setGenderWiseModel]=useState(false)
-  const {data: getAP} = useGetTotalPAQuery({params: {USERNAME: UserId?.userName, COMPCODE: UserId?.GCOMPCODE}})
   //const {data: getToTExpenses, isLoading: getToTExpensesisLoading} = useToTexpensesQuery({params: {payperiod: tMonth && tyear ? tMonth+" "+tyear : LastMonthandYear}})
   const {data: getGenderCount, isLoading: getGenderCountLoading} = useGetgendercountQuery({params: {COMPCODE: UserId?.GCOMPCODE}}, { pollingInterval: 60000, refetchOnMountOrArgChange: true })
   const {data:department,error}=useGetDepDataQuery()
@@ -123,16 +121,16 @@ export  function HeadofDepartMent({navigation}) {
       })
     })) : [{ name: 'Salary', data: Array(12).fill(0) }],
     chart: { type: 'area', height: 250, toolbar: { show: false }, animations: { enabled: true, speed: 700 } },
-    colors: ['#4f46e5', '#10b981', '#f59e0b'],
+    colors: theme.colors.chart.slice(0, 3),
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 2.5 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.02, stops: [20, 100] } },
     xaxis: { categories: months, labels: { style: { fontSize: '9px' } } },
     yaxis: { labels: { formatter: v => v >= 100000 ? (v/100000).toFixed(1)+'L' : v, style: { fontSize: '9px' } } },
     legend: { show: true, position: 'top', fontSize: '11px' },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 3 },
+    grid: { borderColor: theme.colors.divider, strokeDashArray: 3 },
     tooltip: { y: { formatter: v => '₹' + v.toLocaleString('en-IN') } },
-  }), 250);
+  }), 250, theme);
 
   // Chart R2: Gender Strength Donut
   const headRows = Array.isArray(TotalHead?.data) ? TotalHead.data : [];
@@ -141,25 +139,25 @@ export  function HeadofDepartMent({navigation}) {
   const GenderDonutHTML = buildHodChart('gd', JSON.stringify({
     series: [totalM, totalF],
     chart: { type: 'donut', height: 220 },
-    colors: ['#3b82f6', '#ec4899'],
+    colors: [theme.colors.brand, theme.colors.accent],
     labels: ['Male', 'Female'],
     plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', fontSize: '12px', fontWeight: 700, formatter: () => String(totalM + totalF) } } } } },
     dataLabels: { enabled: true, formatter: v => v.toFixed(1) + '%', style: { fontSize: '10px' } },
     legend: { show: true, position: 'bottom', fontSize: '11px', offsetY: 4 },
     stroke: { width: 0 },
-  }), 220);
+  }), 220, theme);
 
   // Chart R3: Category-wise Salary Pie
   const salCatRows = Array.isArray(getCateogryWiseSalary?.data) ? getCateogryWiseSalary.data : [];
   const SalCatHTML = buildHodChart('sc', JSON.stringify({
     series: salCatRows.slice(0,8).map(r => Number(r.SALARY || r.AMOUNT || r[1])||0),
     chart: { type: 'pie', height: 230 },
-    colors: ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'],
+    colors: theme.colors.chart,
     labels: salCatRows.slice(0,8).map(r => r.CATEGORY || r.CAT || r.IDNAME || r[0] || 'Other'),
     dataLabels: { enabled: true, formatter: v => v.toFixed(1)+'%', style: { fontSize: '10px' } },
     legend: { show: true, position: 'bottom', fontSize: '10px', offsetY: 4 },
-    stroke: { width: 1, colors: ['#fff'] },
-  }), 230);
+    stroke: { width: 1, colors: [theme.colors.surface] },
+  }), 230, theme);
 
   // Chart R4: Attendance Gender Monthly Bar
   const AttHTML = buildHodChart('att', JSON.stringify({
@@ -170,14 +168,14 @@ export  function HeadofDepartMent({navigation}) {
       { name: 'Female Absent',  data: [apData?.AFEMALE || 0] },
     ],
     chart: { type: 'bar', height: 220, toolbar: { show: false } },
-    colors: ['#3b82f6', '#ec4899', '#ef4444', '#f97316'],
+    colors: [theme.colors.brand, theme.colors.accent, theme.colors.danger, theme.colors.warning],
     plotOptions: { bar: { borderRadius: 5, columnWidth: '60%' } },
     dataLabels: { enabled: true, style: { fontSize: '10px' } },
     xaxis: { categories: ['Today'], labels: { style: { fontSize: '11px' } } },
     yaxis: { labels: { style: { fontSize: '10px' } } },
     legend: { show: true, position: 'top', fontSize: '10px' },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-  }), 220);
+    grid: { borderColor: theme.colors.divider, strokeDashArray: 4 },
+  }), 220, theme);
 
   // Chart R5: Attendance Rate Radial Gauge
   const totalHC = headRows.reduce((s,d) => s + (Number(d.value)||0), 0);
@@ -186,24 +184,24 @@ export  function HeadofDepartMent({navigation}) {
   const RadialHTML = buildHodChart('rad', JSON.stringify({
     series: [attRate],
     chart: { type: 'radialBar', height: 220 },
-    colors: attRate >= 80 ? ['#10b981'] : attRate >= 60 ? ['#f59e0b'] : ['#ef4444'],
+    colors: attRate >= 80 ? [theme.colors.success] : attRate >= 60 ? [theme.colors.warning] : [theme.colors.danger],
     plotOptions: {
       radialBar: {
         hollow: { size: '55%' },
-        track: { background: '#f1f5f9', strokeWidth: '100%', margin: 5 },
+        track: { background: theme.colors.surfaceSunken, strokeWidth: '100%', margin: 5 },
         dataLabels: {
-          name: { fontSize: '12px', color: '#64748b', offsetY: -4 },
-          value: { fontSize: '24px', fontWeight: '800', color: '#0f172a', formatter: v => v + '%' },
+          name: { fontSize: '12px', color: theme.colors.textSecondary, offsetY: -4 },
+          value: { fontSize: '24px', fontWeight: '800', color: theme.colors.text, formatter: v => v + '%' },
         },
       },
     },
     labels: ['Attendance'],
-  }), 220);
+  }), 220, theme);
 
   const ChartStyle = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f8fafc',
+      backgroundColor: theme.colors.background,
     },
     contentContainer: {
       padding: 16,
@@ -211,15 +209,33 @@ export  function HeadofDepartMent({navigation}) {
     },
     header: {
       flexDirection: 'row',
-      justifyContent: "center",
       alignItems: 'center',
-      marginBottom: 10,
-      
+      marginBottom: 16,
+      paddingHorizontal: 2,
     },
     headerTitle: {
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: '700',
-      color: '#1e293b',
+      color: theme.colors.text,
+    },
+    headerIcon: {
+      width: 42,
+      height: 42,
+      marginRight: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 14,
+      backgroundColor: theme.colors.brandSoft,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+    },
+    headerCopy: {
+      flex: 1,
+    },
+    headerSubtitle: {
+      marginTop: 3,
+      color: theme.colors.textSecondary,
+      fontSize: 12,
     },
     metricsContainer: {
       flexDirection: 'row',
@@ -229,69 +245,69 @@ export  function HeadofDepartMent({navigation}) {
       gap: 12,
     },
     card: {
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       padding: 20,
       marginBottom: 16,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.05,
       shadowRadius: 6,
       elevation: 2,
       width: '100%',
       borderWidth: 1,
-      borderColor: '#f1f5f9',
+      borderColor: theme.colors.borderSubtle,
     },
     metricCard: {
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       padding: 16,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.05,
       shadowRadius: 6,
       elevation: 2,
       width: '48%',
       borderWidth: 1,
-      borderColor: '#f1f5f9',
+      borderColor: theme.colors.borderSubtle,
     },
     metricTitle: {
       fontSize: 14,
-      color: '#64748b',
+      color: theme.colors.textSecondary,
       marginBottom: 8,
       fontWeight: '500',
     },
     metricValue: {
       fontSize: 24,
       fontWeight: '700',
-      color: '#1e293b',
+      color: theme.colors.text,
     },
     metricSubtitle: {
       fontSize: 12,
-      color: '#94a3b8',
+      color: theme.colors.textMuted,
       marginTop: 4,
     },
     chartContainer: {
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.05,
       shadowRadius: 6,
       elevation: 2,
       borderWidth: 1,
-      borderColor: '#f1f5f9',
+      borderColor: theme.colors.borderSubtle,
     },
     chartTitle: {
       fontSize: 16,
       fontWeight: '600',
-      color: '#1e293b',
+      color: theme.colors.text,
       marginBottom: 16,
     },
     filterButton: {
-      backgroundColor: '#f1f5f9',
+      backgroundColor: theme.colors.surfaceSunken,
       padding: 8,
       borderRadius: 8,
       marginBottom:10
@@ -305,7 +321,7 @@ export  function HeadofDepartMent({navigation}) {
     genderItem: {
       alignItems: 'center',
       flex: 1,
-      backgroundColor: '#f8fafc',
+      backgroundColor: theme.colors.surfaceSunken,
       padding: 12,
       borderRadius: 8,
     },
@@ -315,11 +331,11 @@ export  function HeadofDepartMent({navigation}) {
     genderValue: {
       fontSize: 16,
       fontWeight: '600',
-      color: '#1e293b',
+      color: theme.colors.text,
     },
     genderLabel: {
       fontSize: 12,
-      color: '#64748b',
+      color: theme.colors.textSecondary,
       marginTop: 4,
     },
     gradientCard: {
@@ -336,11 +352,11 @@ export  function HeadofDepartMent({navigation}) {
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: '#3b82f6',
+      backgroundColor: theme.colors.brand,
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 4,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 4,
@@ -366,19 +382,20 @@ export  function HeadofDepartMent({navigation}) {
     statValue: {
       fontSize: 18,
       fontWeight: '700',
-      color: 'white',
+      color: theme.colors.brandContrast,
       textAlign: 'center',
     },
     statLabel: {
       fontSize: 12,
-      color: 'rgba(255,255,255,0.8)',
+      color: theme.colors.brandContrast,
+      opacity: 0.8,
       textAlign: 'center',
       marginTop: 4,
     },
     sectionTitle: {
       fontSize: 18,
       fontWeight: '600',
-      color: '#1e293b',
+      color: theme.colors.text,
       marginBottom: 16,
       marginTop: 8,
     },
@@ -391,7 +408,7 @@ export  function HeadofDepartMent({navigation}) {
       marginBottom: 0,
       marginHorizontal: 8,
       marginTop: 4,
-      backgroundColor: '#f1f5f9',
+      backgroundColor: theme.colors.surfaceSunken,
       borderRadius: 12,
       padding: 4,
     },
@@ -403,8 +420,8 @@ export  function HeadofDepartMent({navigation}) {
       justifyContent: 'center',
     },
     activeToggle: {
-      backgroundColor: 'white',
-      shadowColor: '#000',
+      backgroundColor: theme.colors.surface,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -412,11 +429,11 @@ export  function HeadofDepartMent({navigation}) {
     },
     toggleText: {
       fontWeight: '600',
-      color: '#64748b',
+      color: theme.colors.textSecondary,
       fontSize: 12,
     },
     activeToggleText: {
-      color: '#4f46e5',
+      color: theme.colors.brand,
       fontWeight: '700',
     },
   });
@@ -439,23 +456,23 @@ export  function HeadofDepartMent({navigation}) {
 
   const renderGenderStats = () => (
     <View style={ChartStyle.genderContainer}>
-      <View style={[ChartStyle.genderItem, {backgroundColor: '#e0e7ff'}]}>
-        <Fontisto name="male" size={20} color="#4f46e5" style={ChartStyle.genderIcon} />
+      <View style={[ChartStyle.genderItem, {backgroundColor: theme.colors.brandSoft}]}>
+        <Fontisto name="male" size={20} color={theme.colors.brand} style={ChartStyle.genderIcon} />
         <Text style={ChartStyle.genderValue}>{apData?.PMALE || 0}</Text>
         <Text style={ChartStyle.genderLabel}>Male Present</Text>
       </View>
-      <View style={[ChartStyle.genderItem, {backgroundColor: '#fce7f3'}]}>
-        <Fontisto name="female" size={20} color="#db2777" style={ChartStyle.genderIcon} />
+      <View style={[ChartStyle.genderItem, {backgroundColor: theme.colors.accentSoft}]}>
+        <Fontisto name="female" size={20} color={theme.colors.accent} style={ChartStyle.genderIcon} />
         <Text style={ChartStyle.genderValue}>{apData?.PFEMALE || 0}</Text>
         <Text style={ChartStyle.genderLabel}>Female Present</Text>
       </View>
-      <View style={[ChartStyle.genderItem, {backgroundColor: '#fee2e2'}]}>
-        <Fontisto name="male" size={20} color="#dc2626" style={ChartStyle.genderIcon} />
+      <View style={[ChartStyle.genderItem, {backgroundColor: theme.colors.dangerSoft}]}>
+        <Fontisto name="male" size={20} color={theme.colors.danger} style={ChartStyle.genderIcon} />
         <Text style={ChartStyle.genderValue}>{apData?.AMALE || 0}</Text>
         <Text style={ChartStyle.genderLabel}>Male Absent</Text>
       </View>
-      <View style={[ChartStyle.genderItem, {backgroundColor: '#ffedd5'}]}>
-        <Fontisto name="female" size={20} color="#ea580c" style={ChartStyle.genderIcon} />
+      <View style={[ChartStyle.genderItem, {backgroundColor: theme.colors.warningSoft}]}>
+        <Fontisto name="female" size={20} color={theme.colors.warning} style={ChartStyle.genderIcon} />
         <Text style={ChartStyle.genderValue}>{apData?.AFEMALE || 0}</Text>
         <Text style={ChartStyle.genderLabel}>Female Absent</Text>
       </View>
@@ -468,7 +485,7 @@ export  function HeadofDepartMent({navigation}) {
 
   return (
     <ScreenRotationWrapper>
-        <View style={{ flex: 1, backgroundColor: '#f5f5f5', width: "100%"}}>
+        <View style={{ flex: 1, backgroundColor: theme.colors.background, width: "100%"}}>
   {/* 3-way View Toggle: Charts / Details / Reports */}
         <View style={toggleStyles.toggleContainer}>
           <TouchableOpacity
@@ -512,11 +529,19 @@ export  function HeadofDepartMent({navigation}) {
 
       <ScrollView
         contentContainerStyle={ChartStyle.contentContainer}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4f46e5']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.brand]} />}
       >
         {/* Header */}
         <View style={ChartStyle.header}>
-          <Text style={ChartStyle.headerTitle}><MaterialIcons name="dashboard" size={24} color="black" />Department Dashboard</Text>
+          <View style={ChartStyle.headerIcon}>
+            <MaterialIcons name="dashboard" size={21} color={theme.colors.brand} />
+          </View>
+          <View style={ChartStyle.headerCopy}>
+            <Text style={ChartStyle.headerTitle}>Department Dashboard</Text>
+            <Text style={ChartStyle.headerSubtitle}>
+              {UserId?.DEPARTMENT || 'Company-wide'} overview and insights
+            </Text>
+          </View>
         </View>
 
         {/* Live Status Card */}
@@ -526,20 +551,23 @@ export  function HeadofDepartMent({navigation}) {
              {showChartView === 'charts' ? (
           // Chart View
           <LinearGradient
-          colors={['#4f46e5', '#7c3aed']}
-          start={{x: 0, y: 0}}
+            colors={[
+              theme.colors.brandStrong,
+              theme.colors.accent,
+            ]}
+            start={{x: 0, y: 0}}
           end={{x: 1, y: 1}}
           style={ChartStyle.gradientCard}
         >
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text style={[ChartStyle.metricTitle, {color: 'rgba(255,255,255,0.8)'}]}>
+            <Text style={[ChartStyle.metricTitle, {color: theme.colors.brandContrast, opacity: 0.8}]}>
               Department Overview
             </Text>
             <TouchableOpacity 
               onPress={() => setOpenHeadCountModal(true)}
               style={ChartStyle.filterButton}
             >
-              <AntDesign name="filter" size={16} color="#9007eb" />
+              <AntDesign name="filter" size={16} color={theme.colors.brand} />
             </TouchableOpacity>
           </View>
           
@@ -552,7 +580,7 @@ export  function HeadofDepartMent({navigation}) {
               auto_open={false}
               selected={department_select}
               placeholder={"Select Department"}
-              label={<Text style={{fontWeight:"bold", color:"white"}}> {department_select  ?? "Select Department"}</Text>}
+              label={<Text style={{fontWeight:"bold", color:theme.colors.brandContrast}}> {department_select  ?? "Select Department"}</Text>}
               _label={"name"}
               onselected={(data)=>{
                 setSelectedDepartment("")
@@ -566,12 +594,12 @@ export  function HeadofDepartMent({navigation}) {
               setSelected={setdepartment_select}
               options={department}
               zIndex={300}
-              textColor="white"
+              textColor={theme.colors.brandContrast}
             />
 
             :
 
-            <Text style={{color:"white"}}>
+            <Text style={{color:theme.colors.brandContrast}}>
              Department Of {UserId?.DEPARTMENT}
             </Text>
 
@@ -618,21 +646,24 @@ export  function HeadofDepartMent({navigation}) {
           </View> */}
         </LinearGradient>
         ): (
-        <LinearGradient 
-          colors={['#4f46e5', '#7c3aed']} 
-          start={{x: 0, y: 0}} 
+        <LinearGradient
+          colors={[
+            theme.colors.brandStrong,
+            theme.colors.accent,
+          ]}
+          start={{x: 0, y: 0}}
           end={{x: 1, y: 1}}
           style={ChartStyle.gradientCard}
         >
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text style={[ChartStyle.metricTitle, {color: 'rgba(255,255,255,0.8)'}]}>
+            <Text style={[ChartStyle.metricTitle, {color: theme.colors.brandContrast, opacity: 0.8}]}>
               Department Overview
             </Text>
             <TouchableOpacity 
               onPress={() => setOpenHeadCountModal(true)}
               style={ChartStyle.filterButton}
             >
-              <AntDesign name="filter" size={16} color="#9007eb" />
+              <AntDesign name="filter" size={16} color={theme.colors.brand} />
             </TouchableOpacity>
           </View>
           
@@ -644,7 +675,7 @@ export  function HeadofDepartMent({navigation}) {
               auto_open={false}
               selected={department_select}
               placeholder={"Select Department"}
-              label={<Text style={{fontWeight:"bold", color:"white"}}> {department_select  ?? "Select Department"}</Text>}
+              label={<Text style={{fontWeight:"bold", color:theme.colors.brandContrast}}> {department_select  ?? "Select Department"}</Text>}
               _label={"name"}
               onselected={(data)=>{
                 setSelectedDepartment("")
@@ -658,10 +689,10 @@ export  function HeadofDepartMent({navigation}) {
               setSelected={setdepartment_select}
               options={department}
               zIndex={300}
-              textColor="white"
+              textColor={theme.colors.brandContrast}
             />
              :
-<Text style={[ChartStyle.metricValue, {color: 'white', fontSize: 21,marginBottom:5}]}>
+<Text style={[ChartStyle.metricValue, {color: theme.colors.brandContrast, fontSize: 21,marginBottom:5}]}>
            Department of  {
               UserId?.DEPARTMENT 
             }
@@ -669,10 +700,10 @@ export  function HeadofDepartMent({navigation}) {
 
             }
           
-          <Text style={[ChartStyle.metricValue, {color: 'white', fontSize: 40}]}>
+          <Text style={[ChartStyle.metricValue, {color: theme.colors.brandContrast, fontSize: 40}]}>
             {selectedDepartment?.value || TotalDepartment?.value}
           </Text>
-          <Text style={[ChartStyle.metricSubtitle, {color: 'rgba(255,255,255,0.8)'}]}>
+          <Text style={[ChartStyle.metricSubtitle, {color: theme.colors.brandContrast, opacity: 0.8}]}>
             Total Department Strength
           </Text>
           
@@ -712,31 +743,29 @@ export  function HeadofDepartMent({navigation}) {
           {renderMetricCard(
             'Total Present', 
             (apData?.PMALE || 0) + (apData?.PFEMALE || 0),
-            <FontAwesome name="check-circle" size={18} color="#10b981" />,
-            '#10b981',
-            () => setOpenPresntModal(true)
+            <FontAwesome name="check-circle" size={18} color={theme.colors.success} />,
+            theme.colors.success,
           )}
           
           {renderMetricCard(
             'Total Absent', 
             (apData?.AMALE || 0) + (apData?.AFEMALE || 0),
-            <FontAwesome name="times-circle" size={18} color="#ef4444" />,
-            '#ef4444',
-            () => setOpenAbsentModal(true)
+            <FontAwesome name="times-circle" size={18} color={theme.colors.danger} />,
+            theme.colors.danger
           )}
           
           {renderMetricCard(
             'Male Present', 
             apData?.PMALE || 0,
-            <Fontisto name="male" size={18} color="#3b82f6" />,
-            '#3b82f6'
+            <Fontisto name="male" size={18} color={theme.colors.brand} />,
+            theme.colors.brand
           )}
           
           {renderMetricCard(
             'Female Present', 
             apData?.PFEMALE || 0,
-            <Fontisto name="female" size={18} color="#ec4899" />,
-            '#ec4899'
+            <Fontisto name="female" size={18} color={theme.colors.accent} />,
+            theme.colors.accent
           )}
         </View>
 
@@ -751,20 +780,20 @@ export  function HeadofDepartMent({navigation}) {
         {showChartView === 'reports' && (
           <>
             {/* Banner */}
-            <View style={{ backgroundColor: '#1e3a8a', borderRadius: 14, padding: 16, marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ backgroundColor: theme.colors.brandStrong, borderRadius: 14, padding: 16, marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View>
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>Department Reports</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 }}>{UserId?.DEPARTMENT || 'All Departments'} • Today's Live Status</Text>
+                <Text style={{ color: theme.colors.brandContrast, fontSize: 16, fontWeight: '800' }}>Department Reports</Text>
+                <Text style={{ color: theme.colors.brandContrast, opacity: 0.75, fontSize: 11, marginTop: 2 }}>{UserId?.DEPARTMENT || 'All Departments'} • Today's Live Status</Text>
               </View>
               <View style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: 8, borderRadius: 10 }}>
-                <MaterialCommunityIcons name="chart-areaspline" size={22} color="#fff" />
+                <MaterialCommunityIcons name="chart-areaspline" size={22} color={theme.colors.brandContrast} />
               </View>
             </View>
 
             {/* R1: Salary Trend Area Chart */}
-            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 2 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#0f172a', marginBottom: 2 }}>Salary Trend (Year-wise)</Text>
-              <Text style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10 }}>Area chart • All months</Text>
+            <View style={[ChartStyle.card, { padding: 14, marginBottom: 12 }]}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: theme.colors.text, marginBottom: 2 }}>Salary Trend (Year-wise)</Text>
+              <Text style={{ fontSize: 11, color: theme.colors.textMuted, marginBottom: 10 }}>Area chart • All months</Text>
               <View style={{ height: 250 }}>
                 <WebView key={`salary-trend-${salaryYears.join('-')}`} originWhitelist={['*']} source={{ html: SalaryTrendHTML }}
                   style={{ flex: 1 }} scrollEnabled={false} javaScriptEnabled />
@@ -773,17 +802,17 @@ export  function HeadofDepartMent({navigation}) {
 
             {/* R2 + R3 side by side: Gender Donut & Salary Category Pie */}
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
-              <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 12, elevation: 2 }}>
-                <Text style={{ fontSize: 12, fontWeight: '700', color: '#0f172a', marginBottom: 2 }}>Gender Split</Text>
-                <Text style={{ fontSize: 10, color: '#94a3b8', marginBottom: 8 }}>Donut chart</Text>
+              <View style={[ChartStyle.card, { flex: 1, padding: 12, marginBottom: 0 }]}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.colors.text, marginBottom: 2 }}>Gender Split</Text>
+                <Text style={{ fontSize: 10, color: theme.colors.textMuted, marginBottom: 8 }}>Donut chart</Text>
                 <View style={{ height: 220 }}>
                   <WebView key={`gender-donut-${totalM}-${totalF}`} originWhitelist={['*']} source={{ html: GenderDonutHTML }}
                     style={{ flex: 1 }} scrollEnabled={false} javaScriptEnabled />
                 </View>
               </View>
-              <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 12, elevation: 2 }}>
-                <Text style={{ fontSize: 12, fontWeight: '700', color: '#0f172a', marginBottom: 2 }}>Salary by Category</Text>
-                <Text style={{ fontSize: 10, color: '#94a3b8', marginBottom: 8 }}>Pie chart</Text>
+              <View style={[ChartStyle.card, { flex: 1, padding: 12, marginBottom: 0 }]}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.colors.text, marginBottom: 2 }}>Salary by Category</Text>
+                <Text style={{ fontSize: 10, color: theme.colors.textMuted, marginBottom: 8 }}>Pie chart</Text>
                 <View style={{ height: 220 }}>
                   <WebView key={`salary-cat-${salCatRows.length}`} originWhitelist={['*']} source={{ html: SalCatHTML }}
                     style={{ flex: 1 }} scrollEnabled={false} javaScriptEnabled />
@@ -792,9 +821,9 @@ export  function HeadofDepartMent({navigation}) {
             </View>
 
             {/* R4: Attendance Gender Bar */}
-            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 2 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#0f172a', marginBottom: 2 }}>Attendance Breakdown</Text>
-              <Text style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10 }}>Grouped bar chart • Today</Text>
+            <View style={[ChartStyle.card, { padding: 14, marginBottom: 12 }]}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: theme.colors.text, marginBottom: 2 }}>Attendance Breakdown</Text>
+              <Text style={{ fontSize: 11, color: theme.colors.textMuted, marginBottom: 10 }}>Grouped bar chart • Today</Text>
               <View style={{ height: 220 }}>
                 <WebView originWhitelist={['*']} source={{ html: AttHTML }}
                   style={{ flex: 1 }} scrollEnabled={false} javaScriptEnabled />
@@ -802,26 +831,26 @@ export  function HeadofDepartMent({navigation}) {
             </View>
 
             {/* R5: Attendance Rate Radial Gauge + Stats */}
-            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 2 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#0f172a', marginBottom: 2 }}>Attendance Rate</Text>
-              <Text style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>Radial gauge • {LastMonthandYear}</Text>
+            <View style={[ChartStyle.card, { padding: 14, marginBottom: 12 }]}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: theme.colors.text, marginBottom: 2 }}>Attendance Rate</Text>
+              <Text style={{ fontSize: 11, color: theme.colors.textMuted, marginBottom: 6 }}>Radial gauge • {LastMonthandYear}</Text>
               <View style={{ height: 220 }}>
                 <WebView originWhitelist={['*']} source={{ html: RadialHTML }}
                   style={{ flex: 1 }} scrollEnabled={false} javaScriptEnabled />
               </View>
               {/* Stat pills below the gauge */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10, paddingHorizontal: 8 }}>
-                <View style={{ alignItems: 'center', backgroundColor: '#f0fdf4', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#10b981' }}>{totalP}</Text>
-                  <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>Present</Text>
+                <View style={{ alignItems: 'center', backgroundColor: theme.colors.successSoft, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: theme.colors.success }}>{totalP}</Text>
+                  <Text style={{ fontSize: 10, color: theme.colors.textSecondary, marginTop: 2 }}>Present</Text>
                 </View>
-                <View style={{ alignItems: 'center', backgroundColor: '#fef2f2', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#ef4444' }}>{(apData?.AMALE||0)+(apData?.AFEMALE||0)}</Text>
-                  <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>Absent</Text>
+                <View style={{ alignItems: 'center', backgroundColor: theme.colors.dangerSoft, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: theme.colors.danger }}>{(apData?.AMALE||0)+(apData?.AFEMALE||0)}</Text>
+                  <Text style={{ fontSize: 10, color: theme.colors.textSecondary, marginTop: 2 }}>Absent</Text>
                 </View>
-                <View style={{ alignItems: 'center', backgroundColor: '#eff6ff', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#3b82f6' }}>{totalHC}</Text>
-                  <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>Total</Text>
+                <View style={{ alignItems: 'center', backgroundColor: theme.colors.brandSoft, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: theme.colors.brand }}>{totalHC}</Text>
+                  <Text style={{ fontSize: 10, color: theme.colors.textSecondary, marginTop: 2 }}>Total</Text>
                 </View>
               </View>
             </View>
@@ -834,7 +863,7 @@ export  function HeadofDepartMent({navigation}) {
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={ChartStyle.chartTitle}>Gender Distribution</Text>
               <TouchableOpacity style={ChartStyle.filterButton}>
-                <MaterialCommunityIcons name="dots-vertical" size={20} color="#64748b" />
+                <MaterialCommunityIcons name="dots-vertical" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             <GenderWiseStrength 
@@ -856,7 +885,7 @@ export  function HeadofDepartMent({navigation}) {
                 onPress={() => setOpenCategoryWiseSalary(true)}
                 style={ChartStyle.filterButton}
               >
-                <MaterialCommunityIcons name="filter-outline" size={20} color="#64748b" />
+                <MaterialCommunityIcons name="filter-outline" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             {OpenCategoryWiseSalary ? (
@@ -867,7 +896,7 @@ export  function HeadofDepartMent({navigation}) {
                   data={getCateogryWiseSalary?.data} 
                   isLoading={getCateogryWiseisLoading}
                 />
-                <Text style={{textAlign: 'center', color: '#64748b', marginTop: 8}}>
+                <Text style={{textAlign: 'center', color: theme.colors.textSecondary, marginTop: 8}}>
                   {cMonth && cyear ? `${cMonth} ${cyear}` : LastMonthandYear}
                 </Text>
               </>
@@ -883,16 +912,10 @@ export  function HeadofDepartMent({navigation}) {
         style={ChartStyle.fab}
         onPress={() => CustomNavigation('HOME')}
       >
-        <MaterialCommunityIcons name="home" size={24} color="white" />
+        <MaterialCommunityIcons name="home" size={24} color={theme.colors.brandContrast} />
       </TouchableOpacity>
 
       </View>
    </ScreenRotationWrapper>
   );
 }
-
-
-
-
-
-

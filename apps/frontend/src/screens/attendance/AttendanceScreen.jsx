@@ -1,12 +1,10 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useState, useContext, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    FlatList,
-    TextInput,
     ActivityIndicator,
     Alert,
     RefreshControl,
@@ -24,21 +22,28 @@ import {
     usePunchInMutation,
     usePunchOutMutation,
 } from '../../store/api/attendanceApi';
+import { useGetEmployeeIdsWithAttQuery } from '../../store/api/userApi';
 import { getCurrentLocation } from '../../components/Utils/CustomLocation';
+import EmployeeAttendanceList from './components/EmployeeAttendanceList';
+import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');
 const formatTime = (t) => t || '--:--';
 
 export default function AttendanceScreen() {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const navigation = useNavigation();
     const { admin } = useContext(Common_Context);
     const user = useSelector((state) => state.UserDetails);
 
     const userIdcard = user?.IDCARD || user?.UserId || user?.Id;
+    const normalizedUserId = String(userIdcard || '').trim().toUpperCase();
+    const isAdmin = admin === 1 || admin === true || String(admin) === '1';
     const isHOD =
-        user?.level?.toUpperCase() === 'HOD' ||
-        (userIdcard && user?.hod && userIdcard.toUpperCase() === user?.hod?.toUpperCase()) ||
-        admin === 1;
+        String(user?.level || '').toUpperCase() === 'HOD' ||
+        (normalizedUserId && normalizedUserId === String(user?.hod || '').trim().toUpperCase()) ||
+        isAdmin;
 
     const [activeTab, setActiveTab] = useState('SELF');
     const [isPunching, setIsPunching] = useState(false);
@@ -47,8 +52,20 @@ export default function AttendanceScreen() {
     const { data: statusData, isFetching: statusFetching, refetch: refetchStatus } =
         useGetAttendanceStatusQuery();
     const { data: summaryData } = useGetAttendanceSummaryQuery();
+    const {
+        data: employeeAttendanceData,
+        error: employeeAttendanceError,
+        isError: employeeAttendanceHasError,
+        isFetching: employeesFetching,
+        isLoading: employeesLoading,
+        refetch: refetchEmployees,
+    } = useGetEmployeeIdsWithAttQuery(
+        { hod: userIdcard },
+        { skip: activeTab !== 'EMPLOYEE' || !isHOD || !userIdcard },
+    );
     const [punchIn] = usePunchInMutation();
     const [punchOut] = usePunchOutMutation();
+    const refreshActiveTab = activeTab === 'EMPLOYEE' ? refetchEmployees : refetchStatus;
 
     const attendanceStatus = statusData?.data;
     const summary = summaryData?.data;
@@ -100,13 +117,13 @@ export default function AttendanceScreen() {
         if (statusFetching || isPunching) {
             return (
                 <View style={styles.punchRing}>
-                    <ActivityIndicator size="large" color="#FFFFFF" />
+                    <ActivityIndicator size="large" color={theme.colors.brandContrast} />
                 </View>
             );
         }
 
         const isOut = !status || status === 'NONE' || status === 'OUT';
-        const btnColor = isOut ? '#16A34A' : '#DC2626';
+        const btnColor = isOut ? theme.colors.success : theme.colors.danger;
         const btnLabel = isOut ? 'PUNCH IN' : 'PUNCH OUT';
         const btnIcon  = isOut ? 'login' : 'logout';
 
@@ -116,8 +133,8 @@ export default function AttendanceScreen() {
                 onPress={handlePunch}
                 activeOpacity={0.85}
             >
-                <View style={[styles.punchInnerRing, { borderColor: 'rgba(255,255,255,0.3)' }]}>
-                    <MaterialCommunityIcons name={btnIcon} size={36} color="#FFFFFF" />
+                <View style={[styles.punchInnerRing, { borderColor: theme.colors.brandContrast }]}>
+                    <MaterialCommunityIcons name={btnIcon} size={36} color={theme.colors.brandContrast} />
                     <Text style={styles.punchLabel}>{btnLabel}</Text>
                 </View>
             </TouchableOpacity>
@@ -135,19 +152,22 @@ export default function AttendanceScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1E293B" />
+            <StatusBar
+                barStyle={theme.isDark ? 'dark-content' : 'light-content'}
+                backgroundColor={theme.colors.brand}
+            />
 
             {/* ── Header ────────────────────────────────────────────────────── */}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <MaterialCommunityIcons name="arrow-left" size={22} color="#FFFFFF" />
+                    <MaterialCommunityIcons name="arrow-left" size={22} color={theme.colors.brandContrast} />
                 </TouchableOpacity>
                 <View style={styles.headerText}>
                     <Text style={styles.headerTitle}>Attendance</Text>
                     <Text style={styles.headerSub}>Track your daily in / out time</Text>
                 </View>
-                <TouchableOpacity style={styles.refreshBtn} onPress={refetchStatus} activeOpacity={0.7}>
-                    <MaterialCommunityIcons name="refresh" size={20} color="#FFFFFF" />
+                <TouchableOpacity style={styles.refreshBtn} onPress={refreshActiveTab} activeOpacity={0.7}>
+                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brandContrast} />
                 </TouchableOpacity>
             </View>
 
@@ -164,7 +184,7 @@ export default function AttendanceScreen() {
                             <MaterialCommunityIcons
                                 name={tab === 'SELF' ? 'account' : 'account-group'}
                                 size={16}
-                                color={activeTab === tab ? '#007AFF' : '#64748B'}
+                                color={activeTab === tab ? theme.colors.brand : theme.colors.textMuted}
                             />
                             <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
                                 {tab === 'SELF' ? 'My Attendance' : 'Employees'}
@@ -180,16 +200,16 @@ export default function AttendanceScreen() {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollBody}
                     refreshControl={
-                        <RefreshControl refreshing={statusFetching} onRefresh={refetchStatus} colors={['#007AFF']} />
+                    <RefreshControl refreshing={statusFetching} onRefresh={refetchStatus} colors={[theme.colors.brand]} />
                     }
                 >
                     {/* Today Status Banner */}
                     <View style={[
                         styles.statusBanner,
-                        { backgroundColor: isPunchedIn ? '#DCFCE7' : '#F1F5F9' }
+                        { backgroundColor: isPunchedIn ? theme.colors.successSoft : theme.colors.surfaceSunken }
                     ]}>
-                        <View style={[styles.statusDot, { backgroundColor: isPunchedIn ? '#16A34A' : '#94A3B8' }]} />
-                        <Text style={[styles.statusBannerText, { color: isPunchedIn ? '#15803D' : '#64748B' }]}>
+                        <View style={[styles.statusDot, { backgroundColor: isPunchedIn ? theme.colors.success : theme.colors.textDisabled }]} />
+                        <Text style={[styles.statusBannerText, { color: isPunchedIn ? theme.colors.success : theme.colors.textMuted }]}>
                             {isPunchedIn ? 'Currently Punched In' : status === 'OUT' ? 'Punched Out Today' : 'Not Yet Punched In'}
                         </Text>
                     </View>
@@ -199,8 +219,8 @@ export default function AttendanceScreen() {
                         <Text style={styles.timesCardTitle}>Today's Record</Text>
                         <View style={styles.timesRow}>
                             <View style={styles.timeBlock}>
-                                <View style={[styles.timeIconWrap, { backgroundColor: '#DCFCE7' }]}>
-                                    <MaterialCommunityIcons name="clock-in" size={24} color="#16A34A" />
+                                <View style={[styles.timeIconWrap, { backgroundColor: theme.colors.successSoft }]}>
+                                    <MaterialCommunityIcons name="clock-in" size={24} color={theme.colors.success} />
                                 </View>
                                 <Text style={styles.timeLabel}>Punch In</Text>
                                 <Text style={styles.timeValue}>
@@ -211,8 +231,8 @@ export default function AttendanceScreen() {
                             <View style={styles.timeDivider} />
 
                             <View style={styles.timeBlock}>
-                                <View style={[styles.timeIconWrap, { backgroundColor: '#FEE2E2' }]}>
-                                    <MaterialCommunityIcons name="clock-out" size={24} color="#DC2626" />
+                                <View style={[styles.timeIconWrap, { backgroundColor: theme.colors.dangerSoft }]}>
+                                    <MaterialCommunityIcons name="clock-out" size={24} color={theme.colors.danger} />
                                 </View>
                                 <Text style={styles.timeLabel}>Punch Out</Text>
                                 <Text style={styles.timeValue}>
@@ -238,143 +258,147 @@ export default function AttendanceScreen() {
                         <View style={styles.summarySection}>
                             <Text style={styles.sectionTitle}>This Month</Text>
                             <View style={styles.statsGrid}>
-                                <StatCard icon="check-circle-outline" label="Present" value={summary?.present} color="#16A34A" />
-                                <StatCard icon="close-circle-outline" label="Absent" value={summary?.absent} color="#DC2626" />
-                                <StatCard icon="clock-alert-outline" label="Late" value={summary?.late} color="#D97706" />
-                                <StatCard icon="home-clock-outline" label="Half Day" value={summary?.halfDay} color="#7C3AED" />
+                                <StatCard icon="check-circle-outline" label="Present" value={summary?.present} color={theme.colors.success} />
+                                <StatCard icon="close-circle-outline" label="Absent" value={summary?.absent} color={theme.colors.danger} />
+                                <StatCard icon="clock-alert-outline" label="Late" value={summary?.late} color={theme.colors.warning} />
+                                <StatCard icon="home-clock-outline" label="Half Day" value={summary?.halfDay} color={theme.colors.accent} />
                             </View>
                         </View>
                     )}
                 </ScrollView>
             ) : (
                 /* ── EMPLOYEE Tab ───────────────────────────────────────────── */
-                <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+                <View style={styles.employeeTab}>
                     <View style={styles.empNote}>
-                        <MaterialCommunityIcons name="information-outline" size={16} color="#007AFF" />
-                        <Text style={styles.empNoteText}>Manage employee attendance as HOD / Admin</Text>
+                        <MaterialCommunityIcons name="information-outline" size={16} color={theme.colors.info} />
+                        <Text style={styles.empNoteText}>Today's attendance for employees allocated to you</Text>
                     </View>
-                    <View style={styles.emptyState}>
-                        <MaterialCommunityIcons name="account-group-outline" size={54} color="#CBD5E1" />
-                        <Text style={styles.emptyTitle}>Employee List</Text>
-                        <Text style={styles.emptySubtitle}>Pull down to refresh employee attendance data.</Text>
-                    </View>
+                    <EmployeeAttendanceList
+                        employees={employeeAttendanceData?.data}
+                        isFetching={employeesFetching}
+                        isLoading={employeesLoading}
+                        isError={employeeAttendanceHasError}
+                        error={employeeAttendanceError}
+                        onRefresh={refetchEmployees}
+                    />
                 </View>
             )}
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8FAFC' },
+const createStyles = theme => StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
 
     // Header
     header: {
-        backgroundColor: '#1E293B',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
+        backgroundColor: theme.colors.brand,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingVertical: theme.spacing.lg,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: theme.spacing.md,
     },
     backBtn: {
-        width: 38, height: 38, borderRadius: 10,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        width: theme.controlSizes.avatarMd - 6,
+        height: theme.controlSizes.avatarMd - 6,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.brandSoft,
         alignItems: 'center', justifyContent: 'center',
     },
     headerText: { flex: 1 },
-    headerTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.3 },
-    headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
+    headerTitle: { ...theme.typography.h3, color: theme.colors.brandContrast },
+    headerSub: { ...theme.typography.caption, color: theme.colors.brandContrast, opacity: 0.72, marginTop: theme.spacing.xxs },
     refreshBtn: {
-        width: 38, height: 38, borderRadius: 10,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        width: theme.controlSizes.avatarMd - 6,
+        height: theme.controlSizes.avatarMd - 6,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.brandSoft,
         alignItems: 'center', justifyContent: 'center',
     },
 
     // Tabs
     tabBar: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderBottomWidth: 1,
-        borderBottomColor: '#E2E8F0',
-        paddingHorizontal: 16,
+        borderBottomColor: theme.colors.divider,
+        paddingHorizontal: theme.layout.screenGutter,
     },
     tab: {
         flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-        paddingVertical: 14, gap: 6,
+        paddingVertical: theme.spacing.md, gap: theme.spacing.xs + 2,
         borderBottomWidth: 2, borderBottomColor: 'transparent',
     },
-    activeTab: { borderBottomColor: '#007AFF' },
-    tabText: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-    activeTabText: { color: '#007AFF' },
+    activeTab: { borderBottomColor: theme.colors.brand },
+    tabText: { ...theme.typography.label, color: theme.colors.textMuted },
+    activeTabText: { color: theme.colors.brand },
 
     // Scroll body
-    scrollBody: { padding: 16, paddingBottom: 40 },
+    scrollBody: { padding: theme.layout.screenGutter, paddingBottom: theme.spacing.huge },
 
     // Status banner
     statusBanner: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        paddingHorizontal: 16, paddingVertical: 10,
-        borderRadius: 12, marginBottom: 14,
+        flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm + 2,
+        borderRadius: theme.radii.md, marginBottom: theme.spacing.md,
     },
-    statusDot: { width: 10, height: 10, borderRadius: 5 },
-    statusBannerText: { fontSize: 13, fontWeight: '600' },
+    statusDot: { width: theme.spacing.sm, height: theme.spacing.sm, borderRadius: theme.radii.circle },
+    statusBannerText: { ...theme.typography.caption, fontWeight: theme.fontWeights.semiBold },
 
     // Times card
     timesCard: {
-        backgroundColor: '#FFFFFF', borderRadius: 16,
-        padding: 20, marginBottom: 14,
-        borderWidth: 1, borderColor: '#E2E8F0',
-        elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+        ...theme.styles.card,
+        ...theme.styles.shadow,
+        padding: theme.spacing.xl,
+        marginBottom: theme.spacing.md,
     },
-    timesCardTitle: { fontSize: 15, fontWeight: '700', color: '#0F172A', marginBottom: 16, textAlign: 'center' },
+    timesCardTitle: { ...theme.typography.subtitle, color: theme.colors.text, marginBottom: theme.spacing.lg, textAlign: 'center' },
     timesRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
     timeBlock: { alignItems: 'center', flex: 1 },
-    timeIconWrap: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-    timeLabel: { fontSize: 12, color: '#64748B', fontWeight: '500' },
-    timeValue: { fontSize: 20, fontWeight: '800', color: '#0F172A', marginTop: 4 },
-    timeDivider: { width: 1, height: 50, backgroundColor: '#E2E8F0' },
+    timeIconWrap: { width: theme.controlSizes.avatarLg - 4, height: theme.controlSizes.avatarLg - 4, borderRadius: theme.radii.md, alignItems: 'center', justifyContent: 'center', marginBottom: theme.spacing.sm },
+    timeLabel: { ...theme.typography.caption, color: theme.colors.textMuted, fontWeight: theme.fontWeights.medium },
+    timeValue: { ...theme.typography.h3, color: theme.colors.text, marginTop: theme.spacing.xs },
+    timeDivider: { width: 1, height: 50, backgroundColor: theme.colors.divider },
 
     // Punch section
-    punchSection: { alignItems: 'center', paddingVertical: 24, marginBottom: 14 },
-    punchHint: { fontSize: 14, color: '#64748B', marginBottom: 24 },
+    punchSection: { alignItems: 'center', paddingVertical: theme.spacing.xxl, marginBottom: theme.spacing.md },
+    punchHint: { ...theme.typography.bodySmall, color: theme.colors.textMuted, marginBottom: theme.spacing.xxl },
     punchRing: {
-        width: 160, height: 160, borderRadius: 80,
+        width: 160, height: 160, borderRadius: theme.radii.circle,
         alignItems: 'center', justifyContent: 'center',
-        elevation: 10, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
-        backgroundColor: '#16A34A',
+        elevation: theme.elevation.lg, shadowColor: theme.colors.shadow, shadowOpacity: theme.isDark ? 0.35 : 0.25, shadowRadius: theme.spacing.lg, shadowOffset: { width: 0, height: 6 },
+        backgroundColor: theme.colors.success,
     },
     punchInnerRing: {
-        width: 140, height: 140, borderRadius: 70,
+        width: 140, height: 140, borderRadius: theme.radii.circle,
         borderWidth: 2,
         alignItems: 'center', justifyContent: 'center',
     },
-    punchLabel: { color: '#FFFFFF', fontWeight: '900', fontSize: 15, marginTop: 6, letterSpacing: 0.5 },
-    locationHint: { fontSize: 12, color: '#94A3B8', marginTop: 16 },
+    punchLabel: { ...theme.typography.label, color: theme.colors.brandContrast, fontWeight: theme.fontWeights.extraBold, marginTop: theme.spacing.xs + 2, letterSpacing: theme.letterSpacing.wide },
+    locationHint: { ...theme.typography.caption, color: theme.colors.textDisabled, marginTop: theme.spacing.lg },
 
     // Summary stats
-    summarySection: { marginBottom: 14 },
-    sectionTitle: { fontSize: 15, fontWeight: '700', color: '#0F172A', marginBottom: 12 },
-    statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    summarySection: { marginBottom: theme.spacing.md },
+    sectionTitle: { ...theme.typography.subtitle, color: theme.colors.text, marginBottom: theme.spacing.md },
+    statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm + 2 },
     statCard: {
         flex: 1, minWidth: (width - 52) / 2 - 10,
-        backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16,
+        ...theme.styles.card,
+        ...theme.styles.shadow,
         alignItems: 'center',
         borderTopWidth: 3,
-        borderWidth: 1, borderColor: '#E2E8F0',
-        elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
     },
-    statValue: { fontSize: 26, fontWeight: '800', color: '#0F172A', marginTop: 8 },
-    statLabel: { fontSize: 11, color: '#64748B', marginTop: 3, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+    statValue: { ...theme.typography.h2, color: theme.colors.text, marginTop: theme.spacing.sm },
+    statLabel: { ...theme.typography.overline, color: theme.colors.textMuted, marginTop: theme.spacing.xxs + 1 },
 
     // Employee tab
     empNote: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#EFF6FF', paddingHorizontal: 16, paddingVertical: 10,
-        borderBottomWidth: 1, borderBottomColor: '#BFDBFE',
+        flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs + 2,
+        backgroundColor: theme.colors.infoSoft, paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm + 2,
+        borderBottomWidth: 1, borderBottomColor: theme.colors.border,
     },
-    empNoteText: { fontSize: 12, color: '#1D4ED8', flex: 1 },
+    empNoteText: { ...theme.typography.caption, color: theme.colors.info, flex: 1 },
 
-    emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-    emptyTitle: { fontSize: 17, fontWeight: '700', color: '#1E293B', marginTop: 12 },
-    emptySubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 6, lineHeight: 20 },
+    employeeTab: { flex: 1, backgroundColor: theme.colors.background },
 });

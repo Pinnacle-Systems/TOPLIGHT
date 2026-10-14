@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  Dimensions,
-  useWindowDimensions, 
-  Alert
+  useWindowDimensions,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomText from '../Text/CustomText';
+import { useAppTheme } from '../../theme';
 
-const PickerTickIcon = ({ style }) => (
-  <MaterialIcons name="check" size={20} color="#007AFF" style={style} />
-);
+const PickerTickIcon = ({ style }) => {
+  const { theme } = useAppTheme();
+  return <MaterialIcons name="check" size={20} color={theme.colors.brand} style={style} />;
+};
+
+const PickerCloseIcon = ({ style }) => {
+  const { theme } = useAppTheme();
+  return <MaterialIcons name="close" size={21} color={theme.colors.textMuted} style={style} />;
+};
 
 export const Dropdown = ({ 
   selected, 
@@ -29,12 +34,21 @@ export const Dropdown = ({
   multiple = false,
   isLoading, 
   placeholder, 
+  style,
   ...props 
 }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createInputStyles(theme), [theme]);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const isPortrait = screenHeight > screenWidth;
+  const modalWidth = Math.min(screenWidth - 32, isPortrait ? 480 : 600);
+  const maxListHeight = Math.max(56, Math.min(screenHeight - 180, 336));
+  const modalListHeight = Math.max(
+    56,
+    Math.min(items.length * 48, maxListHeight),
+  );
 
   useEffect(() => {
     const data = (options?.data || [])?.map((item) => ({
@@ -42,14 +56,15 @@ export const Dropdown = ({
       value: item?.[_value || "id"]
     }));
     setItems(data);
-  }, [options?.data]);
+  }, [options?.data, _label, _value]  );
 
   const dropdownWidth = width || (isPortrait ? screenWidth * 0.9 : screenWidth * 0.4);
 
   return (
     <View style={[
       styles.container,
-      { zIndex: open ? 1000 : 1 }
+      style,
+      open ? styles.openContainer : styles.closedContainer
     ]}>
       {label && <CustomText style={styles.label}>{label}</CustomText>}
       <DropDownPicker
@@ -64,10 +79,16 @@ export const Dropdown = ({
         TickIconComponent={PickerTickIcon}
         selectedItemContainerStyle={styles.selectedItemContainer}
         selectedItemLabelStyle={styles.selectedItemLabel}
+        listItemContainerStyle={styles.modalItem}
+        listItemLabelStyle={styles.modalItemLabel}
+        itemSeparator
+        itemSeparatorStyle={styles.modalItemSeparator}
         searchable={true}
         searchPlaceholder="Search options..."
-        searchPlaceholderTextColor="#64748B"
+        searchPlaceholderTextColor={theme.colors.placeholder}
         placeholder={isLoading ? 'Loading...' : placeholder}
+        textStyle={styles.modalItemLabel}
+        placeholderStyle={styles.placeholder}
         dropDownDirection="AUTO"
         style={[
           styles.dropdown,
@@ -81,24 +102,28 @@ export const Dropdown = ({
         ]}
         listMode="MODAL"
         zIndex={100}
-        maxHeight={screenHeight * 0.5}
-        modalContentContainerStyle={{
-          backgroundColor: '#fff',
-          marginHorizontal: 20,
-          marginTop: isPortrait ? '30%' : '10%',
-          borderRadius: 12,
-          padding: 16,
-          height: screenHeight * 0.5,
-          maxHeight: screenHeight * 0.5,
-          zIndex: 200,
-          elevation: 10,
-          width: isPortrait ? screenWidth * 0.9 : screenWidth * 0.8
+        maxHeight={Math.min(screenHeight * 0.65, 480)}
+        CloseIconComponent={PickerCloseIcon}
+        closeIconStyle={styles.modalCloseIcon}
+        searchContainerStyle={styles.modalSearchContainer}
+        flatListProps={{
+          style: [
+            styles.modalList,
+            {
+              width: modalWidth,
+              height: modalListHeight,
+            },
+          ],
+          contentContainerStyle: styles.modalListContent,
+          keyboardShouldPersistTaps: 'handled',
+          showsVerticalScrollIndicator: items.length > 6,
         }}
+        modalContentContainerStyle={styles.modalBackdrop}
         modalProps={{
-          animationType: 'slide',
+          animationType: 'fade',
           transparent: true,
           presentationStyle: 'overFullScreen',
-          backdropColor: "#bbbfbd"
+          statusBarTranslucent: true,
         }}
         mode="SIMPLE"
         {...props}
@@ -108,6 +133,8 @@ export const Dropdown = ({
 };
 
 export const DateInput = ({ date, setDate }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createInputStyles(theme), [theme]);
   const [show, setShow] = useState(false);
   const [pickerKey, setPickerKey] = useState(0); // Key to force re-render
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -159,9 +186,15 @@ export const DateInput = ({ date, setDate }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createInputStyles = theme => StyleSheet.create({
   container: {
     marginVertical: 10,
+  },
+  openContainer: {
+    zIndex: 1000,
+  },
+  closedContainer: {
+    zIndex: 1,
   },
   portraitContainer: {
     width: '90%',
@@ -172,18 +205,18 @@ const styles = StyleSheet.create({
     marginHorizontal: '2.5%'
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
-    color: '#333',
+    ...theme.typography.label,
+    marginBottom: theme.spacing.xs + 2,
+    color: theme.colors.textSecondary,
   },
   dropdown: {
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
+    backgroundColor: theme.colors.inputBackground,
+    borderColor: theme.colors.inputBorder,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: theme.radii.md,
     justifyContent: 'center',
   },
+  placeholder: { ...theme.typography.bodySmall, color: theme.colors.placeholder },
   portraitDropdown: {
     minHeight: 45,
     paddingHorizontal: 10,
@@ -193,32 +226,85 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   dropDownContainerStyle: {
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginTop: 2,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    marginTop: theme.spacing.xxs,
   },
   selectedItemContainer: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: theme.colors.surfaceSelected,
   },
   selectedItemLabel: {
-    color: '#1D4ED8',
-    fontWeight: '700',
+    color: theme.colors.brand,
+    fontWeight: theme.fontWeights.bold,
   },
   searchTextInputStyle: {
-    height: 40,
-    borderColor: '#ddd',
+    height: 44,
+    borderColor: theme.colors.inputBorder,
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    color: '#1F2937',
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.md,
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.inputBackground,
+  },
+  modalSearchContainer: {
+    width: '100%',
+    maxWidth: 600,
+    minHeight: 68,
+    paddingHorizontal: theme.spacing.md + 2,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: theme.radii.lg,
+    borderTopRightRadius: theme.radii.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.divider,
+  },
+  modalBackdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.scrim,
+    paddingHorizontal: theme.layout.screenGutter,
+  },
+  modalCloseIcon: {
+    width: 22,
+    height: 22,
+  },
+  modalList: {
+    flexGrow: 0,
+    backgroundColor: theme.colors.surface,
+    borderBottomLeftRadius: theme.radii.lg,
+    borderBottomRightRadius: theme.radii.lg,
+    overflow: 'hidden',
+    elevation: 14,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: theme.isDark ? 0.3 : 0.18,
+    shadowRadius: theme.spacing.lg,
+  },
+  modalListContent: {
+    flexGrow: 1,
+    paddingVertical: theme.spacing.xs,
+  },
+  modalItem: {
+    minHeight: theme.controlSizes.minTouchTarget + 4,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  modalItemLabel: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+  },
+  modalItemSeparator: {
+    height: 1,
+    backgroundColor: theme.colors.divider,
   },
   dateInputContainer: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: theme.colors.inputBorder,
+    borderRadius: theme.radii.md,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.inputBackground,
   },
   portraitDateInput: {
     height: 45,
@@ -229,7 +315,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   dateText: {
-    fontSize: 14,
-    color: '#333',
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
   },
 });

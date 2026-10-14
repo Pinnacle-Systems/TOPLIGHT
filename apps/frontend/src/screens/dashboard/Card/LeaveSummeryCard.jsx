@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const LeaveSummaryCard = ({ 
     leaveTaken = 0, 
@@ -10,6 +11,8 @@ const LeaveSummaryCard = ({
     openReport,
     setopenLeaveModal,
 }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const isPresent = attendanceStatus === 'Present';
 
     return (
@@ -25,7 +28,7 @@ const LeaveSummaryCard = ({
                             <MaterialCommunityIcons 
                                 name="calendar-month-outline" 
                                 size={22} 
-                                color="#0284C7" 
+                                color={theme.colors.info}
                             />
                         </View>
                         <View>
@@ -40,7 +43,7 @@ const LeaveSummaryCard = ({
                         onPress={() => setopenLeaveModal?.(true)}
                         activeOpacity={0.7}
                     >
-                        <MaterialCommunityIcons name="calendar-search" size={15} color="#0284C7" />
+                        <MaterialCommunityIcons name="calendar-search" size={15} color={theme.colors.info} />
                         <Text style={styles.filterBtnText}>Select Year</Text>
                     </TouchableOpacity>
                 </View>
@@ -49,11 +52,11 @@ const LeaveSummaryCard = ({
                 <View style={styles.statsRow}>
                     {/* Leaves Taken */}
                     <View style={styles.statBox}>
-                        <View style={[styles.statIconWrap, { backgroundColor: '#FEE2E2' }]}>
-                            <MaterialCommunityIcons name="calendar-remove" size={18} color="#DC2626" />
+                        <View style={[styles.statIconWrap, { backgroundColor: theme.colors.dangerSoft }]}>
+                            <MaterialCommunityIcons name="calendar-remove" size={18} color={theme.colors.danger} />
                         </View>
                         <Text style={styles.statLabel}>Leaves Taken</Text>
-                        <Text style={[styles.statValue, { color: '#DC2626' }]}>
+                        <Text style={[styles.statValue, { color: theme.colors.danger }]}>
                             {typeof leaveTaken === 'number' ? `${leaveTaken} Days` : leaveTaken || '0 Days'}
                         </Text>
                     </View>
@@ -62,11 +65,11 @@ const LeaveSummaryCard = ({
 
                     {/* Available Leaves */}
                     <View style={styles.statBox}>
-                        <View style={[styles.statIconWrap, { backgroundColor: '#DCFCE7' }]}>
-                            <MaterialCommunityIcons name="calendar-check" size={18} color="#16A34A" />
+                        <View style={[styles.statIconWrap, { backgroundColor: theme.colors.successSoft }]}>
+                            <MaterialCommunityIcons name="calendar-check" size={18} color={theme.colors.success} />
                         </View>
                         <Text style={styles.statLabel}>Available Balance</Text>
-                        <Text style={[styles.statValue, { color: '#16A34A' }]}>
+                        <Text style={[styles.statValue, { color: theme.colors.success }]}>
                             {typeof availableLeaves === 'number' ? `${availableLeaves} Days` : availableLeaves || '0 Days'}
                         </Text>
                     </View>
@@ -75,9 +78,9 @@ const LeaveSummaryCard = ({
                 {/* Footer Status & Report Link */}
                 <View style={styles.footerRow}>
                     <View style={styles.statusCol}>
-                        <View style={[styles.statusDot, { backgroundColor: isPresent ? '#16A34A' : '#EAB308' }]} />
+                        <View style={[styles.statusDot, { backgroundColor: isPresent ? theme.colors.success : theme.colors.warning }]} />
                         <Text style={styles.statusText}>
-                            Today: <Text style={{ fontWeight: '700', color: isPresent ? '#16A34A' : '#EAB308' }}>
+                            Today: <Text style={{ fontWeight: '700', color: isPresent ? theme.colors.success : theme.colors.warning }}>
                                 {attendanceStatus || 'Not Recorded'}
                             </Text>
                         </Text>
@@ -89,7 +92,7 @@ const LeaveSummaryCard = ({
                         activeOpacity={0.7}
                     >
                         <Text style={styles.reportLinkText}>Full Report</Text>
-                        <MaterialCommunityIcons name="arrow-right" size={14} color="#007AFF" />
+                        <MaterialCommunityIcons name="arrow-right" size={14} color={theme.colors.brand} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -97,17 +100,17 @@ const LeaveSummaryCard = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginHorizontal: 12,
         marginVertical: 5,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         overflow: 'hidden',
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 6,
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
     },
     accentStripe: {
         width: 4,
-        backgroundColor: '#0284C7',
+        backgroundColor: theme.colors.info,
         alignSelf: 'stretch',
     },
     contentWrap: {
@@ -139,25 +142,25 @@ const styles = StyleSheet.create({
         width: 42,
         height: 42,
         borderRadius: 12,
-        backgroundColor: '#E0F2FE',
+        backgroundColor: theme.colors.infoSoft,
         alignItems: 'center',
         justifyContent: 'center',
     },
     cardTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         letterSpacing: -0.2,
     },
     cardSubtitle: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         marginTop: 2,
     },
     filterBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#E0F2FE',
+        backgroundColor: theme.colors.infoSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 10,
@@ -166,16 +169,16 @@ const styles = StyleSheet.create({
     filterBtnText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#0284C7',
+        color: theme.colors.info,
     },
     statsRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.surfaceSunken,
         borderRadius: 12,
         padding: 12,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 12,
     },
     statBox: {
@@ -192,7 +195,7 @@ const styles = StyleSheet.create({
     },
     statLabel: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '600',
         marginTop: 2,
     },
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
     statDivider: {
         width: 1,
         height: 44,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.divider,
     },
     footerRow: {
         flexDirection: 'row',
@@ -212,7 +215,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingTop: 8,
         borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
+        borderTopColor: theme.colors.divider,
     },
     statusCol: {
         flexDirection: 'row',
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
     },
     statusText: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
     },
     reportLinkBtn: {
         flexDirection: 'row',
@@ -236,7 +239,7 @@ const styles = StyleSheet.create({
     reportLinkText: {
         fontSize: 12,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
     },
 });
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useAppTheme } from '../../theme';
 
 const CustomDropdownSelect = ({
   selectedValue,
@@ -18,6 +19,8 @@ const CustomDropdownSelect = ({
   value,
   ...props
 }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const screenWidth = Dimensions.get('window').width;
 
   const handleValueChange = (value, index) => {
@@ -68,29 +71,29 @@ const CustomDropdownSelect = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   pickerWrapper: {
     borderWidth: 1,
-    borderColor: '#B0C4DE',
-    borderRadius: 10,
-    backgroundColor: '#fff',
+    borderColor: theme.colors.inputBorder,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.inputBackground,
     justifyContent: 'center',
-    marginBottom: 15,
-    shadowColor: '#000',
+    marginBottom: theme.spacing.md,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: theme.isDark ? 0.2 : 0.1,
     shadowRadius: 5,
     elevation: 5,
   },
   inputIOS: {
-    fontSize: 16,
-    paddingHorizontal: 12,
-    color: '#333',
+    ...theme.typography.body,
+    paddingHorizontal: theme.spacing.md,
+    color: theme.colors.text,
   },
   inputAndroid: {
-    fontSize: 14,
-    paddingHorizontal: 12,
-    color: '#333',
+    ...theme.typography.bodySmall,
+    paddingHorizontal: theme.spacing.md,
+    color: theme.colors.text,
   },
 });
 

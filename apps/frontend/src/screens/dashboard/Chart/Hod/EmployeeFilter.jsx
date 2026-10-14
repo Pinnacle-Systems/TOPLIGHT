@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useGetFilterEmployeesQuery } from '../../../../store/api/dashboardApi';
 import { useGetUserBasicDetailsQuery } from '../../../../store/api/userApi';
 import CustomizeButton from '../../../../components/Buttons/CustomizeButton';
 import AntDesign from 'react-native-vector-icons/AntDesign'
+import { useAppTheme } from '../../../../theme';
 function EmployeeFilter({ hod,admin, USER,setFilteredEmpId,closeModel,temp,set_tempsearch}) {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [searchText, setSearchText] = useState();
   const { data, refetch } = useGetFilterEmployeesQuery({ params: { hod,admin } });
   const filterData = data?.data ? data.data.filter(item => item.Idcard!=hod   ).map((data)=>data?.Idcard) : [];
@@ -59,7 +62,7 @@ setSearchText(temp)
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#636e72" />
+        <ActivityIndicator size="large" color={theme.colors.brand} />
       </View>
     );
   }
@@ -67,7 +70,7 @@ setSearchText(temp)
   if (isError) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ color: 'red' }}>Failed to load employees.</Text>
+        <Text style={{ color: theme.colors.danger }}>Failed to load employees.</Text>
       </View>
     );
   }
@@ -78,6 +81,7 @@ setSearchText(temp)
       <TextInput
         style={styles.searchInput}
         placeholder="Search by Name or ID..."
+        placeholderTextColor={theme.colors.placeholder}
         value={searchText}
         onChangeText={text => setSearchText(text)}
       />
@@ -94,24 +98,27 @@ setSearchText(temp)
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
   },
   searchInput: {
     height: 50,
-    borderColor: '#e1e2e3',
+    borderColor: theme.colors.inputBorder,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     marginBottom: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
   },
   employeeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f2f6',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
     padding: 12,
     marginVertical: 6,
     borderRadius: 12,
@@ -121,7 +128,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 12,
-    backgroundColor: '#dfe6e9',
+    backgroundColor: theme.colors.surfaceSunken,
   },
   employeeInfo: {
     flex: 1,
@@ -129,20 +136,20 @@ const styles = StyleSheet.create({
   employeeName: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#2d3436',
+    color: theme.colors.text,
   },
   employeeRole: {
     fontSize: 14,
-    color: '#636e72',
+    color: theme.colors.textSecondary,
   },
   employeeEmail: {
     fontSize: 13,
-    color: '#b2bec3',
+    color: theme.colors.textMuted,
   },
   noResults: {
     textAlign: 'center',
     marginTop: 20,
-    color: '#636e72',
+    color: theme.colors.textSecondary,
   },
   loadingContainer: {
     flex: 1,
@@ -152,5 +159,4 @@ const styles = StyleSheet.create({
 });
 
 export default EmployeeFilter;
-
 

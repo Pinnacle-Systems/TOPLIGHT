@@ -15,8 +15,10 @@ import {
   LayoutAnimation 
 } from 'react-native';
 import { CustomNavigation } from '../Utils/NavigationRef';
+import { useAppTheme } from '../../theme';
 
 export default function NotificationModal({refresh, close_modal, livedata={}, data, modalVisible, setModalVisible }) {
+  const { theme } = useAppTheme();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const [livedata_man, setlivedata_man] = useState([]);
@@ -90,7 +92,6 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
         CustomNavigation("onduty_approval", {...data, refresh,all:mergedData});
         break;
       default:
-        CustomNavigation("p_approval", {...data, refresh,all:mergedData});
         break;
     }
     close_modal?.(false);
@@ -115,21 +116,21 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
       </View>
       
       <View style={styles.senderRow}>
-        <AntDesign name="user" size={isLandscape ? 16 : 14} color="#555" />
+        <AntDesign name="user" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
         <Text style={styles.notificationSender}>{sendBy || "Unknown"}</Text>
       </View>
       
       <View style={styles.statusRow}>
         {group === "Advance" ? (
           <View style={styles.loanRow}>
-            <AntDesign name="creditcard" size={isLandscape ? 16 : 14} color="#4CAF50" />
+            <AntDesign name="creditcard" size={isLandscape ? 16 : 14} color={theme.colors.success} />
             <Text style={styles.loanDescription}>₹{loanamt}</Text>
           </View>
         ) : (
           <View style={styles.reasonRow}>
             {group === "onduty" ? 
-              <Entypo name="location-pin" size={isLandscape ? 26 : 24} color="black" /> : 
-              <AntDesign name="infocirlceo" size={isLandscape ? 16 : 14} color="#555" />
+              <Entypo name="location-pin" size={isLandscape ? 26 : 24} color={theme.colors.brand} /> :
+              <AntDesign name="infocirlceo" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
             }  
             <Text style={styles.notificationDescription} numberOfLines={isLandscape ? 1 : 2}>
               {group === "onduty" ? data?.in_location : description}
@@ -184,7 +185,7 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
               <Text style={styles.groupCountText}>{count}</Text>
             </View>
             <Animated.View style={{ transform: [{ rotate }] }}>
-              <AntDesign name="right" size={isLandscape ? 18 : 16} color="#666" />
+              <AntDesign name="right" size={isLandscape ? 18 : 16} color={theme.colors.textMuted} />
             </Animated.View>
           </View>
         </TouchableOpacity>
@@ -218,7 +219,10 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
     />
   );
 
-  const styles = createStyles(isLandscape, width, height);
+  const styles = useMemo(
+    () => createStyles(isLandscape, width, height, theme),
+    [isLandscape, width, height, theme],
+  );
 
   return (
     <Modal
@@ -243,7 +247,7 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
               style={styles.closeButton}
               hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}
             >
-              <AntDesign name="close" size={isLandscape ? 24 : 20} color="#666" />
+              <AntDesign name="close" size={isLandscape ? 24 : 20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -271,21 +275,24 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
   );
 }
 
-const createStyles = (isLandscape, width, height) => StyleSheet.create({
+const createStyles = (isLandscape, width, height, theme) => StyleSheet.create({
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.colors.scrim,
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: isLandscape ? 20 : 60,
+    paddingHorizontal: 12,
   },
   modalContainer: {
-    width: isLandscape ? width * 0.7 : width * 0.9,
+    width: isLandscape ? Math.min(width * 0.7, 620) : width - 24,
     maxHeight: isLandscape ? height * 0.9 : '80%',
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 22,
     padding: isLandscape ? 15 : 20,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
@@ -297,7 +304,7 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     alignItems: 'center',
     marginBottom: isLandscape ? 15 : 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.colors.divider,
     paddingBottom: isLandscape ? 10 : 15,
   },
   headerContent: {
@@ -308,16 +315,16 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     width: isLandscape ? 28 : 24,
     height: isLandscape ? 28 : 24,
     marginRight: isLandscape ? 15 : 12,
-    tintColor: '#3a86ff',
+    tintColor: theme.colors.brand,
   },
   headerTitle: {
     fontSize: isLandscape ? 22 : 20,
     fontWeight: '700',
-    color: '#333',
+    color: theme.colors.text,
   },
   notificationCount: {
-    backgroundColor: '#3a86ff',
-    color: 'white',
+    backgroundColor: theme.colors.brand,
+    color: theme.colors.brandContrast,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -335,14 +342,16 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     marginBottom: isLandscape ? 12 : 15,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.surfaceSunken,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
   groupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: isLandscape ? 12 : 15,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
   },
   groupHeaderContent: {
     flexDirection: 'row',
@@ -353,55 +362,55 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     alignItems: 'center',
   },
   groupBadge: {
-    backgroundColor: '#f0f7ff',
+    backgroundColor: theme.colors.brandSoft,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,
     marginRight: 10,
   },
   leaveBadge: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: theme.colors.dangerSoft,
   },
   permissionBadge: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: theme.colors.infoSoft,
   },
   advanceBadge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.successSoft,
   },
   ondutyBadge: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: theme.colors.warningSoft,
   },
   groupText: {
     fontSize: isLandscape ? 15 : 13,
     fontWeight: '600',
-    color: '#3a86ff',
+    color: theme.colors.brand,
     textTransform: 'uppercase',
   },
   leaveText: {
-    color: '#FF7043',
+    color: theme.colors.danger,
   },
   permissionText: {
-    color: '#42A5F5',
+    color: theme.colors.info,
   },
   advanceText: {
-    color: '#66BB6A',
+    color: theme.colors.success,
   },
   ondutyText: {
-    color: '#FFA000',
+    color: theme.colors.warning,
   },
   groupDate: {
     fontSize: isLandscape ? 14 : 12,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   groupCount: {
-    backgroundColor: '#3a86ff',
+    backgroundColor: theme.colors.brand,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginRight: 10,
   },
   groupCountText: {
-    color: 'white',
+    color: theme.colors.brandContrast,
     fontSize: isLandscape ? 13 : 11,
     fontWeight: '600',
   },
@@ -410,29 +419,31 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     paddingBottom: isLandscape ? 8 : 6,
   },
   notificationContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     padding: isLandscape ? 12 : 14,
     marginBottom: isLandscape ? 8 : 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#3a86ff',
-    shadowColor: '#000',
+    borderLeftColor: theme.colors.brand,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    shadowColor: theme.colors.shadow,
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 1,
   },
   leaveContainer: {
-    borderLeftColor: '#FF7043',
+    borderLeftColor: theme.colors.danger,
   },
   permissionContainer: {
-    borderLeftColor: '#42A5F5',
+    borderLeftColor: theme.colors.info,
   },
   advanceContainer: {
-    borderLeftColor: '#66BB6A',
+    borderLeftColor: theme.colors.success,
   },
   ondutyContainer: {
-    borderLeftColor: '#FFA000',
+    borderLeftColor: theme.colors.warning,
   },
   notificationHeader: {
     flexDirection: 'row',
@@ -440,14 +451,14 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     marginBottom: isLandscape ? 6 : 8,
   },
   timeBadge: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.surfaceSunken,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
   },
   notificationTime: {
     fontSize: isLandscape ? 13 : 11,
-    color: '#666',
+    color: theme.colors.textSecondary,
     fontWeight: '500',
   },
   senderRow: {
@@ -458,7 +469,7 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
   notificationSender: {
     fontSize: isLandscape ? 16 : 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginLeft: 6,
   },
   statusRow: {
@@ -477,26 +488,26 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
     marginRight: 10,
   },
   loanDescription: {
-    color: '#4CAF50',
+    color: theme.colors.success,
     fontWeight: '600',
     fontSize: isLandscape ? 16 : 14,
     marginLeft: 6,
   },
   notificationDescription: {
     fontSize: isLandscape ? 14 : 13,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginLeft: 6,
     flex: 1,
   },
   unseenBadge: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: theme.colors.dangerSoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
   unseenText: {
     fontSize: isLandscape ? 13 : 11,
-    color: '#e53935',
+    color: theme.colors.danger,
     fontWeight: '600',
   },
   emptyContainer: {
@@ -513,12 +524,12 @@ const createStyles = (isLandscape, width, height) => StyleSheet.create({
   emptyTitle: {
     fontSize: isLandscape ? 20 : 18,
     fontWeight: '600',
-    color: '#555',
+    color: theme.colors.text,
     marginBottom: 5,
   },
   emptySubtitle: {
     fontSize: isLandscape ? 16 : 14,
-    color: '#888',
+    color: theme.colors.textMuted,
     textAlign: 'center',
     maxWidth: '80%',
   },

@@ -19,10 +19,12 @@ import MasterStatsRow from './components/MasterStatsRow';
 import MasterSearchBar from './components/MasterSearchBar';
 import MasterItemCard from './components/MasterItemCard';
 import MasterFormModal from './components/MasterFormModal';
-
-const ACCENT = '#2563EB';
+import { useAppTheme } from '../../theme';
 
 export default function OndutyMasterScreen({ navigation }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const ACCENT = theme.colors.brand;
     const UserSelect = useSelector(state => state.UserDetails);
 
     // ── API Hooks ────────────────────────────────────────────────────────────
@@ -168,12 +170,12 @@ export default function OndutyMasterScreen({ navigation }) {
             onDelete={handleDelete}
             accentColor={ACCENT}
         />
-    ), [openEditModal, handleDelete]);
+    ), [openEditModal, handleDelete, ACCENT]);
 
     const EmptyState = () => (
         <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-                <MaterialCommunityIcons name="clock-check-outline" size={44} color="#CBD5E1" />
+                <MaterialCommunityIcons name="clock-check-outline" size={44} color={theme.colors.borderStrong} />
             </View>
             <Text style={styles.emptyTitle}>
                 {searchQuery ? 'No Results Found' : 'No OnDuty Reasons Yet'}
@@ -260,10 +262,10 @@ export default function OndutyMasterScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
     },
     loadingContainer: {
         flex: 1,
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         fontSize: 14,
-        color: '#64748B',
+        color: theme.colors.textMuted,
     },
     listContent: {
         paddingTop: 8,
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 20,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: theme.colors.surfaceSunken,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 16,
@@ -301,13 +303,13 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 17,
         fontWeight: '700',
-        color: '#1E293B',
+        color: theme.colors.text,
         marginBottom: 8,
         textAlign: 'center',
     },
     emptySubtitle: {
         fontSize: 13,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         textAlign: 'center',
         lineHeight: 20,
     },

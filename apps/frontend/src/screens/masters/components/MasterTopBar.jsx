@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 export default function MasterTopBar({ 
     title = 'Masters Hub', 
     subtitle = 'Configuration & Masters',
     onBack,
     onAdd,
-    accentColor = '#2563EB',
+    accentColor,
     addLabel = 'New Entry',
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const accent = accentColor || theme.colors.brand;
+
     return (
         <View style={styles.container}>
             <View style={styles.leftRow}>
@@ -20,7 +25,7 @@ export default function MasterTopBar({
                         activeOpacity={0.7}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <MaterialCommunityIcons name="arrow-left" size={22} color="#1E293B" />
+                        <MaterialCommunityIcons name="arrow-left" size={22} color={theme.colors.text} />
                     </TouchableOpacity>
                 ) : null}
                 <View style={styles.textWrap}>
@@ -31,11 +36,11 @@ export default function MasterTopBar({
 
             {onAdd ? (
                 <TouchableOpacity 
-                    style={[styles.addButton, { backgroundColor: accentColor }]}
+                    style={[styles.addButton, { backgroundColor: accent }]}
                     onPress={onAdd}
                     activeOpacity={0.8}
                 >
-                    <MaterialCommunityIcons name="plus" size={18} color="#FFFFFF" />
+                    <MaterialCommunityIcons name="plus" size={18} color={theme.colors.brandContrast} />
                     <Text style={styles.addButtonText}>{addLabel}</Text>
                 </TouchableOpacity>
             ) : null}
@@ -43,16 +48,16 @@ export default function MasterTopBar({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFFFFF',
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingVertical: theme.spacing.md,
+        backgroundColor: theme.colors.surface,
         borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
+        borderBottomColor: theme.colors.divider,
     },
     leftRow: {
         flexDirection: 'row',
@@ -64,9 +69,9 @@ const styles = StyleSheet.create({
         width: 38,
         height: 38,
         borderRadius: 10,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.backgroundSubtle,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -77,12 +82,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         letterSpacing: -0.3,
     },
     subtitle: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginTop: 2,
     },
     addButton: {
@@ -93,13 +98,13 @@ const styles = StyleSheet.create({
         borderRadius: 9,
         gap: 4,
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
     },
     addButtonText: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontSize: 13,
         fontWeight: '600',
     },

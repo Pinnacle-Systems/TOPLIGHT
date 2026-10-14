@@ -7,14 +7,16 @@ import LottieView from 'lottie-react-native';
 import { useGet_Change_SettingsQuery } from '../../store/api/userApi';
 import { useDispatch } from 'react-redux';
 import { setUserDetails } from '../../store/slices/userDetailsSlice';
+import { useAppTheme } from '../../theme';
 
-const GRADIENT_COLORS = ['#FFF', '#FFF'];
 const GRADIENT_CONFIG = { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } };
 const LOADING_TIMEOUT = 10000;
 const ANIMATION_DURATION = 2500;
 
 const SplashScreen = React.memo(({ onAuthResolved }) => {
     const dispatch = useDispatch();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [isLoading, setIsLoading] = useState(true);
     const [verificationFailed, setVerificationFailed] = useState(false);
     const [IDCARD, SETIDCARD] = useState(null);
@@ -186,8 +188,8 @@ const SplashScreen = React.memo(({ onAuthResolved }) => {
 
     if (verificationFailed) {
         return (
-            <LinearGradient colors={GRADIENT_COLORS} style={styles.container} {...GRADIENT_CONFIG}>
-                <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+            <LinearGradient colors={[theme.colors.background, theme.colors.surface]} style={styles.container} {...GRADIENT_CONFIG}>
+                <StatusBar barStyle={theme.isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.statusBar} />
                 {/* 
                 <LottieView
                     ref={lottieRef}
@@ -205,8 +207,8 @@ const SplashScreen = React.memo(({ onAuthResolved }) => {
     }
 
     return (
-        <LinearGradient colors={GRADIENT_COLORS} style={styles.container} {...GRADIENT_CONFIG}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <LinearGradient colors={[theme.colors.background, theme.colors.surface]} style={styles.container} {...GRADIENT_CONFIG}>
+            <StatusBar barStyle={theme.isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.statusBar} />
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
                 {/* Fallback View if Image is not present */}
                 <Animated.Image 
@@ -224,15 +226,15 @@ const SplashScreen = React.memo(({ onAuthResolved }) => {
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     content: { width: '100%', alignItems: 'center', padding: 30 },
     logo: { width: 160, height: 160, marginBottom: 30 },
-    title: { fontSize: 28, fontWeight: '700', color: "black", marginBottom: 8, letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif-medium' },
-    subtitle: { fontSize: 16, color: 'black', marginBottom: 20, fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif' },
+    title: { ...theme.typography.h1, color: theme.colors.text, marginBottom: theme.spacing.sm, letterSpacing: theme.letterSpacing.wide, fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif-medium' },
+    subtitle: { ...theme.typography.body, color: theme.colors.textSecondary, marginBottom: theme.spacing.xl, fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif' },
     lottie: { width: 150, height: 150, marginBottom: 20 },
-    errorTitle: { fontSize: 24, fontWeight: '600', color: '#1e293b', marginBottom: 10 },
-    errorText: { fontSize: 16, color: '#64748b', textAlign: 'center', paddingHorizontal: 40 }
+    errorTitle: { ...theme.typography.h2, color: theme.colors.text, marginBottom: theme.spacing.sm },
+    errorText: { ...theme.typography.body, color: theme.colors.textMuted, textAlign: 'center', paddingHorizontal: theme.spacing.giant }
 });
 
 export default SplashScreen;

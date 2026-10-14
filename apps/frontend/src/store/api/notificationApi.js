@@ -3,7 +3,7 @@ import { API_URL } from "@env";
 import { SetHeader } from "../../utils/HeaderSet";
 
 const BASE_URL = API_URL;
-const Notifi = "/notification"; // Assumed endpoint based on standard patterns
+const Notifi = "/Notifi";
 
 export const NotificationApi = createApi({
     reducerPath: 'NotificationRTk',

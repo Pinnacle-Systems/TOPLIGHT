@@ -139,7 +139,7 @@ VALUES (
   TO_DATE(:CREATED_ON, 'YYYY-MM-DD HH24:MI:SS'),
   :MODIFIED_BY,
   TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
-  :IDCARD,:DOCDATE,:IS_CANCELLED,:USERID
+  :IDCARD,TO_DATE(:DOCDATE, 'YYYY-MM-DD HH24:MI:SS'),:IS_CANCELLED,:USERID
 )
  `     
              const result_auvit = await connection.execute(sql,auvit_data) 
@@ -313,6 +313,7 @@ export async function requestPermission_Approval(req, res) {
     const approvedBy = req?.body?.approvedBy
     const rejectBy = req?.body?.rejectBy
     const connection = await getConnection(res)
+    if (!connection || res.headersSent) return;
 
     // ✅ Normalize Oracle TIMESTAMP or any date format → 'DD-MON-YYYY' e.g. '10-APR-2026'
     function toOracleDate(str) {
@@ -342,33 +343,24 @@ export async function requestPermission_Approval(req, res) {
     }
 
     try {
-        const result = await prisma_Connector.permissionEntry.update({
-            where: { docid },
-            data: { approvalStatus: p_app, approvedBy, rejectBy }
-        })
+        const sql = `UPDATE PERMISSION SET APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy WHERE DOCID=:docid`
+        const result_auvit = await connection.execute(sql, { approvalStatus: p_app, approvedBy, rejectBy, docid })
 
-        if (result?.id) {
+        if (!(result_auvit?.rowsAffected > 0)) {
+            await connection.rollback()
+            return res.status(404).json({ status: 0, message: "Permission request not found." })
+        }
 
-            const sql = `UPDATE PERMISSION SET APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy WHERE DOCID=:docid`
-            const result_auvit = await connection.execute(sql, { approvalStatus: p_app, approvedBy, rejectBy, docid })
+        if (p_app === "approved") {
+            const fmtCheck = await connection.execute(
+                `SELECT DOCDATE FROM PERMISSION WHERE DOCID=:docid AND ROWNUM=1`,
+                { docid }
+            )
 
-            if (result_auvit?.rowsAffected > 0) {
+            const rawDate = fmtCheck?.rows?.[0]?.[0] ?? ''
+            const normalizedDate = toOracleDate(String(rawDate))
 
-                if (p_app == "approved") {
-
-                    // ✅ Fetch raw DOCDATE and normalize in JS
-                    const fmtCheck = await connection.execute(
-                        `SELECT DOCDATE FROM PERMISSION WHERE DOCID=:docid AND ROWNUM=1`,
-                        { docid }
-                    )
-
-                    const rawDate = fmtCheck?.rows?.[0]?.[0] ?? ''
-                    const normalizedDate = toOracleDate(String(rawDate))
-
-                    console.log('RAW DOCDATE     :', rawDate)
-                    console.log('NORMALIZED DATE :', normalizedDate)  // should be '10-APR-2026'
-
-                    const attSql = `
+            const attSql = `
                         INSERT INTO PSSATT
                             (HRMATTIMPORTID, HREMPLOYMASTID, IDCARD, ATTDATE, ATTTIME, INOUT, CHK, DTYPE, USERNAME, COMPCODE, PMNO, UNQID)
                         SELECT * FROM (
@@ -441,41 +433,41 @@ export async function requestPermission_Approval(req, res) {
                               AND B.DOCID    = :DOCID
                         )`
 
-                    await connection.execute(attSql, {
-                        COMPCODE : COMPCODE,
-                        DOCID    : docid,
-                        DOCDATE  : normalizedDate    // ✅ '10-APR-2026'
-                    })
-                }
-
-                await prisma_Connector?.permissionEntry?.update({
-                    where: { docid: result?.docid },
-                    data: { update: 1 }
-                }).then(() => {
-                    return res.json({ status: 1, data: { ...result } })
-                }).catch(() => {
-                    return res.json({ status: 0, data: {} })
-                })
-
-            } else {
-
-                await prisma_Connector?.permissionEntry?.delete({ where: { docid: docid } })
-                res.json({ status: 0, message: "Failed to Request !" })
-
-            }
+            await connection.execute(attSql, {
+                COMPCODE,
+                DOCID: docid,
+                DOCDATE: normalizedDate
+            })
         }
 
+        const result = await prisma_Connector.permissionEntry.update({
+            where: { docid },
+            data: { approvalStatus: p_app, approvedBy, rejectBy, update: 1 }
+        })
+
+        await connection.commit()
+        return res.json({ status: 1, data: result })
     } catch (err) {
-        console.log(err)
+        console.error('[requestPermission_Approval] Approval failed:', err)
+        try {
+            await connection.rollback()
+        } catch (rollbackError) {
+            console.error('[requestPermission_Approval] Oracle rollback failed:', rollbackError)
+        }
+        if (!res.headersSent) {
+            return res.status(500).json({
+                status: 0,
+                message: 'Could not update this permission request. Please try again or contact support.'
+            })
+        }
     } finally {
-        connection?.commit()
-        connection?.close()
+        try {
+            await connection.close()
+        } catch (closeError) {
+            console.error('[requestPermission_Approval] Oracle connection close failed:', closeError)
+        }
     }
 }
 
 
          
-
-
-
-

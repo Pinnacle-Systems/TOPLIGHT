@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Colors } from '../../constants/Colors'; // Make sure this path is correct
+import { useAppTheme } from '../../theme';
 
 const SelectYearModal = ({ 
   isModalVisible, 
@@ -10,6 +10,8 @@ const SelectYearModal = ({
   setSelectedYear, 
   confirm 
 }) => {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const startYear = 1900;
   const endYear = new Date().getFullYear();
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i).reverse();
@@ -54,19 +56,19 @@ const SelectYearModal = ({
               onValueChange={handleValueChange}
               style={styles.picker}
               itemStyle={styles.pickerItem}
-              dropdownIconColor={Colors.primary}
+              dropdownIconColor={theme.colors.brand}
             >
               <Picker.Item 
                 label="Select a year..." 
                 value={null} 
-                color={Colors.gray}
+                color={theme.colors.textMuted}
               />
               {years.map((year) => (
                 <Picker.Item 
                   key={year} 
                   label={`${year}`} 
                   value={year} 
-                  color={Colors.dark}
+                  color={theme.colors.text}
                 />
               ))}
             </Picker>
@@ -87,20 +89,20 @@ const SelectYearModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: theme.colors.scrim,
     paddingHorizontal: 20,
   },
   modalContent: {
     width: '100%',
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
@@ -111,12 +113,12 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: theme.colors.divider,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.dark,
+    color: theme.colors.text,
     textAlign: 'center',
   },
   pickerContainer: {
@@ -125,17 +127,18 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
+    color: theme.colors.text,
   },
   pickerItem: {
     fontSize: 16,
   },
   confirmButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: theme.colors.brand,
     paddingVertical: 16,
     alignItems: 'center',
   },
   confirmButtonText: {
-    color: Colors.white,
+    color: theme.colors.brandContrast,
     fontSize: 16,
     fontWeight: '600',
   },

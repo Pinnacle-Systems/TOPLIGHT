@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const LoanCard = ({ 
     loanName = 'Loan Summary', 
     onPress,
     data,
 }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const loan = data?.[0];
     const totalLoanAmt = Number(loan?.TOTLOANAMT || 0);
     const totalPaid = Number(loan?.TOTALPAID || 0);
@@ -31,17 +34,17 @@ const LoanCard = ({
             activeOpacity={0.85}
         >
             {/* Left Accent Stripe */}
-            <View style={[styles.accentStripe, { backgroundColor: hasActiveLoan ? '#6366F1' : '#10B981' }]} />
+            <View style={[styles.accentStripe, { backgroundColor: hasActiveLoan ? theme.colors.accent : theme.colors.success }]} />
 
             <View style={styles.contentWrap}>
                 {/* Header */}
                 <View style={styles.headerRow}>
                     <View style={styles.headerLeft}>
-                        <View style={[styles.iconBox, { backgroundColor: hasActiveLoan ? '#EEF2FF' : '#DCFCE7' }]}>
+                        <View style={[styles.iconBox, { backgroundColor: hasActiveLoan ? theme.colors.accentSoft : theme.colors.successSoft }]}>
                             <MaterialCommunityIcons 
                                 name="bank-outline" 
                                 size={22} 
-                                color={hasActiveLoan ? '#6366F1' : '#16A34A'} 
+                                color={hasActiveLoan ? theme.colors.accent : theme.colors.success}
                             />
                         </View>
                         <View>
@@ -55,15 +58,15 @@ const LoanCard = ({
                     {/* Status Badge */}
                     <View style={[
                         styles.statusBadge, 
-                        { backgroundColor: hasActiveLoan ? '#EEF2FF' : '#DCFCE7' }
+                        { backgroundColor: hasActiveLoan ? theme.colors.accentSoft : theme.colors.successSoft }
                     ]}>
                         <View style={[
                             styles.statusDot, 
-                            { backgroundColor: hasActiveLoan ? '#6366F1' : '#16A34A' }
+                            { backgroundColor: hasActiveLoan ? theme.colors.accent : theme.colors.success }
                         ]} />
                         <Text style={[
                             styles.statusText, 
-                            { color: hasActiveLoan ? '#6366F1' : '#16A34A' }
+                            { color: hasActiveLoan ? theme.colors.accent : theme.colors.success }
                         ]}>
                             {hasActiveLoan ? 'Active' : 'No Loans'}
                         </Text>
@@ -84,7 +87,7 @@ const LoanCard = ({
                             <MaterialCommunityIcons 
                                 name={paidPercentage >= 100 ? "check-circle" : "progress-clock"} 
                                 size={14} 
-                                color="#6366F1" 
+                                color={theme.colors.accent}
                             />
                             <Text style={styles.progressPillText}>{paidPercentage}% Paid</Text>
                         </View>
@@ -102,14 +105,14 @@ const LoanCard = ({
                 <View style={styles.detailsGrid}>
                     <View style={styles.gridItem}>
                         <Text style={styles.gridLabel}>Outstanding</Text>
-                        <Text style={[styles.gridValue, { color: outstandingLoan > 0 ? '#DC2626' : '#16A34A' }]}>
+                        <Text style={[styles.gridValue, { color: outstandingLoan > 0 ? theme.colors.danger : theme.colors.success }]}>
                             {formatCurrency(outstandingLoan)}
                         </Text>
                     </View>
 
                     <View style={styles.gridItem}>
                         <Text style={styles.gridLabel}>Paid Amount</Text>
-                        <Text style={[styles.gridValue, { color: '#16A34A' }]}>
+                        <Text style={[styles.gridValue, { color: theme.colors.success }]}>
                             {formatCurrency(totalPaid)}
                         </Text>
                     </View>
@@ -126,15 +129,15 @@ const LoanCard = ({
                 {hasActiveLoan && (
                     <View style={styles.footerRow}>
                         <View style={styles.footerItem}>
-                            <MaterialCommunityIcons name="calendar-clock" size={13} color="#94A3B8" />
+                            <MaterialCommunityIcons name="calendar-clock" size={13} color={theme.colors.textMuted} />
                             <Text style={styles.footerText}>
                                 Term: {loan?.TERM || 'Ongoing'}
                             </Text>
                         </View>
                         {loan?.DUEDATE && (
                             <View style={styles.footerItem}>
-                                <MaterialCommunityIcons name="alert-circle-outline" size={13} color="#D97706" />
-                                <Text style={[styles.footerText, { color: '#D97706' }]}>
+                                <MaterialCommunityIcons name="alert-circle-outline" size={13} color={theme.colors.warning} />
+                                <Text style={[styles.footerText, { color: theme.colors.warning }]}>
                                     Due: {loan.DUEDATE}
                                 </Text>
                             </View>
@@ -146,17 +149,17 @@ const LoanCard = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginHorizontal: 12,
         marginVertical: 5,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         overflow: 'hidden',
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 6,
@@ -193,12 +196,12 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         letterSpacing: -0.2,
     },
     cardSubtitle: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         marginTop: 2,
     },
     statusBadge: {
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     },
     amountLabel: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 0.4,
@@ -238,7 +241,7 @@ const styles = StyleSheet.create({
     amountValue: {
         fontSize: 22,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
         marginTop: 2,
         letterSpacing: -0.5,
     },
@@ -248,7 +251,7 @@ const styles = StyleSheet.create({
     progressPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EEF2FF',
+        backgroundColor: theme.colors.accentSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 12,
@@ -257,18 +260,18 @@ const styles = StyleSheet.create({
     progressPillText: {
         fontSize: 12,
         fontWeight: '700',
-        color: '#6366F1',
+        color: theme.colors.accent,
     },
     progressBarTrack: {
         height: 6,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: theme.colors.surfaceSunken,
         borderRadius: 3,
         overflow: 'hidden',
         marginBottom: 14,
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#6366F1',
+        backgroundColor: theme.colors.accent,
         borderRadius: 3,
     },
     detailsGrid: {
@@ -276,7 +279,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingTop: 10,
         borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
+        borderTopColor: theme.colors.divider,
         gap: 8,
     },
     gridItem: {
@@ -284,7 +287,7 @@ const styles = StyleSheet.create({
     },
     gridLabel: {
         fontSize: 10,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 0.3,
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
     gridValue: {
         fontSize: 13,
         fontWeight: '700',
-        color: '#1E293B',
+        color: theme.colors.text,
     },
     footerRow: {
         flexDirection: 'row',
@@ -302,7 +305,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         paddingTop: 8,
         borderTopWidth: 1,
-        borderTopColor: '#F8FAFC',
+        borderTopColor: theme.colors.divider,
     },
     footerItem: {
         flexDirection: 'row',
@@ -311,7 +314,7 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '500',
     },
 });

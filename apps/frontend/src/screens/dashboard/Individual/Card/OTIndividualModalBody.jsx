@@ -5,8 +5,10 @@ import { EsiandPFBodyStyle } from '../Style/EsiPfStyle';
 import CustomText from '../../../../components/Text/CustomText';
 import { useGetOverTimeQuery } from '../../../../store/api/dashboardApi';
 import { NumbertoCurrency } from '../../../../components/Utils/NumberToCurrency';
+import { useAppTheme } from '../../../../theme';
 
 function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
+  const { theme } = useAppTheme();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const isTablet = width >= 600; // Tablet breakpoint
@@ -14,14 +16,14 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: theme.colors.background,
     },
     esiPfContainer: {
       flex: 1,
       padding: isTablet ? 20 : 15,
-      backgroundColor: '#fff',
+      backgroundColor: theme.colors.surface,
       borderRadius: 10,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 6,
@@ -37,7 +39,7 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
     dateText: {
       fontSize: isTablet ? 20 : 18,
       fontWeight: '600',
-      color: '#333',
+      color: theme.colors.text,
       marginVertical: 15,
       textAlign: 'center',
     },
@@ -52,8 +54,8 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
     tableContainer: {
       borderRadius: 8,
       overflow: 'hidden',
-      backgroundColor: '#fff',
-      shadowColor: '#000',
+      backgroundColor: theme.colors.surface,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
       shadowRadius: 3,
@@ -62,21 +64,21 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
     },
     tableHeader: {
       flexDirection: 'row',
-      backgroundColor: '#3f51b5',
+      backgroundColor: theme.colors.brand,
       paddingVertical: isTablet ? 14 : 12,
     },
     tableRow: {
       flexDirection: 'row',
       paddingVertical: isTablet ? 14 : 12,
       borderBottomWidth: 1,
-      borderBottomColor: '#eee',
+      borderBottomColor: theme.colors.divider,
       minHeight: isTablet ? 50 : 40,
     },
     evenRow: {
-      backgroundColor: '#f9f9f9',
+      backgroundColor: theme.colors.surfaceSunken,
     },
     oddRow: {
-      backgroundColor: '#fff',
+      backgroundColor: theme.colors.surface,
     },
     headerCell: {
       justifyContent: 'center',
@@ -84,7 +86,7 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
       paddingHorizontal: 8,
     },
     headerText: {
-      color: '#fff',
+      color: theme.colors.brandContrast,
       fontWeight: '600',
       fontSize: isTablet ? 16 : 14,
     },
@@ -95,14 +97,14 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
     },
     cellText: {
       fontSize: isTablet ? 15 : 14,
-      color: '#333',
+      color: theme.colors.text,
     },
     amountText: {
       fontWeight: '600',
-      color: '#2e7d32',
+      color: theme.colors.success,
     },
     summaryContainer: {
-      backgroundColor: '#f5f5f5',
+      backgroundColor: theme.colors.surfaceSunken,
       borderRadius: 8,
       padding: isTablet ? 20 : 15,
       minWidth: isLandscape ? 250 : '100%',
@@ -115,17 +117,17 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
     summaryLabel: {
       fontSize: isTablet ? 18 : 16,
       fontWeight: '600',
-      color: '#333',
+      color: theme.colors.text,
     },
     summaryValue: {
       fontSize: isTablet ? 18 : 16,
       fontWeight: '700',
-      color: '#3f51b5',
+      color: theme.colors.brand,
     },
     noDataText: {
       textAlign: 'center',
       padding: 20,
-      color: '#666',
+      color: theme.colors.textSecondary,
       fontSize: isTablet ? 18 : 16,
     },
   });
@@ -258,7 +260,7 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Total Amount:</Text>
-              <Text style={[styles.summaryValue, { color: '#2e7d32' }]}>
+              <Text style={[styles.summaryValue, { color: theme.colors.success }]}>
                 {NumbertoCurrency(OtData?.OTAMT || 0)}
               </Text>
             </View>
@@ -270,4 +272,3 @@ function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {
 }
 
 export default OTIndividualModalBody;
-

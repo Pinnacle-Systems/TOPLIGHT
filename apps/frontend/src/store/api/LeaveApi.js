@@ -14,7 +14,17 @@ const LeaveData = createApi({
             return headers;
         },
     }),
-    tagTypes: ['Leave'],
+    tagTypes: [
+        'Leave',
+        'LeaveDocs',
+        'LeaveBalance',
+        'get_current_FinYear',
+        'getHod_showable_data',
+        'get_Lcode',
+        'requestLeave_approval',
+        'get_leave_available',
+        'get_leaves',
+    ],
     endpoints: (builder) => ({
         getCurrent_FinYear: builder.query({
             query: () => {
@@ -39,7 +49,7 @@ const LeaveData = createApi({
                                 },
                                 
                             }),
-                            invalidatesTags: ["add_requestLeave"],
+                            invalidatesTags: ['Leave', 'LeaveDocs', 'LeaveBalance'],
                         }),
                         getHod_showable_data: builder.query({
                                     query: ({params}) => {
@@ -63,7 +73,7 @@ const LeaveData = createApi({
                     },
                 }
             },
-            providesTags: ['DocID_Leave'],
+            providesTags: ['LeaveDocs'],
         }),
          get_Lcode:builder.query({
                             query: (payload) => ({
@@ -75,7 +85,7 @@ const LeaveData = createApi({
                                 },
                                 
                             }),
-                            invalidatesTags: ["get_Lcode"],
+                            providesTags: ['get_Lcode'],
                         }),
                         requestLeave_Approval:builder.mutation({
                             query: (payload) => ({
@@ -100,7 +110,7 @@ const LeaveData = createApi({
                                 },
                                 
                             }),
-                            invalidatesTags: ["get_leave_available"],
+                            providesTags: ['get_leave_available'],
                         }),
                         get_lcode_leave_available:builder.query({
                             query: (payload) => ({
@@ -111,7 +121,7 @@ const LeaveData = createApi({
                                     "Content-type": "application/json; charset=UTF-8",
                                 },
                             }),
-                            invalidatesTags: ["get_lcode_leave_available"],
+                            providesTags: ['LeaveBalance'],
                         }),
                          get_leaves:builder.query({
                             query: (params) => ({
@@ -123,7 +133,7 @@ const LeaveData = createApi({
                                 },
                                 
                             }),
-                            invalidatesTags: ["get_leaves"],
+                            providesTags: ['get_leaves'],
                         })
        
     }),

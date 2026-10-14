@@ -18,7 +18,8 @@ export const UsersApi = createApi({
     }),
     tagTypes: [
         "Login", "Users", "UsersDetails", "UsersRole", "UsersDes", 
-        "createRoleOnPage", "UpdateRoleonPage", "UsersCreate", "get_Change_Settings"
+        "createRoleOnPage", "UpdateRoleonPage", "UsersCreate", "get_Change_Settings","LoginLogs",
+        "EmployeeAttendance"
     ],
     endpoints: (builder) => ({
         loginUser: builder.mutation({
@@ -172,6 +173,17 @@ export const UsersApi = createApi({
             }),
             providesTags: ["UsersRole"],
         }),
+        getEmployeeIdsWithAtt: builder.query({
+            query: (params) => ({
+                url: `${USERS_API}/getEmployeeIdsWithAtt`,
+                method: "GET",
+                params,
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                },
+            }),
+            providesTags: ["EmployeeAttendance"],
+        }),
         update_user_fcm: builder.mutation({
             query: (payload) => ({
                 url: `${USERS_API}/update_fcm`,
@@ -199,6 +211,14 @@ export const UsersApi = createApi({
             }),
             providesTags: ["UsersDetails"],
         }),
+        get_fcm_token: builder.query({
+            query: ({ Idcard } = {}) => ({
+                url: `${USERS_API}/get_fcm_token`,
+                method: "GET",
+                params: { Idcard },
+            }),
+            providesTags: ["UsersDetails"],
+        }),
         get_refresh_token: builder.query({
             query: (params) => ({
                 url: `${USERS_API}/get_refresh_token`,
@@ -206,6 +226,17 @@ export const UsersApi = createApi({
                 params,
             }),
             providesTags: ["UsersDetails"],
+        }),
+        getLoginLogs: builder.query({
+            query: (params) => ({
+                url: `${USERS_API}/LoginLogs`,
+                method: "GET",
+                params,
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                },
+            }),
+            providesTags: ["LoginLogs"],
         }),
     }),
 });
@@ -224,10 +255,13 @@ export const {
     useCreateUserMutation,
     useGetCompanycodeQuery,
     useGetEmployeeidsQuery,
+    useGetEmployeeIdsWithAttQuery,
     useUpdate_user_fcmMutation,
     useGet_Change_SettingsQuery,
     useGet_hod_tokenQuery,
+    useLazyGet_fcm_tokenQuery,
     useGet_refresh_tokenQuery,
+    useGetLoginLogsQuery,
 } = UsersApi;
 
 export default UsersApi;

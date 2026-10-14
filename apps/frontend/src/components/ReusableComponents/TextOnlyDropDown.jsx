@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CustomText from '../Text/CustomText';
+import { useAppTheme } from '../../theme';
 
 export const TextOnlyDropdown = ({ 
   selected, 
@@ -20,49 +21,10 @@ export const TextOnlyDropdown = ({
   disabled = false, // New disabled prop
   ...props 
 }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
-
-
-  const styles = StyleSheet.create({
-  container: {
-    marginVertical: 1,
-    zIndex: 1000,
-    
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
-    color: '#333',
-  },
-  disabledLabel: {
-    color: '#999',
-  },
-  dropdown: {
-    backgroundColor: 'transparent',
-  },
-  disabledDropdown: {
-    // Additional disabled styles if needed
-  },
-  dropDownContainerStyle: {
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginTop: 2,
-    zIndex: 1000,
-  },
-  disabledDropDownContainer: {
-    backgroundColor: '#f5f5f5',
-  },
-  searchTextInputStyle: {
-    height: 40,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-  },
-});
 
   useEffect(() => {
 
@@ -73,7 +35,7 @@ export const TextOnlyDropdown = ({
       disabled: item.disabled || false // Support disabling individual items
     }));
     setItems(data);
-  }, [options?.data]);
+  }, [options?.data, _label, _value]);
 
   const handlePress = () => {
     if (!disabled) {
@@ -114,6 +76,8 @@ export const TextOnlyDropdown = ({
         disabled={disabled} // Native dropdown disable
         searchPlaceholder="Search options..."
         placeholder={isLoading ? 'Loading...' : (disabled ? '' : placeholder)}
+        textStyle={styles.modalItemLabel}
+        placeholderStyle={styles.modalItemLabel}
         dropDownDirection="AUTO"
         style={[
           styles.dropdown, 
@@ -129,22 +93,22 @@ export const TextOnlyDropdown = ({
         zIndex={100}
         maxHeight={"50%"}
         modalContentContainerStyle={{
-          backgroundColor: '#fff',
+          backgroundColor: theme.colors.surface,
           marginHorizontal: 20,
           marginTop: '50%',
-          borderRadius: 12,
-          padding: 16,
+          borderRadius: theme.radii.md,
+          padding: theme.spacing.lg,
           height: 300,
           maxHeight: "50%",
           zIndex: 200,
           elevation: 10,
-          opacity: disabled ? 0.5 : 1 // Fade when disabled
+          opacity: disabled ? 0.5 : 1
         }}
         modalProps={{
           animationType: 'slide',
           transparent: true,
           presentationStyle: 'overFullScreen',
-          backdropColor: "#bbbfbd"
+          backdropColor: theme.colors.scrim
         }}
         mode={"SIMPLE"}
         {...props}
@@ -153,4 +117,44 @@ export const TextOnlyDropdown = ({
   );
 };
 
-
+const createStyles = theme => StyleSheet.create({
+  container: {
+    marginVertical: theme.spacing.xxs,
+    zIndex: 1000,
+  },
+  label: {
+    ...theme.typography.label,
+    marginBottom: theme.spacing.xs + 2,
+    color: theme.colors.textSecondary,
+  },
+  disabledLabel: {
+    color: theme.colors.disabledText,
+  },
+  dropdown: {
+    backgroundColor: 'transparent',
+  },
+  disabledDropdown: {},
+  dropDownContainerStyle: {
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    marginTop: theme.spacing.xxs,
+    zIndex: 1000,
+  },
+  disabledDropDownContainer: {
+    backgroundColor: theme.colors.disabledBackground,
+  },
+  searchTextInputStyle: {
+    height: theme.controlSizes.inputHeightCompact,
+    borderColor: theme.colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.sm,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.inputBackground,
+  },
+  modalItemLabel: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+  },
+});

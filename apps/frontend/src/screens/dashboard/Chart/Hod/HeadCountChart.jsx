@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import WebView from 'react-native-webview';
+import { useAppTheme } from '../../../../theme';
 
 const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,chnage_data }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const processData =useCallback((data) => {
 
    
@@ -48,7 +51,7 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
             padding: 0;
             width: 100%;
             height: 95%;
-            background-color: transparent;
+            background-color: ${theme.colors.surface};
             display: flex;
             justify-content: center;
             align-items: center;
@@ -69,11 +72,11 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
           .total-count {
             font-size: 24px;
             font-weight: bold;
-            color: #4B5563;
+            color: ${theme.colors.text};
           }
           .total-label {
             font-size: 14px;
-            color: #6B7280;
+            color: ${theme.colors.textSecondary};
           }
           canvas {
             width: 100% !important;
@@ -104,12 +107,12 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
               datasets: [{
                 data: [${male}, ${female}],
                 backgroundColor: [
-                  'rgba(79, 70, 229, 0.8)',
-                  'rgba(219, 39, 119, 0.8)'
+                  '${theme.colors.brand}',
+                  '${theme.colors.accent}'
                 ],
                 hoverBackgroundColor: [
-                  'rgba(79, 70, 229, 1)',
-                  'rgba(219, 39, 119, 1)'
+                  '${theme.colors.brandStrong}',
+                  '${theme.colors.accent}'
                 ],
                 borderWidth: 0,
                 cutout: '70%'
@@ -122,7 +125,7 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
                 legend: {
                   position: 'bottom',
                   labels: {
-                    color: '#4B5563',
+                    color: '${theme.colors.textSecondary}',
                     font: {
                       size: 12,
                       weight: '600'
@@ -135,10 +138,10 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
                 },
                 tooltip: {
                   enabled: true,
-                  backgroundColor: 'rgba(31, 41, 55, 0.9)',
-                  titleColor: '#F9FAFB',
-                  bodyColor: '#F9FAFB',
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: '${theme.colors.surfaceRaised}',
+                  titleColor: '${theme.colors.text}',
+                  bodyColor: '${theme.colors.text}',
+                  borderColor: '${theme.colors.border}',
                   borderWidth: 1,
                   padding: 12,
                   cornerRadius: 8,
@@ -182,14 +185,14 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
         </script>
       </body>
     </html>
-  `},[chnage_data?.label])
+  `},[chnage_data?.label, theme])
 
   return (
     <View style={styles.container}>
       <WebView
         originWhitelist={['*']}
         source={{ html: htmlContent }}
-        style={styles.chart}
+        style={[styles.chart, { backgroundColor: theme.colors.surface }]}
         javaScriptEnabled={true}
       renderToHardwareTextureAndroid={true}
         domStorageEnabled={true}
@@ -218,25 +221,25 @@ const DepartmentGenderChart = ({ departmentData,setClickedGender,setopenModal,ch
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     height: 320,
     width: '100%',
     borderRadius: 16,
     overflow: 'hidden',
     marginVertical: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.borderSubtle,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
   },
   chart: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
 });
 
 export default React.memo(DepartmentGenderChart);
-

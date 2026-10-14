@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { 
     View, 
     Text, 
@@ -16,6 +16,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { Common_Context } from '../../context/CommonContext';
 import { HOME_CARDS } from '../../constants/homeCards';
 import { filterAllowedCards } from '../../utils/navigationUtils';
+import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
@@ -24,6 +25,8 @@ const CARD_WIDTH = (width - (HORIZONTAL_PADDING * 2) - CARD_GAP) / 2;
 
 export default function HomeScreen() {
     const navigation = useNavigation();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     
     // Retrieve user details from Redux state
     const { userName, isAdmin, Role } = useSelector(state => state.UserDetails);
@@ -52,7 +55,10 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+            <StatusBar
+                barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+                backgroundColor={theme.colors.surface}
+            />
             
             <ScrollView 
                 contentContainerStyle={styles.scrollContent} 
@@ -67,13 +73,13 @@ export default function HomeScreen() {
                         </Text>
                         {isAdmin === 1 || isAdmin === true ? (
                             <View style={styles.roleChip}>
-                                <MaterialCommunityIcons name="shield-crown-outline" size={13} color="#007AFF" />
+                                <MaterialCommunityIcons name="shield-crown-outline" size={13} color={theme.colors.brand} />
                                 <Text style={styles.roleChipText}>Administrator</Text>
                             </View>
                         ) : Role ? (
                             <View style={styles.roleChip}>
-                                <MaterialCommunityIcons name="account-outline" size={13} color="#64748B" />
-                                <Text style={[styles.roleChipText, { color: '#64748B' }]}>{Role}</Text>
+                                <MaterialCommunityIcons name="account-outline" size={13} color={theme.colors.textMuted} />
+                                <Text style={styles.roleChipSecondaryText}>{Role}</Text>
                             </View>
                         ) : null}
                     </View>
@@ -101,18 +107,18 @@ export default function HomeScreen() {
                                 activeOpacity={0.7}
                             >
                                 <View style={styles.cardTopRow}>
-                                    <View style={[styles.iconWrapper, { backgroundColor: card.bg + '14' }]}>
+                                    <View style={[styles.iconWrapper, { backgroundColor: `${theme.colors.chart[index % theme.colors.chart.length]}14` }]}>
                                         <MaterialCommunityIcons 
                                             name={card.icon} 
                                             size={24} 
-                                            color={card.bg} 
+                                                color={theme.colors.chart[index % theme.colors.chart.length]}
                                         />
                                     </View>
                                     <View style={styles.arrowBadge}>
                                         <MaterialCommunityIcons 
                                             name="arrow-top-right" 
                                             size={14} 
-                                            color="#94A3B8" 
+                                            color={theme.colors.textDisabled}
                                         />
                                     </View>
                                 </View>
@@ -127,7 +133,7 @@ export default function HomeScreen() {
                     ) : (
                         <View style={styles.emptyContainer}>
                             <View style={styles.emptyIconBox}>
-                                <MaterialCommunityIcons name="view-grid-plus-outline" size={36} color="#94A3B8" />
+                                <MaterialCommunityIcons name="view-grid-plus-outline" size={36} color={theme.colors.textDisabled} />
                             </View>
                             <Text style={styles.emptyTitle}>No Modules Available</Text>
                             <Text style={styles.emptySubtitle}>
@@ -141,106 +147,106 @@ export default function HomeScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
     },
     scrollContent: {
-        paddingTop: 12,
-        paddingBottom: 40,
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.huge,
     },
     welcomeCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         marginHorizontal: HORIZONTAL_PADDING,
-        marginBottom: 18,
-        borderRadius: 20,
-        paddingHorizontal: 18,
-        paddingVertical: 16,
+        marginBottom: theme.spacing.lg + 2,
+        borderRadius: theme.radii.xl,
+        paddingHorizontal: theme.spacing.lg + 2,
+        paddingVertical: theme.spacing.lg,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         borderWidth: 1,
-        borderColor: '#F1F5F9',
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.isDark ? 0.3 : 0.05,
         shadowRadius: 10,
         elevation: 3,
     },
     welcomeTextGroup: {
         flex: 1,
-        paddingRight: 12,
+        paddingRight: theme.spacing.md,
     },
     welcomeGreeting: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#64748B',
-        marginBottom: 2,
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.medium,
+        color: theme.colors.textMuted,
+        marginBottom: theme.spacing.xxs,
     },
     welcomeName: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: '#0F172A',
-        letterSpacing: -0.3,
+        ...theme.typography.h2,
+        color: theme.colors.text,
+        letterSpacing: theme.letterSpacing.tight,
     },
     roleChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EFF6FF',
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 12,
+        backgroundColor: theme.colors.brandSoft,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xxs + 1,
+        borderRadius: theme.radii.md,
         alignSelf: 'flex-start',
-        marginTop: 6,
+        marginTop: theme.spacing.sm - 2,
         borderWidth: 1,
-        borderColor: '#DBEAFE',
-        gap: 4,
+        borderColor: theme.colors.brandSoft,
+        gap: theme.spacing.xs,
     },
     roleChipText: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: '#007AFF',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.brand,
+    },
+    roleChipSecondaryText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textMuted,
     },
     avatarCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#EFF6FF',
+        width: theme.controlSizes.avatarLg - 8,
+        height: theme.controlSizes.avatarLg - 8,
+        borderRadius: theme.radii.circle,
+        backgroundColor: theme.colors.brandSoft,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: '#DBEAFE',
+        borderColor: theme.colors.brandSoft,
     },
     avatarText: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#007AFF',
+        ...theme.typography.h3,
+        color: theme.colors.brand,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: HORIZONTAL_PADDING,
-        marginBottom: 12,
+        paddingHorizontal: theme.layout.screenGutter,
+        marginBottom: theme.spacing.md,
     },
     sectionTitle: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#64748B',
-        letterSpacing: 0.8,
-        textTransform: 'uppercase',
+        ...theme.typography.overline,
+        color: theme.colors.textMuted,
     },
     countBadge: {
-        backgroundColor: '#F1F5F9',
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 10,
+        backgroundColor: theme.colors.surfaceSunken,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xxs + 1,
+        borderRadius: theme.radii.sm,
     },
     countBadgeText: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: '#64748B',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textMuted,
     },
     gridContainer: {
         flexDirection: 'row',
@@ -250,15 +256,15 @@ const styles = StyleSheet.create({
     },
     gridCard: {
         height: 116,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 14,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.lg,
+        padding: theme.spacing.md + 2,
         justifyContent: 'space-between',
         borderWidth: 1,
-        borderColor: '#F1F5F9',
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.3 : 0.04,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -268,61 +274,59 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     iconWrapper: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
+        width: theme.controlSizes.avatarMd,
+        height: theme.controlSizes.avatarMd,
+        borderRadius: theme.radii.md,
         justifyContent: 'center',
         alignItems: 'center',
     },
     arrowBadge: {
-        width: 26,
-        height: 26,
-        borderRadius: 13,
-        backgroundColor: '#F8FAFC',
+        width: theme.controlSizes.iconMd + 4,
+        height: theme.controlSizes.iconMd + 4,
+        borderRadius: theme.radii.circle,
+        backgroundColor: theme.colors.backgroundSubtle,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
     },
     cardBottomRow: {
-        marginTop: 6,
+        marginTop: theme.spacing.sm - 2,
     },
     cardLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1E293B',
-        lineHeight: 18,
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.text,
     },
     emptyContainer: {
         width: '100%',
-        paddingVertical: 48,
+        paddingVertical: theme.spacing.giant,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
-        marginTop: 8,
+        borderColor: theme.colors.borderSubtle,
+        marginTop: theme.spacing.sm,
     },
     emptyIconBox: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#F8FAFC',
+        width: theme.controlSizes.avatarXl - 8,
+        height: theme.controlSizes.avatarXl - 8,
+        borderRadius: theme.radii.circle,
+        backgroundColor: theme.colors.backgroundSubtle,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: theme.spacing.md,
     },
     emptyTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1E293B',
-        marginBottom: 4,
+        ...theme.typography.title,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs,
     },
     emptySubtitle: {
-        fontSize: 13,
-        color: '#64748B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
         textAlign: 'center',
-        paddingHorizontal: 24,
+        paddingHorizontal: theme.spacing.xxl,
     },
 });

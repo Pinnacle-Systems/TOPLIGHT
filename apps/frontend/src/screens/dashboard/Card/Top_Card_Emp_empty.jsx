@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import LottieView from 'lottie-react-native';
 import tailwind from 'twrnc';
 import { LinearGradient } from "react-native-linear-gradient"
-import { Colors } from '../../../constants/Colors';
+import { useAppTheme } from '../../../theme';
 
 const EmptyEmployeeCard = ({ onSelectEmployee }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -47,7 +49,7 @@ const EmptyEmployeeCard = ({ onSelectEmployee }) => {
         {/* Animated Card */}
         <Animated.View style={[styles.card, { transform: [{ scale: pulseAnim }] }]}>
           <LinearGradient
-            colors={['#f8fafc', '#e2e8f0']}
+            colors={[theme.colors.surface, theme.colors.surfaceSunken]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
@@ -72,7 +74,7 @@ const EmptyEmployeeCard = ({ onSelectEmployee }) => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={[Colors.primary, Colors.primary]}
+                  colors={[theme.colors.brand, theme.colors.brandStrong]}
                   style={styles.buttonGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -95,13 +97,13 @@ const EmptyEmployeeCard = ({ onSelectEmployee }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   card: {
     width: '100%',
     borderRadius: 24,
     overflow: 'hidden',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -118,13 +120,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: Colors.grayDark,
+    color: theme.colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.grayDark,
+    color: theme.colors.textSecondary,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -141,18 +143,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: 'white',
+    color: theme.colors.brandContrast,
     fontWeight: '600',
     fontSize: 16,
   },
   hintText: {
     fontSize: 14,
-    color: Colors.gray,
+    color: theme.colors.textMuted,
     textAlign: 'center',
     lineHeight: 22,
   },
 });
 
 export default EmptyEmployeeCard;
-
 

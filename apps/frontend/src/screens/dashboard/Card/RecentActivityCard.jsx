@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const RecentActivityCard = ({ data, onDetailPress }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   // Take last 3-4 entries
   const recentData = data?.slice(0, 3) || [];
 
@@ -20,11 +23,11 @@ const RecentActivityCard = ({ data, onDetailPress }) => {
       <View style={styles.list}>
         {recentData.map((item, index) => (
           <View key={index} style={styles.activityItem}>
-            <View style={[styles.iconContainer, { backgroundColor: item.INTIME ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: item.INTIME ? theme.colors.successSoft : theme.colors.dangerSoft }]}>
               <MaterialCommunityIcons 
                 name={item.INTIME ? "clock-check-outline" : "clock-alert-outline"} 
                 size={20} 
-                color={item.INTIME ? "#4CAF50" : "#F44336"} 
+                color={item.INTIME ? theme.colors.success : theme.colors.danger}
               />
             </View>
             
@@ -48,20 +51,20 @@ const RecentActivityCard = ({ data, onDetailPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 12,
     marginVertical: 5,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.colors.borderSubtle,
   },
   header: {
     flexDirection: 'row',
@@ -72,11 +75,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: theme.colors.text,
   },
   viewAll: {
     fontSize: 12,
-    color: '#3498db',
+    color: theme.colors.brand,
     fontWeight: '600',
   },
   list: {
@@ -100,11 +103,11 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#34495e',
+    color: theme.colors.text,
   },
   dateText: {
     fontSize: 12,
-    color: '#95a5a6',
+    color: theme.colors.textMuted,
     marginTop: 2,
   },
   rightContent: {
@@ -113,24 +116,22 @@ const styles = StyleSheet.create({
   shiftText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#2c3e50',
+    color: theme.colors.text,
   },
   otBadge: {
-    backgroundColor: '#fff7ed',
+    backgroundColor: theme.colors.warningSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     marginTop: 4,
     borderWidth: 1,
-    borderColor: '#ffedd5',
+    borderColor: theme.colors.warning,
   },
   otText: {
     fontSize: 10,
-    color: '#f97316',
+    color: theme.colors.warning,
     fontWeight: '700',
   }
 });
 
 export default RecentActivityCard;
-
-

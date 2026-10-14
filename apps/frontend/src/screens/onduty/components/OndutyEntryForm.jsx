@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -14,6 +14,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 import DateBanner from './DateBanner';
+import { useAppTheme } from '../../../theme';
 
 export default function OndutyEntryForm({
     docId,
@@ -42,6 +43,9 @@ export default function OndutyEntryForm({
     isAdmin,
     onOpenBrowseModal,
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     // Map categories for DropDownPicker
     const categoryItems = (categoryOptions || []).map(item => ({
         label: item.name || item.value || String(item.id),
@@ -68,7 +72,7 @@ export default function OndutyEntryForm({
                         onPress={onOpenBrowseModal}
                         activeOpacity={0.8}
                     >
-                        <Entypo name="browser" size={14} color="#007AFF" />
+                        <Entypo name="browser" size={14} color={theme.colors.brand} />
                         <Text style={styles.browseBtnText}>Browse</Text>
                     </TouchableOpacity>
                 ) : null}
@@ -80,7 +84,7 @@ export default function OndutyEntryForm({
             {/* Document ID Pill */}
             {docId ? (
                 <View style={styles.docIdPill}>
-                    <MaterialCommunityIcons name="file-document-outline" size={18} color="#007AFF" />
+                    <MaterialCommunityIcons name="file-document-outline" size={18} color={theme.colors.brand} />
                     <Text style={styles.docIdText}>{docId}</Text>
                     <View style={styles.autoTag}>
                         <Text style={styles.autoTagText}>AUTO</Text>
@@ -91,7 +95,7 @@ export default function OndutyEntryForm({
             {/* Trip Details Card */}
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name="form-textbox" size={18} color="#007AFF" />
+                    <MaterialCommunityIcons name="form-textbox" size={18} color={theme.colors.brand} />
                     <Text style={styles.cardHeaderText}>Trip Details</Text>
                 </View>
 
@@ -120,7 +124,7 @@ export default function OndutyEntryForm({
                     <TextInput
                         style={styles.multilineInput}
                         placeholder="Provide details about your visit or purpose..."
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={theme.colors.placeholder}
                         multiline
                         numberOfLines={3}
                         value={othersText}
@@ -134,7 +138,7 @@ export default function OndutyEntryForm({
             {isKmEntryEnabled ? (
                 <View style={styles.formCard}>
                     <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={18} color="#007AFF" />
+                        <MaterialCommunityIcons name="speedometer" size={18} color={theme.colors.brand} />
                         <Text style={styles.cardHeaderText}>Vehicle & KM Reading</Text>
                     </View>
 
@@ -166,11 +170,11 @@ export default function OndutyEntryForm({
                             ) : null}
                         </View>
                         <View style={styles.kmInputWrapper}>
-                            <MaterialCommunityIcons name="counter" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
+                            <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
                             <TextInput
                                 style={styles.singleLineInput}
                                 placeholder="e.g. 12540"
-                                placeholderTextColor="#94A3B8"
+                                placeholderTextColor={theme.colors.placeholder}
                                 keyboardType="numeric"
                                 value={startKm}
                                 onChangeText={onChangeStartKm}
@@ -184,7 +188,7 @@ export default function OndutyEntryForm({
             {/* Photo Capture Section */}
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name="camera-outline" size={18} color="#8B5CF6" />
+                    <MaterialCommunityIcons name="camera-outline" size={18} color={theme.colors.accent} />
                     <Text style={styles.cardHeaderText}>Location Photo *</Text>
                 </View>
 
@@ -193,7 +197,7 @@ export default function OndutyEntryForm({
                         <Image source={{ uri: photoUri }} style={styles.photoPreview} resizeMode="cover" />
                         <View style={styles.photoOverlayBar}>
                             <View style={styles.photoCapturedBadge}>
-                                <Feather name="check" size={12} color="#FFFFFF" />
+                                <Feather name="check" size={12} color={theme.colors.brandContrast} />
                                 <Text style={styles.photoCapturedText}>PHOTO READY</Text>
                             </View>
                             <TouchableOpacity 
@@ -201,7 +205,7 @@ export default function OndutyEntryForm({
                                 onPress={onOpenCamera}
                                 activeOpacity={0.8}
                             >
-                                <MaterialCommunityIcons name="camera-retake-outline" size={16} color="#FFFFFF" />
+                                <MaterialCommunityIcons name="camera-retake-outline" size={16} color={theme.colors.brandContrast} />
                                 <Text style={styles.retakeBtnText}>Retake</Text>
                             </TouchableOpacity>
                         </View>
@@ -213,7 +217,7 @@ export default function OndutyEntryForm({
                         activeOpacity={0.8}
                     >
                         <View style={styles.cameraCircle}>
-                            <Feather name="camera" size={26} color="#8B5CF6" />
+                            <Feather name="camera" size={26} color={theme.colors.accent} />
                         </View>
                         <Text style={styles.cameraPromptTitle}>Tap to Capture Photo</Text>
                         <Text style={styles.cameraPromptSubtitle}>A selfie or location photo is required to start</Text>
@@ -232,10 +236,10 @@ export default function OndutyEntryForm({
                 activeOpacity={0.8}
             >
                 {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator size="small" color={theme.colors.brandContrast} />
                 ) : (
                     <>
-                        <MaterialCommunityIcons name="car-brake-low-pressure" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="car-brake-low-pressure" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
                         <Text style={styles.submitBtnText}>START ONDUTY (IN)</Text>
                     </>
                 )}
@@ -244,7 +248,7 @@ export default function OndutyEntryForm({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         paddingBottom: 40,
     },
@@ -257,38 +261,38 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 22,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
     },
     headerSubtitle: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginTop: 2,
     },
     browseBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#DBEAFE',
+        borderColor: theme.colors.brandSoft,
         gap: 5,
     },
     browseBtnText: {
         fontSize: 12,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
     },
     docIdPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 14,
         paddingHorizontal: 14,
         paddingVertical: 12,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 14,
         gap: 8,
     },
@@ -296,11 +300,11 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 13,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
         fontFamily: 'monospace',
     },
     autoTag: {
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         paddingHorizontal: 8,
         paddingVertical: 3,
         borderRadius: 8,
@@ -308,16 +312,16 @@ const styles = StyleSheet.create({
     autoTagText: {
         fontSize: 10,
         fontWeight: '800',
-        color: '#007AFF',
+        color: theme.colors.brand,
     },
     formCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 20,
         padding: 16,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 14,
-        shadowColor: '#0F172A',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
         shadowRadius: 6,
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
     cardHeaderText: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
     },
     inputGroup: {
         marginBottom: 14,
@@ -340,7 +344,7 @@ const styles = StyleSheet.create({
     inputLabel: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginBottom: 6,
     },
     labelWithBadgeRow: {
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     kmBadge: {
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 6,
@@ -358,14 +362,14 @@ const styles = StyleSheet.create({
     kmBadgeText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
     },
     kmInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.inputBackground,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.inputBorder,
         borderRadius: 12,
         paddingHorizontal: 12,
         height: 46,
@@ -373,40 +377,40 @@ const styles = StyleSheet.create({
     singleLineInput: {
         flex: 1,
         fontSize: 14,
-        color: '#1E293B',
+        color: theme.colors.text,
         padding: 0,
     },
     kmUnitText: {
         fontSize: 12,
         fontWeight: '700',
-        color: '#94A3B8',
+        color: theme.colors.textDisabled,
         marginLeft: 6,
     },
     dropdown: {
-        backgroundColor: '#F8FAFC',
-        borderColor: '#E2E8F0',
+        backgroundColor: theme.colors.inputBackground,
+        borderColor: theme.colors.inputBorder,
         borderRadius: 12,
         minHeight: 46,
     },
     dropdownContainer: {
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E2E8F0',
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.borderSubtle,
         borderRadius: 12,
         elevation: 5,
     },
     dropdownText: {
         fontSize: 14,
-        color: '#1E293B',
+        color: theme.colors.text,
     },
     multilineInput: {
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.inputBackground,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.inputBorder,
         borderRadius: 12,
         paddingHorizontal: 14,
         paddingVertical: 10,
         fontSize: 14,
-        color: '#1E293B',
+        color: theme.colors.text,
         minHeight: 80,
     },
     photoPreviewWrapper: {
@@ -424,7 +428,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        backgroundColor: theme.colors.overlay,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -437,21 +441,21 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     photoCapturedText: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontSize: 11,
         fontWeight: '700',
     },
     retakeBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        backgroundColor: theme.colors.scrim,
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
         gap: 4,
     },
     retakeBtnText: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontSize: 12,
         fontWeight: '700',
     },
@@ -459,8 +463,8 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         borderWidth: 1.5,
         borderStyle: 'dashed',
-        borderColor: '#DDD6FE',
-        backgroundColor: '#FAF5FF',
+        borderColor: theme.colors.accentSoft,
+        backgroundColor: theme.colors.surfaceRaised,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 28,
@@ -469,7 +473,7 @@ const styles = StyleSheet.create({
         width: 52,
         height: 52,
         borderRadius: 26,
-        backgroundColor: '#EDE9FE',
+        backgroundColor: theme.colors.accentSoft,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 8,
@@ -477,21 +481,21 @@ const styles = StyleSheet.create({
     cameraPromptTitle: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#6D28D9',
+        color: theme.colors.accent,
     },
     cameraPromptSubtitle: {
         fontSize: 11,
-        color: '#8B5CF6',
+        color: theme.colors.accent,
         marginTop: 2,
     },
     submitBtn: {
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 16,
         borderRadius: 16,
-        shadowColor: '#007AFF',
+        shadowColor: theme.colors.brand,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 8,
@@ -499,12 +503,12 @@ const styles = StyleSheet.create({
         marginTop: 6,
     },
     submitBtnDisabled: {
-        backgroundColor: '#94A3B8',
+        backgroundColor: theme.colors.disabledBackground,
         shadowOpacity: 0,
         elevation: 0,
     },
     submitBtnText: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontSize: 15,
         fontWeight: '800',
         letterSpacing: 0.5,

@@ -33,6 +33,7 @@ export function useOndutySubmit({
     setIsSubmitting,    // local state setter
     setUploadProgress,  // local state setter
     refetchFCMTokens,   // { refToken, hodFCMToken }
+    setCompressedPhoto,  // local state setter for compressed photo URI
 }) {
     const dispatch = useDispatch();
     const isSubmittingRef = useRef(false);
@@ -231,6 +232,7 @@ export function useOndutySubmit({
         } finally {
             isSubmittingRef.current = false;
             setIsSubmitting(false);
+            setCompressedPhoto(null);
             setUploadProgress(0);
         }
     }, [formState, UserSelect, fetchCoords, refetchDocId, refetchIn, refreshAndReset, onStartTracking, refetchFCMTokens, dispatch, setIsSubmitting, setUploadProgress]);

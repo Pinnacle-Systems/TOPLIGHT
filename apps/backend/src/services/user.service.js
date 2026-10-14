@@ -66,13 +66,18 @@ export async function login(req, res) {
 
 
 export async function UserLogs(req,res){
-// const COMPCODE=String(req.headers?.compcode).toUpperCase()
-  const data=await   prisma_Connector?.userLog?.findMany()
-  if(data?.length>0){
-    return res?.json({status:1,data})
+  try {
+    const data = await prisma_Connector.userLog.findMany({
+      orderBy: { date: 'desc' },
+    })
+    return res.json({ status: data.length > 0 ? 1 : 0, data })
+  } catch (error) {
+    console.error('Error retrieving login logs:', error)
+    return res.status(500).json({
+      status: 0,
+      message: 'Could not load login activity. Please try again.',
+    })
   }
-
-  return res?.json({status:0,data:[]})
 }
 
 export async function create(req, res) {
@@ -1207,7 +1212,6 @@ const Idcard=req.query?.Idcard
     }
     
 }
-
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -11,6 +11,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Checkbox } from 'react-native-paper';
 import moment from 'moment';
+import { useAppTheme } from '../../../theme';
 
 import DateBanner from './DateBanner';
 
@@ -24,6 +25,8 @@ export default function OndutyActiveTrip({
 }) {
     const [isAnotherOnduty, setIsAnotherOnduty] = useState(false);
     const pulseAnim = useState(new Animated.Value(1))[0];
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     useEffect(() => {
         const anim = Animated.loop(
@@ -52,7 +55,7 @@ export default function OndutyActiveTrip({
                         <Text style={styles.liveText}>LIVE TRACKING ACTIVE</Text>
                     </View>
                     <View style={styles.heroIconBox}>
-                        <MaterialCommunityIcons name="navigation-variant" size={24} color="#007AFF" />
+                        <MaterialCommunityIcons name="navigation-variant" size={24} color={theme.colors.brand} />
                     </View>
                 </View>
 
@@ -68,7 +71,7 @@ export default function OndutyActiveTrip({
             {/* Trip Details Card */}
             <View style={styles.detailsCard}>
                 <View style={styles.detailsHeader}>
-                    <MaterialCommunityIcons name="clipboard-text-clock-outline" size={20} color="#007AFF" />
+                    <MaterialCommunityIcons name="clipboard-text-clock-outline" size={20} color={theme.colors.brand} />
                     <Text style={styles.detailsHeaderText}>Trip Information</Text>
                 </View>
 
@@ -107,15 +110,15 @@ export default function OndutyActiveTrip({
             {isKmEntryEnabled ? (
                 <View style={styles.detailsCard}>
                     <View style={styles.detailsHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={20} color="#007AFF" />
+                        <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.brand} />
                         <Text style={styles.detailsHeaderText}>Check-Out Odometer Reading</Text>
                     </View>
                     <View style={styles.kmInputWrapper}>
-                        <MaterialCommunityIcons name="counter" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
                         <TextInput
                             style={styles.singleLineInput}
                             placeholder="Enter ending KM (optional)"
-                            placeholderTextColor="#94A3B8"
+                            placeholderTextColor={theme.colors.placeholder}
                             keyboardType="numeric"
                             value={endKm}
                             onChangeText={onChangeEndKm}
@@ -131,7 +134,7 @@ export default function OndutyActiveTrip({
                     label="Going to another OnDuty?"
                     status={isAnotherOnduty ? 'checked' : 'unchecked'}
                     onPress={() => setIsAnotherOnduty(!isAnotherOnduty)}
-                    color="#007AFF"
+                    color={theme.colors.brand}
                     position="leading"
                     labelStyle={styles.checkboxLabel}
                     style={styles.checkboxItem}
@@ -150,10 +153,10 @@ export default function OndutyActiveTrip({
                 activeOpacity={0.8}
             >
                 {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator size="small" color={theme.colors.brandContrast} />
                 ) : (
                     <>
-                        <MaterialCommunityIcons name="logout-variant" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="logout-variant" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
                         <Text style={styles.checkoutBtnText}>CHECK OUT NOW</Text>
                     </>
                 )}
@@ -162,22 +165,22 @@ export default function OndutyActiveTrip({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         paddingBottom: 40,
     },
     heroCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
         padding: 18,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         borderLeftWidth: 4,
-        borderLeftColor: '#007AFF',
+        borderLeftColor: theme.colors.brand,
         marginBottom: 14,
-        shadowColor: '#0F172A',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.isDark ? 0.3 : 0.05,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -190,7 +193,7 @@ const styles = StyleSheet.create({
     liveBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 20,
@@ -200,44 +203,41 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
     },
     liveText: {
-        fontSize: 10,
-        fontWeight: '800',
-        color: '#007AFF',
-        letterSpacing: 0.8,
+        ...theme.typography.overline,
+        color: theme.colors.brand,
     },
     heroIconBox: {
         width: 40,
         height: 40,
         borderRadius: 12,
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         justifyContent: 'center',
         alignItems: 'center',
     },
     heroTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: '#0F172A',
+        ...theme.typography.h3,
+        color: theme.colors.text,
         marginTop: 4,
     },
     heroSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.textMuted,
         marginTop: 4,
         lineHeight: 18,
     },
     detailsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.xl,
         padding: 18,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 14,
-        shadowColor: '#0F172A',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.3 : 0.04,
         shadowRadius: 6,
         elevation: 2,
     },
@@ -248,58 +248,57 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     detailsHeaderText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#0F172A',
+        ...theme.typography.title,
+        color: theme.colors.text,
     },
     infoRow: {
         marginBottom: 14,
     },
     infoLabel: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: '#94A3B8',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textDisabled,
         letterSpacing: 0.4,
         marginBottom: 3,
     },
     infoValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
     },
     infoValueMono: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#007AFF',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.brand,
         fontFamily: 'monospace',
     },
     kmInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.inputBackground,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.inputBorder,
         borderRadius: 12,
         paddingHorizontal: 12,
         height: 46,
     },
     singleLineInput: {
         flex: 1,
-        fontSize: 14,
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        color: theme.colors.text,
         padding: 0,
     },
     kmUnitText: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#94A3B8',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.textDisabled,
         marginLeft: 6,
     },
     checkboxCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         marginBottom: 20,
         overflow: 'hidden',
     },
@@ -307,18 +306,18 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
     },
     checkboxLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
     },
     checkoutBtn: {
-        backgroundColor: '#EF4444',
+        backgroundColor: theme.colors.danger,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 16,
         borderRadius: 16,
-        shadowColor: '#EF4444',
+        shadowColor: theme.colors.danger,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 8,
@@ -328,9 +327,8 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     checkoutBtnText: {
-        color: '#FFFFFF',
-        fontSize: 15,
-        fontWeight: '800',
+        color: theme.colors.brandContrast,
+        ...theme.typography.button,
         letterSpacing: 0.5,
     },
 });

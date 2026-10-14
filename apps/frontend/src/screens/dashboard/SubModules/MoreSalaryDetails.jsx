@@ -4,18 +4,20 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataTable } from "react-native-paper";
 import SumofArray from "./SumOfArray";
 import React from "react";
+import { useAppTheme } from "../../../theme";
 
 const MoreSalaryDetails = ({ data={}, isLoading = false }) => {
+    const { theme } = useAppTheme();
     const { width } = useWindowDimensions();
     const isLandscape = width > 600;
-    const styles = React.useMemo(() => createStyles(isLandscape), [isLandscape]);
+    const styles = React.useMemo(() => createStyles(theme, isLandscape), [theme, isLandscape]);
 
     // Better loading and error states
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#4CAF50" />
-                <Text style={{ marginTop: 10, color: '#666' }}>Loading salary details...</Text>
+                <ActivityIndicator size="large" color={theme.colors.success} />
+                <Text style={{ marginTop: 10, color: theme.colors.textSecondary }}>Loading salary details...</Text>
             </View>
         );
     }
@@ -23,8 +25,8 @@ const MoreSalaryDetails = ({ data={}, isLoading = false }) => {
     if (!data || Object.keys(data).length === 0) {
         return (
             <View style={styles.loadingContainer}>
-                <MaterialIcons name="info-outline" size={40} color="#ccc" />
-                <Text style={{ marginTop: 10, color: '#666' }}>No salary data available for this month.</Text>
+                <MaterialIcons name="info-outline" size={40} color={theme.colors.textMuted} />
+                <Text style={{ marginTop: 10, color: theme.colors.textSecondary }}>No salary data available for this month.</Text>
             </View>
         );
     }
@@ -110,19 +112,19 @@ const MoreSalaryDetails = ({ data={}, isLoading = false }) => {
             {/* Working Details - Compact Grid */}
             <View style={styles.detailsContainer}>
                 <View style={styles.detailItem}>
-                    <MaterialIcons name="date-range" size={14} color="#4CAF50" style={styles.detailIcon} />
+                    <MaterialIcons name="date-range" size={14} color={theme.colors.success} style={styles.detailIcon} />
                     <Text style={styles.detailLabel}>Period: {data?.payperiod || "--/--/----"}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                    <MaterialIcons name="work" size={14} color="#4CAF50" style={styles.detailIcon} />
+                    <MaterialIcons name="work" size={14} color={theme.colors.success} style={styles.detailIcon} />
                     <Text style={styles.detailLabel}>Type: {data?.saltype || "---"}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                    <MaterialIcons name="calendar-today" size={14} color="#4CAF50" style={styles.detailIcon} />
+                    <MaterialIcons name="calendar-today" size={14} color={theme.colors.success} style={styles.detailIcon} />
                     <Text style={styles.detailLabel}>Worked: {data?.wd || 0}/{data?.mw || 0}d</Text>
                 </View>
                 <View style={styles.detailItem}>
-                    <MaterialIcons name="access-time" size={14} color="#4CAF50" style={styles.detailIcon} />
+                    <MaterialIcons name="access-time" size={14} color={theme.colors.success} style={styles.detailIcon} />
                     <Text style={styles.detailLabel}>OT: {Number(data?.ot || 0)?.toFixed(2)}h ({NumbertoCurrency(data?.otamt)})</Text>
                 </View>
             </View>
@@ -130,17 +132,17 @@ const MoreSalaryDetails = ({ data={}, isLoading = false }) => {
     );
 };
 
-const createStyles = (isLandscape) => StyleSheet.create({
+const createStyles = (theme, isLandscape) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FAFAFA',
+        backgroundColor: theme.colors.background,
     },
     contentContainer: {
         padding: isLandscape ? 8 : 6,
         paddingBottom: 12,
     },
     header: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: theme.colors.success,
         borderRadius: 6,
         padding: 10,
         marginBottom: 8,
@@ -149,7 +151,7 @@ const createStyles = (isLandscape) => StyleSheet.create({
     netSalary: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: 'white',
+        color: theme.colors.brandContrast,
         textAlign: 'center',
     },
     summaryRow: {
@@ -161,27 +163,27 @@ const createStyles = (isLandscape) => StyleSheet.create({
         alignItems: 'center',
     },
     summaryLabel: {
-        color: 'white',
+        color: theme.colors.brandContrast,
         fontSize: 10,
         fontWeight: '500',
     },
     summaryValue: {
-        color: 'white',
+        color: theme.colors.brandContrast,
         fontSize: 12,
         fontWeight: 'bold',
         marginTop: 2,
     },
     deductionValue: {
-        color: '#FFCDD2',
+        color: theme.colors.dangerSoft,
     },
     dataTable: {
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.surface,
         borderRadius: 6,
         marginBottom: 8,
         elevation: 1,
     },
     tableHeader: {
-        backgroundColor: '#E8F5E9',
+        backgroundColor: theme.colors.successSoft,
         height: 32,
     },
     headerCell: {
@@ -198,23 +200,23 @@ const createStyles = (isLandscape) => StyleSheet.create({
     },
     label: {
         fontSize: 12,
-        color: '#424242',
+        color: theme.colors.text,
     },
     value: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#2E7D32',
+        color: theme.colors.success,
     },
     deductionText: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#D32F2F',
+        color: theme.colors.danger,
     },
     detailsContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.surface,
         borderRadius: 6,
         padding: 8,
         elevation: 1,
@@ -227,22 +229,21 @@ const createStyles = (isLandscape) => StyleSheet.create({
     },
     detailIcon: {
         marginRight: 6,
-        backgroundColor: "#E8F5E9",
+        backgroundColor: theme.colors.successSoft,
         padding: 4,
         borderRadius: 8,
     },
     detailLabel: {
         fontSize: 11,
-        color: '#616161',
+        color: theme.colors.textSecondary,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FAFAFA',
+        backgroundColor: theme.colors.background,
         padding: 20,
     },
 });
 
 export default MoreSalaryDetails;
-

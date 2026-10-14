@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, BackHandler } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider, useSelector } from 'react-redux';
@@ -7,23 +7,44 @@ import { store } from './src/store';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FlashMessage from 'react-native-flash-message';
 import { ThemeProvider } from 'react-native-paper';
-
 import { Common_Context } from './src/context/CommonContext';
-import LightModeProvider from './src/context/LightModeProvider';
+import { AppThemeProvider, useAppTheme } from './src/theme';
 import { useGetUserRolesOnPageQuery } from './src/store/api/userApi';
-
 import LoginScreen from './src/screens/auth/LoginScreen';
 import SplashScreen from './src/screens/auth/SplashScreen';
-import HomeScreen from './src/screens/dashboard/HomeScreen';
 import MainNavigator from './src/navigation/MainNavigator';
+import { NavRef } from './src/components/Utils/NavigationRef';
 
 const Stack = createNativeStackNavigator();
 
 
 
 const MainApp = () => {
+    const { theme } = useAppTheme();
     // We use null to represent the "loading/splashing" state
     const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+    useEffect(() => {
+        if (isAuthenticated !== true) return undefined;
+
+        const handleHardwareBack = () => {
+            if (!NavRef.isReady() || NavRef.canGoBack()) return false;
+
+            Alert.alert(
+                'Close app',
+                'Do you want to close the app?',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Close', style: 'destructive', onPress: () => BackHandler.exitApp() },
+                ],
+                { cancelable: true },
+            );
+            return true;
+        };
+
+        const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBack);
+        return () => subscription.remove();
+    }, [isAuthenticated]);
     
     // UserDetails are populated inside SplashScreen from AsyncStorage
     const { isAdmin, GCOMPCODE, roleId } = useSelector(state => state.UserDetails);
@@ -64,8 +85,8 @@ const MainApp = () => {
                 logout: handleLogout,
             }}
         >
-            <NavigationContainer>
-                <ThemeProvider>
+            <NavigationContainer ref={NavRef} theme={theme.navigation}>
+                <ThemeProvider theme={theme.paper}>
                     {!isAuthenticated ? (
                         <Stack.Navigator screenOptions={{ headerShown: false }}>
                             <Stack.Screen name="Login" component={LoginScreen} />
@@ -84,9 +105,9 @@ export default function App() {
         <SafeAreaProvider>
             <Provider store={store}>
                 <FlashMessage position="top" />
-                <LightModeProvider>
+                <AppThemeProvider>
                     <MainApp />
-                </LightModeProvider>
+                </AppThemeProvider>
             </Provider>
         </SafeAreaProvider>
     );

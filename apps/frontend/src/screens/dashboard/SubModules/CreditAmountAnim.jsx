@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useAppTheme } from '../../../theme';
 
 const { width, height } = Dimensions.get('window');
 
 const CreditAnimation = ({ amount = 0, onAnimationComplete, admin, user }) => {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   // Animation values
   const [slideAnim] = useState(new Animated.Value(height));
   const [scaleAnim] = useState(new Animated.Value(0.7));
@@ -198,7 +201,7 @@ const CreditAnimation = ({ amount = 0, onAnimationComplete, admin, user }) => {
         ]}
       >
         <View style={styles.header}>
-          <Ionicons name="wallet-outline" size={32} color="#5E35B1" />
+          <Ionicons name="wallet-outline" size={32} color={theme.colors.brand} />
           <Text style={styles.title}>{admin == 1 ? 'Salary Allocated' : 'Salary Credited'}</Text>
         </View>
         
@@ -233,7 +236,7 @@ const CreditAnimation = ({ amount = 0, onAnimationComplete, admin, user }) => {
               style={[
                 styles.coin,
                 {
-                  backgroundColor: '#FFD700',
+                  backgroundColor: theme.colors.warning,
                   transform: [
                     { translateY: anim.translateY },
                     { translateX: anim.translateX },
@@ -251,7 +254,7 @@ const CreditAnimation = ({ amount = 0, onAnimationComplete, admin, user }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     position: 'absolute',
     top: 0,
@@ -260,16 +263,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.48)',
     zIndex: 1000,
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     width: width * 0.85,
     padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
@@ -283,7 +286,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#5E35B1',
+    color: theme.colors.brand,
     marginLeft: 10,
   },
   amountContainer: {
@@ -294,23 +297,23 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#5E35B1',
+    color: theme.colors.brand,
     marginRight: 4,
   },
   amount: {
     fontSize: 42,
     fontWeight: '800',
-    color: '#5E35B1',
+    color: theme.colors.brand,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: '#EEE',
+    borderTopColor: theme.colors.divider,
     paddingTop: 16,
     width: '100%',
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   coin: {
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#FFD700',
+    backgroundColor: theme.colors.warning,
     top: '50%',
     left: '50%',
     marginLeft: -8,
@@ -327,4 +330,3 @@ const styles = StyleSheet.create({
 });
 
 export default CreditAnimation;
-

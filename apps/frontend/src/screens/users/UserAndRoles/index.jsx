@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Easing, SafeAreaView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomText from '../../../components/Text/CustomText';
@@ -6,8 +6,11 @@ import CustomText from '../../../components/Text/CustomText';
 import RoleAllocation from './RoleAllocation';
 import UserCreationForm from './UserCreationForm';
 import AdvancedSettings from './AdvancedSettings';
+import { useAppTheme } from '../../../theme';
 
 export default function UserAndRoles() {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [activeTab, setActiveTab] = useState('allocate'); // 'allocate' | 'create' | 'settings'
     const indicatorAnim = useRef(new Animated.Value(0)).current;
 
@@ -50,7 +53,7 @@ export default function UserAndRoles() {
                     <MaterialIcons
                         name="security"
                         size={18}
-                        color={activeTab === 'allocate' ? '#ffffff' : '#64748b'}
+                        color={activeTab === 'allocate' ? theme.colors.brandContrast : theme.colors.textMuted}
                     />
                     <CustomText
                         style={[
@@ -70,7 +73,7 @@ export default function UserAndRoles() {
                     <MaterialIcons
                         name="person-add"
                         size={18}
-                        color={activeTab === 'create' ? '#ffffff' : '#64748b'}
+                        color={activeTab === 'create' ? theme.colors.brandContrast : theme.colors.textMuted}
                     />
                     <CustomText
                         style={[
@@ -90,7 +93,7 @@ export default function UserAndRoles() {
                     <MaterialIcons
                         name="settings"
                         size={20}
-                        color={activeTab === 'settings' ? '#ffffff' : '#64748b'}
+                        color={activeTab === 'settings' ? theme.colors.brandContrast : theme.colors.textMuted}
                     />
                 </TouchableOpacity>
             </View>
@@ -105,20 +108,20 @@ export default function UserAndRoles() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: theme.colors.background,
     },
     tabContainer: {
         flexDirection: 'row',
         height: 50,
-        backgroundColor: '#e2e8f0',
-        borderRadius: 12,
-        marginHorizontal: 16,
-        marginTop: 12,
-        marginBottom: 8,
-        padding: 4,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        marginHorizontal: theme.layout.screenGutter,
+        marginTop: theme.spacing.md,
+        marginBottom: theme.spacing.sm,
+        padding: theme.spacing.xs,
         position: 'relative',
         alignItems: 'center',
     },
@@ -126,12 +129,12 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 4,
         bottom: 4,
-        backgroundColor: '#3b82f6',
-        borderRadius: 9,
+        backgroundColor: theme.colors.brand,
+        borderRadius: theme.radii.sm,
         elevation: 2,
-        shadowColor: '#3b82f6',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
+        shadowOpacity: theme.isDark ? 0.3 : 0.2,
         shadowRadius: 4,
     },
     tabButton: {
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
-        borderRadius: 8,
+        borderRadius: theme.radii.sm,
         zIndex: 1,
     },
     settingsTabButton: {
@@ -150,14 +153,14 @@ const styles = StyleSheet.create({
         // styled by activeIndicator underneath
     },
     tabText: {
-        fontSize: 13,
-        fontWeight: '600',
-        marginLeft: 6,
-        color: '#64748b',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        marginLeft: theme.spacing.sm,
+        color: theme.colors.textMuted,
     },
     activeTabText: {
-        color: '#ffffff',
-        fontWeight: '700',
+        color: theme.colors.brandContrast,
+        fontWeight: theme.fontWeights.bold,
     },
     contentContainer: {
         flex: 1,

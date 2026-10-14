@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const EsiPfOtCard = ({
     payperiod = '',
@@ -13,6 +14,8 @@ const EsiPfOtCard = ({
     onPfPress,
     onOtPress,
 }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     return (
         <View style={styles.card}>
             {/* Left Accent Stripe */}
@@ -23,7 +26,7 @@ const EsiPfOtCard = ({
                 <View style={styles.headerRow}>
                     <View style={styles.headerLeft}>
                         <View style={styles.iconBox}>
-                            <MaterialCommunityIcons name="shield-check-outline" size={22} color="#8B5CF6" />
+                            <MaterialCommunityIcons name="shield-check-outline" size={22} color={theme.colors.accent} />
                         </View>
                         <View>
                             <Text style={styles.cardTitle}>ESI, PF & Overtime</Text>
@@ -39,7 +42,7 @@ const EsiPfOtCard = ({
                         onPress={onFilterPress}
                         activeOpacity={0.7}
                     >
-                        <MaterialCommunityIcons name="tune-variant" size={14} color="#8B5CF6" />
+                        <MaterialCommunityIcons name="tune-variant" size={14} color={theme.colors.accent} />
                         <Text style={styles.filterBtnText}>Filter</Text>
                     </TouchableOpacity>
                 </View>
@@ -53,10 +56,10 @@ const EsiPfOtCard = ({
                         activeOpacity={0.8}
                     >
                         <View style={styles.miniCardHeader}>
-                            <View style={[styles.miniIconWrap, { backgroundColor: '#DCFCE7' }]}>
-                                <MaterialCommunityIcons name="hospital-box-outline" size={14} color="#16A34A" />
+                            <View style={[styles.miniIconWrap, { backgroundColor: theme.colors.successSoft }]}>
+                                <MaterialCommunityIcons name="hospital-box-outline" size={14} color={theme.colors.success} />
                             </View>
-                            <Text style={[styles.miniCardLabel, { color: '#16A34A' }]}>ESI</Text>
+                            <Text style={[styles.miniCardLabel, { color: theme.colors.success }]}>ESI</Text>
                         </View>
                         <Text style={styles.miniCardValue} numberOfLines={1}>{esiAmount}</Text>
                         <Text style={styles.miniCardSub}>Health Ins.</Text>
@@ -69,10 +72,10 @@ const EsiPfOtCard = ({
                         activeOpacity={0.8}
                     >
                         <View style={styles.miniCardHeader}>
-                            <View style={[styles.miniIconWrap, { backgroundColor: '#E0F2FE' }]}>
-                                <MaterialCommunityIcons name="piggy-bank-outline" size={14} color="#0284C7" />
+                            <View style={[styles.miniIconWrap, { backgroundColor: theme.colors.infoSoft }]}>
+                                <MaterialCommunityIcons name="piggy-bank-outline" size={14} color={theme.colors.info} />
                             </View>
-                            <Text style={[styles.miniCardLabel, { color: '#0284C7' }]}>PF</Text>
+                            <Text style={[styles.miniCardLabel, { color: theme.colors.info }]}>PF</Text>
                         </View>
                         <Text style={styles.miniCardValue} numberOfLines={1}>{pfAmount}</Text>
                         <Text style={styles.miniCardSub}>Provident Fund</Text>
@@ -85,10 +88,10 @@ const EsiPfOtCard = ({
                         activeOpacity={0.8}
                     >
                         <View style={styles.miniCardHeader}>
-                            <View style={[styles.miniIconWrap, { backgroundColor: '#F3E8FF' }]}>
-                                <MaterialCommunityIcons name="clock-plus-outline" size={14} color="#8B5CF6" />
+                            <View style={[styles.miniIconWrap, { backgroundColor: theme.colors.accentSoft }]}>
+                                <MaterialCommunityIcons name="clock-plus-outline" size={14} color={theme.colors.accent} />
                             </View>
-                            <Text style={[styles.miniCardLabel, { color: '#8B5CF6' }]}>OT</Text>
+                            <Text style={[styles.miniCardLabel, { color: theme.colors.accent }]}>OT</Text>
                         </View>
                         <Text style={styles.miniCardValue} numberOfLines={1}>{otHours ? `${otHours}h` : '0h'}</Text>
                         <Text style={styles.miniCardSub} numberOfLines={1}>{otAmount}</Text>
@@ -104,17 +107,17 @@ const EsiPfOtCard = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginHorizontal: 12,
         marginVertical: 5,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         overflow: 'hidden',
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 6,
@@ -122,7 +125,7 @@ const styles = StyleSheet.create({
     },
     accentStripe: {
         width: 4,
-        backgroundColor: '#8B5CF6',
+        backgroundColor: theme.colors.accent,
         alignSelf: 'stretch',
     },
     contentWrap: {
@@ -145,25 +148,25 @@ const styles = StyleSheet.create({
         width: 42,
         height: 42,
         borderRadius: 12,
-        backgroundColor: '#F3E8FF',
+        backgroundColor: theme.colors.accentSoft,
         alignItems: 'center',
         justifyContent: 'center',
     },
     cardTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         letterSpacing: -0.2,
     },
     cardSubtitle: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         marginTop: 2,
     },
     filterBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F3E8FF',
+        backgroundColor: theme.colors.accentSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 10,
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
     filterBtnText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#8B5CF6',
+        color: theme.colors.accent,
     },
     metricRow: {
         flexDirection: 'row',
@@ -186,16 +189,16 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     esiCard: {
-        backgroundColor: '#F0FDF4',
-        borderColor: '#DCFCE7',
+        backgroundColor: theme.colors.successSoft,
+        borderColor: theme.colors.success,
     },
     pfCard: {
-        backgroundColor: '#F0F9FF',
-        borderColor: '#E0F2FE',
+        backgroundColor: theme.colors.infoSoft,
+        borderColor: theme.colors.info,
     },
     otCard: {
-        backgroundColor: '#FAF5FF',
-        borderColor: '#F3E8FF',
+        backgroundColor: theme.colors.accentSoft,
+        borderColor: theme.colors.accent,
     },
     miniCardHeader: {
         flexDirection: 'row',
@@ -217,22 +220,22 @@ const styles = StyleSheet.create({
     miniCardValue: {
         fontSize: 14,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
         marginBottom: 2,
     },
     miniCardSub: {
         fontSize: 10,
-        color: '#64748B',
+        color: theme.colors.textSecondary,
         fontWeight: '500',
     },
     footerRow: {
         paddingTop: 6,
         borderTopWidth: 1,
-        borderTopColor: '#F8FAFC',
+        borderTopColor: theme.colors.divider,
     },
     footerTip: {
         fontSize: 10,
-        color: '#94A3B8',
+        color: theme.colors.textMuted,
         textAlign: 'center',
     },
 });

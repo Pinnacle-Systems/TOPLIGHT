@@ -43,7 +43,8 @@ const ondutyInputSlice = createSlice({
         resetOndutyForm: (state) => {
             // Preserve isKmEntryEnabled setting across resets
             const kmSetting = state.isKmEntryEnabled;
-            return { ...initialState, isKmEntryEnabled: kmSetting };
+            const categoryOptions = state.category_options;
+            return { ...initialState, isKmEntryEnabled: kmSetting, category_options: categoryOptions };
         },
         setOndutyLocation: (state, action) => {
             state.latitude = action.payload.latitude;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { View, Text, TextInput, StyleSheet, Alert, ScrollView, TouchableOpacity } from "react-native";
 import Toast from "react-native-toast-message";
 import { showMessage } from 'react-native-flash-message';
@@ -21,8 +21,11 @@ import ClearState from "../../../components/Utils/ClearState";
 import ProgressPopup from "../../../components/Utils/PopupLoading";
 import CheckboxGroup from "../../../components/CheckBoxes/GroupCheckBox";
 import RoleLevelSelector from "./RoleLevelSelector";
+import { useAppTheme } from "../../../theme";
 
 export default function UserCreationForm({ onClose, userDet }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const UserSelect = useSelector((state) => state?.UserDetails);
     const [selectedKey, setSelectedKey] = useState(null);
     const [username, setUserName] = useState("");
@@ -313,7 +316,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         </Text>
                         {onClose && (
                             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                                <MaterialIcons name="close" size={24} color="#64748b" />
+                                <MaterialIcons name="close" size={24} color={theme.colors.textMuted} />
                             </TouchableOpacity>
                         )}
                     </View>
@@ -325,6 +328,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         <Dropdown
                             selected={selectedCompany}
                             label="Select Company"
+                            placeholder="Choose a company"
                             multiple={true}
                             setSelected={setSelectedCompany}
                             options={companyCode}
@@ -335,6 +339,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         <Dropdown
                             selected={selectedEmply}
                             label="Select Employee"
+                            placeholder="Choose an employee"
                             setSelected={setSelectedEmply}
                             options={employee}
                             zIndex={200}
@@ -354,6 +359,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         <Dropdown
                             selected={selectedRole}
                             label="Select Pages Role"
+                            placeholder="Choose a pages role"
                             setSelected={setSelectedRole}
                             _label={"name"}
                             _value={"name"}
@@ -366,6 +372,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                             <Dropdown
                                 selected={selectedHod}
                                 label="Select HOD"
+                                placeholder="Choose an HOD"
                                 setSelected={setSelectedHod}
                                 options={employee}
                                 zIndex={200}
@@ -377,6 +384,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                             <Dropdown
                                 selected={selectedHR}
                                 label="Select HR"
+                                placeholder="Choose an HR"
                                 setSelected={setSelectedHR}
                                 options={employee}
                                 zIndex={100}
@@ -384,7 +392,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                             />
                         )}
 
-                        <Text style={[styles.label, { marginTop: 12 }]}>Approval Request To:</Text>
+                        <Text style={styles.approvalLabel}>Approval Request To</Text>
                         <CheckboxGroup
                             selectedKey={selectedKey}
                             setSelectedKey={setSelectedKey}
@@ -403,7 +411,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 onChangeText={setUserName}
                                 style={styles.input}
                                 placeholder="Enter username"
-                                placeholderTextColor="#94a3b8"
+                                placeholderTextColor={theme.colors.placeholder}
                                 autoCapitalize="none"
                             />
                         </View>
@@ -416,7 +424,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 style={styles.input}
                                 secureTextEntry
                                 placeholder="Enter password"
-                                placeholderTextColor="#94a3b8"
+                                placeholderTextColor={theme.colors.placeholder}
                             />
                         </View>
                     </View>
@@ -435,7 +443,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 }}
                                 style={styles.input}
                                 placeholder="Enter email"
-                                placeholderTextColor="#94a3b8"
+                                placeholderTextColor={theme.colors.placeholder}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
@@ -457,7 +465,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 >
                                     <Checkbox
                                         status={isotpEmail ? 'checked' : 'unchecked'}
-                                        color="#3b82f6"
+                                        color={theme.colors.brand}
                                     />
                                     <Text style={styles.checkboxLabel}>Different from Email</Text>
                                 </TouchableOpacity>
@@ -468,7 +476,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 onChangeText={setOtpEmailInp}
                                 style={[styles.input, !isotpEmail && styles.disabledInput]}
                                 placeholder="Enter OTP email"
-                                placeholderTextColor="#94a3b8"
+                                placeholderTextColor={theme.colors.placeholder}
                                 keyboardType="email-address"
                                 editable={isotpEmail}
                                 autoCapitalize="none"
@@ -506,13 +514,13 @@ export default function UserCreationForm({ onClose, userDet }) {
                                             onPress={() => editData(item)}
                                             style={styles.actionButton}
                                         >
-                                            <MaterialIcons name="edit" size={18} color="#3b82f6" />
+                                            <MaterialIcons name="edit" size={18} color={theme.colors.brand} />
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             onPress={() => onDelete(item.id)}
                                             style={[styles.actionButton, { marginLeft: 8 }]}
                                         >
-                                            <MaterialIcons name="delete" size={18} color="#ef4444" />
+                                            <MaterialIcons name="delete" size={18} color={theme.colors.danger} />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -540,13 +548,13 @@ export default function UserCreationForm({ onClose, userDet }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: theme.colors.background,
     },
     scrollContainer: {
-        padding: 16,
+        padding: theme.layout.screenGutter,
         paddingBottom: 110,
     },
     header: {
@@ -556,60 +564,57 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     headerTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#1e293b',
+        ...theme.typography.h3,
+        color: theme.colors.text,
     },
     closeButton: {
         padding: 6,
     },
     section: {
-        backgroundColor: '#ffffff',
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 2,
+        ...theme.styles.card,
+        ...theme.styles.shadow,
+        marginBottom: theme.spacing.lg,
         borderWidth: 1,
-        borderColor: '#f1f5f9',
+        borderColor: theme.colors.borderSubtle,
     },
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1e293b',
-        marginBottom: 12,
+        ...theme.typography.title,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.md,
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
-        paddingBottom: 6,
+        borderBottomColor: theme.colors.divider,
+        paddingBottom: theme.spacing.sm,
     },
     dropdown: {
-        marginBottom: 14,
+        marginBottom: theme.spacing.md + 2,
     },
     inputGroup: {
         marginBottom: 14,
     },
     label: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#475569',
-        marginBottom: 6,
+        ...theme.typography.label,
+        color: theme.colors.textSecondary,
+        marginBottom: theme.spacing.xs,
+    },
+    approvalLabel: {
+        ...theme.typography.label,
+        color: theme.colors.textSecondary,
+        marginTop: theme.spacing.sm,
+        marginBottom: theme.spacing.xs,
     },
     input: {
         height: 48,
         borderWidth: 1,
-        borderColor: '#cbd5e1',
-        borderRadius: 10,
-        paddingHorizontal: 14,
-        fontSize: 15,
-        backgroundColor: '#ffffff',
-        color: '#1e293b',
+        borderColor: theme.colors.inputBorder,
+        borderRadius: theme.radii.md,
+        paddingHorizontal: theme.spacing.md,
+        ...theme.typography.bodySmall,
+        backgroundColor: theme.colors.inputBackground,
+        color: theme.colors.text,
     },
     disabledInput: {
-        backgroundColor: '#f1f5f9',
-        color: '#94a3b8',
+        backgroundColor: theme.colors.disabledBackground,
+        color: theme.colors.disabledText,
     },
     otpEmailRow: {
         flexDirection: 'row',
@@ -622,13 +627,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     checkboxLabel: {
-        fontSize: 13,
-        color: '#64748b',
-        marginLeft: 4,
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginLeft: theme.spacing.xs,
     },
     tableHeader: {
         flexDirection: 'row',
-        backgroundColor: '#3b82f6',
+        backgroundColor: theme.colors.brand,
         paddingVertical: 10,
         paddingHorizontal: 8,
         borderTopLeftRadius: 8,
@@ -636,38 +641,38 @@ const styles = StyleSheet.create({
     },
     tableHeaderText: {
         fontWeight: '700',
-        color: '#ffffff',
+        color: theme.colors.brandContrast,
         textAlign: 'center',
-        fontSize: 13,
+        ...theme.typography.caption,
     },
     tableRow: {
         flexDirection: 'row',
         paddingVertical: 10,
         paddingHorizontal: 8,
         borderBottomWidth: 1,
-        borderColor: '#f1f5f9',
+        borderColor: theme.colors.divider,
         alignItems: 'center',
     },
     evenRow: {
-        backgroundColor: '#ffffff',
+        backgroundColor: theme.colors.surface,
     },
     oddRow: {
-        backgroundColor: '#f8fafc',
+        backgroundColor: theme.colors.backgroundSubtle,
     },
     tableCell: {
         textAlign: 'center',
-        fontSize: 13,
-        color: '#334155',
+        ...theme.typography.caption,
+        color: theme.colors.textSecondary,
     },
     noDataText: {
         textAlign: 'center',
         padding: 20,
-        color: '#94a3b8',
-        fontSize: 14,
+        ...theme.typography.bodySmall,
+        color: theme.colors.textDisabled,
     },
     actionButton: {
         padding: 6,
         borderRadius: 8,
-        backgroundColor: '#f1f5f9',
+        backgroundColor: theme.colors.surfaceSunken,
     },
 });

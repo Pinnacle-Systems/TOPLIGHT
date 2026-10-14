@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 const AttendanceStatsCard = ({ workedDays, totalDays, otHours, leavesTaken }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { width } = useWindowDimensions();
   const cardWidth = (width - 64) / 4; // grid-like layout
 
   const stats = [
-    { label: 'Worked', value: workedDays || 0, icon: 'calendar-check', color: '#4CAF50', bg: 'rgba(76, 175, 80, 0.1)' },
-    { label: 'Target', value: totalDays || 24, icon: 'flag-outline', color: '#3498DB', bg: 'rgba(52, 152, 219, 0.1)' },
-    { label: 'OT Hrs', value: otHours || 0, icon: 'clock-fast', color: '#F97316', bg: 'rgba(249, 115, 22, 0.1)' },
-    { label: 'Leaves', value: leavesTaken || 0, icon: 'calendar-remove', color: '#E74C3C', bg: 'rgba(231, 76, 60, 0.1)' },
+    { label: 'Worked', value: workedDays || 0, icon: 'calendar-check', color: theme.colors.success, bg: theme.colors.successSoft },
+    { label: 'Target', value: totalDays || 24, icon: 'flag-outline', color: theme.colors.info, bg: theme.colors.infoSoft },
+    { label: 'OT Hrs', value: otHours || 0, icon: 'clock-fast', color: theme.colors.warning, bg: theme.colors.warningSoft },
+    { label: 'Leaves', value: leavesTaken || 0, icon: 'calendar-remove', color: theme.colors.danger, bg: theme.colors.dangerSoft },
   ];
 
   return (
@@ -31,25 +34,25 @@ const AttendanceStatsCard = ({ workedDays, totalDays, otHours, leavesTaken }) =>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 16,
     marginVertical: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.03)',
+    borderColor: theme.colors.borderSubtle,
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#334155',
+    color: theme.colors.text,
     marginBottom: 16,
   },
   grid: {
@@ -71,12 +74,12 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#1e293b',
+    color: theme.colors.text,
     fontFamily: 'Dosis-Bold',
   },
   label: {
     fontSize: 11,
-    color: '#64748b',
+    color: theme.colors.textSecondary,
     fontWeight: '600',
     marginTop: 2,
     textAlign: 'center',
@@ -84,5 +87,4 @@ const styles = StyleSheet.create({
 });
 
 export default AttendanceStatsCard;
-
 

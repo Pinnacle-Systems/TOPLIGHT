@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 function getTodayDisplay() {
     const now = new Date();
@@ -17,6 +18,8 @@ function getTodayDisplay() {
 
 export default function DateBanner() {
     const d = getTodayDisplay();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     return (
         <View style={styles.container}>
@@ -31,7 +34,7 @@ export default function DateBanner() {
             <View style={styles.right}>
                 <Text style={styles.time}>{d.time}</Text>
                 <View style={styles.lockRow}>
-                    <MaterialCommunityIcons name="lock-outline" size={12} color="#64748B" />
+                    <MaterialCommunityIcons name="lock-outline" size={12} color={theme.colors.textMuted} />
                     <Text style={styles.lockText}>Auto-locked to today</Text>
                 </View>
             </View>
@@ -39,20 +42,20 @@ export default function DateBanner() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.lg,
+        paddingHorizontal: theme.spacing.lg,
+        paddingVertical: theme.spacing.md + 2,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
-        marginBottom: 14,
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        marginBottom: theme.spacing.md + 2,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.3 : 0.04,
         shadowRadius: 6,
         elevation: 2,
     },
@@ -60,50 +63,49 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
-        gap: 12,
+        gap: theme.spacing.md,
     },
     bigNum: {
         fontSize: 34,
         fontWeight: '800',
-        color: '#007AFF',
+        color: theme.colors.brand,
         lineHeight: 38,
     },
     dateCol: {
         justifyContent: 'center',
     },
     monthYear: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#1E293B',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.text,
     },
     dayName: {
-        fontSize: 12,
-        color: '#64748B',
-        fontWeight: '500',
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        fontWeight: theme.fontWeights.medium,
         marginTop: 1,
     },
     divider: {
         width: 1,
         height: 36,
-        backgroundColor: '#E2E8F0',
-        marginHorizontal: 12,
+        backgroundColor: theme.colors.divider,
+        marginHorizontal: theme.spacing.md,
     },
     right: {
         alignItems: 'flex-end',
     },
     time: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#0F172A',
+        ...theme.typography.title,
+        color: theme.colors.text,
     },
     lockRow: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 3,
-        gap: 3,
+        gap: theme.spacing.xxs + 1,
     },
     lockText: {
-        fontSize: 11,
-        color: '#64748B',
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
     },
 });

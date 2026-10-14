@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import Employee from "./Employee";
 import {HeadofDepartMent} from "./Head";
 
 import CustomText from "../../components/Text/CustomText";
 import {
     Alert, Animated, PermissionsAndroid,
-    Text, TouchableOpacity, View, AppState
+    Text, TouchableOpacity, View, AppState, StyleSheet
 } from "react-native";
 import TabView_Wrapper from "../../components/layout/TabNavBar";
 import { useDispatch, useSelector } from "react-redux";
 import messaging from "@react-native-firebase/messaging";
 import notifee from '@notifee/react-native';
 import { useUpdate_user_fcmMutation } from "../../store/api/userApi";
-import ProgressPopup from "../../components/Utils/PopupLoading";
+import DashboardLoading from "./DashboardLoading";
 import { Common_Context } from "../../context/CommonContext";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import tw from 'twrnc';
 import { useGetMisDashboardOrdersInHandQuery } from "../../store/api/dashboardApi";
 import { setCountUnder20DueDays } from "../../store/slices/dueDaysSlice";
 import { CustomNavigation } from "../../components/Utils/NavigationRef";
 import socket from "../../utils/Socket";
 import {TopManagement} from "./TopManage"; 
 import MISDashboard from "./MISDashboard";
+import { useAppTheme } from "../../theme";
 
 // ─── Dashboard child ──────────────────────────────────────────────────────────
 function Index_child({ route, ...props }) {
@@ -79,13 +79,7 @@ function Index_child({ route, ...props }) {
     // ── Loading state ──────────────────────────────────────────────────────
     if ((!UserId?.UserId || context_Data?.loading || UserId?.isLoading)  && UserId?.level !== "top" && UserId?.level !== "") {
         return (
-            <ProgressPopup
-                box={false}
-                sync={true}
-                // ✅ removed || true
-                visible={context_Data?.loading || UserId?.isLoading || false}
-                message="Syncing your dashboard..."
-            />
+            <DashboardLoading />
         );
     }
 
@@ -132,6 +126,8 @@ function Index_child({ route, ...props }) {
 
 // ─── Main Index ───────────────────────────────────────────────────────────────
 function Index(props) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [visible, setVisible] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
@@ -248,25 +244,25 @@ function Index(props) {
             {visible && isInsurance_viewable?.isdefault && (
                 <Animated.View
                     style={[
-                        tw`absolute z-50 right-4 bottom-30`,
+                        styles.insuranceBadge,
                         { transform: [{ scale: animation }] },
                     ]}
                 >
                     {/* Tooltip */}
                     {showTooltip && nearestExpiry && (
                         <View
-                            style={tw`absolute bottom-full right-0 mb-2 w-64 bg-white p-3 rounded-xl border border-gray-200`}
+                            style={styles.insuranceTooltip}
                         >
-                            <Text style={tw`font-bold text-red-500 text-sm`}>
+                            <Text style={styles.tooltipTitle}>
                                 Insurance Expiring Soon!
                             </Text>
-                            <Text style={tw`mt-1 text-gray-700 text-xs`}>
+                            <Text style={styles.tooltipBody}>
                                 Vehicle: {nearestExpiry.vehName}
                             </Text>
-                            <Text style={tw`mt-1 text-orange-500 text-xs font-semibold`}>
+                            <Text style={styles.tooltipWarning}>
                                 Expires in: {nearestExpiry.dueDays} days
                             </Text>
-                            <Text style={tw`mt-1 text-xs text-gray-400`}>
+                            <Text style={styles.tooltipHint}>
                                 Tap to view all expiring soon
                             </Text>
                         </View>
@@ -275,16 +271,16 @@ function Index(props) {
                     {/* FAB */}
                     <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
                         <View
-                            style={tw`absolute -top-2 -right-2 bg-white w-6 h-6 rounded-full justify-center items-center border-2 border-red-500 z-10`}
+                            style={styles.insuranceCount}
                         >
-                            <Text style={tw`text-red-500 font-bold text-xs`}>
+                            <Text style={styles.insuranceCountText}>
                                 {countUnder20DueDays}
                             </Text>
                         </View>
                         <View
-                            style={tw`bg-red-500 w-14 h-14 rounded-full justify-center items-center`}
+                            style={styles.insuranceAction}
                         >
-                            <MaterialCommunityIcons name="van-utility" size={24} color="white" />
+                            <MaterialCommunityIcons name="van-utility" size={24} color={theme.colors.brandContrast} />
                         </View>
                     </TouchableOpacity>
                 </Animated.View>
@@ -298,6 +294,73 @@ function Index(props) {
 
 export default Index;
 
-
-
+const createStyles = theme => StyleSheet.create({
+    insuranceBadge: {
+        position: 'absolute',
+        zIndex: theme.zIndex.overlay,
+        right: theme.spacing.lg,
+        bottom: 120,
+    },
+    insuranceTooltip: {
+        position: 'absolute',
+        bottom: '100%',
+        right: 0,
+        marginBottom: theme.spacing.sm,
+        width: 256,
+        padding: theme.spacing.md,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+        ...theme.styles.shadow,
+    },
+    tooltipTitle: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.danger,
+    },
+    tooltipBody: {
+        ...theme.typography.caption,
+        color: theme.colors.textSecondary,
+        marginTop: theme.spacing.xs,
+    },
+    tooltipWarning: {
+        ...theme.typography.caption,
+        color: theme.colors.warning,
+        fontWeight: theme.fontWeights.semiBold,
+        marginTop: theme.spacing.xs,
+    },
+    tooltipHint: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: theme.spacing.xs,
+    },
+    insuranceCount: {
+        position: 'absolute',
+        top: -theme.spacing.xs,
+        right: -theme.spacing.xs,
+        width: theme.spacing.xxl,
+        height: theme.spacing.xxl,
+        borderRadius: theme.radii.circle,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surface,
+        borderWidth: 2,
+        borderColor: theme.colors.danger,
+        zIndex: theme.zIndex.raised,
+    },
+    insuranceCountText: {
+        ...theme.typography.caption,
+        color: theme.colors.danger,
+        fontWeight: theme.fontWeights.bold,
+    },
+    insuranceAction: {
+        width: 56,
+        height: 56,
+        borderRadius: theme.radii.circle,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.danger,
+    },
+});
 

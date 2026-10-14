@@ -258,18 +258,6 @@ importers:
       '@react-native/metro-config':
         specifier: 0.87.1
         version: 0.87.1(@babel/core@7.29.7)
-      '@react-native/typescript-config':
-        specifier: 0.87.1
-        version: 0.87.1
-      '@types/jest':
-        specifier: ^29.5.13
-        version: 29.5.14
-      '@types/react':
-        specifier: ^19.2.0
-        version: 19.3.0
-      '@types/react-test-renderer':
-        specifier: ^19.1.0
-        version: 19.3.0
       eslint:
         specifier: ^8.19.0
         version: 8.57.1
@@ -285,9 +273,6 @@ importers:
       react-test-renderer:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
 
   apps/frontend-old:
     dependencies:
@@ -1912,9 +1897,6 @@ packages:
 
   '@react-native/typescript-config@0.79.1':
     resolution: {integrity: sha512-ZeCui5MYZxVOedw9feoONuNF0lup0DvcUGvLeTyQitZoPGV4NSz9jzC1XcxMsLb9M4a2FGUhopmgrxuXgyERFg==}
-
-  '@react-native/typescript-config@0.87.1':
-    resolution: {integrity: sha512-AaPFOTglk3GJ7OWSS/vuF9I4qotm5IyazRIgITMwIdAk6JF7iDTec77UZRadUs5/08G593gnF78unedM3skn/Q==}
 
   '@react-native/virtualized-lists@0.79.1':
     resolution: {integrity: sha512-v1KeqJeVJXjc2mewjKQYSay7D7+VSacxryejuuVXlPE9E9wVbzMPCfPjbIS8C9nMC7a4rsRFilX7RVKYkeZaGg==}
@@ -8003,8 +7985,6 @@ snapshots:
   '@react-native/normalize-colors@0.87.1': {}
 
   '@react-native/typescript-config@0.79.1': {}
-
-  '@react-native/typescript-config@0.87.1': {}
 
   '@react-native/virtualized-lists@0.79.1(@types/react@19.3.0)(react-native@0.79.1(@babel/core@7.29.7)(@react-native-community/cli@18.0.0(typescript@5.0.4))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)':
     dependencies:

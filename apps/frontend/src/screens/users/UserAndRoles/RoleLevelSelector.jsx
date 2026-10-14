@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Checkbox, Text, Avatar } from 'react-native-paper';
+import { useAppTheme } from '../../../theme';
 
 /**
  * RoleLevelSelector
@@ -11,13 +12,15 @@ import { Checkbox, Text, Avatar } from 'react-native-paper';
  */
 
 const ROLE_LEVELS = [
-  { id: 'top',   label: 'Top Management',   icon: 'chess-queen',  color: '#e3af02' },
-  { id: 'admin', label: 'Admin',            icon: 'account-cog',  color: '#5c6bc0' },
-  { id: 'hod',   label: 'Department HOD',   icon: 'account-tie',  color: '#26a69a' },
-  { id: 'user',  label: 'User',             icon: 'account',      color: '#42a5f5' },
+  { id: 'top',   label: 'Top Management',   icon: 'chess-queen',  colorKey: 'warning' },
+  { id: 'admin', label: 'Admin',            icon: 'account-cog',  colorKey: 'brand' },
+  { id: 'hod',   label: 'Department HOD',   icon: 'account-tie',  colorKey: 'secondary' },
+  { id: 'user',  label: 'User',             icon: 'account',      colorKey: 'info' },
 ];
 
 const RoleLevelSelector = ({ selected, setSelected }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const handleToggle = (id) => {
     // Radio behavior: selecting the same item deselects it
     setSelected(selected === id ? null : id);
@@ -27,20 +30,24 @@ const RoleLevelSelector = ({ selected, setSelected }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Select User Level</Text>
       {ROLE_LEVELS.map((level) => (
-        <View key={level.id} style={styles.item}>
+        <View
+          key={level.id}
+          style={[styles.item, selected === level.id && styles.selectedItem]}
+        >
           <Avatar.Icon
             size={36}
             icon={level.icon}
-            color={level.color}
-            style={styles.icon}
+            color={theme.colors[level.colorKey]}
+            style={[styles.icon, selected === level.id && styles.selectedIcon]}
           />
           <Checkbox.Item
             label={level.label}
             status={selected === level.id ? 'checked' : 'unchecked'}
             onPress={() => handleToggle(level.id)}
-            color="#007BFF"
+            color={theme.colors.brand}
+            uncheckedColor={theme.colors.textMuted}
             position="leading"
-            labelStyle={styles.label}
+            labelStyle={[styles.label, selected === level.id && styles.selectedLabel]}
             style={styles.checkbox}
           />
         </View>
@@ -51,39 +58,49 @@ const RoleLevelSelector = ({ selected, setSelected }) => {
 
 export default RoleLevelSelector;
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    ...theme.styles.card,
+    ...theme.styles.shadow,
     marginVertical: 10,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#333',
-    letterSpacing: 0.3,
+    ...theme.typography.title,
+    marginBottom: theme.spacing.md,
+    color: theme.colors.text,
+    letterSpacing: theme.letterSpacing.wide,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    minHeight: theme.controlSizes.minTouchTarget,
+    marginBottom: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xs,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  selectedItem: {
+    backgroundColor: theme.colors.surfaceSelected,
+    borderColor: theme.colors.brandSoft,
   },
   icon: {
-    marginRight: 6,
-    backgroundColor: '#f0f4ff',
+    marginRight: theme.spacing.sm,
+    backgroundColor: theme.colors.surfaceSelected,
+  },
+  selectedIcon: {
+    backgroundColor: theme.colors.brandSoft,
   },
   label: {
-    fontSize: 15,
-    color: '#333',
+    ...theme.typography.bodySmall,
+    color: theme.colors.textSecondary,
+  },
+  selectedLabel: {
+    color: theme.colors.brand,
+    fontWeight: theme.fontWeights.semiBold,
   },
   checkbox: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
 });

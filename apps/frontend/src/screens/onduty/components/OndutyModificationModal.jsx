@@ -13,8 +13,11 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import moment from 'moment';
 
 import { useGet__Onduty_editQuery } from '../../../store/api/OndutyApi';
+import { useAppTheme } from '../../../theme';
 
 export default function OndutyModificationModal({ visible, onClose }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -49,27 +52,27 @@ export default function OndutyModificationModal({ visible, onClose }) {
                 {/* Modal Header */}
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-                        <MaterialCommunityIcons name="close" size={24} color="#0F172A" />
+                        <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>OnDuty Records</Text>
                     <TouchableOpacity style={styles.refreshBtn} onPress={() => refetch()}>
-                        <MaterialCommunityIcons name="refresh" size={22} color="#007AFF" />
+                        <MaterialCommunityIcons name="refresh" size={22} color={theme.colors.brand} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Search Bar */}
                 <View style={styles.searchWrapper}>
-                    <MaterialCommunityIcons name="magnify" size={20} color="#94A3B8" />
+                    <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textDisabled} />
                     <TextInput
                         style={styles.searchInput}
                         placeholder="Search employee, ID or Doc ID..."
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={theme.colors.placeholder}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                     {searchQuery ? (
                         <TouchableOpacity onPress={() => setSearchQuery('')}>
-                            <MaterialCommunityIcons name="close-circle" size={18} color="#94A3B8" />
+                            <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textDisabled} />
                         </TouchableOpacity>
                     ) : null}
                 </View>
@@ -77,12 +80,12 @@ export default function OndutyModificationModal({ visible, onClose }) {
                 {/* Content */}
                 {isLoading ? (
                     <View style={styles.centerBox}>
-                        <ActivityIndicator size="large" color="#007AFF" />
+                        <ActivityIndicator size="large" color={theme.colors.brand} />
                         <Text style={styles.loadingText}>Loading records...</Text>
                     </View>
                 ) : filteredData.length === 0 ? (
                     <View style={styles.centerBox}>
-                        <MaterialCommunityIcons name="file-search-outline" size={48} color="#CBD5E1" />
+                        <MaterialCommunityIcons name="file-search-outline" size={48} color={theme.colors.borderStrong} />
                         <Text style={styles.emptyTitle}>No Records Found</Text>
                         <Text style={styles.emptySubtitle}>Try adjusting your search criteria</Text>
                     </View>
@@ -142,7 +145,7 @@ export default function OndutyModificationModal({ visible, onClose }) {
                                 <View style={styles.detailHeader}>
                                     <Text style={styles.detailTitle}>Trip Details</Text>
                                     <TouchableOpacity onPress={() => setSelectedItem(null)}>
-                                        <MaterialCommunityIcons name="close" size={22} color="#64748B" />
+                                        <MaterialCommunityIcons name="close" size={22} color={theme.colors.textMuted} />
                                     </TouchableOpacity>
                                 </View>
 
@@ -194,10 +197,10 @@ export default function OndutyModificationModal({ visible, onClose }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -206,9 +209,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 16,
         paddingBottom: 12,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderBottomWidth: 1,
-        borderBottomColor: '#E2E8F0',
+        borderBottomColor: theme.colors.divider,
     },
     closeBtn: {
         padding: 4,
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
     },
     refreshBtn: {
         padding: 4,
@@ -224,20 +227,20 @@ const styles = StyleSheet.create({
     searchWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         marginHorizontal: 16,
         marginVertical: 12,
         paddingHorizontal: 14,
         paddingVertical: 10,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.inputBorder,
         gap: 8,
     },
     searchInput: {
         flex: 1,
         fontSize: 14,
-        color: '#1E293B',
+        color: theme.colors.text,
         padding: 0,
     },
     centerBox: {
@@ -249,17 +252,17 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 12,
         fontSize: 14,
-        color: '#64748B',
+        color: theme.colors.textMuted,
     },
     emptyTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#1E293B',
+        color: theme.colors.text,
         marginTop: 12,
     },
     emptySubtitle: {
         fontSize: 13,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginTop: 4,
     },
     listContent: {
@@ -268,12 +271,12 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     recordCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         padding: 14,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
-        shadowColor: '#0F172A',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.03,
         shadowRadius: 6,
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
     cardDocId: {
         fontSize: 13,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
         fontFamily: 'monospace',
     },
     statusBadge: {
@@ -297,37 +300,37 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     statusApproved: {
-        backgroundColor: '#ECFDF5',
+        backgroundColor: theme.colors.successSoft,
     },
     statusApprovedText: {
-        color: '#10B981',
+        color: theme.colors.success,
         fontSize: 10,
         fontWeight: '800',
     },
     statusPending: {
-        backgroundColor: '#FEF3C7',
+        backgroundColor: theme.colors.warningSoft,
     },
     statusPendingText: {
-        color: '#D97706',
+        color: theme.colors.warning,
         fontSize: 10,
         fontWeight: '800',
     },
     cardEmpName: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#1E293B',
+        color: theme.colors.text,
         marginBottom: 8,
     },
     cardIdCard: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#64748B',
+        color: theme.colors.textMuted,
     },
     cardMetaRow: {
         flexDirection: 'row',
         gap: 20,
         borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
+        borderTopColor: theme.colors.divider,
         paddingTop: 8,
     },
     metaItem: {
@@ -338,26 +341,26 @@ const styles = StyleSheet.create({
     metaLabel: {
         fontSize: 10,
         fontWeight: '700',
-        color: '#94A3B8',
+        color: theme.colors.textDisabled,
     },
     metaValue: {
         fontSize: 12,
-        color: '#475569',
+        color: theme.colors.textSecondary,
         fontWeight: '600',
     },
     detailOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+        backgroundColor: theme.colors.scrim,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
     },
     detailCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.surface,
         width: '100%',
         borderRadius: 20,
         padding: 20,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.2,
         shadowRadius: 15,
@@ -372,7 +375,7 @@ const styles = StyleSheet.create({
     detailTitle: {
         fontSize: 18,
         fontWeight: '800',
-        color: '#0F172A',
+        color: theme.colors.text,
     },
     detailRow: {
         marginBottom: 12,
@@ -380,30 +383,30 @@ const styles = StyleSheet.create({
     detailLabel: {
         fontSize: 10,
         fontWeight: '700',
-        color: '#94A3B8',
+        color: theme.colors.textDisabled,
         letterSpacing: 0.5,
         marginBottom: 2,
     },
     detailValue: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#1E293B',
+        color: theme.colors.text,
     },
     detailValueMono: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#007AFF',
+        color: theme.colors.brand,
         fontFamily: 'monospace',
     },
     detailCloseBtn: {
-        backgroundColor: '#007AFF',
+        backgroundColor: theme.colors.brand,
         paddingVertical: 12,
         borderRadius: 12,
         alignItems: 'center',
         marginTop: 16,
     },
     detailCloseBtnText: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontSize: 14,
         fontWeight: '700',
     },

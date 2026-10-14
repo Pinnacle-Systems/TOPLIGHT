@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -6,9 +6,12 @@ import { useDispatch } from 'react-redux';
 import { setClearAll } from '../../store/slices/userDetailsSlice';
 // If we have a global logout function or need to restart
 import { NativeModules } from 'react-native';
+import { useAppTheme } from '../../theme';
 
 export default function NoAllocatedPage() {
     const dispatch = useDispatch();
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     const handleLogout = async () => {
         await AsyncStorage.clear();
@@ -50,13 +53,13 @@ export default function NoAllocatedPage() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#f8f9fa',
+        padding: theme.spacing.xl,
+        backgroundColor: theme.colors.background,
     },
     animation: {
         width: 300,
@@ -64,29 +67,27 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 10,
+        ...theme.typography.h2,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.sm,
         textAlign: 'center',
     },
     subtitle: {
-        fontSize: 16,
-        color: '#666',
+        ...theme.typography.body,
+        color: theme.colors.textSecondary,
         textAlign: 'center',
-        marginBottom: 30,
-        paddingHorizontal: 20,
+        marginBottom: theme.spacing.xxxl,
+        paddingHorizontal: theme.spacing.xl,
     },
     button: {
-        backgroundColor: '#007AFF',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        borderRadius: 25,
-        elevation: 3,
+        backgroundColor: theme.colors.brand,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.xxxl,
+        borderRadius: theme.radii.pill,
+        ...theme.styles.shadow,
     },
     buttonText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: 16,
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
     },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { PTYPE_OPTIONS } from '../constants/masterConfig';
+import { useAppTheme } from '../../../theme';
 
 export default function MasterFormModal({
     visible,
@@ -29,9 +30,12 @@ export default function MasterFormModal({
     hasPtype = false,
     isLoading = false,
     onSubmit,
-    accentColor = '#2563EB',
+    accentColor,
     title = 'Add Master Entry',
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const accent = accentColor || theme.colors.brand;
     const slideAnim = useRef(new Animated.Value(400)).current;
 
     useEffect(() => {
@@ -50,11 +54,11 @@ export default function MasterFormModal({
                 useNativeDriver: true,
             }).start();
         }
-    }, [visible]);
+    }, [visible, slideAnim]);
 
     const STATUS_OPTIONS = [
-        { label: 'Active', value: 'Yes', icon: 'check-circle-outline', color: '#16A34A' },
-        { label: 'Inactive', value: 'No', icon: 'close-circle-outline', color: '#64748B' },
+        { label: 'Active', value: 'Yes', icon: 'check-circle-outline', color: theme.colors.success, backgroundColor: theme.colors.successSoft },
+        { label: 'Inactive', value: 'No', icon: 'close-circle-outline', color: theme.colors.textMuted, backgroundColor: theme.colors.surfaceSunken },
     ];
 
     return (
@@ -77,11 +81,11 @@ export default function MasterFormModal({
 
                     {/* Header */}
                     <View style={styles.header}>
-                        <View style={[styles.headerIcon, { backgroundColor: accentColor + '15' }]}>
+                        <View style={[styles.headerIcon, { backgroundColor: theme.colors.surfaceSelected }]}>
                             <MaterialCommunityIcons
                                 name={isEdit ? 'pencil-box-outline' : 'plus-box-outline'}
                                 size={22}
-                                color={accentColor}
+                                color={accent}
                             />
                         </View>
                         <View style={styles.headerText}>
@@ -89,7 +93,7 @@ export default function MasterFormModal({
                             <Text style={styles.headerSub}>{isEdit ? 'Edit and save changes below' : 'Fill in the details below'}</Text>
                         </View>
                         <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-                            <MaterialCommunityIcons name="close" size={20} color="#64748B" />
+                            <MaterialCommunityIcons name="close" size={20} color={theme.colors.textMuted} />
                         </TouchableOpacity>
                     </View>
 
@@ -105,13 +109,13 @@ export default function MasterFormModal({
                                 Name / Description
                             </Text>
                             <View style={styles.textInputWrap}>
-                                <MaterialCommunityIcons name="form-textbox" size={18} color="#94A3B8" style={styles.inputIcon} />
+                                <MaterialCommunityIcons name="form-textbox" size={18} color={theme.colors.textDisabled} style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.textInput}
                                     value={name}
                                     onChangeText={setName}
                                     placeholder="Enter descriptive name..."
-                                    placeholderTextColor="#94A3B8"
+                                    placeholderTextColor={theme.colors.placeholder}
                                     autoCapitalize="sentences"
                                     autoCorrect={false}
                                 />
@@ -128,22 +132,27 @@ export default function MasterFormModal({
                                 <View style={styles.optionsRow}>
                                     {PTYPE_OPTIONS.map((option) => {
                                         const isSelected = ptype === option.value;
+                                        const optionColor = option.value === 'permission'
+                                            ? theme.colors.accent
+                                            : option.value === 'advance'
+                                                ? theme.colors.brand
+                                                : theme.colors.warning;
                                         return (
                                             <TouchableOpacity
                                                 key={option.value}
                                                 style={[
                                                     styles.optionChip,
-                                                    isSelected && { backgroundColor: option.color + '15', borderColor: option.color },
+                                                    isSelected && { backgroundColor: theme.colors.surfaceSelected, borderColor: optionColor },
                                                 ]}
                                                 onPress={() => setPtype(option.value)}
                                                 activeOpacity={0.7}
                                             >
                                                 {isSelected ? (
-                                                    <MaterialCommunityIcons name="check-circle" size={14} color={option.color} />
+                                                    <MaterialCommunityIcons name="check-circle" size={14} color={optionColor} />
                                                 ) : null}
                                                 <Text style={[
                                                     styles.optionChipText,
-                                                    isSelected && { color: option.color, fontWeight: '600' },
+                                                    isSelected && { color: optionColor, fontWeight: theme.fontWeights.semiBold },
                                                 ]}>
                                                     {option.label}
                                                 </Text>
@@ -168,9 +177,9 @@ export default function MasterFormModal({
                                             key={option.value}
                                             style={[
                                                 styles.statusOption,
-                                                isSelected && { 
-                                                    backgroundColor: option.color === '#16A34A' ? '#DCFCE7' : '#F1F5F9',
-                                                    borderColor: option.color 
+                                                isSelected && {
+                                                    backgroundColor: option.backgroundColor,
+                                                    borderColor: option.color,
                                                 },
                                             ]}
                                             onPress={() => setActive(option.value)}
@@ -179,11 +188,11 @@ export default function MasterFormModal({
                                             <MaterialCommunityIcons 
                                                 name={option.icon} 
                                                 size={20} 
-                                                color={isSelected ? option.color : '#CBD5E1'} 
+                                                color={isSelected ? option.color : theme.colors.borderStrong}
                                             />
                                             <Text style={[
                                                 styles.statusOptionText,
-                                                isSelected && { color: option.color, fontWeight: '600' },
+                                                isSelected && { color: option.color, fontWeight: theme.fontWeights.semiBold },
                                             ]}>
                                                 {option.label}
                                             </Text>
@@ -207,7 +216,7 @@ export default function MasterFormModal({
                         <TouchableOpacity
                             style={[
                                 styles.submitBtn,
-                                { backgroundColor: accentColor },
+                                { backgroundColor: accent },
                                 (isLoading || !name?.trim()) && styles.submitBtnDisabled,
                             ]}
                             onPress={onSubmit}
@@ -215,13 +224,13 @@ export default function MasterFormModal({
                             disabled={isLoading || !name?.trim()}
                         >
                             {isLoading ? (
-                                <ActivityIndicator color="#FFFFFF" size="small" />
+                                <ActivityIndicator color={theme.colors.brandContrast} size="small" />
                             ) : (
                                 <>
                                     <MaterialCommunityIcons
                                         name={isEdit ? 'check-circle-outline' : 'plus-circle-outline'}
                                         size={18}
-                                        color="#FFFFFF"
+                                        color={theme.colors.brandContrast}
                                     />
                                     <Text style={styles.submitBtnText}>
                                         {isEdit ? 'Save Changes' : 'Add Entry'}
@@ -236,41 +245,41 @@ export default function MasterFormModal({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: theme.colors.scrim,
         justifyContent: 'flex-end',
     },
     backdropArea: {
         flex: 1,
     },
     sheet: {
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingBottom: 24,
+        backgroundColor: theme.colors.surface,
+        borderTopLeftRadius: theme.radii.xl,
+        borderTopRightRadius: theme.radii.xl,
+        paddingBottom: theme.spacing.xxl,
         maxHeight: '88%',
     },
     handleWrap: {
         alignItems: 'center',
-        paddingTop: 12,
+        paddingTop: theme.spacing.md,
         paddingBottom: 4,
     },
     handle: {
         width: 40,
         height: 4,
         borderRadius: 2,
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.borderSubtle,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 14,
+        paddingHorizontal: theme.spacing.xl,
+        paddingVertical: theme.spacing.md + 2,
         borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-        gap: 12,
+        borderBottomColor: theme.colors.divider,
+        gap: theme.spacing.md,
     },
     headerIcon: {
         width: 44,
@@ -285,46 +294,46 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 17,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
     },
     headerSub: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginTop: 2,
     },
     closeBtn: {
         width: 34,
         height: 34,
         borderRadius: 8,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: theme.colors.surfaceSunken,
         alignItems: 'center',
         justifyContent: 'center',
     },
     body: {
-        paddingHorizontal: 20,
-        paddingTop: 18,
-        paddingBottom: 10,
+        paddingHorizontal: theme.spacing.xl,
+        paddingTop: theme.spacing.lg + 2,
+        paddingBottom: theme.spacing.md - 2,
     },
     fieldGroup: {
-        marginBottom: 20,
+        marginBottom: theme.spacing.xl,
     },
     fieldLabel: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
+        color: theme.colors.textSecondary,
+        marginBottom: theme.spacing.sm,
     },
     required: {
-        color: '#EF4444',
+        color: theme.colors.danger,
     },
     textInputWrap: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F8FAFC',
-        borderRadius: 10,
+        backgroundColor: theme.colors.inputBackground,
+        borderRadius: theme.radii.md,
         borderWidth: 1.5,
-        borderColor: '#E2E8F0',
-        paddingHorizontal: 12,
+        borderColor: theme.colors.inputBorder,
+        paddingHorizontal: theme.spacing.md,
         height: 48,
     },
     inputIcon: {
@@ -333,7 +342,7 @@ const styles = StyleSheet.create({
     textInput: {
         flex: 1,
         fontSize: 14,
-        color: '#0F172A',
+        color: theme.colors.text,
         paddingVertical: 0,
     },
     optionsRow: {
@@ -344,18 +353,18 @@ const styles = StyleSheet.create({
     optionChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 10,
-        backgroundColor: '#F8FAFC',
+        paddingHorizontal: theme.spacing.md + 2,
+        paddingVertical: theme.spacing.sm,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.surfaceSunken,
         borderWidth: 1.5,
-        borderColor: '#E2E8F0',
-        gap: 6,
+        borderColor: theme.colors.borderSubtle,
+        gap: theme.spacing.xs + 2,
     },
     optionChipText: {
         fontSize: 13,
-        color: '#64748B',
-        fontWeight: '500',
+        color: theme.colors.textMuted,
+        fontWeight: theme.fontWeights.medium,
     },
     statusOption: {
         flex: 1,
@@ -365,56 +374,54 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1.5,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#F8FAFC',
-        gap: 8,
+        borderColor: theme.colors.borderSubtle,
+        backgroundColor: theme.colors.surfaceSunken,
+        gap: theme.spacing.sm,
     },
     statusOptionText: {
         fontSize: 14,
-        color: '#94A3B8',
-        fontWeight: '500',
+        color: theme.colors.textDisabled,
+        fontWeight: theme.fontWeights.medium,
     },
     footer: {
         flexDirection: 'row',
-        paddingHorizontal: 20,
-        paddingTop: 14,
-        gap: 12,
+        paddingHorizontal: theme.spacing.xl,
+        paddingTop: theme.spacing.md + 2,
+        gap: theme.spacing.md,
         borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
+        borderTopColor: theme.colors.divider,
     },
     cancelBtn: {
         flex: 1,
-        paddingVertical: 13,
-        borderRadius: 12,
-        backgroundColor: '#F1F5F9',
+        paddingVertical: theme.spacing.md + 1,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.surfaceSunken,
         alignItems: 'center',
         justifyContent: 'center',
     },
     cancelBtnText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#64748B',
+        ...theme.typography.button,
+        color: theme.colors.textSecondary,
     },
     submitBtn: {
         flex: 2,
         flexDirection: 'row',
-        paddingVertical: 13,
-        borderRadius: 12,
+        paddingVertical: theme.spacing.md + 1,
+        borderRadius: theme.radii.md,
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
+        shadowOpacity: theme.isDark ? 0.35 : 0.15,
         shadowRadius: 4,
     },
     submitBtnDisabled: {
         opacity: 0.5,
     },
     submitBtnText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#FFFFFF',
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
     },
 });

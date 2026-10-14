@@ -1,7 +1,9 @@
 import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native"
 import { useGetInOutQuery } from "../../../../store/api/dashboardApi"
+import { useAppTheme } from "../../../../theme"
 
 function DailyInOutBody({ UserId, payperiod, COMPCODE }) {
+    const { theme } = useAppTheme()
     const { data, error: err } = useGetInOutQuery({
         params: {
             Idcard: UserId, payperiod, COMPCODE
@@ -16,7 +18,7 @@ function DailyInOutBody({ UserId, payperiod, COMPCODE }) {
     const smallCellWidth = isLandscape ? 100 : 80
     const mediumCellWidth = isLandscape ? 140 : 110
 
-    const styles = createStyles(smallCellWidth, mediumCellWidth)
+    const styles = createStyles(theme, smallCellWidth, mediumCellWidth)
 
     return (
         <View style={styles.container}>
@@ -101,12 +103,12 @@ function DailyInOutBody({ UserId, payperiod, COMPCODE }) {
     )
 }
 
-const createStyles = (smallCellWidth, mediumCellWidth) => StyleSheet.create({
+const createStyles = (theme, smallCellWidth, mediumCellWidth) => StyleSheet.create({
     container: {
         flex: 1,
         height: '70%',
         width: '100%',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: theme.colors.background,
     },
     horizontalScrollContent: {
         flexGrow: 1,
@@ -116,20 +118,20 @@ const createStyles = (smallCellWidth, mediumCellWidth) => StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
-        backgroundColor: '#2c3e50',
+        backgroundColor: theme.colors.brandStrong,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        borderBottomColor: theme.colors.border,
     },
     headerCell: {
         paddingHorizontal: 8,
         justifyContent: 'center',
         alignItems: 'center',
         borderRightWidth: 1,
-        borderRightColor: '#3d566e',
+        borderRightColor: theme.colors.borderStrong,
     },
     headerText: {
-        color: 'white',
+        color: theme.colors.brandContrast,
         fontWeight: 'bold',
         fontSize: 14,
     },
@@ -137,13 +139,13 @@ const createStyles = (smallCellWidth, mediumCellWidth) => StyleSheet.create({
         flexDirection: 'row',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: theme.colors.divider,
     },
     evenRow: {
-        backgroundColor: '#ffffff',
+        backgroundColor: theme.colors.surface,
     },
     oddRow: {
-        backgroundColor: '#f9f9f9',
+        backgroundColor: theme.colors.surfaceSunken,
     },
     cell: {
         paddingHorizontal: 8,
@@ -151,7 +153,7 @@ const createStyles = (smallCellWidth, mediumCellWidth) => StyleSheet.create({
     },
     cellText: {
         fontSize: 13,
-        color: '#333',
+        color: theme.colors.text,
     },
     rightAlign: {
         textAlign: 'right',
@@ -164,9 +166,8 @@ const createStyles = (smallCellWidth, mediumCellWidth) => StyleSheet.create({
     },
     noDataText: {
         fontSize: 16,
-        color: '#666',
+        color: theme.colors.textSecondary,
     },
 });
 
 export default DailyInOutBody
-

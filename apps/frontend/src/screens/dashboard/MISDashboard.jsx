@@ -2,7 +2,7 @@ import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
     Dimensions, RefreshControl, Modal, Animated
 } from 'react-native';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import WebView from 'react-native-webview';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -22,6 +22,7 @@ import {
 } from '../../store/api/dashboardApi';
 import { useGet_live_userQuery } from '../../store/api/OndutyApi';
 import { useSelector } from 'react-redux';
+import { useAppTheme } from '../../theme';
 
 const W = Dimensions.get('window').width;
 
@@ -67,67 +68,89 @@ const buildApexHTML = (id, optionsJson, height = 300) => `
 // ─────────────────────────────────────────────────────────────────────────────
 // ChartBox
 // ─────────────────────────────────────────────────────────────────────────────
-const ChartBox = ({ id, options, height = 280 }) => (
+const ChartBox = ({ id, options, height = 280 }) => {
+    const { theme } = useAppTheme();
+    const chartOptions = {
+        ...options,
+        theme: { mode: theme.mode },
+        chart: { ...options.chart, foreColor: theme.colors.textSecondary },
+        grid: { ...options.grid, borderColor: theme.colors.divider },
+    };
+    return (
     <View style={{ height, width: '100%' }}>
         <WebView
             key={id}
             originWhitelist={['*']}
-            source={{ html: buildApexHTML(id, JSON.stringify(options), height) }}
+            source={{ html: buildApexHTML(id, JSON.stringify(chartOptions), height) }}
             style={{ flex: 1, backgroundColor: 'transparent' }}
             scrollEnabled={false}
             javaScriptEnabled
             nestedScrollEnabled={false}
         />
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section wrapper
 // ─────────────────────────────────────────────────────────────────────────────
-const Section = ({ title, icon, color, children, onDetail }) => (
-    <View style={S.section}>
-        <View style={S.sectionHeader}>
-            <View style={[S.iconBox, { backgroundColor: `${color}18` }]}>
+const Section = ({ title, icon, color, children, onDetail }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    return (
+    <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+            <View style={[styles.iconBox, { backgroundColor: theme.colors.surfaceSelected }]}>
                 <Icon name={icon} size={20} color={color} />
             </View>
-            <Text style={S.sectionTitle}>{title.toUpperCase()}</Text>
+            <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
             {onDetail && (
-                <TouchableOpacity onPress={onDetail} style={S.detailBtn}>
-                    <Icon name="chevron-right" size={24} color="#94a3b8" />
+                <TouchableOpacity onPress={onDetail} style={styles.detailBtn}>
+                    <Icon name="chevron-right" size={24} color={theme.colors.textMuted} />
                 </TouchableOpacity>
             )}
         </View>
-        <View style={S.sectionContent}>{children}</View>
+        <View style={styles.sectionContent}>{children}</View>
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // KPI card
 // ─────────────────────────────────────────────────────────────────────────────
-const KPI = ({ label, value, icon, color, bgColor }) => (
-    <View style={[S.kpiCard, { backgroundColor: '#fff' }]}>
-        <View style={[S.kpiIcon, { backgroundColor: bgColor }]}>
+const KPI = ({ label, value, icon, color, bgColor }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    return (
+    <View style={[styles.kpiCard, { backgroundColor: theme.colors.surface }]}>
+        <View style={[styles.kpiIcon, { backgroundColor: bgColor }]}>
             <Icon name={icon} size={22} color={color} />
         </View>
-        <Text style={S.kpiVal}>{value}</Text>
-        <Text style={S.kpiLab}>{label}</Text>
+        <Text style={styles.kpiVal}>{value}</Text>
+        <Text style={styles.kpiLab}>{label}</Text>
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Empty chart placeholder — shown instead of a blank chart area
 // ─────────────────────────────────────────────────────────────────────────────
-const EmptyChart = ({ label = 'No data available', height = 120 }) => (
+const EmptyChart = ({ label = 'No data available', height = 120 }) => {
+    const { theme } = useAppTheme();
+    return (
     <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
-        <Icon name="chart-bar" size={28} color="#cbd5e1" />
-        <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 8 }}>{label}</Text>
+        <Icon name="chart-bar" size={28} color={theme.colors.textMuted} />
+        <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 8 }}>{label}</Text>
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 const MISDashboard = () => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const fade = useRef(new Animated.Value(0)).current;
     const [refreshing, setRefreshing]     = useState(false);
     const [detailModule, setDetailModule] = useState(null);
@@ -212,17 +235,17 @@ const MISDashboard = () => {
             }),
         }],
         chart:  { type: 'area', animations: { enabled: true } },
-        colors: ['#3b82f6'],
+        colors: [theme.colors.brand],
         stroke: { curve: 'smooth', width: 2 },
         fill:   { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
-        xaxis:  { categories: finYears, labels: { style: { fontSize: '9px', colors: '#94a3b8' } } },
+        xaxis:  { categories: finYears, labels: { style: { fontSize: '9px', colors: theme.colors.textMuted } } },
         yaxis:  {
             labels: {
                 formatter: (v) => v >= 100000 ? (v / 100000).toFixed(1) + 'L' : String(v),
-                style: { fontSize: '9px', colors: '#94a3b8' },
+                style: { fontSize: '9px', colors: theme.colors.textMuted },
             },
         },
-        grid:   { borderColor: 'rgba(255,255,255,0.05)' },
+        grid:   { borderColor: theme.colors.divider },
         legend: { show: false },
         dataLabels: { enabled: false },
     };
@@ -235,9 +258,9 @@ const MISDashboard = () => {
         ],
         chart: { type: 'bar', stacked: true },
         plotOptions: { bar: { horizontal: false, columnWidth: '60%', borderRadius: 4 } },
-        colors: ['#3b82f6', '#ec4899'],
+        colors: [theme.colors.brand, theme.colors.accent],
         xaxis:  { categories: strengthData.map(x => x.customer ?? '') },
-        legend: { position: 'bottom', labels: { colors: '#64748b' } },
+        legend: { position: 'bottom', labels: { colors: theme.colors.textSecondary } },
         dataLabels: { enabled: false },
     };
 
@@ -246,7 +269,7 @@ const MISDashboard = () => {
     const salaryAreaOptions = {
         series: [{ name: 'Net Pay', data: salData.map(x => Number(x.netpay ?? 0)) }],
         chart:  { type: 'area' },
-        colors: ['#3b82f6'],
+        colors: [theme.colors.brand],
         stroke: { curve: 'smooth', width: 2 },
         fill:   { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.05 } },
         xaxis:  { categories: salData.map(x => x.customer ?? '') },
@@ -262,7 +285,7 @@ const MISDashboard = () => {
         series: [totalEsiEmpr, totalEsi],
         labels: ['Employer (4.75%)', 'Employee (1.75%)'],
         chart:  { type: 'donut', sparkline: { enabled: true } },
-        colors: ['#10b981', '#34d399'],
+        colors: [theme.colors.success, theme.colors.secondary],
         legend: { show: false },
     };
 
@@ -274,7 +297,7 @@ const MISDashboard = () => {
         series: [totalPf, totalPf],
         labels: ['Employer (12%)', 'Employee (12%)'],
         chart:  { type: 'donut', sparkline: { enabled: true } },
-        colors: ['#3b82f6', '#60a5fa'],
+        colors: [theme.colors.brand, theme.colors.brandStrong],
         legend: { show: false },
     };
 
@@ -284,37 +307,37 @@ const MISDashboard = () => {
         series: [{ name: 'Headcount', data: attrData.map(x => Number(x.headCount ?? 0)) }],
         chart:  { type: 'line' },
         stroke: { curve: 'smooth', width: 3 },
-        colors: ['#ef4444'],
+        colors: [theme.colors.danger],
         xaxis:  { categories: attrData.map(x => x.customer ?? x.month ?? '') },
         dataLabels: { enabled: false },
     };
 
     // ── RENDER ────────────────────────────────────────────────────────────────
     return (
-        <View style={tw`flex-1 bg-slate-50`}>
+        <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
             <Animated.View style={[tw`flex-1`, { opacity: fade }]}>
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
                     {/* ── HEADER ─────────────────────────────────────────── */}
-                    <LinearGradient colors={['#0f172a', '#1e293b']} style={S.header}>
+                    <LinearGradient colors={[theme.colors.brandStrong, theme.colors.brand]} style={styles.header}>
                         <View style={tw`flex-row justify-between items-center mb-6`}>
                             <View>
-                                <Text style={S.welcome}>Executive Intelligence</Text>
-                                <Text style={S.userName}>{UserId?.userName ?? 'Executive'}</Text>
+                                <Text style={styles.welcome}>Executive Intelligence</Text>
+                                <Text style={styles.userName}>{UserId?.userName ?? 'Executive'}</Text>
                             </View>
-                            <TouchableOpacity style={S.profileBtn}>
-                                <Icon name="account-circle" size={32} color="#fff" />
+                            <TouchableOpacity style={styles.profileBtn}>
+                                <Icon name="account-circle" size={32} color={theme.colors.brandContrast} />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={S.revenueCard}>
+                        <View style={styles.revenueCard}>
                             <View style={tw`flex-row justify-between items-center mb-2`}>
-                                <Text style={S.revTitle}>ANNUAL PAYOUT TRENDS</Text>
-                                <View style={S.liveBadge}>
-                                    <View style={S.liveDot} />
-                                    <Text style={S.liveTxt}>REAL-TIME</Text>
+                                <Text style={styles.revTitle}>ANNUAL PAYOUT TRENDS</Text>
+                                <View style={styles.liveBadge}>
+                                    <View style={styles.liveDot} />
+                                    <Text style={styles.liveTxt}>REAL-TIME</Text>
                                 </View>
                             </View>
                             {finYears.length > 0
@@ -324,17 +347,17 @@ const MISDashboard = () => {
                         </View>
                     </LinearGradient>
 
-                    <View style={S.content}>
+                    <View style={styles.content}>
                         {/* ── KPI STRIP ──────────────────────────────────── */}
                         <View style={tw`flex-row flex-wrap justify-between mt-[-40px] mb-4`}>
-                            <KPI label="OnDuty Live"  value={liveCount}     icon="map-marker-radius" color="#3b82f6" bgColor="#dbeafe" />
-                            <KPI label="Present"      value={totalPresent}  icon="account-check"     color="#10b981" bgColor="#dcfce7" />
-                            <KPI label="Absent"       value={totalAbsent}   icon="account-remove"    color="#ef4444" bgColor="#fee2e2" />
-                            <KPI label="Total Staff"  value={totalStrength} icon="account-group"     color="#f59e0b" bgColor="#fef3c7" />
+                            <KPI label="OnDuty Live"  value={liveCount}     icon="map-marker-radius" color={theme.colors.brand} bgColor={theme.colors.brandSoft} />
+                            <KPI label="Present"      value={totalPresent}  icon="account-check"     color={theme.colors.success} bgColor={theme.colors.successSoft} />
+                            <KPI label="Absent"       value={totalAbsent}   icon="account-remove"    color={theme.colors.danger} bgColor={theme.colors.dangerSoft} />
+                            <KPI label="Total Staff"  value={totalStrength} icon="account-group"     color={theme.colors.warning} bgColor={theme.colors.warningSoft} />
                         </View>
 
                         {/* ── SALARY ─────────────────────────────────────── */}
-                        <Section title="Salary Distribution" icon="currency-usd" color="#3b82f6"
+                        <Section title="Salary Distribution" icon="currency-usd" color={theme.colors.brand}
                             onDetail={() => setDetailModule('salary')}>
                             {salData.length > 0
                                 ? <ChartBox id="salaryArea" options={salaryAreaOptions} height={220} />
@@ -343,7 +366,7 @@ const MISDashboard = () => {
                         </Section>
 
                         {/* ── WORKFORCE DEMOGRAPHICS ──────────────────────── */}
-                        <Section title="Workforce Demographics" icon="account-group" color="#ec4899"
+                        <Section title="Workforce Demographics" icon="account-group" color={theme.colors.accent}
                             onDetail={() => setDetailModule('headcount')}>
                             {strengthData.length > 0
                                 ? <ChartBox id="genderStrength" options={genderChartOptions} height={220} />
@@ -352,18 +375,18 @@ const MISDashboard = () => {
                         </Section>
 
                         {/* ── STATUTORY CONTRIBUTIONS ─────────────────────── */}
-                        <Section title="Statutory Contributions" icon="shield-check" color="#10b981"
+                        <Section title="Statutory Contributions" icon="shield-check" color={theme.colors.success}
                             onDetail={() => setDetailModule('insurance')}>
                             <View style={tw`flex-row justify-between`}>
                                 <View style={{ width: '48%' }}>
-                                    <Text style={S.tinyTitle}>ESI Breakdown</Text>
+                                    <Text style={styles.tinyTitle}>ESI Breakdown</Text>
                                     {totalEsi > 0
                                         ? <ChartBox id="esiDonut" options={esiDonutOptions} height={130} />
                                         : <EmptyChart label="No ESI data" height={130} />
                                     }
                                 </View>
                                 <View style={{ width: '48%' }}>
-                                    <Text style={S.tinyTitle}>PF Breakdown</Text>
+                                    <Text style={styles.tinyTitle}>PF Breakdown</Text>
                                     {totalPf > 0
                                         ? <ChartBox id="pfDonut" options={pfDonutOptions} height={130} />
                                         : <EmptyChart label="No PF data" height={130} />
@@ -373,7 +396,7 @@ const MISDashboard = () => {
                         </Section>
 
                         {/* ── ATTRITION ──────────────────────────────────── */}
-                        <Section title="Attrition Insights" icon="account-arrow-left" color="#ef4444"
+                        <Section title="Attrition Insights" icon="account-arrow-left" color={theme.colors.danger}
                             onDetail={() => setDetailModule('attrition')}>
                             {attrData.length > 0
                                 ? <ChartBox id="attritionLine" options={attritionOptions} height={220} />
@@ -397,6 +420,8 @@ const MISDashboard = () => {
 // DRILL-DOWN MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 const DrillDownModal = ({ module, onClose, data }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     if (!module) return null;
 
     const titles = {
@@ -417,12 +442,12 @@ const DrillDownModal = ({ module, onClose, data }) => {
 
     return (
         <Modal visible animationType="slide" transparent={false} onRequestClose={onClose}>
-            <View style={tw`flex-1 bg-white`}>
-                <LinearGradient colors={['#1e293b', '#0f172a']} style={S.modalHeader}>
-                    <TouchableOpacity onPress={onClose} style={S.closeBtn}>
-                        <Icon name="close" size={24} color="#fff" />
+            <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                <LinearGradient colors={[theme.colors.brandStrong, theme.colors.brand]} style={styles.modalHeader}>
+                    <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+                        <Icon name="close" size={24} color={theme.colors.brandContrast} />
                     </TouchableOpacity>
-                    <Text style={S.modalTitle}>{titles[module] ?? 'Details'}</Text>
+                    <Text style={styles.modalTitle}>{titles[module] ?? 'Details'}</Text>
                 </LinearGradient>
 
                 <ScrollView contentContainerStyle={tw`p-4`}>
@@ -437,7 +462,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                         series: ageRows.map(x => Number(x.TOTAL_NETPAY ?? 0)),
                                         labels: ageRows.map(x => String(x.SLAP ?? '')),
                                         chart:  { type: 'polarArea' },
-                                        colors: ['#FFA726','#42A5F5','#66BB6A','#AB47BC','#FF7043'],
+                                        colors: theme.colors.chart.slice(0, 5),
                                         legend: { position: 'bottom' },
                                     }} />
                                     : <EmptyChart height={300} />
@@ -450,7 +475,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                     ? <ChartBox id="compSalDrill" height={260} options={{
                                         series: [{ name: 'Net Pay', data: salRows.map(x => Number(x.netpay ?? 0)) }],
                                         chart:  { type: 'bar' },
-                                        colors: ['#3b82f6'],
+                                        colors: [theme.colors.brand],
                                         plotOptions: { bar: { borderRadius: 6, distributed: true } },
                                         xaxis:  { categories: salRows.map(x => x.customer ?? '') },
                                         legend: { show: false },
@@ -475,7 +500,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                         ],
                                         chart: { type: 'bar', stacked: true },
                                         plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
-                                        colors: ['#3b82f6','#ec4899'],
+                                        colors: [theme.colors.brand, theme.colors.accent],
                                         xaxis:  { categories: strRows.map(x => x.customer ?? '') },
                                         legend: { position: 'bottom' },
                                         dataLabels: { enabled: false },
@@ -491,7 +516,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                         series: regionRows.map(x => Number(x.TOTAL ?? 0)),
                                         labels: regionRows.map(x => String(x.STATE ?? '')),
                                         chart:  { type: 'donut' },
-                                        colors: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'],
+                                        colors: theme.colors.chart.slice(0, 6),
                                         legend: { position: 'bottom' },
                                     }} />
                                     : <EmptyChart height={280} />
@@ -509,7 +534,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                     ? <ChartBox id="esiBarDrill" height={250} options={{
                                         series: [{ name: 'ESI', data: esiRows.map(x => Number(x.esi ?? 0)) }],
                                         chart:  { type: 'bar' },
-                                        colors: ['#10b981'],
+                                        colors: [theme.colors.success],
                                         plotOptions: { bar: { borderRadius: 6, distributed: true } },
                                         xaxis:  { categories: esiRows.map(x => x.customer ?? '') },
                                         legend: { show: false },
@@ -525,7 +550,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                     ? <ChartBox id="pfBarDrill" height={250} options={{
                                         series: [{ name: 'PF', data: pfRows.map(x => Number(x.pf ?? 0)) }],
                                         chart:  { type: 'bar' },
-                                        colors: ['#3b82f6'],
+                                        colors: [theme.colors.brand],
                                         plotOptions: { bar: { borderRadius: 6, distributed: true } },
                                         xaxis:  { categories: pfRows.map(x => x.customer ?? '') },
                                         legend: { show: false },
@@ -546,7 +571,7 @@ const DrillDownModal = ({ module, onClose, data }) => {
                                     series: [{ name: 'Headcount', data: attrRows.map(x => Number(x.headCount ?? 0)) }],
                                     chart:  { type: 'bar' },
                                     plotOptions: { bar: { borderRadius: 8, distributed: true } },
-                                    colors: ['#ef4444'],
+                                    colors: [theme.colors.danger],
                                     xaxis:  { categories: attrRows.map(x => x.customer ?? x.month ?? '') },
                                     legend: { show: false },
                                     dataLabels: { enabled: false },
@@ -561,46 +586,49 @@ const DrillDownModal = ({ module, onClose, data }) => {
     );
 };
 
-const DetailSection = ({ title, children }) => (
-    <View style={tw`mb-8`}>
-        <Text style={tw`text-base font-bold text-slate-800 mb-4 px-2`}>{title}</Text>
-        <View style={tw`bg-slate-50 rounded-3xl p-2`}>{children}</View>
-    </View>
-);
+const DetailSection = ({ title, children }) => {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    return (
+        <View style={{ marginBottom: theme.spacing.xxl }}>
+            <Text style={styles.detailSectionTitle}>{title}</Text>
+            <View style={styles.detailSectionContent}>{children}</View>
+        </View>
+    );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STYLES
 // ─────────────────────────────────────────────────────────────────────────────
-const S = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     header:         { padding: 24, paddingBottom: 60, borderBottomLeftRadius: 40, borderBottomRightRadius: 40 },
-    welcome:        { fontSize: 13, color: '#94a3b8', fontWeight: '600', letterSpacing: 0.5 },
-    userName:       { fontSize: 24, fontWeight: '900', color: '#fff', marginTop: 2 },
-    profileBtn:     { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    revenueCard:    { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, padding: 15, marginTop: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-    revTitle:       { fontSize: 10, fontWeight: '800', color: '#fff', opacity: 0.6, letterSpacing: 1 },
-    liveBadge:      { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239,68,68,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-    liveDot:        { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ef4444', marginRight: 6 },
-    liveTxt:        { fontSize: 10, color: '#ef4444', fontWeight: '900' },
+    welcome:        { fontSize: 13, color: theme.colors.brandContrast, opacity: 0.76, fontWeight: '600', letterSpacing: 0.5 },
+    userName:       { fontSize: 24, fontWeight: '900', color: theme.colors.brandContrast, marginTop: 2 },
+    profileBtn:     { width: 48, height: 48, borderRadius: 24, backgroundColor: theme.colors.surface, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.borderSubtle },
+    revenueCard:    { backgroundColor: theme.colors.surface, borderRadius: 24, padding: 15, marginTop: 15, borderWidth: 1, borderColor: theme.colors.borderSubtle },
+    revTitle:       { fontSize: 10, fontWeight: '800', color: theme.colors.textSecondary, letterSpacing: 1 },
+    liveBadge:      { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.dangerSoft, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+    liveDot:        { width: 6, height: 6, borderRadius: 3, backgroundColor: theme.colors.danger, marginRight: 6 },
+    liveTxt:        { fontSize: 10, color: theme.colors.danger, fontWeight: '900' },
     content:        { padding: 16 },
-    kpiCard:        { width: (W - 48) / 2, padding: 16, borderRadius: 24, marginBottom: 16, elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 15, shadowOffset: { width: 0, height: 5 } },
+    kpiCard:        { width: (W - 48) / 2, padding: 16, borderRadius: 24, marginBottom: 16, elevation: 4, shadowColor: theme.colors.shadow, shadowOpacity: 0.05, shadowRadius: 15, shadowOffset: { width: 0, height: 5 } },
     kpiIcon:        { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    kpiVal:         { fontSize: 22, fontWeight: '900', color: '#0f172a' },
-    kpiLab:         { fontSize: 12, color: '#64748b', fontWeight: '600', marginTop: 2 },
-    section:        { backgroundColor: '#fff', borderRadius: 32, padding: 20, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
+    kpiVal:         { fontSize: 22, fontWeight: '900', color: theme.colors.text },
+    kpiLab:         { fontSize: 12, color: theme.colors.textSecondary, fontWeight: '600', marginTop: 2 },
+    section:        { backgroundColor: theme.colors.surface, borderColor: theme.colors.borderSubtle, borderWidth: 1, borderRadius: 32, padding: 20, marginBottom: 20, elevation: 2, shadowColor: theme.colors.shadow, shadowOpacity: 0.02 },
     sectionHeader:  { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
     iconBox:        { padding: 10, borderRadius: 14, marginRight: 15 },
-    sectionTitle:   { fontSize: 12, fontWeight: '900', color: '#1e293b', flex: 1, letterSpacing: 1 },
+    sectionTitle:   { fontSize: 12, fontWeight: '900', color: theme.colors.text, flex: 1, letterSpacing: 1 },
     sectionContent: { minHeight: 120 },
-    tinyTitle:      { fontSize: 11, fontWeight: '800', color: '#94a3b8', marginBottom: 8, textAlign: 'center', letterSpacing: 0.5 },
-    detailBtn:      { padding: 6, backgroundColor: '#f1f5f9', borderRadius: 12 },
+    tinyTitle:      { fontSize: 11, fontWeight: '800', color: theme.colors.textMuted, marginBottom: 8, textAlign: 'center', letterSpacing: 0.5 },
+    detailBtn:      { padding: 6, backgroundColor: theme.colors.surfaceSunken, borderRadius: 12 },
     modalHeader:    { padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
-    modalTitle:     { color: '#fff', fontSize: 18, fontWeight: '900', marginLeft: 20 },
-    closeBtn:       { padding: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
+    modalTitle:     { color: theme.colors.brandContrast, fontSize: 18, fontWeight: '900', marginLeft: 20 },
+    closeBtn:       { padding: 10, backgroundColor: theme.colors.surface, borderRadius: 16 },
+    detailSectionTitle: { ...theme.typography.title, color: theme.colors.text, marginBottom: theme.spacing.md, paddingHorizontal: theme.spacing.sm },
+    detailSectionContent: { backgroundColor: theme.colors.surface, borderColor: theme.colors.borderSubtle, borderWidth: 1, borderRadius: theme.radii.xl, padding: theme.spacing.sm },
 });
 
 export default MISDashboard;
-
-
-
 
 

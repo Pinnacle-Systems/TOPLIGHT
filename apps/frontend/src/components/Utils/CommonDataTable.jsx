@@ -1,6 +1,7 @@
-import React from 'react';
-import { DataTable, IconButton, Provider, useTheme } from 'react-native-paper';
+import React, { useMemo } from 'react';
+import { DataTable, IconButton } from 'react-native-paper';
 import { View, StyleSheet, ScrollView } from 'react-native';
+import { useAppTheme } from '../../theme';
 
 const CustomDataTable = ({ 
   data, 
@@ -19,7 +20,8 @@ const CustomDataTable = ({
 }) => {
   const [page, setPage] = React.useState(0);
   const [itemsPerPageState, setItemsPerPage] = React.useState(itemsPerPage);
-  const theme = useTheme();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const from = page * itemsPerPageState;
   const to = Math.min((page + 1) * itemsPerPageState, data.length);
 
@@ -27,14 +29,14 @@ const CustomDataTable = ({
     <DataTable style={[styles.table, { width }, style]}>
       {title && (
         <DataTable.Header style={styles.header}>
-          <DataTable.Title style={styles.title}>{title}</DataTable.Title>
+          <DataTable.Title style={styles.title} textStyle={styles.titleText}>{title}</DataTable.Title>
         </DataTable.Header>
       )}
       
-      <DataTable.Header style={[styles.header,{backgroundColor:"#7999f2"}]}>
+      <DataTable.Header style={[styles.header, styles.columnHeader]}>
         {fields.map((field, index) => (
           <DataTable.Title 
-          textStyle={{color:"white"}}
+            textStyle={styles.columnHeaderText}
             key={`header-${index}`} 
             {...field.titleProps}
             style={[
@@ -47,7 +49,7 @@ const CustomDataTable = ({
           </DataTable.Title>
         ))}
         {(onEdit || onDelete) && (
-          <DataTable.Title  textStyle={{color:"white"}} numeric style={styles.actionHeader}>
+          <DataTable.Title textStyle={styles.columnHeaderText} numeric style={styles.actionHeader}>
             Actions
           </DataTable.Title>
         )}
@@ -55,7 +57,7 @@ const CustomDataTable = ({
 
       {data.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <DataTable.Cell style={styles.emptyCell}>{emptyMessage}</DataTable.Cell>
+          <DataTable.Cell style={styles.emptyCell} textStyle={styles.cellText}>{emptyMessage}</DataTable.Cell>
         </View>
       ) : (
         data.slice(from, to).map((row, rowIndex) => (
@@ -77,6 +79,7 @@ const CustomDataTable = ({
                   field.flex && { flex: field.flex },
                   styles.cell
                 ]}
+                textStyle={styles.cellText}
               >
                 {field.renderCell ? field.renderCell(row) : row[field.key]}
               </DataTable.Cell>
@@ -107,7 +110,6 @@ const CustomDataTable = ({
       )}
 
       {pagination && data.length > itemsPerPageState && (
-     <Provider>
      <DataTable.Pagination
           page={page}
           numberOfPages={Math.ceil(data.length / itemsPerPageState)}
@@ -120,7 +122,6 @@ const CustomDataTable = ({
           selectPageDropdownLabel={'Rows per page'}
           style={styles.pagination}
         />
-        </Provider>
       )}
     </DataTable>
     
@@ -139,20 +140,29 @@ const CustomDataTable = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     overflow: 'hidden',
+    backgroundColor: theme.colors.surface,
   },
   table: {
     flex: 1,
     minWidth: '100%',
+    backgroundColor: theme.colors.surface,
   },
   header: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.surfaceSunken,
   },
   headerCell: {
-    paddingVertical: 8,
-    color:"white"
+    paddingVertical: theme.spacing.sm,
+  },
+  columnHeader: {
+    backgroundColor: theme.colors.brand,
+  },
+  columnHeaderText: {
+    ...theme.typography.caption,
+    color: theme.colors.brandContrast,
+    fontWeight: theme.fontWeights.bold,
   },
   actionHeader: {
     justifyContent: 'flex-end',
@@ -160,22 +170,31 @@ const styles = StyleSheet.create({
   },
   title: {
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: theme.spacing.md,
+  },
+  titleText: {
+    ...theme.typography.title,
+    color: theme.colors.text,
   },
   row: {
-    minHeight: 48,
+    minHeight: theme.controlSizes.minTouchTarget + 4,
+    borderBottomColor: theme.colors.divider,
   },
   clickableRow: {
     cursor: 'pointer',
   },
   evenRow: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
   },
   oddRow: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.backgroundSubtle,
   },
   cell: {
-    paddingVertical: 8,
+    paddingVertical: theme.spacing.sm,
+  },
+  cellText: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
   },
   actionCell: {
     justifyContent: 'flex-end',
@@ -194,7 +213,8 @@ const styles = StyleSheet.create({
   },
   pagination: {
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: theme.colors.divider,
+    backgroundColor: theme.colors.surface,
   },
 });
 

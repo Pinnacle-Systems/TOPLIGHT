@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,38 +9,49 @@ import {
   Dimensions,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
 } from 'react-native';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import AntDesign from "react-native-vector-icons/AntDesign";
 import Feather from "react-native-vector-icons/Feather";
 import { useSelector, useDispatch } from 'react-redux';
 import { Common_Context } from '../../context/CommonContext';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setClearAll } from '../../store/slices/userDetailsSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavRef } from '../Utils/NavigationRef';
+import { useAppTheme } from '../../theme';
 
-const { width, height } = Dimensions.get('window');
-const drawerWidth = width * 0.8; // Professional slightly narrower sidebar
+const { width } = Dimensions.get('window');
+const drawerWidth = Math.min(width * 0.82, 360);
 
 export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const dispatch = useDispatch();
-    const navigation = useNavigation();
+    const [activeRouteName, setActiveRouteName] = useState(null);
     const { logout } = useContext(Common_Context);
     const USER = useSelector((state) => state?.UserDetails);
     
-    // Animation for sliding in from the right
-    const slideAnim = useRef(new Animated.Value(drawerWidth)).current;
+    const slideAnim = useRef(new Animated.Value(-drawerWidth)).current;
+
+    useEffect(() => {
+        const updateActiveRoute = () => {
+            setActiveRouteName(NavRef.getCurrentRoute()?.name || null);
+        };
+
+        updateActiveRoute();
+        const unsubscribe = NavRef.addListener('state', updateActiveRoute);
+        return unsubscribe;
+    }, []);
 
     useEffect(() => {
         Animated.spring(slideAnim, {
-            toValue: openSidebar ? 0 : drawerWidth,
+            toValue: openSidebar ? 0 : -drawerWidth,
             useNativeDriver: true,
-            bounciness: 0,
-            speed: 18,
+            bounciness: 2,
+            speed: 20,
         }).start();
-    }, [openSidebar]);
+    }, [openSidebar, slideAnim]);
 
     const handleClose = () => setopenSidebar(false);
 
@@ -73,7 +84,8 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
     const handleNavigation = (path) => {
         setopenSidebar(false);
         try {
-            navigation.navigate(path);
+            if (!NavRef.isReady()) return;
+            NavRef.navigate(path);
         } catch (e) {
             console.warn("Screen not available yet:", path);
         }
@@ -81,11 +93,13 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
 
     const renderHeader = () => (
         <View style={styles.header}>
-            <Image 
-                source={require('../../assets/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-            />
+            <View style={styles.brand}>
+                <Image
+                    source={require('../../assets/logo.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
+            </View>
             <View style={styles.profileSection}>
                 <View style={styles.avatarWrap}>
                     <Text style={styles.avatarText}>
@@ -93,8 +107,12 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
                     </Text>
                 </View>
                 <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{USER?.userName || 'User'}</Text>
-                    <Text style={styles.userRole}>{USER?.GCOMPCODE || 'Employee'}</Text>
+                    <Text style={styles.userName} numberOfLines={1}>
+                        {USER?.userName || USER?.username || 'User'}
+                    </Text>
+                    <Text style={styles.userRole} numberOfLines={1}>
+                        {USER?.GCOMPCODE || USER?.level || 'Employee'}
+                    </Text>
                 </View>
             </View>
         </View>
@@ -107,38 +125,64 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
                 <Pressable 
                     style={StyleSheet.absoluteFill} 
                     onPress={handleClose}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close navigation menu"
                 >
                     <View style={styles.backdrop} />
                 </Pressable>
             )}
 
             {/* Sidebar Drawer */}
-            <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
-                <SafeAreaView style={styles.safeArea}>
+            <Animated.View
+                pointerEvents={openSidebar ? 'auto' : 'none'}
+                style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}
+            >
+                <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
                     
                     {/* Header */}
                     {renderHeader()}
 
                     {/* Navigation Items */}
                     <View style={styles.navList}>
-                        <Text style={styles.navTitle}>MENU</Text>
+                        <View style={styles.navHeading}>
+                            <Text style={styles.navTitle}>MENU</Text>
+                            <View style={styles.navHeadingRule} />
+                        </View>
                         <FlatList 
                             data={allowedTabs}
                             keyExtractor={(item) => item.path}
                             showsVerticalScrollIndicator={false}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity 
-                                    style={styles.navItem}
-                                    onPress={() => handleNavigation(item.path)}
-                                    activeOpacity={0.7}
-                                >
-                                    <View style={styles.navIconBox}>
-                                        {item.icon}
-                                    </View>
-                                    <Text style={styles.navLabel}>{item.name}</Text>
-                                    <AntDesign name="right" size={14} color="#CBD5E1" style={styles.chevron} />
-                                </TouchableOpacity>
-                            )}
+                            renderItem={({ item }) => {
+                                const isActive = activeRouteName === item.path;
+                                const icon = React.isValidElement(item.icon)
+                                    ? React.cloneElement(item.icon, {
+                                        size: 21,
+                                        color: isActive ? theme.colors.brand : theme.colors.textMuted,
+                                    })
+                                    : item.icon;
+
+                                return (
+                                    <TouchableOpacity
+                                        style={[styles.navItem, isActive && styles.navItemActive]}
+                                        onPress={() => handleNavigation(item.path)}
+                                        activeOpacity={0.7}
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: isActive }}
+                                    >
+                                        <View style={[styles.navIconBox, isActive && styles.navIconBoxActive]}>
+                                            {icon}
+                                        </View>
+                                        <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                                            {item.name}
+                                        </Text>
+                                        <MaterialCommunityIcons
+                                            name="chevron-right"
+                                            size={20}
+                                            color={isActive ? theme.colors.brand : theme.colors.borderStrong}
+                                        />
+                                    </TouchableOpacity>
+                                );
+                            }}
                         />
                     </View>
 
@@ -149,7 +193,7 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
                             onPress={handleLogout}
                             activeOpacity={0.8}
                         >
-                            <Feather name="log-out" size={20} color="#EF4444" />
+                            <Feather name="log-out" size={20} color={theme.colors.danger} />
                             <Text style={styles.logoutText}>Log Out</Text>
                         </TouchableOpacity>
                         <Text style={styles.versionText}>TopLight v2.0</Text>
@@ -161,22 +205,22 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     backdrop: {
         flex: 1,
-        backgroundColor: 'rgba(15, 23, 42, 0.4)',
+        backgroundColor: theme.colors.scrim,
     },
     drawer: {
         position: 'absolute',
         top: 0,
         bottom: 0,
-        right: 0,
+        left: 0,
         width: drawerWidth,
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOffset: { width: -5, height: 0 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
+        backgroundColor: theme.colors.surface,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 5, height: 0 },
+        shadowOpacity: theme.isDark ? 0.4 : 0.16,
+        shadowRadius: 18,
         elevation: 20,
         zIndex: 1000,
     },
@@ -184,115 +228,140 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        padding: 24,
-        paddingTop: 30,
+        paddingHorizontal: theme.spacing.xl,
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.xxl - 2,
+        backgroundColor: theme.colors.backgroundSubtle,
         borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-        backgroundColor: '#F8FAFC',
+        borderBottomColor: theme.colors.divider,
+    },
+    brand: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: theme.spacing.xl,
     },
     logo: {
-        width: 130,
-        height: 40,
-        marginBottom: 24,
+        width: 112,
+        height: 38,
     },
     profileSection: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 2,
     },
     avatarWrap: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#007AFF',
+        width: theme.controlSizes.avatarLg - 10,
+        height: theme.controlSizes.avatarLg - 10,
+        borderRadius: theme.radii.circle,
+        backgroundColor: theme.colors.brand,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 14,
-        shadowColor: '#007AFF',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        marginRight: theme.spacing.md,
+        shadowColor: theme.colors.brand,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: theme.isDark ? 0.35 : 0.2,
+        shadowRadius: 6,
+        elevation: 3,
     },
     avatarText: {
-        color: '#FFF',
-        fontSize: 20,
-        fontWeight: 'bold',
+        ...theme.typography.h4,
+        color: theme.colors.brandContrast,
     },
     userInfo: {
         flex: 1,
     },
     userName: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1E293B',
-        marginBottom: 2,
+        ...theme.typography.subtitle,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xxs + 1,
     },
     userRole: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#64748B',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.medium,
+        color: theme.colors.textMuted,
     },
     navList: {
         flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingTop: theme.spacing.xl,
+    },
+    navHeading: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 2,
+        marginBottom: theme.spacing.sm + 2,
     },
     navTitle: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#94A3B8',
-        letterSpacing: 1.2,
-        marginBottom: 16,
+        ...theme.typography.overline,
+        color: theme.colors.textDisabled,
+        letterSpacing: theme.letterSpacing.wider,
+        marginRight: theme.spacing.sm + 2,
+    },
+    navHeadingRule: {
+        flex: 1,
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: theme.colors.divider,
     },
     navItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 14,
-        marginBottom: 8,
+        minHeight: theme.controlSizes.minTouchTarget + theme.spacing.sm,
+        paddingHorizontal: theme.spacing.sm + 1,
+        borderRadius: theme.radii.md,
+        marginBottom: theme.spacing.xs,
+    },
+    navItemActive: {
+        backgroundColor: theme.colors.surfaceSelected,
     },
     navIconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#F1F5F9',
+        width: theme.controlSizes.avatarSm + 2,
+        height: theme.controlSizes.avatarSm + 2,
+        borderRadius: theme.radii.md,
+        backgroundColor: theme.colors.surfaceSunken,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: theme.spacing.md,
+    },
+    navIconBoxActive: {
+        backgroundColor: theme.colors.brandSoft,
     },
     navLabel: {
         flex: 1,
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#334155',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
     },
-    chevron: {
-        marginLeft: 'auto',
+    navLabelActive: {
+        color: theme.colors.brandStrong,
+        fontWeight: theme.fontWeights.bold,
     },
     footer: {
-        padding: 24,
+        paddingHorizontal: theme.spacing.xl,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.md,
         borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
-        backgroundColor: '#FFFFFF',
+        borderTopColor: theme.colors.divider,
+        backgroundColor: theme.colors.surface,
     },
     logoutBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 14,
-        backgroundColor: '#FEF2F2',
-        borderRadius: 12,
-        marginBottom: 16,
+        minHeight: theme.controlSizes.minTouchTarget,
+        paddingVertical: theme.spacing.sm + 3,
+        backgroundColor: theme.colors.dangerSoft,
+        borderRadius: theme.radii.md,
+        marginBottom: theme.spacing.sm + 3,
     },
     logoutText: {
-        marginLeft: 8,
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#EF4444',
+        marginLeft: theme.spacing.sm,
+        ...theme.typography.label,
+        color: theme.colors.danger,
     },
     versionText: {
         textAlign: 'center',
-        fontSize: 12,
-        color: '#94A3B8',
-        fontWeight: '500',
+        ...theme.typography.caption,
+        color: theme.colors.textDisabled,
+        fontWeight: theme.fontWeights.medium,
     }
 });

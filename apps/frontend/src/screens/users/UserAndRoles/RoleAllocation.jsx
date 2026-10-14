@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Alert, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-import { Table, Row, Rows } from 'react-native-table-component';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { showMessage } from 'react-native-flash-message';
 
@@ -18,8 +17,11 @@ import appTabs from '../../../constants/appTabs';
 import { Dropdown } from '../../../components/ReusableComponents/inputs';
 import FloatingButton from '../../../components/Buttons/Buttons';
 import CustomDataTable from '../../../components/Utils/CommonDataTable';
+import { useAppTheme } from '../../../theme';
 
 export default function RoleAllocation() {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [permissions, setPermissions] = useState({});
     const [roleName, setRoleName] = useState(null);
     const [username, setUsername] = useState(null);
@@ -238,38 +240,26 @@ export default function RoleAllocation() {
         }
     };
 
-    const tableHead = ['Pages', 'Read', 'Create', 'Edit', 'Delete', 'Admin'];
-    const tableData = (appTabs || []).map(item => {
-        if (!item.list) return null;
-        const p = permissions[item.name] || {};
-        return [
-            item.list_name,
-            ...['read', 'create', 'edit', 'delete', 'isdefault'].map(perm => (
-                <TouchableOpacity
-                    key={perm}
-                    disabled={item?.default || disabled}
-                    style={[
-                        styles.permissionCell,
-                        (item?.default || p[perm]) && styles.permissionActiveCell,
-                    ]}
-                    onPress={() => handlePermissionChange(item.name, perm)}
-                >
-                    <Text style={styles.tickText}>{item?.default || p[perm] ? '✔' : ''}</Text>
-                </TouchableOpacity>
-            ))
-        ];
-    }).filter(Boolean);
+    const permissionColumns = [
+        { key: 'read', label: 'Read' },
+        { key: 'create', label: 'Create' },
+        { key: 'edit', label: 'Edit' },
+        { key: 'delete', label: 'Delete' },
+        { key: 'isdefault', label: 'Admin' },
+    ];
 
     const fields = [
         {
             key: 'name',
             label: 'Role Name',
+            flex: 1.4,
             titleProps: { numeric: false },
             cellProps: { numeric: false },
         },
         {
             key: 'active',
             label: 'Active',
+            flex: 0.7,
             titleProps: { numeric: false },
             cellProps: { numeric: false },
         },
@@ -296,10 +286,11 @@ export default function RoleAllocation() {
             >
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>User Information</Text>
+                    <Text style={styles.cardDescription}>Choose the role you want to configure.</Text>
                     <View style={styles.formContainer}>
                         <Text style={styles.label}>Logged In User:</Text>
                         <View style={styles.usernameContainer}>
-                            <MaterialIcons name="person" size={20} color="#3b82f6" />
+                            <MaterialIcons name="person" size={20} color={theme.colors.brand} />
                             <Text style={styles.usernameText}>{username || 'Admin'}</Text>
                         </View>
 
@@ -321,27 +312,77 @@ export default function RoleAllocation() {
 
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Page Permissions</Text>
-                    <View style={styles.tableContainer}>
-                        <Table borderStyle={styles.tableBorder}>
-                            <Row
-                                data={tableHead}
-                                style={styles.head}
-                                textStyle={styles.headText}
-                            />
-                            <Rows
-                                data={tableData}
-                                style={styles.rows}
-                                textStyle={styles.cellText}
-                            />
-                        </Table>
-                    </View>
+                    <Text style={styles.cardDescription}>
+                        Toggle access for each page. Swipe horizontally to see every permission.
+                    </Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.permissionTableContent}
+                    >
+                        <View style={styles.permissionTable}>
+                            <View style={[styles.permissionRow, styles.permissionHeader]}>
+                                <Text style={[styles.pageName, styles.permissionHeaderText]}>Page</Text>
+                                {permissionColumns.map(column => (
+                                    <Text key={column.key} style={[styles.permissionColumn, styles.permissionHeaderText]}>
+                                        {column.label}
+                                    </Text>
+                                ))}
+                            </View>
+                            {(appTabs || []).filter(item => item.list).map((item, index) => {
+                                const pagePermissions = permissions[item.name] || {};
+                                return (
+                                    <View
+                                        key={item.name}
+                                        style={[
+                                            styles.permissionRow,
+                                            index % 2 === 1 && styles.permissionAlternateRow,
+                                        ]}
+                                    >
+                                        <Text style={styles.pageName} numberOfLines={2}>
+                                            {item.list_name}
+                                        </Text>
+                                        {permissionColumns.map(column => {
+                                            const isActive = !!(item.default || pagePermissions[column.key]);
+                                            const isDisabled = !!item.default || disabled;
+                                            return (
+                                                <View key={column.key} style={styles.permissionColumn}>
+                                                    <TouchableOpacity
+                                                        accessibilityRole="checkbox"
+                                                        accessibilityLabel={`${item.list_name} ${column.label}`}
+                                                        accessibilityState={{ checked: isActive, disabled: isDisabled }}
+                                                        disabled={isDisabled}
+                                                        style={[
+                                                            styles.permissionCell,
+                                                            isActive && styles.permissionActiveCell,
+                                                            isDisabled && styles.permissionDisabledCell,
+                                                        ]}
+                                                        onPress={() => handlePermissionChange(item.name, column.key)}
+                                                        activeOpacity={0.75}
+                                                    >
+                                                        {isActive && (
+                                                            <MaterialIcons
+                                                                name="check"
+                                                                size={17}
+                                                                color={isDisabled ? theme.colors.textMuted : theme.colors.success}
+                                                            />
+                                                        )}
+                                                    </TouchableOpacity>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </ScrollView>
                 </View>
 
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Available Roles</Text>
+                    <Text style={styles.cardDescription}>Review, edit, or remove configured roles.</Text>
                     <View style={styles.tableContainer}>
                         <CustomDataTable
-                            title="Available Roles"
                             data={get_created_roles?.data || []}
                             fields={fields}
                             onEdit={editData}
@@ -363,36 +404,36 @@ export default function RoleAllocation() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     pageContainer: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: theme.colors.background,
     },
     scrollContainer: {
-        padding: 16,
+        padding: theme.layout.screenGutter,
         paddingBottom: 110,
     },
     card: {
-        backgroundColor: '#ffffff',
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 2,
+        ...theme.styles.card,
+        ...theme.styles.shadow,
+        marginBottom: theme.spacing.lg,
         borderWidth: 1,
-        borderColor: '#f1f5f9',
+        borderColor: theme.colors.borderSubtle,
     },
     cardTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-        color: '#1e293b',
-        marginBottom: 14,
-        paddingBottom: 8,
+        ...theme.typography.h4,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.md,
+        paddingBottom: theme.spacing.sm,
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: theme.colors.divider,
+    },
+    cardDescription: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: -theme.spacing.xs,
+        marginBottom: theme.spacing.md,
+        lineHeight: 18,
     },
     formContainer: {
         paddingVertical: 4,
@@ -400,22 +441,22 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#475569',
-        marginBottom: 8,
+        ...theme.typography.label,
+        color: theme.colors.textSecondary,
+        marginBottom: theme.spacing.sm,
     },
     usernameContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
-        padding: 12,
-        backgroundColor: '#f1f5f9',
-        borderRadius: 10,
+        marginBottom: theme.spacing.lg,
+        padding: theme.spacing.md,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
     },
     usernameText: {
-        fontSize: 15,
-        marginLeft: 8,
-        color: '#1e293b',
-        fontWeight: '600',
+        ...theme.typography.subtitle,
+        marginLeft: theme.spacing.sm,
+        color: theme.colors.text,
     },
     dropdownContainer: {
         marginTop: 2,
@@ -424,48 +465,66 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: '#e2e8f0',
+        borderColor: theme.colors.borderSubtle,
     },
-    tableBorder: {
-        borderWidth: 0,
+    permissionTableContent: {
+        minWidth: '100%',
     },
-    head: {
-        height: 44,
-        backgroundColor: '#3b82f6',
+    permissionTable: {
+        minWidth: 350,
+        borderRadius: theme.radii.sm,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
     },
-    headText: {
+    permissionRow: {
+        minHeight: theme.controlSizes.minTouchTarget,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.divider,
+    },
+    permissionHeader: {
+        minHeight: theme.controlSizes.buttonHeightCompact,
+        backgroundColor: theme.colors.brand,
+    },
+    permissionHeaderText: {
         textAlign: 'center',
         fontWeight: '700',
-        color: '#ffffff',
-        fontSize: 13,
+        ...theme.typography.caption,
+        color: theme.colors.brandContrast,
     },
-    rows: {
-        minHeight: 48,
-        backgroundColor: '#ffffff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+    pageName: {
+        width: 110,
+        paddingHorizontal: theme.spacing.sm,
+        ...theme.typography.caption,
+        color: theme.colors.text,
+        fontWeight: theme.fontWeights.medium,
+    },
+    permissionColumn: {
+        width: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     permissionCell: {
+        width: 34,
+        height: 34,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 8,
-        backgroundColor: '#f8fafc',
-        margin: 2,
-        borderRadius: 6,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.xs,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
     },
     permissionActiveCell: {
-        backgroundColor: '#dcfce7',
+        backgroundColor: theme.colors.successSoft,
+        borderColor: theme.colors.success,
     },
-    tickText: {
-        textAlign: 'center',
-        fontSize: 16,
-        color: '#16a34a',
-        fontWeight: 'bold',
+    permissionDisabledCell: {
+        opacity: 0.75,
     },
-    cellText: {
-        textAlign: 'center',
-        fontSize: 13,
-        color: '#334155',
-        paddingHorizontal: 4,
+    permissionAlternateRow: {
+        backgroundColor: theme.colors.backgroundSubtle,
     },
 });

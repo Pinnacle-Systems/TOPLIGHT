@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { 
   View, 
   TextInput, 
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,8 @@ const ExpandableSearch = ({
   setFilteredEmpId, 
   issetFilter_Employee 
 }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [expanded, setExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const [buttonScale] = useState(new Animated.Value(1));
@@ -105,7 +108,7 @@ const ExpandableSearch = ({
             <Feather 
               name={expanded ? "x" : "search"} 
               size={18} 
-              color={expanded ? "#DC2626" : "#007AFF"} 
+              color={expanded ? theme.colors.danger : theme.colors.brand}
             />
           </TouchableOpacity>
         </Animated.View>
@@ -122,11 +125,11 @@ const ExpandableSearch = ({
                 set_tempsearch(text); 
               }}
               placeholder="Search employee by name/ID..."
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={theme.colors.placeholder}
               style={styles.textInput}
               autoFocus={true}
               returnKeyType="search"
-              selectionColor="#007AFF"
+              selectionColor={theme.colors.brand}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
             />
@@ -143,7 +146,7 @@ const ExpandableSearch = ({
                 <MaterialCommunityIcons 
                   name="close-circle" 
                   size={18} 
-                  color="#94A3B8" 
+                  color={theme.colors.textMuted}
                 />
               </TouchableOpacity>
             )}
@@ -154,7 +157,7 @@ const ExpandableSearch = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     position: 'absolute',
     top: 10,
@@ -166,12 +169,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 21,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: theme.colors.borderSubtle,
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 5,
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: '#0F172A',
+    color: theme.colors.text,
     paddingVertical: 0,
     paddingLeft: 4,
   },

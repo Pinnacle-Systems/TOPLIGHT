@@ -1,35 +1,20 @@
 
-import React, { useState } from 'react'
-import { Alert, Dimensions, View,Text, useWindowDimensions } from 'react-native';
-import WebView from 'react-native-webview'
-import CommonModal from '../../../../components/Modal/CommonModal';
-import AllMonth from "../Month"
-import DailyInOutBody from '../_Modal_BodyComponents/DailyInOutBody';
+import React, { useMemo } from 'react'
+import { Dimensions, View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import WebView from 'react-native-webview';
 import Feather from 'react-native-vector-icons/Feather';
+import { useAppTheme } from '../../../../theme';
 
-function GenderWiseStrength({data,setscroll,isLoading:GetDataLoad,UserId,year}) {
-const [isLoading, setIsLoading] = useState(false);
-//const [showDaysInOutModal,setshowDaysInOutModal]=useState(false)
-//const [selectedMonth,setSelectedMonth]=useState()
- const { width, height } = useWindowDimensions()
-    const isLandscape = width > height;
-  //const screenWidth = Dimensions.get('window').width;
-  const chartHeight =isLandscape ? 300 : Dimensions.get('window').height * 0.3; 
-
-  
+function GenderWiseStrength({ data }) {
+  const { theme } = useAppTheme();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const chartHeight = isLandscape ? 260 : Math.min(Dimensions.get('window').height * 0.3, 280);
   const chartWidth = width - 20;
-  var label=[];
-  var value=[];
-
-
-  if(data?.length>0){
-    data?.forEach((data)=>{
-        label.push(`'${data[0]}'`)
-        value.push(data[1])
-
-    })
-
-  }
+  const labels = data?.map(item => `'${String(item[0]).replace(/'/g, "\\'")}'`) || [];
+  const values = data?.map(item => Number(item[1]) || 0) || [];
+  const hasData = values.some(value => value > 0);
+  const styles = useMemo(() => createStyles(theme, chartHeight), [theme, chartHeight]);
 
 
 
@@ -40,34 +25,18 @@ const [isLoading, setIsLoading] = useState(false);
     <head>
       <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
       <style>
-
-      * {
-        font-family: "Open Sans", sans-serif !important;
-        font-style: normal;
-        font-size:27px !important;
-        
-
-      }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
         body {
           margin: 0;
           padding: 0;
-          background: transparent;
+          background: ${theme.colors.surface};
           display: flex;
           justify-content: center;
           align-items: center;
           height: 100vh;
+          overflow: hidden;
         }
-      
-          @keyframes rotateIn {
-    from {
-      transform: rotate(-180deg) scale(0.5);
-      opacity: 0;
-    }
-    to {
-      transform: rotate(0deg) scale(1);
-      opacity: 1;
-    }
-  }
+        #chart { width: 100%; height: 100%; }
       </style>
     </head>
     <body>
@@ -76,47 +45,43 @@ const [isLoading, setIsLoading] = useState(false);
         document.addEventListener("DOMContentLoaded", function () {
         
         var options = {
-          series: [${value || []}],
+          series: [${values}],
           chart: {
-          width:"${chartWidth+300}",
-          
-          type: 'donut',
-           animations: {
-    enabled: true,
-    easing: 'easeinout',
-    speed: 800,
-    animateGradually: {
-      enabled: true,
-      delay: 150
-    },
-    dynamicAnimation: {
-      enabled: true,
-      speed: 350
-    }
-       },  animations: {
-                  enabled: true,
-                  easing: 'easeinout',
-                  speed: 800,
-                  animateGradually: { enabled: true, delay: 150 },
-                  dynamicAnimation: { enabled: true, speed: 350 }
-                }
+            width: ${chartWidth - 40},
+            height: ${chartHeight - 24},
+            foreColor: '${theme.colors.textSecondary}',
+            background: '${theme.colors.surface}',
+            type: 'donut',
+            animations: {
+              enabled: true,
+              easing: 'easeinout',
+              speed: 600,
+              animateGradually: { enabled: true, delay: 100 }
+            }
         },
-        labels: [${label || []}],
-         colors: ['#9a02f2', '#02b1eb'],
+        labels: [${labels}],
+         theme: { mode: '${theme.mode}' },
+         colors: ['${theme.colors.brand}', '${theme.colors.accent}'],
         plotOptions: {
           pie: {
             startAngle: -90,
-            endAngle: 270
+            endAngle: 270,
+            donut: { size: '68%' }
           }
         },
         dataLabels: {
-          enabled: true
+          enabled: true,
+          style: { fontSize: '12px', fontWeight: 600, colors: ['${theme.colors.text}'] }
         },
         fill: {
           type: 'gradient',
         },
         legend: {
-        position:'bottom',
+          position: 'bottom',
+          fontSize: '12px',
+          labels: { colors: '${theme.colors.textSecondary}' },
+          markers: { width: 9, height: 9, radius: 9 },
+          itemMargin: { horizontal: 10, vertical: 4 },
           formatter: function(val, opts) {
             return val + " - " + opts.w.globals.series[opts.seriesIndex]
           }
@@ -125,7 +90,7 @@ const [isLoading, setIsLoading] = useState(false);
           breakpoint: 490,
           options: {
             chart: {
-              width: 400,
+              width: ${Math.min(chartWidth - 40, 400)},
             },
             legend: {
               position: 'left'
@@ -151,34 +116,24 @@ const [isLoading, setIsLoading] = useState(false);
 
   return (
     <>
-      {data?.length > 0 ? (
+      {hasData ? (
         <WebView
           originWhitelist={['*']}
           source={{ html: linechart }}
-          style={{ height: chartHeight - 40, width: chartWidth - 40, backgroundColor: 'transparent' }}
+          style={styles.webView}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           startInLoadingState={true}
           renderToHardwareTextureAndroid={true}
           setSupportMultipleWindows={false}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadEnd={() => setIsLoading(false)}
-          onError={() => setIsLoading(false)}
-          onMessage={(event) => {
-            try {
-              const messageData = JSON.parse(event?.nativeEvent?.data);
-              const Month = AllMonth?.find(m => m?.slice(0, 3) === messageData?.category);
-              setSelectedMonth(Month);
-              setshowDaysInOutModal(true);
-            } catch (e) {
-              console.error("Error parsing WebView message:", e);
-            }
-          }}
         />
       ) : (
-        <View style={{ height: chartHeight-40, width: chartWidth-40, justifyContent: 'center', alignItems: 'center' }}>
-          <Feather name="bar-chart" size={40} color="black" />
-          <Text style={{ fontSize: 12, color: 'red' }}>No Gender Data found</Text>
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIcon}>
+            <Feather name="users" size={22} color={theme.colors.brand} />
+          </View>
+          <Text style={styles.emptyTitle}>Gender data is not available</Text>
+          <Text style={styles.emptyDescription}>Employee distribution will appear here when data is available.</Text>
         </View>
       )}
     </>
@@ -186,5 +141,46 @@ const [isLoading, setIsLoading] = useState(false);
   
 }
 
-export default GenderWiseStrength
+const createStyles = (theme, chartHeight) => StyleSheet.create({
+  webView: {
+    height: chartHeight - 24,
+    width: '100%',
+    backgroundColor: theme.colors.surface,
+  },
+  emptyState: {
+    minHeight: 220,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    backgroundColor: theme.colors.surfaceSunken,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.borderSubtle,
+  },
+  emptyIcon: {
+    width: 48,
+    height: 48,
+    marginBottom: 12,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.brandSoft,
+  },
+  emptyTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    marginTop: 5,
+    color: theme.colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+});
 
+export default GenderWiseStrength

@@ -1,14 +1,15 @@
 import * as React from 'react';
-import { useWindowDimensions, Animated, View, TouchableOpacity, Text } from 'react-native';
+import { useWindowDimensions, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { TabView } from 'react-native-tab-view'; // ✅ removed SceneMap import
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from '@react-navigation/native';
 import tw from 'twrnc';
+import { useAppTheme } from '../../theme';
 
 export default function BottomTabView_Wrapper({ pages, routes }) {
-  const { colors } = useTheme();
+  const { theme } = useAppTheme();
   const layout = useWindowDimensions();
   const [index, setIndex] = React.useState(0);
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   // ✅ Safe renderScene — guards against undefined components
   const renderScene = ({ route }) => {
@@ -26,73 +27,34 @@ export default function BottomTabView_Wrapper({ pages, routes }) {
     return <Component />;
   };
 
-  const ACTIVE_COLOR     = "#e53935";
-  const INDICATOR_COLOR  = "#ffebee";
-  const BORDER_COLOR     = "#ef9a9a";
-
-  const indicatorPosition = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    Animated.spring(indicatorPosition, {
-      toValue: index,
-      useNativeDriver: true,
-    }).start();
-  }, [index]);
-
   const renderTabBar = () => {
-    const tabWidth = layout.width / routes.length;
     return (
       <View
-        style={[
-          tw`flex-row pt-0.5 pb-2 shadow-lg border-b`,
-          { backgroundColor: colors.card, borderBottomColor: BORDER_COLOR },
-        ]}
+        style={styles.tabBar}
       >
-        <Animated.View
-          style={[
-            tw`absolute bottom-2 rounded-t-lg`,
-            {
-              width: tabWidth - 60,
-              height: 44,
-              backgroundColor: INDICATOR_COLOR,
-              marginLeft: '5.6%',
-              borderWidth: 1.5,
-              borderColor: BORDER_COLOR,
-              borderRadius: 10,
-              transform: [
-                {
-                  translateX: indicatorPosition.interpolate({
-                    inputRange: [0, routes.length - 1],
-                    outputRange: [10, (routes.length - 1) * tabWidth + 10],
-                  }),
-                },
-              ],
-            },
-          ]}
-        />
-
+        <View style={styles.segmentedControl}>
         {routes.map((route, i) => {
           const focused = i === index;
           return (
             <TouchableOpacity
               key={route.key}
-              style={[
-                tw`flex-1 flex-row gap-1.5 items-center justify-center py-4 mx-1`,
-                focused && { borderBottomWidth: 2, borderBottomColor: ACTIVE_COLOR },
-              ]}
+              style={[styles.tab, focused && styles.activeTab]}
               activeOpacity={0.7}
               onPress={() => setIndex(i)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={route.title}
             >
               <Icon
                 name={route.icon}
-                size={24}
-                color={focused ? ACTIVE_COLOR : colors.text}
-                style={{ opacity: focused ? 1 : 0.5 }}
+                size={18}
+                color={focused ? theme.colors.brandContrast : theme.colors.textMuted}
+                style={styles.tabIcon}
               />
               <Text
                 style={[
-                  tw`text-xs mt-1 font-medium`,
-                  { color: focused ? ACTIVE_COLOR : colors.text, opacity: focused ? 1 : 0.6 },
+                  styles.tabLabel,
+                  focused && styles.activeTabLabel,
                 ]}
               >
                 {route.title}
@@ -100,6 +62,7 @@ export default function BottomTabView_Wrapper({ pages, routes }) {
             </TouchableOpacity>
           );
         })}
+        </View>
       </View>
     );
   };
@@ -118,3 +81,50 @@ export default function BottomTabView_Wrapper({ pages, routes }) {
     </View>
   );
 }
+
+const createStyles = theme => StyleSheet.create({
+  tabBar: {
+    width: '100%',
+    paddingHorizontal: 0,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderSubtle,
+  },
+  segmentedControl: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  tab: {
+    minHeight: 44,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderRadius: 12,
+  },
+  activeTab: {
+    backgroundColor: theme.colors.brand,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.16,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabIcon: {
+    marginRight: 5,
+  },
+  tabLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  activeTabLabel: {
+    color: theme.colors.brandContrast,
+    fontWeight: '700',
+  },
+});

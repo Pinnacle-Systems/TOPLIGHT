@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 export default function MasterSearchBar({ 
     searchQuery, 
@@ -12,15 +13,18 @@ export default function MasterSearchBar({
     activeFilter = 'all',
     onActiveFilterChange,
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     return (
         <View style={styles.container}>
             {/* Search Input Box */}
             <View style={styles.searchBox}>
-                <MaterialCommunityIcons name="magnify" size={20} color="#94A3B8" style={styles.searchIcon} />
+                <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textDisabled} style={styles.searchIcon} />
                 <TextInput
                     style={styles.input}
                     placeholder={placeholder}
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={theme.colors.placeholder}
                     value={searchQuery}
                     onChangeText={onSearchChange}
                     autoCapitalize="none"
@@ -32,7 +36,7 @@ export default function MasterSearchBar({
                         style={styles.clearBtn}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <MaterialCommunityIcons name="close-circle" size={18} color="#94A3B8" />
+                        <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textDisabled} />
                     </TouchableOpacity>
                 ) : null}
             </View>
@@ -107,20 +111,20 @@ export default function MasterSearchBar({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingVertical: theme.spacing.sm,
     },
     searchBox: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 10,
+        backgroundColor: theme.colors.inputBackground,
+        borderRadius: theme.radii.md,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
-        paddingHorizontal: 12,
-        height: 44,
+        borderColor: theme.colors.inputBorder,
+        paddingHorizontal: theme.spacing.md,
+        height: theme.controlSizes.minTouchTarget,
     },
     searchIcon: {
         marginRight: 8,
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 14,
-        color: '#0F172A',
+        color: theme.colors.text,
         paddingVertical: 0,
     },
     clearBtn: {
@@ -136,54 +140,54 @@ const styles = StyleSheet.create({
     },
     filterChipsRow: {
         flexDirection: 'row',
-        paddingTop: 8,
-        gap: 6,
+        paddingTop: theme.spacing.sm,
+        gap: theme.spacing.xs + 2,
     },
     chip: {
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderRadius: 16,
-        backgroundColor: '#F1F5F9',
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.xs + 1,
+        borderRadius: theme.radii.pill,
+        backgroundColor: theme.colors.surfaceSunken,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
     },
     chipSelected: {
-        backgroundColor: '#EFF6FF',
-        borderColor: '#007AFF',
+        backgroundColor: theme.colors.surfaceSelected,
+        borderColor: theme.colors.brand,
     },
     chipText: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         fontWeight: '500',
     },
     chipTextSelected: {
-        color: '#007AFF',
+        color: theme.colors.brand,
         fontWeight: '600',
     },
     statusChipsRow: {
         flexDirection: 'row',
-        paddingTop: 6,
-        gap: 6,
+        paddingTop: theme.spacing.sm - 2,
+        gap: theme.spacing.xs + 2,
     },
     statusChip: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 14,
-        backgroundColor: '#F8FAFC',
+        paddingHorizontal: theme.spacing.md - 2,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.radii.pill,
+        backgroundColor: theme.colors.surfaceSunken,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
     },
     statusChipSelected: {
-        backgroundColor: '#1E293B',
-        borderColor: '#1E293B',
+        backgroundColor: theme.colors.brand,
+        borderColor: theme.colors.brand,
     },
     statusChipText: {
         fontSize: 11,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         fontWeight: '500',
     },
     statusChipTextSelected: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontWeight: '600',
     },
 });

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
+import { useAppTheme } from '../../../../theme';
 
 const PayslipWithFilter = ({ payslipData,selectedYear, setSelectedYear,selectedMonth, setSelectedMonth }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   // State for filters
 
   // Generate years (last 5 years and next 2 years)
@@ -85,17 +88,17 @@ const PayslipWithFilter = ({ payslipData,selectedYear, setSelectedYear,selectedM
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     padding: 10,
     borderRadius: 8,
     elevation: 2,
@@ -108,16 +111,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: '#333',
+    color: theme.colors.text,
   },
   picker: {
     height: 50,
     width: '100%',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: theme.colors.surfaceSunken,
+    color: theme.colors.text,
     borderRadius: 5,
   },
   payslipContainer: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     padding: 15,
     borderRadius: 8,
     marginBottom: 15,
@@ -127,9 +131,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#2c3e50',
+    color: theme.colors.text,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: theme.colors.divider,
     paddingBottom: 10,
   },
   detailRow: {
@@ -139,24 +143,24 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: theme.colors.textSecondary,
   },
   detailValue: {
     fontSize: 14,
     fontWeight: '500',
+    color: theme.colors.text,
   },
   netPay: {
     fontWeight: 'bold',
-    color: '#27ae60',
+    color: theme.colors.success,
     fontSize: 16,
   },
   noDataText: {
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
-    color: '#7f8c8d',
+    color: theme.colors.textSecondary,
   },
 });
 
 export default PayslipWithFilter;
-

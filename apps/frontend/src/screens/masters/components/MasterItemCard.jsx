@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme';
 
 export default function MasterItemCard({
     item,
     onEdit,
     onDelete,
-    accentColor = '#2563EB',
+    accentColor,
 }) {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const accent = accentColor || theme.colors.brand;
     const isActive = item?.active === 'Yes' || item?.active === 'y' || item?.active === true || item?.active === 'Y';
     const initial = (item?.name?.trim()?.charAt(0) || 'M').toUpperCase();
 
@@ -15,11 +19,11 @@ export default function MasterItemCard({
     const getPtypeStyle = (ptype) => {
         switch (ptype?.toLowerCase()) {
             case 'permission':
-                return { bg: '#F5F3FF', color: '#7C3AED', label: 'Permission' };
+                return { bg: theme.colors.accentSoft, color: theme.colors.accent, label: 'Permission' };
             case 'advance':
-                return { bg: '#FDF2F8', color: '#DB2777', label: 'Advance' };
+                return { bg: theme.colors.brandSoft, color: theme.colors.brand, label: 'Advance' };
             case 'leave':
-                return { bg: '#FFF7ED', color: '#EA580C', label: 'Leave' };
+                return { bg: theme.colors.warningSoft, color: theme.colors.warning, label: 'Leave' };
             default:
                 return null;
         }
@@ -31,8 +35,8 @@ export default function MasterItemCard({
         <View style={styles.card}>
             <View style={styles.contentRow}>
                 {/* Avatar Icon / Letter */}
-                <View style={[styles.avatar, { backgroundColor: accentColor + '12' }]}>
-                    <Text style={[styles.avatarText, { color: accentColor }]}>{initial}</Text>
+                <View style={[styles.avatar, { backgroundColor: theme.colors.surfaceSelected }]}>
+                    <Text style={[styles.avatarText, { color: accent }]}>{initial}</Text>
                 </View>
 
                 {/* Details Section */}
@@ -48,15 +52,15 @@ export default function MasterItemCard({
                         {/* Active Status Badge */}
                         <View style={[
                             styles.statusBadge, 
-                            { backgroundColor: isActive ? '#DCFCE7' : '#F1F5F9' }
+                            { backgroundColor: isActive ? theme.colors.successSoft : theme.colors.surfaceSunken }
                         ]}>
                             <View style={[
                                 styles.statusDot, 
-                                { backgroundColor: isActive ? '#16A34A' : '#94A3B8' }
+                                { backgroundColor: isActive ? theme.colors.success : theme.colors.textDisabled }
                             ]} />
                             <Text style={[
                                 styles.statusText, 
-                                { color: isActive ? '#15803D' : '#64748B' }
+                                { color: isActive ? theme.colors.success : theme.colors.textMuted }
                             ]}>
                                 {isActive ? 'Active' : 'Inactive'}
                             </Text>
@@ -88,7 +92,7 @@ export default function MasterItemCard({
                         activeOpacity={0.7}
                         hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
-                        <MaterialCommunityIcons name="pencil-outline" size={17} color="#007AFF" />
+                        <MaterialCommunityIcons name="pencil-outline" size={17} color={theme.colors.brand} />
                     </TouchableOpacity>
 
                     <TouchableOpacity 
@@ -97,7 +101,7 @@ export default function MasterItemCard({
                         activeOpacity={0.7}
                         hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
-                        <MaterialCommunityIcons name="trash-can-outline" size={17} color="#EF4444" />
+                        <MaterialCommunityIcons name="trash-can-outline" size={17} color={theme.colors.danger} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -105,19 +109,19 @@ export default function MasterItemCard({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 14,
-        marginHorizontal: 16,
-        marginBottom: 10,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md + 2,
+        marginHorizontal: theme.layout.screenGutter,
+        marginBottom: theme.spacing.md - 2,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         elevation: 1,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
+        shadowOpacity: theme.isDark ? 0.3 : 0.04,
         shadowRadius: 2,
     },
     contentRow: {
@@ -130,7 +134,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: theme.spacing.md,
     },
     avatarText: {
         fontSize: 18,
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
     nameText: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#0F172A',
+        color: theme.colors.text,
         flex: 1,
     },
     badgesRow: {
@@ -184,16 +188,16 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     idBadge: {
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.surfaceSunken,
         paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: theme.colors.borderSubtle,
     },
     idText: {
         fontSize: 10,
-        color: '#94A3B8',
+        color: theme.colors.textDisabled,
         fontWeight: '600',
     },
     actionsRow: {
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
         width: 34,
         height: 34,
         borderRadius: 8,
-        backgroundColor: '#EFF6FF',
+        backgroundColor: theme.colors.brandSoft,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -213,7 +217,7 @@ const styles = StyleSheet.create({
         width: 34,
         height: 34,
         borderRadius: 8,
-        backgroundColor: '#FEF2F2',
+        backgroundColor: theme.colors.dangerSoft,
         alignItems: 'center',
         justifyContent: 'center',
     },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -19,8 +19,11 @@ import OndutyMasterScreen from './OndutyMasterScreen';
 import PermissionMasterScreen from './PermissionMasterScreen';
 import RoleMasterScreen from './RoleMasterScreen';
 import { MASTER_TABS } from './constants/masterConfig';
+import { useAppTheme } from '../../theme';
 
 export default function MastersScreen() {
+    const { theme } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const navigation = useNavigation();
     const route = useRoute();
     const UserSelect = useSelector(state => state.UserDetails);
@@ -85,7 +88,10 @@ export default function MastersScreen() {
     // ── Overview Hub View ──────────────────────────────────────────────────────
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1E293B" />
+            <StatusBar
+                barStyle={theme.isDark ? 'light-content' : 'dark-content'}
+                backgroundColor={theme.colors.surfaceRaised}
+            />
 
             {/* Hero Header */}
             <View style={styles.heroHeader}>
@@ -95,7 +101,7 @@ export default function MastersScreen() {
                         onPress={() => navigation.goBack()}
                         activeOpacity={0.7}
                     >
-                        <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+                        <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
                     </TouchableOpacity>
                     <View style={styles.heroText}>
                         <Text style={styles.heroTitle}>Masters Hub</Text>
@@ -112,7 +118,7 @@ export default function MastersScreen() {
                         style={[styles.tabItem, styles.tabItemActive]}
                         activeOpacity={0.8}
                     >
-                        <MaterialCommunityIcons name="view-dashboard-outline" size={15} color="#FFFFFF" />
+                        <MaterialCommunityIcons name="view-dashboard-outline" size={15} color={theme.colors.brandContrast} />
                         <Text style={[styles.tabText, styles.tabTextActive]}>Overview</Text>
                     </TouchableOpacity>
 
@@ -121,7 +127,7 @@ export default function MastersScreen() {
                         onPress={() => setSelectedTab('onduty')}
                         activeOpacity={0.8}
                     >
-                        <MaterialCommunityIcons name="clock-check-outline" size={15} color="#94A3B8" />
+                        <MaterialCommunityIcons name="clock-check-outline" size={15} color={theme.colors.textMuted} />
                         <Text style={styles.tabText}>OnDuty</Text>
                     </TouchableOpacity>
 
@@ -130,7 +136,7 @@ export default function MastersScreen() {
                         onPress={() => setSelectedTab('permission')}
                         activeOpacity={0.8}
                     >
-                        <MaterialCommunityIcons name="account-clock-outline" size={15} color="#94A3B8" />
+                        <MaterialCommunityIcons name="account-clock-outline" size={15} color={theme.colors.textMuted} />
                         <Text style={styles.tabText}>Permissions</Text>
                     </TouchableOpacity>
 
@@ -139,7 +145,7 @@ export default function MastersScreen() {
                         onPress={() => setSelectedTab('role')}
                         activeOpacity={0.8}
                     >
-                        <MaterialCommunityIcons name="shield-account-outline" size={15} color="#94A3B8" />
+                        <MaterialCommunityIcons name="shield-account-outline" size={15} color={theme.colors.textMuted} />
                         <Text style={styles.tabText}>Roles</Text>
                     </TouchableOpacity>
                 </View>
@@ -164,19 +170,19 @@ export default function MastersScreen() {
                         activeOpacity={0.75}
                     >
                         {/* Left Color Stripe */}
-                        <View style={[styles.colorStripe, { backgroundColor: tab.color }]} />
+                        <View style={[styles.colorStripe, { backgroundColor: getTabColors(theme, tab.id).accent }]} />
 
                         {/* Icon */}
-                        <View style={[styles.iconWrap, { backgroundColor: tab.bgColor }]}>
-                            <MaterialCommunityIcons name={tab.icon} size={26} color={tab.color} />
+                        <View style={[styles.iconWrap, { backgroundColor: getTabColors(theme, tab.id).background }]}>
+                            <MaterialCommunityIcons name={tab.icon} size={26} color={getTabColors(theme, tab.id).accent} />
                         </View>
 
                         {/* Content */}
                         <View style={styles.cardBody}>
                             <View style={styles.cardTitleRow}>
                                 <Text style={styles.cardTitle} numberOfLines={1}>{tab.title}</Text>
-                                <View style={[styles.badgePill, { backgroundColor: tab.bgColor }]}>
-                                    <Text style={[styles.badgePillText, { color: tab.color }]}>
+                                <View style={[styles.badgePill, { backgroundColor: getTabColors(theme, tab.id).background }]}>
+                                    <Text style={[styles.badgePillText, { color: getTabColors(theme, tab.id).accent }]}>
                                         {getModuleCount(tab.id)}
                                     </Text>
                                 </View>
@@ -184,7 +190,7 @@ export default function MastersScreen() {
                             <Text style={styles.cardSubtitle} numberOfLines={2}>{tab.subtitle}</Text>
 
                             <View style={styles.cardFooter}>
-                                <Text style={[styles.manageLink, { color: tab.color }]}>
+                                <Text style={[styles.manageLink, { color: getTabColors(theme, tab.id).accent }]}>
                                     Open {tab.shortTitle} Master →
                                 </Text>
                             </View>
@@ -194,7 +200,7 @@ export default function MastersScreen() {
 
                 {/* Info Card */}
                 <View style={styles.infoCard}>
-                    <MaterialCommunityIcons name="information-outline" size={18} color="#007AFF" />
+                    <MaterialCommunityIcons name="information-outline" size={18} color={theme.colors.brand} />
                     <Text style={styles.infoText}>
                         Master categories and roles define the options available in OnDuty, Attendance, Permissions, and user role allocation.
                     </Text>
@@ -204,28 +210,28 @@ export default function MastersScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.colors.background,
     },
     heroHeader: {
-        backgroundColor: '#1E293B',
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 16,
+        backgroundColor: theme.colors.surfaceRaised,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.lg,
     },
     heroTopRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
-        marginBottom: 16,
+        gap: theme.spacing.md,
+        marginBottom: theme.spacing.lg,
     },
     backBtn: {
         width: 38,
         height: 38,
         borderRadius: 10,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        backgroundColor: theme.colors.surfaceSunken,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -235,85 +241,86 @@ const styles = StyleSheet.create({
     heroTitle: {
         fontSize: 20,
         fontWeight: '800',
-        color: '#FFFFFF',
-        letterSpacing: -0.4,
+        color: theme.colors.text,
+        letterSpacing: theme.letterSpacing.tight,
     },
     heroSubtitle: {
         fontSize: 12,
-        color: 'rgba(255,255,255,0.65)',
+        color: theme.colors.textMuted,
+        opacity: 0.78,
         marginTop: 2,
     },
     totalBadge: {
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
+        backgroundColor: theme.colors.surfaceSunken,
+        paddingHorizontal: theme.spacing.md - 2,
+        paddingVertical: theme.spacing.xs + 1,
+        borderRadius: theme.radii.md,
     },
     totalBadgeText: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#FFFFFF',
+        color: theme.colors.text,
     },
     tabBar: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 12,
-        padding: 4,
-        gap: 4,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.xs,
+        gap: theme.spacing.xs,
     },
     tabItem: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 8,
-        borderRadius: 9,
-        gap: 5,
+        paddingVertical: theme.spacing.sm,
+        borderRadius: theme.radii.sm,
+        gap: theme.spacing.xs + 1,
     },
     tabItemActive: {
-        backgroundColor: 'rgba(255,255,255,0.18)',
+        backgroundColor: theme.colors.brand,
     },
     tabText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#94A3B8',
+        color: theme.colors.textMuted,
     },
     tabTextActive: {
-        color: '#FFFFFF',
+        color: theme.colors.brandContrast,
         fontWeight: '700',
     },
     scrollContent: {
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 40,
+        paddingHorizontal: theme.layout.screenGutter,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.huge,
     },
     sectionHeader: {
-        marginBottom: 14,
+        marginBottom: theme.spacing.md + 2,
     },
     sectionLabel: {
         fontSize: 11,
         fontWeight: '700',
-        color: '#94A3B8',
+        color: theme.colors.textDisabled,
         letterSpacing: 1.2,
     },
     sectionSub: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         marginTop: 2,
     },
     masterCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        marginBottom: 12,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radii.lg,
+        marginBottom: theme.spacing.md,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: theme.colors.borderSubtle,
         overflow: 'hidden',
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.isDark ? 0.3 : 0.05,
         shadowRadius: 4,
     },
     colorStripe: {
@@ -343,7 +350,7 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#0F172A',
+        color: theme.colors.text,
         flex: 1,
     },
     badgePill: {
@@ -359,7 +366,7 @@ const styles = StyleSheet.create({
     },
     cardSubtitle: {
         fontSize: 12,
-        color: '#64748B',
+        color: theme.colors.textMuted,
         lineHeight: 17,
         marginBottom: 8,
     },
@@ -374,18 +381,29 @@ const styles = StyleSheet.create({
     infoCard: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        backgroundColor: '#EFF6FF',
-        borderRadius: 12,
-        padding: 14,
-        gap: 10,
-        marginTop: 6,
+        backgroundColor: theme.colors.brandSoft,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md + 2,
+        gap: theme.spacing.sm + 2,
+        marginTop: theme.spacing.sm - 2,
         borderWidth: 1,
-        borderColor: '#BFDBFE',
+        borderColor: theme.colors.brand,
     },
     infoText: {
         flex: 1,
         fontSize: 12,
-        color: '#1D4ED8',
+        color: theme.colors.brandStrong,
         lineHeight: 18,
     },
 });
+
+const getTabColors = (theme, tabId) => {
+    switch (tabId) {
+        case 'permission':
+            return { accent: theme.colors.accent, background: theme.colors.accentSoft };
+        case 'role':
+            return { accent: theme.colors.secondary, background: theme.colors.secondarySoft };
+        default:
+            return { accent: theme.colors.brand, background: theme.colors.brandSoft };
+    }
+};

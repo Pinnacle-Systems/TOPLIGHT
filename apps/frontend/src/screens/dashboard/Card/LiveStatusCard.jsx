@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useAppTheme } from '../../../theme';
 
 const LiveStatusCard = ({ UserId }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [currentTime, setCurrentTime] = useState(new Date());
   
   // Setup live clock
@@ -37,7 +39,7 @@ const LiveStatusCard = ({ UserId }) => {
   const isPresent = !!UserId?.INTIME;
   // Fallbacks: If isPresent is true, we consider them clocked in.
   const statusText = isPresent ? 'ACTIVE SHIFT' : 'NOT CLOCKED IN';
-  const statusColor = isPresent ? '#00E676' : '#FF1744';
+  const statusColor = isPresent ? theme.colors.success : theme.colors.danger;
 
   const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
   const formattedTime = currentTime.toLocaleTimeString('en-US', timeOptions);
@@ -71,12 +73,12 @@ const LiveStatusCard = ({ UserId }) => {
       <View style={styles.detailsContainer}>
         {/* Punch In */}
         <View style={styles.detailBox}>
-          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(0,230,118, 0.15)' }]}>
-            <MaterialCommunityIcons name="login" size={20} color="#00C853" />
+          <View style={[styles.iconWrapper, { backgroundColor: theme.colors.successSoft }]}>
+            <MaterialCommunityIcons name="login" size={20} color={theme.colors.success} />
           </View>
           <View>
             <Text style={styles.detailLabel}>Punch In</Text>
-            <Text style={[styles.detailValue, { color: isPresent ? '#333' : '#999' }]}>
+            <Text style={[styles.detailValue, { color: isPresent ? theme.colors.text : theme.colors.textMuted }]}>
               {isPresent ? UserId?.INTIME : '--:--'}
             </Text>
           </View>
@@ -87,12 +89,12 @@ const LiveStatusCard = ({ UserId }) => {
 
         {/* Working Hours (estimated, or OUTTIME) */}
         <View style={styles.detailBox}>
-          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255,145,0,0.15)' }]}>
-            <MaterialCommunityIcons name="clock-outline" size={20} color="#FF9100" />
+          <View style={[styles.iconWrapper, { backgroundColor: theme.colors.warningSoft }]}>
+            <MaterialCommunityIcons name="clock-outline" size={20} color={theme.colors.warning} />
           </View>
           <View>
             <Text style={styles.detailLabel}>Working Hours</Text>
-            <Text style={[styles.detailValue, { color: isPresent ? '#333' : '#999' }]}>
+            <Text style={[styles.detailValue, { color: isPresent ? theme.colors.text : theme.colors.textMuted }]}>
                {isPresent ? 'Tracking...' : '--:--'}
             </Text>
           </View>
@@ -102,14 +104,14 @@ const LiveStatusCard = ({ UserId }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     marginHorizontal: 16,
     marginVertical: 10,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 15,
@@ -117,7 +119,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.02)'
+    borderColor: theme.colors.borderSubtle
   },
   decorator: {
     position: 'absolute',
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 13,
-    color: '#8e9eab',
+    color: theme.colors.textMuted,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -145,18 +147,18 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'Dosis-Bold',
     fontWeight: '800',
-    color: '#2c3e50',
+    color: theme.colors.text,
     letterSpacing: 1,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.03)',
+    backgroundColor: theme.colors.surfaceSunken,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: theme.colors.borderSubtle,
   },
   pulseDot: {
     width: 8,
@@ -171,13 +173,13 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.surfaceSunken,
     borderRadius: 16,
     padding: 16,
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#edf2f7',
+    borderColor: theme.colors.borderSubtle,
   },
   detailBox: {
     flexDirection: 'row',
@@ -194,7 +196,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
-    color: '#7f8c8d',
+    color: theme.colors.textSecondary,
     fontWeight: '600',
     marginBottom: 2,
   },
@@ -206,11 +208,10 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 35,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.colors.divider,
     marginHorizontal: 15,
   }
 });
 
 export default LiveStatusCard;
-
 

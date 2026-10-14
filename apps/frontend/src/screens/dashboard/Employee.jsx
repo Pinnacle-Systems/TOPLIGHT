@@ -45,8 +45,8 @@ import ImageResizer from 'react-native-image-resizer';
 import { showMessage } from 'react-native-flash-message';
 import { BASE_URL, USERS_API } from '@env';
 import RNFetchBlob from 'rn-fetch-blob';
-import tailwind from 'twrnc';
 import ScreenRotationWrapper from '../../components/Utils/ScreenRotateHandler';
+import { useAppTheme } from '../../theme';
 
  const IMAGE_CONFIG = {
   maxWidth: 1024,
@@ -59,6 +59,7 @@ import ScreenRotationWrapper from '../../components/Utils/ScreenRotateHandler';
 
 
 export default function Employee({navigation,route}) {
+  const { theme } = useAppTheme();
   const { width, height } = useWindowDimensions()
   const isLandscape = width > height;
   const filterEmpId=route?.params
@@ -124,12 +125,12 @@ export default function Employee({navigation,route}) {
     alignItems: 'center',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#EEE',
+    borderTopColor: theme.colors.divider,
   },
   dueDateText: {
     marginLeft: 6,
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
     ChartContainer: {
       width: "100%",
@@ -141,11 +142,11 @@ export default function Employee({navigation,route}) {
         padding: 16,
         marginVertical: 5,
         marginHorizontal: 12,
-        backgroundColor: "#FFF",
+        backgroundColor: theme.colors.surface,
         elevation: 2,
         borderWidth: 1,
-        borderColor: "#E2E8F0",
-        shadowColor: '#000',
+        borderColor: theme.colors.borderSubtle,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 6,
@@ -154,32 +155,32 @@ export default function Employee({navigation,route}) {
     HeaderCustomText: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: '#333',
+      color: theme.colors.text,
       marginBottom: 6,
     },
   
     metricCard: {
-      backgroundColor: '#ffffff',
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       padding: 16,
       marginVertical: 8,
       borderLeftWidth: 6,
-      borderLeftColor: '#5f27cd', // dynamic based on context
-      shadowColor: '#000',
+      borderLeftColor: theme.colors.accent,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.08,
       shadowRadius: 12,
       elevation: 8,
     },
     MetricCard_end: {
-      backgroundColor: '#fcfafa',
+      backgroundColor: theme.colors.surfaceRaised,
       borderRadius: 12,
       padding: 16,
       marginBottom: 10,
       width: '100%',
       height: 120,
       elevation: 4,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 5,
@@ -191,7 +192,7 @@ export default function Employee({navigation,route}) {
       fontSize: 14,
       fontWeight: '700',
       fontFamily: "Dosis-Bold",
-      color: '#6d6d70',
+      color: theme.colors.textSecondary,
       marginBottom: 6,
     },
   
@@ -199,14 +200,14 @@ export default function Employee({navigation,route}) {
       fontSize: 15,
       fontWeight: '800',
       fontFamily: "Dosis-Bold",
-      color: '#1f1f1f',
+      color: theme.colors.text,
       marginBottom: 12,
       textAlign: "left",
     },
   
     MetricValue: {
       fontSize: 18,
-      color: '#1B81DB',
+      color: theme.colors.brand,
       fontWeight: 'bold',
     },
   
@@ -214,15 +215,15 @@ export default function Employee({navigation,route}) {
       marginTop: 10,
       paddingVertical: 8,
       paddingHorizontal: 20,
-      backgroundColor: '#747f91',
+      backgroundColor: theme.colors.secondary,
       borderRadius: 25,
       textAlign: 'center',
-      color: '#fff',
+      color: theme.colors.brandContrast,
       fontWeight: 'bold',
     },
   
     TopBox: {
-      backgroundColor: "#69b6f5",
+      backgroundColor: theme.colors.brand,
     },
   
     fab: {
@@ -232,21 +233,21 @@ export default function Employee({navigation,route}) {
       width: 65,
       height: 100,
       borderRadius: 30,
-      backgroundColor: "rgba(255, 255, 255, 0.86)",
+      backgroundColor: theme.colors.surfaceRaised,
       justifyContent: 'center',
       alignItems: "flex-start",
       elevation: 6,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
       zIndex: 500,
       borderWidth: 0.6,
-      borderColor: "#c5c7c9",
+      borderColor: theme.colors.border,
     },
   
     MiniCard: {
-      backgroundColor: '#15b35a', // Default, override with inline bgColor
+      backgroundColor: theme.colors.success,
       borderRadius: 10,
       paddingVertical: 12,
       paddingHorizontal: 10,
@@ -254,7 +255,7 @@ export default function Employee({navigation,route}) {
       alignItems: 'center',
       justifyContent: 'center',
       elevation: 5,
-      shadowColor: "#bec1c4",
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.12,
       shadowRadius: 4,
@@ -262,13 +263,13 @@ export default function Employee({navigation,route}) {
   
     MiniCard_Title: {
       fontSize: 13,
-      color: "white",
+      color: theme.colors.brandContrast,
       fontWeight: "600",
       marginBottom: 4,
     },
   
     MiniCard_Value: {
-      color: "white",
+      color: theme.colors.brandContrast,
       fontSize: 16,
       fontWeight: "700",
     },
@@ -445,7 +446,7 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
 
   <CameraModal visible={isCameraModal} USER={UserId} setVisible={setisCameraModel} onPictureTaken={onUploaddedPicture}></CameraModal>
 
-    <View style={[{ flex: 1, width: "100%" }, tailwind`bg-[#F8FAFC] overflow-hidden`]}>
+    <View style={{ flex: 1, width: "100%", backgroundColor: theme.colors.background, overflow: 'hidden' }}>
       
 <View style={{position:"absolute",top:0}}>
 
@@ -556,17 +557,17 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
                   style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" }}>
-                      <MaterialCommunityIcons name="calendar-clock" size={20} color="#007AFF" />
+                    <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: theme.colors.brandSoft, alignItems: "center", justifyContent: "center" }}>
+                      <MaterialCommunityIcons name="calendar-clock" size={20} color={theme.colors.brand} />
                     </View>
                     <View>
-                      <CustomText style={{ fontSize: 16, fontWeight: "700", color: "#0F172A" }}>Attendance Logs</CustomText>
-                      <CustomText style={{ fontSize: 11, color: "#64748B" }}>Year: {Year}</CustomText>
+                      <CustomText style={{ fontSize: 16, fontWeight: "700", color: theme.colors.text }}>Attendance Logs</CustomText>
+                      <CustomText style={{ fontSize: 11, color: theme.colors.textSecondary }}>Year: {Year}</CustomText>
                     </View>
                   </View>
-                  <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#EFF6FF", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, gap: 4 }}>
-                    <MaterialCommunityIcons name="calendar-search" size={14} color="#007AFF" />
-                    <CustomText style={{ fontSize: 11, fontWeight: "700", color: "#007AFF" }}>Select Year</CustomText>
+                  <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: theme.colors.brandSoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, gap: 4 }}>
+                    <MaterialCommunityIcons name="calendar-search" size={14} color={theme.colors.brand} />
+                    <CustomText style={{ fontSize: 11, fontWeight: "700", color: theme.colors.brand }}>Select Year</CustomText>
                   </View>
                 </TouchableOpacity>
 
@@ -595,7 +596,6 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
   
 );
 }
-
 
 
 

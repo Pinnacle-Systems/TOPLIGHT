@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity
 import { DataTable } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
-import { Colors } from '../../../../constants/Colors';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useGet_leavesQuery } from '../../../../store/api/LeaveApi';
+import { useAppTheme } from '../../../../theme';
 
 const LeaveReport = ({ UserId }) => {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
      var init_fromdate=new Date()
      init_fromdate?.setDate(1)
      init_fromdate?.setMonth(0)
@@ -42,7 +44,7 @@ const LeaveReport = ({ UserId }) => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={theme.colors.brand} />
       </View>
     );
   }
@@ -55,7 +57,7 @@ const LeaveReport = ({ UserId }) => {
           style={styles.dateInput} 
           onPress={() => setShowFromDatePicker(true)}
         >
-          <MaterialCommunityIcons name="calendar" size={20} color={Colors.primary} />
+          <MaterialCommunityIcons name="calendar" size={20} color={theme.colors.brand} />
           <Text style={styles.dateText}>{moment(fromDate).format('DD-MMM-YYYY')}</Text>
         </TouchableOpacity>
 
@@ -65,7 +67,7 @@ const LeaveReport = ({ UserId }) => {
           style={styles.dateInput} 
           onPress={() => setShowToDatePicker(true)}
         >
-          <MaterialCommunityIcons name="calendar" size={20} color={Colors.primary} />
+          <MaterialCommunityIcons name="calendar" size={20} color={theme.colors.brand} />
           <Text style={styles.dateText}>{moment(toDate).format('DD-MMM-YYYY')}</Text>
         </TouchableOpacity>
       </View>
@@ -103,7 +105,10 @@ const LeaveReport = ({ UserId }) => {
       {/* Data Table */}
       <ScrollView style={{ flex: 1 }}>
       <ScrollView horizontal={true}  style={styles.tableContainer}>
-        <DataTable style={styles.dataTable}>
+        <DataTable
+          style={styles.dataTable}
+          theme={{ colors: { onSurface: theme.colors.text, surface: theme.colors.surface } }}
+        >
           <DataTable.Header style={styles.tableHeader}>
             <DataTable.Title style={styles.tableCell}>Emp ID</DataTable.Title>
             <DataTable.Title style={styles.tableCell}>Name</DataTable.Title>
@@ -153,10 +158,10 @@ const LeaveReport = ({ UserId }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = theme => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: theme.colors.background,
     padding: 10,
   },
   center: {
@@ -170,10 +175,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 15,
     padding: 12,
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -183,18 +188,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: Colors.lightBackground,
+    backgroundColor: theme.colors.surfaceSunken,
     borderRadius: 6,
     marginHorizontal: 5,
   },
   dateText: {
     marginLeft: 8,
-    color: Colors.dark,
+    color: theme.colors.text,
     fontSize: 14,
   },
   toText: {
     marginHorizontal: 5,
-    color: Colors.gray,
+    color: theme.colors.textSecondary,
     fontSize: 14,
   },
   header: {
@@ -204,19 +209,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: theme.colors.text,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.gray,
+    color: theme.colors.textSecondary,
     marginTop: 4,
   },
   tableContainer: {
     marginBottom: 15,
     borderRadius: 8,
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -225,7 +230,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   tableHeader: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: theme.colors.surfaceSelected,
   },
   tableCell: {
     paddingVertical: 8,
@@ -234,17 +239,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   evenRow: {
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
   },
   oddRow: {
-    backgroundColor: Colors.lightBackground,
+    backgroundColor: theme.colors.surfaceSunken,
   },
   summaryContainer: {
     padding: 15,
-    backgroundColor: Colors.white,
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -253,7 +258,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: Colors.dark,
+    color: theme.colors.text,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -261,16 +266,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   summaryLabel: {
-    color: Colors.grayDark,
+    color: theme.colors.textSecondary,
     fontSize: 14,
   },
   summaryValue: {
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: theme.colors.brand,
     fontSize: 14,
   },
 });
 
 export default LeaveReport;
-
-
