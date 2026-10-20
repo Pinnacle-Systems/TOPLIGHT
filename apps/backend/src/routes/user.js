@@ -8,7 +8,7 @@ const router = Router();
 //   },storage: multer.memoryStorage()});
 import { login, create, get, remove, getOne, getUserDet, getDesignation, getRolesOnPage, createRoleOnPage, getUserDetails, UpdateRoleOnPage, UploadImage, getUserImage, getCompanyCode, getEmployeeIds, update_fcm, get_hod_token, get_refresh_token, get_fcm_token, send_Otp, verify_Otp_and_change_pass, getUserRolesOnPage, getCreatedRolesOnPage, Change_Settings, get_Change_Settings, get_Hod_Details, UserLogs, getEmployeeIdsWithAtt } from "../services/user.service.js";
 import multer from 'multer';
-import { upload, upload_profile } from '../Utiles/Multer.js';
+import { upload, upload_profile } from '../utils/multer.js';
 
 router.post('/login', login);
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { getPermissionRequest } from '../services/Nofification.services.js';
+import { getPermissionRequest } from '../services/notification.service.js';
 
 
 const router = Router();

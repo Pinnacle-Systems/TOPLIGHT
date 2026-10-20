@@ -19,8 +19,6 @@ dns.resolve4('cloudflare.com', (err, addresses) => {
 });
 
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 
 
 import {
@@ -39,31 +37,23 @@ import {
   Onduty,
   attendance
 } from "./src/routes/index.js"
-import { getConnection } from './src/constants/db.connection.js';
+import { getConnection } from './src/constants/dbConnection.js';
 import bodyParser from 'body-parser';
 import { PrismaClient } from './src/generated/prisma/client.js';
 import { Server } from 'socket.io';
 import http  from "http"
 import nodeCron from 'node-cron';
-import FileHandlerAndWrite from './src/Utiles/FileHandler.js';
+import FileHandlerAndWrite from './src/utils/fileHandler.js';
 import  fs from 'fs';
-import formatDateToOracle from './src/Utiles/OracleDateFormat.js';
-import { decompressFile_data } from './src/Utiles/decompress.js';
-import { compressedFilePaths, jsonFilePaths } from './src/Utiles/Paths.js';
+import formatDateToOracle from './src/utils/oracleDateFormat.js';
+import { configDotenv } from 'dotenv'; "dotenv"
 
+// Dot Env init Config
+configDotenv()
 
-
-
-//192.168.1.50
-
-
-
+export const prisma_Connector = new PrismaClient();
 
 const app = express()
-
-
-
-
 
 
 app.use(express.json())
@@ -79,27 +69,16 @@ app.use(cors({
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const path_dir = __dirname + '/web-build/';
-
-
-
-
 app.use(express.static(path_dir));
-
-
-
 BigInt.prototype['toJSON'] = function () {
   return parseInt(this.toString());
 };
 
-
-
-
 app.use('/poRegister', poRegister)
-
 app.use('/att', poRegister)
-
+app.post('/getCommon', getCommonData)
+app.use('/users', user)
 app.use('/commonMast', commonMast)
 app.use('/supplier', supplier)
 app.use('/poData', poData)
@@ -111,34 +90,20 @@ app.use('/Permission',Permission)
 app.use('/Notifi',Notification)
 app.use("/advance",Advance)
 app.use("/onduty",Onduty)
-
 app.use("/attendance",attendance)
-
-
-
- 
-
 
 export async function getCommonData(req, res) {
     const Table=req.body?.table
     const where=req.body?.where
     const fields=req.body?.fields
     const map=req?.body?.map
-
-    
-   
     const connection = await getConnection(res)
     try {
-     console.log("table----------------",Table);
-     
         const sql =
             `select ${fields} from ${Table} WHERE ${where}`
-        
         const result = await connection.execute(sql)
-        console.log(result);
-    
         if(map=="true" || map==true){
-        const transformedResult = result?.rows?.map(row => {
+          const transformedResult = result?.rows?.map(row => {
           const keyValuePair = {};
           // Assuming the first row contains the column names
           result.metaData.forEach((col, index) => {
@@ -146,7 +111,6 @@ export async function getCommonData(req, res) {
           });
           return keyValuePair;
          });
-        
         return res.json({ statusCode: 0, data: transformedResult })
         }else{
           return res.json({ statusCode: 0, data: result?.rows })
@@ -161,18 +125,12 @@ export async function getCommonData(req, res) {
     }
 }
 
-app.post('/getCommon', getCommonData)
 
-
-
-app.use('/users', user)
-const PORT = 8025;
-
+const PORT = process.env.PORT;
 const peers = {};
 
 app.get('/',(req,res)=>{
- 
-  res.status(200).json({"name":"welcom"})
+  res.status(200).json({"Name":"TopLight Server","Port": PORT })
 })
 
 // ── Health + DNS Diagnostics Endpoint ─────────────────────────────────────────
@@ -198,7 +156,6 @@ app.get('/health', async (req, res) => {
     health.dns.error = e.message;
     health.status = 'degraded';
   }
-
   // MySQL / Prisma check
   try {
     const prisma = new PrismaClient();
@@ -212,7 +169,7 @@ app.get('/health', async (req, res) => {
 
   // Oracle check
   try {
-    const { getConnection: getOra } = await import('./src/constants/db.connection.js');
+    const { getConnection: getOra } = await import('./src/constants/dbConnection.js');
     const conn = await getOra();
     await conn.execute('SELECT 1 FROM DUAL');
     health.database.oracle = 'ok';
@@ -230,7 +187,7 @@ app.get('/health', async (req, res) => {
 const server=http.createServer(app)
 const io=new Server(server,{cors: {
   origin: '*', 
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }})
 
 io.on('connection', client => {
@@ -423,7 +380,6 @@ nodeCron.schedule('50  23 * * *', async () => {
         await fs.promises.writeFile(compressedFilePath, compressed);
 
         console.log(`Successfully processed ${recordCount} records. Compressed size: ${compressed.length} bytes`);
-
       } finally {
         try {
           if (fs.existsSync(jsonFilePath)) {
@@ -447,7 +403,4 @@ nodeCron.schedule('50  23 * * *', async () => {
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
-
-
-export const prisma_Connector = new PrismaClient();
 

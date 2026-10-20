@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDocId, requestPermission, requestPermission_Approval,get__per, addPermission_master, get__per_category, get_all_Permission_reason} from '../services/PermissionEntry.service.js';
+import { getDocId, requestPermission, requestPermission_Approval,get__per, addPermission_master, get__per_category, get_all_Permission_reason} from '../services/permissionEntry.service.js';
 
 const router = Router();
 router.get('/', get__per);

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { get, getArticleId, getFinYr, getSupplier, getSuppEfficency, getTopItems, getMonthlyReceivables, getTopFiveSuppTurnOvr, getOverAllSupplierContribution, getMostPaidTaxVal } from '../services/podata.service.js'
+import { get, getArticleId, getFinYr, getSupplier, getSuppEfficency, getTopItems, getMonthlyReceivables, getTopFiveSuppTurnOvr, getOverAllSupplierContribution, getMostPaidTaxVal } from '../services/poData.service.js'
 
 const router = Router();
 

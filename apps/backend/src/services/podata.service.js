@@ -1,4 +1,4 @@
-import { getConnection } from "../constants/db.connection.js";
+import { getConnection } from "../constants/dbConnection.js";
 import { getSupplierWiseMonthlyReceivables, monthWiseDataSupplierReceivables } from "../queries/poData.js";
 
 

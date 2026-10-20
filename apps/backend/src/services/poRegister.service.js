@@ -1,4 +1,4 @@
-import { getConnection } from "../constants/db.connection.js";
+import { getConnection } from "../constants/dbConnection.js";
 
 
 export async function get(req, res) {

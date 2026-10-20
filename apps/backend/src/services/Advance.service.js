@@ -1,8 +1,8 @@
 import { prisma_Connector } from "../../index.js";
-import { getConnection } from "../constants/db.connection.js";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
-import { generateNumericId2 } from "../Utiles/Unique2.js";
-import { generateNumericId } from "../Utiles/UniqueId.js";
+import { getConnection } from "../constants/dbConnection.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { generateNumericId2 } from "../utils/uniqueIdV2.js";
+import { generateNumericId } from "../utils/uniqueId.js";
 
 
 

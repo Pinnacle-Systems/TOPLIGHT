@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { add_requestLeave, get__per, get_Current_Fin_Year, get_Lcode, get_leave_available, get_lcode_leave_available, getDocId, getLeaves, InsertLeave, requestLeave_Approval } from '../services/LeaveData.service.js';
+import { add_requestLeave, get__per, get_Current_Fin_Year, get_Lcode, get_leave_available, get_lcode_leave_available, getDocId, getLeaves, InsertLeave, requestLeave_Approval } from '../services/leave.service.js';
 
 
 const router = Router();

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createRoleOnPage_Master,get_all_Role_name } from '../services/RoleOnpage.services.js';
+import { createRoleOnPage_Master,get_all_Role_name } from '../services/roleOnPage.service.js';
 
 
 

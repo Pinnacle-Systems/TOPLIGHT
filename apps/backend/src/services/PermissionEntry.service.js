@@ -1,8 +1,8 @@
 import { prisma_Connector } from "../../index.js";
-import { getConnection } from "../constants/db.connection.js";
-import { convert12to24 } from "../Utiles/24hConverter.js";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
-import { generateUniqueId_Number } from "../Utiles/UniqueNumber.js";
+import { getConnection } from "../constants/dbConnection.js";
+import { convert12to24 } from "../utils/timeConverter24h.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
 
 
 export async function get__per(req, res) {

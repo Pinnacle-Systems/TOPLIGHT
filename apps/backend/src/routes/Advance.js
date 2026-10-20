@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { add_requestAdvance, get__Advance, get_advance, get_Paycode, getDocId, requestLoan_Approval } from '../services/Advance.service.js';
+import { add_requestAdvance, get__Advance, get_advance, get_Paycode, getDocId, requestLoan_Approval } from '../services/advance.service.js';
 
 
 const router = Router();

@@ -1,6 +1,6 @@
-import { getConnection } from "../constants/db.connection.js";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
-import { generateUniqueId_Number } from "../Utiles/UniqueNumber.js";
+import { getConnection } from "../constants/dbConnection.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
 import { prisma_Connector } from "../../index.js";
 
 async function resolvePunchTarget(req, res) {

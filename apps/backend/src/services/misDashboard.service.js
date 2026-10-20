@@ -1,6 +1,6 @@
-import { fetchActiveFinYearFromDB, getConnection } from "../constants/db.connection.js";
+import { fetchActiveFinYearFromDB, getConnection } from "../constants/dbConnection.js";
 import { IN_HAND } from "../constants/dbConstants.js";
-import { currentDate, tommorowDate } from "../Helpers/helper.js";
+import { currentDate, tommorowDate } from "../helpers/helper.js";
 import {
   getTopCustomers,
   getProfit,
@@ -15,7 +15,7 @@ import {
 } from "../queries/misDashboard.js";
 import moment from "moment";
 import { prisma_Connector } from "../../index.js";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
 
 const month = [
   "January",

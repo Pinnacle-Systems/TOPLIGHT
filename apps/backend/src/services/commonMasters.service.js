@@ -1,5 +1,5 @@
 import { prisma_Connector } from "../../index.js";
-import { getConnection } from "../constants/db.connection.js";
+import { getConnection } from "../constants/dbConnection.js";
 import bcrypt from "bcryptjs"
 
 

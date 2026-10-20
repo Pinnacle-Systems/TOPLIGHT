@@ -1,11 +1,11 @@
 import bcrypt from "bcryptjs"
-import { getConnection } from "../constants/db.connection.js";
+import { getConnection } from "../constants/dbConnection.js";
 import OracleDB from "oracledb";
 import { prisma_Connector } from "../../index.js";
 import { readFile } from 'fs/promises';
 import { google } from 'googleapis';
-import Random_Otp from "../Utiles/Random_Otp.js";
-import { sendMail } from "../Utiles/Mailer.js";
+import Random_Otp from "../utils/randomOtp.js";
+import { sendMail } from "../utils/mailer.js";
 import fs from "fs"
 import path from "path";
 import fetch  from  "node-fetch"

@@ -1,7 +1,7 @@
 
 import { Router } from 'express';
-import { Add__vechilekm, addOnduty_master, get__Date_Wise_Fuel, get__Date_Wise_Fuel_Individual, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_tracking_users, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/Onduty.service.js';
-import { upload } from '../Utiles/Multer.js';
+import { Add__vechilekm, addOnduty_master, get__Date_Wise_Fuel, get__Date_Wise_Fuel_Individual, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_tracking_users, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/onDuty.service.js';
+import { upload } from '../utils/multer.js';
 
 
 

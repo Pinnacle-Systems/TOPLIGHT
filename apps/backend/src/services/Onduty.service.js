@@ -2,14 +2,14 @@ import { prisma_Connector } from "../../index.js";
 import fs from "fs"
 import { v4 as uuidv4 } from 'uuid';
 
-import { upload } from '../Utiles/Multer.js';
+import { upload } from '../utils/multer.js';
 import path from "path";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
-import { getConnection } from "../constants/db.connection.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { getConnection } from "../constants/dbConnection.js";
 import { generateKey } from "crypto";
-import { generateUniqueId_Number } from "../Utiles/UniqueNumber.js";
-import { compressedFilePaths, jsonFilePaths } from "../Utiles/Paths.js";
-import { __readStream } from "../Utiles/Streams.js";
+import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
+import { compressedFilePaths, jsonFilePaths } from "../utils/paths.js";
+import { __readStream } from "../utils/streams.js";
 
 import { promises as fsp } from 'fs';
 import fetch from "node-fetch";

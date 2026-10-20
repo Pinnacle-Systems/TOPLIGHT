@@ -1,8 +1,8 @@
 import moment from "moment";
 import { prisma_Connector } from "../../index.js";
-import { getConnection, fetchActiveFinYearFromDB } from "../constants/db.connection.js";
-import formatDateToOracle from "../Utiles/OracleDateFormat.js";
-import { generateNumericId } from "../Utiles/UniqueId.js";
+import { getConnection, fetchActiveFinYearFromDB } from "../constants/dbConnection.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { generateNumericId } from "../utils/uniqueId.js";
 import { log } from "node:console";// Function exported through global db configuration now
 
 
