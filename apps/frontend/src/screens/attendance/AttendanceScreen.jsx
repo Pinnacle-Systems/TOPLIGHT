@@ -18,7 +18,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Common_Context } from '../../context/CommonContext';
 import {
     useGetAttendanceStatusQuery,
-    useGetAttendanceSummaryQuery,
     usePunchInMutation,
     usePunchOutMutation,
 } from '../../store/api/attendanceApi';
@@ -51,7 +50,6 @@ export default function AttendanceScreen() {
     // ── API ─────────────────────────────────────────────────────────────────────
     const { data: statusData, isFetching: statusFetching, refetch: refetchStatus } =
         useGetAttendanceStatusQuery();
-    const { data: summaryData } = useGetAttendanceSummaryQuery();
     const {
         data: employeeAttendanceData,
         error: employeeAttendanceError,
@@ -68,7 +66,6 @@ export default function AttendanceScreen() {
     const refreshActiveTab = activeTab === 'EMPLOYEE' ? refetchEmployees : refetchStatus;
 
     const attendanceStatus = statusData?.data;
-    const summary = summaryData?.data;
     const status = (attendanceStatus?.status || attendanceStatus?.STATUS || '').toUpperCase();
     const isPunchedIn = status === 'IN';
 
@@ -249,22 +246,11 @@ export default function AttendanceScreen() {
                         </Text>
                         <PunchButton />
                         <Text style={styles.locationHint}>
-                            📍 Location will be captured automatically
+                             Location will be captured automatically
                         </Text>
                     </View>
 
-                    {/* Monthly Summary Stats */}
-                    {summary && (
-                        <View style={styles.summarySection}>
-                            <Text style={styles.sectionTitle}>This Month</Text>
-                            <View style={styles.statsGrid}>
-                                <StatCard icon="check-circle-outline" label="Present" value={summary?.present} color={theme.colors.success} />
-                                <StatCard icon="close-circle-outline" label="Absent" value={summary?.absent} color={theme.colors.danger} />
-                                <StatCard icon="clock-alert-outline" label="Late" value={summary?.late} color={theme.colors.warning} />
-                                <StatCard icon="home-clock-outline" label="Half Day" value={summary?.halfDay} color={theme.colors.accent} />
-                            </View>
-                        </View>
-                    )}
+                 
                 </ScrollView>
             ) : (
                 /* ── EMPLOYEE Tab ───────────────────────────────────────────── */

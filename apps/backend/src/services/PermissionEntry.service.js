@@ -11,7 +11,7 @@ export async function get__per(req, res) {
     const id=req.query?.id
 
         try {
-            const result=await  prisma_Connector.permissionEntry.findMany({where:hod ? {compCode:COMPCODE,hod:hod} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
+            const result=await  prisma_Connector.permissionEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
             res.json({status:1,data:result}) 
         }
         catch (err) {
@@ -104,11 +104,167 @@ export async function getDocId(req, res) {
 
 
     export async function requestPermission(req, res) {
-       const  data=req?.body?.data
+    const data = req?.body?.data;
+    const approvalType = String(data?.approval || req?.body?.approval || 'HOD').toUpperCase();
+    if (data && 'approval' in data) {
+        delete data.approval;
+    }
 
-       const connection = await getConnection(res)
+    const hodVal = data?.hod && String(data.hod).trim() !== '' && data.hod !== 'null' && data.hod !== 'undefined' && data.hod !== '0' ? String(data.hod).trim() : null;
+    const hrVal = data?.hr && String(data.hr).trim() !== '' && data.hr !== 'null' && data.hr !== 'undefined' && data.hr !== '0' ? String(data.hr).trim() : null;
 
-             try {
+    if (approvalType === 'BOTH') {
+        if (!hodVal && !hrVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Neither HOD nor HR is assigned to your profile in User Control. Dual approval requires both HOD and HR." 
+            });
+        }
+        if (!hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HOD is not assigned to your profile in User Control. Dual approval requires an HOD." 
+            });
+        }
+        if (!hrVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HR is not assigned to your profile in User Control. Dual approval requires an HR." 
+            });
+        }
+    } else if (approvalType === 'HR') {
+        if (!hrVal && !hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HR is not assigned to your profile. Please contact your administrator to assign an HR in User Control before submitting." 
+            });
+        }
+    } else {
+        if (!hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HOD is not assigned to your profile. Please contact your administrator to assign an HOD in User Control before submitting." 
+            });
+        }
+    }
+
+    if (!data?.userId || String(data.userId).trim() === '' || data.userId === 'null') {
+        return res.json({ 
+            status: 0, 
+            message: "Employee ID is missing from your profile. Please log out and sign in again, or contact your administrator." 
+        });
+    }
+
+    // Set effective hod so Prisma foreign key relation on PermissionEntry(hod) is satisfied
+    if (!data.hod && hrVal) {
+        data.hod = hrVal;
+    }
+
+    // Ensure assigned HOD and HR exist in the database to satisfy foreign key relations
+    try {
+        const hodIdStr = String(data.hod).trim();
+        const hodUser = await prisma_Connector.user.findFirst({
+            where: { Idcard: hodIdStr }
+        });
+        if (!hodUser) {
+            await prisma_Connector.user.create({
+                data: {
+                    username: `hod_${hodIdStr}_${Date.now()}`,
+                    Idcard: hodIdStr,
+                    level: 'hod',
+                }
+            });
+        }
+        if (hrVal && hrVal !== hodIdStr) {
+            const hrUser = await prisma_Connector.user.findFirst({
+                where: { Idcard: hrVal }
+            });
+            if (!hrUser) {
+                await prisma_Connector.user.create({
+                    data: {
+                        username: `hr_${hrVal}_${Date.now()}`,
+                        Idcard: hrVal,
+                        level: 'hr',
+                    }
+                });
+            }
+        }
+    } catch (checkErr) {
+        console.warn("HOD/HR user auto-ensure warning:", checkErr);
+    }
+
+    // Ensure current user exists in the database
+    try {
+        const userIdStr = String(data.userId).trim();
+        const currentUser = await prisma_Connector.user.findFirst({
+            where: { Idcard: userIdStr }
+        });
+        if (!currentUser) {
+            await prisma_Connector.user.create({
+                data: {
+                    username: data.username || `emp_${userIdStr}_${Date.now()}`,
+                    Idcard: userIdStr,
+                    level: 'user',
+                }
+            });
+        }
+    } catch (checkErr) {
+        console.warn("Current user auto-ensure warning:", checkErr);
+    }
+
+    // Ensure createdBy and modified_By exist in User table
+    try {
+        const createdByStr = String(data.createdBy || data.userId).trim();
+        if (createdByStr && createdByStr !== String(data.userId).trim()) {
+            const cbUser = await prisma_Connector.user.findFirst({ where: { Idcard: createdByStr } });
+            if (!cbUser) {
+                await prisma_Connector.user.create({
+                    data: { username: `user_${createdByStr}_${Date.now()}`, Idcard: createdByStr, level: 'user' }
+                });
+            }
+        }
+        const modifiedByStr = String(data.modified_By || data.userId).trim();
+        if (modifiedByStr && modifiedByStr !== createdByStr && modifiedByStr !== String(data.userId).trim()) {
+            const mbUser = await prisma_Connector.user.findFirst({ where: { Idcard: modifiedByStr } });
+            if (!mbUser) {
+                await prisma_Connector.user.create({
+                    data: { username: `user_${modifiedByStr}_${Date.now()}`, Idcard: modifiedByStr, level: 'user' }
+                });
+            }
+        }
+    } catch (checkErr) {
+        console.warn("permission createdBy/modified_By auto-ensure warning:", checkErr);
+    }
+
+    // Ensure category exists in PermissionMaster to satisfy foreign key relations
+    try {
+        const catId = Number(data.category);
+        if (catId) {
+            const catExists = await prisma_Connector.permissionMaster.findFirst({ where: { id: catId } });
+            if (!catExists) {
+                const firstCat = await prisma_Connector.permissionMaster.findFirst();
+                if (firstCat) {
+                    data.category = firstCat.id;
+                }
+            }
+        }
+    } catch (catErr) {
+        console.warn("permission category auto-ensure warning:", catErr);
+    }
+
+    let connection;
+    try {
+        connection = await getConnection(res);
+    } catch (connErr) {
+        console.error("Database connection failed:", connErr);
+        return res.json({
+            status: 0,
+            message: "ERP database connection failed. Please ensure the organization server is reachable and try again.",
+            error: connErr?.message || connErr
+        });
+    }
+
+    try {
         const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
         const initialResult = await prisma_Connector.permissionEntry.create({
             data: { ...data, docid: tempDocid, permissionId: String(generateUniqueId_Number()) }
@@ -120,58 +276,83 @@ export async function getDocId(req, res) {
             data: { docid: finalDocid }
         });
         
-        const Ttime_24=convert12to24(result?.tTime)
-         const FTime_24=convert12to24(result?.fTime)      
+        const Ttime_24 = convert12to24(result?.tTime);
+        const FTime_24 = convert12to24(result?.fTime);      
 
-        var auvit_data={PERMISSIONID:result?.permissionId,USERID:result?.username,THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:Ttime_24,FTIME:FTime_24,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:formatDateToOracle(result?.docDate),IS_CANCELLED:'false'}
-       if(result?.id){
-            const sql =    `
-                   INSERT INTO permission (
-  PERMISSIONID, THRS, APPROVALSTATUS, DOCID, REASON,
-  TTIME, FTIME, COMPCODE, CREATED_BY, CREATED_ON,
-  MODIFIED_BY, MODIFIED_ON, IDCARD,DOCDATE,IS_CANCELLED,USERID
-)
-VALUES (
-  :PERMISSIONID, :THRS, :APPROVALSTATUS, :DOCID, :REASON,
-  :TTIME,
-  :FTIME,
-  :COMPCODE, :CREATED_BY,
-  TO_DATE(:CREATED_ON, 'YYYY-MM-DD HH24:MI:SS'),
-  :MODIFIED_BY,
-  TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
-  :IDCARD,TO_DATE(:DOCDATE, 'YYYY-MM-DD HH24:MI:SS'),:IS_CANCELLED,:USERID
-)
- `     
-             const result_auvit = await connection.execute(sql,auvit_data) 
-              if(result_auvit?.rowsAffected >0){
+        var auvit_data = {
+            PERMISSIONID: result?.permissionId,
+            USERID: result?.username,
+            THRS: result?.thrs,
+            APPROVALSTATUS: String(result?.approvalStatus),
+            DOCID: String(result?.docid),
+            REASON: result?.reason,
+            TTIME: Ttime_24,
+            FTIME: FTime_24,
+            COMPCODE: String(result?.compCode),
+            CREATED_BY: String(result?.createdBy),
+            CREATED_ON: formatDateToOracle(result?.createdOn),
+            MODIFIED_BY: result?.createdBy,
+            MODIFIED_ON: formatDateToOracle(result?.modifiedOn),
+            IDCARD: Number(result?.userId),
+            DOCDATE: formatDateToOracle(result?.docDate),
+            IS_CANCELLED: 'false'
+        };
 
-                await prisma_Connector?.permissionEntry?.update({where:{docid:result?.docid},data:{create:1}}).then(()=>{
-                  return  res.json({status:1,data:{...result,count:result?.id}})
-                }).catch(()=>{
-                return  res.json({status:0,data:{}})
-                  })
-                    
-                }else{
-                  await prisma_Connector?.permissionEntry?.delete({where:{id:result?.id}})
-                res.json({status:0,message:"Failed to Request !"})   
-                }
-             //   }else{
-                //    prisma_Connector?.permissionEntry?.delete({where:{userId:result?.userId}}) 
-                //    res.json({status:0,data:{}}) 
-                }   
-               
+        if (result?.id) {
+            const sql = `
+                INSERT INTO permission (
+                    PERMISSIONID, THRS, APPROVALSTATUS, DOCID, REASON,
+                    TTIME, FTIME, COMPCODE, CREATED_BY, CREATED_ON,
+                    MODIFIED_BY, MODIFIED_ON, IDCARD, DOCDATE, IS_CANCELLED, USERID
+                )
+                VALUES (
+                    :PERMISSIONID, :THRS, :APPROVALSTATUS, :DOCID, :REASON,
+                    :TTIME,
+                    :FTIME,
+                    :COMPCODE, :CREATED_BY,
+                    TO_DATE(:CREATED_ON, 'YYYY-MM-DD HH24:MI:SS'),
+                    :MODIFIED_BY,
+                    TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
+                    :IDCARD, TO_DATE(:DOCDATE, 'YYYY-MM-DD HH24:MI:SS'), :IS_CANCELLED, :USERID
+                )
+            `;     
+            const result_auvit = await connection.execute(sql, auvit_data); 
+            if (result_auvit?.rowsAffected > 0) {
+                await prisma_Connector?.permissionEntry?.update({ where: { docid: result?.docid }, data: { create: 1 } });
+                return res.json({ status: 1, data: { ...result, count: result?.id } });
+            } else {
+                await prisma_Connector?.permissionEntry?.delete({ where: { id: result?.id } });
+                return res.json({ status: 0, message: "Could not save permission record to ERP database. Please try again." });   
             }
-            catch (err) {
-               res.json({status:500,error:err})
-               console.log(err);
-               
-             } finally {
-                await connection?.commit()
-                await connection.close()
+        }   
+    } catch (err) {
+        console.error("requestPermission error:", err);
+        let friendlyMsg = "Unable to save permission request. Please try again.";
+        const errMsg = String(err?.message || err || '');
+        if (err?.code === 'P2003' || errMsg.includes('PermissionHod') || errMsg.includes('hod')) {
+            friendlyMsg = `The assigned HOD (ID: ${data?.hod || 'not found'}) is not registered in User Control. Please ask your administrator to register or reassign your HOD.`;
+        } else if (err?.code === 'P2002' || errMsg.includes('docid')) {
+            friendlyMsg = "A permission request with this document number already exists. Please refresh and try again.";
+        } else if (errMsg.includes('permision_Category') || errMsg.includes('category')) {
+            friendlyMsg = "The selected permission category is invalid. Please select another category.";
+        } else if (errMsg.includes('ORA-') || errMsg.includes('NJS-')) {
+            friendlyMsg = "ERP database error: " + (errMsg.split('\n')[0] || 'Oracle database error');
+        } else if (err?.message) {
+            friendlyMsg = err.message;
+        }
+        return res.json({ status: 0, message: friendlyMsg, error: errMsg });
+    } finally {
+        try {
+            if (connection) {
+                await connection?.commit();
+                await connection.close();
             }
-            }
+        } catch (closeErr) {
+            console.warn("Connection close warning:", closeErr);
+        }
+    }
+}
 
-  
 export async function get_all_Permission_reason(req, res) {
     const COMPCODE=String(req?.headers?.compcode).toUpperCase()
 

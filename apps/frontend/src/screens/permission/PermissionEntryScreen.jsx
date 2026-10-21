@@ -25,6 +25,7 @@ import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/ap
 import { _FCM_SENDER } from '../../components/Utils/FCM';
 import socket from '../../utils/Socket';
 import { useAppTheme } from '../../theme';
+import { formatUserFriendlyError } from '../../utils/userFriendlyError';
 
 const formatTime = value => moment(value).format('hh:mm A');
 
@@ -74,6 +75,8 @@ export default function PermissionEntryScreen() {
     const userId = String(user?.UserId || user?.IDCARD || user?.Id || '').trim();
     const companyCode = String(user?.GCOMPCODE || '').trim();
     const hod = String(user?.hod || '').trim();
+    const hr = String(user?.hr || '').trim();
+    const approvalType = String(user?.approval || 'HOD').toUpperCase();
     const employeeName = String(user?.EMPNAME || user?.userName || '').trim();
 
     const [docDate, setDocDate] = useState(new Date());
@@ -105,9 +108,15 @@ export default function PermissionEntryScreen() {
         refetch: refetchDocument,
     } = useGetDocIDQuery();
     const { data: refreshTokenData } = useGet_refresh_tokenQuery();
+    const shouldFetchHod = (approvalType === 'HOD' || approvalType === 'BOTH') && Boolean(hod && hod !== 'null');
+    const shouldFetchHr = (approvalType === 'HR' || approvalType === 'BOTH') && Boolean(hr && hr !== 'null');
     const { data: hodTokenData } = useGet_hod_tokenQuery(
         { params: { hod } },
-        { skip: !hod },
+        { skip: !shouldFetchHod },
+    );
+    const { data: hrTokenData } = useGet_hod_tokenQuery(
+        { params: { hod: hr } },
+        { skip: !shouldFetchHr },
     );
     const [requestPermission, { isLoading: isSubmitting }] = useRequestPermissionMutation();
 
@@ -121,8 +130,39 @@ export default function PermissionEntryScreen() {
         ? `PER-${String(count).padStart(6, '0')}`
         : '';
     const hasCategory = category !== null && category !== undefined && String(category).trim() !== '';
+
+    const isHodMissing = (approvalType === 'HOD' || approvalType === 'BOTH') && (!hod || hod === 'null' || hod === 'undefined' || hod === '0');
+    const isHrMissing = (approvalType === 'HR' || approvalType === 'BOTH') && (!hr || hr === 'null' || hr === 'undefined' || hr === '0');
+
+    const authorityWarning = useMemo(() => {
+        if (approvalType === 'BOTH' && isHodMissing && isHrMissing) {
+            return {
+                title: 'Reporting HOD and HR Not Assigned',
+                desc: 'Your profile is configured for dual HOD and HR approval in User Control, but neither an HOD nor an HR is assigned. Please ask your administrator to assign your reporting authorities.',
+            };
+        }
+        if (isHodMissing) {
+            return {
+                title: 'Reporting HOD Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HOD is assigned. Please ask your administrator to assign an HOD in User Control.'
+                    : 'Your profile is configured for HOD approval, but no reporting HOD is assigned. Permission requests require an HOD for approval. Please ask your administrator to assign an HOD in User Control.',
+            };
+        }
+        if (isHrMissing) {
+            return {
+                title: 'Reporting HR Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HR is assigned. Please ask your administrator to assign an HR in User Control.'
+                    : 'Your profile is configured for HR approval, but no reporting HR is assigned. Permission requests require an HR for approval. Please ask your administrator to assign an HR in User Control.',
+            };
+        }
+        return null;
+    }, [approvalType, isHodMissing, isHrMissing]);
+
+    const hasAuthority = !isHodMissing && !isHrMissing;
     const canSubmit = Boolean(
-        userId && companyCode && hod && hasCategory && duration && reason.trim() && documentId
+        userId && companyCode && hasAuthority && hasCategory && duration && reason.trim() && documentId
         && !categoriesLoading && !categoriesError && !documentLoading && !documentError && !isSubmitting,
     );
 
@@ -138,27 +178,84 @@ export default function PermissionEntryScreen() {
 
     const handleSubmit = async () => {
         if (submittingRef.current) return;
-        if (!userId || !companyCode || !hod) {
+
+        // Specific, user-friendly intimation for each missing requirement
+        if (!userId) {
             showMessage({
-                message: 'Permission request unavailable',
-                description: 'Your employee, company, or HOD details are missing from your profile.',
+                message: 'Employee ID Missing',
+                description: 'Your employee ID is missing from your profile. Please log out and sign in again, or contact your administrator.',
                 type: 'danger',
+                duration: 4500,
             });
             return;
         }
-        if (!hasCategory || !duration || !reason.trim()) {
+
+        if (!companyCode) {
             showMessage({
-                message: 'Complete the required fields',
-                description: 'Choose a category and valid time range, then enter a reason.',
-                type: 'warning',
+                message: 'Company Not Selected',
+                description: 'No company is selected for this session. Please select your company on the login screen.',
+                type: 'danger',
+                duration: 4500,
             });
             return;
         }
+
+        if (authorityWarning) {
+            showMessage({
+                message: authorityWarning.title,
+                description: authorityWarning.desc,
+                type: 'danger',
+                duration: 5000,
+            });
+            return;
+        }
+
+        if (!hasCategory) {
+            showMessage({
+                message: 'Select Category',
+                description: 'Please select a permission category from the dropdown before submitting.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
+        if (!duration) {
+            showMessage({
+                message: 'Invalid Time Range',
+                description: 'Please select a valid time range where To Time is later than From Time.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
+        if (!reason.trim()) {
+            showMessage({
+                message: 'Reason Required',
+                description: 'Please enter a brief explanation for your permission request.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
+        if (!documentId) {
+            showMessage({
+                message: 'Document ID Loading',
+                description: 'Permission document numbering is loading. Please wait a moment and try again.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
         if (categoriesError || documentError) {
             showMessage({
-                message: 'Permission data is unavailable',
-                description: 'Retry loading permission categories and document numbering before submitting.',
+                message: 'Service Data Unavailable',
+                description: 'Unable to load categories or document numbering from the server. Please check your connection and tap retry.',
                 type: 'danger',
+                duration: 4000,
             });
             return;
         }
@@ -167,17 +264,20 @@ export default function PermissionEntryScreen() {
         try {
             const latestDocument = await refetchDocument();
             if (latestDocument?.isError) {
-                throw new Error('Unable to load the latest permission document number.');
+                throw new Error('Unable to generate the latest permission document number. Please check connection and try again.');
             }
             const latestCount = Number(latestDocument?.data?.data?.count ?? count);
             const latestDocId = Number.isFinite(latestCount) && latestCount > 0
                 ? `PER-${String(latestCount).padStart(6, '0')}`
                 : '';
+            const effectiveHod = hod || (approvalType === 'HR' ? hr : '');
             const response = await requestPermission({
                 data: {
                     userId,
                     docDate: serializeDate(docDate),
-                    hod,
+                    hod: effectiveHod,
+                    hr: hr || null,
+                    approval: approvalType,
                     createdBy: userId,
                     compCode: companyCode,
                     username: employeeName,
@@ -194,19 +294,22 @@ export default function PermissionEntryScreen() {
             }).unwrap();
 
             if (Number(response?.status) !== 1) {
-                throw new Error(response?.message || 'The permission request could not be saved.');
+                const rawMsg = response?.message || (typeof response?.error === 'string' ? response.error : response?.error?.message);
+                const friendly = formatUserFriendlyError(rawMsg, 'The permission request could not be saved.');
+                throw new Error(friendly);
             }
 
             showMessage({
-                message: 'Permission request sent',
-                description: 'Your request was submitted successfully.',
+                message: 'Permission Request Sent',
+                description: 'Your request was submitted successfully for approval.',
                 type: 'success',
             });
 
             try {
                 socket.emit('permission_request', {
-                    hod,
-                    hr: user?.hr == null ? '' : String(user.hr),
+                    hod: effectiveHod,
+                    hr: hr || '',
+                    approval: approvalType,
                     compcode: companyCode,
                     userdata: {
                         email: '',
@@ -220,16 +323,22 @@ export default function PermissionEntryScreen() {
                 console.warn('[PermissionEntryScreen] Unable to emit request notification:', socketError);
             }
 
-            if (refreshTokenData?.data?.token && hodTokenData?.data?.fcm) {
-                try {
-                    await _FCM_SENDER(
-                        refreshTokenData.data.token,
-                        hodTokenData.data.fcm,
-                        `Permission request from ${employeeName || userId}`,
-                        'Permission Request',
-                    );
-                } catch (notificationError) {
-                    console.warn('[PermissionEntryScreen] Unable to send request notification:', notificationError);
+            if (refreshTokenData?.data?.token) {
+                const senderToken = refreshTokenData.data.token;
+                const noteTitle = `Permission request from ${employeeName || userId}`;
+                if ((approvalType === 'HOD' || approvalType === 'BOTH') && hodTokenData?.data?.fcm) {
+                    try {
+                        await _FCM_SENDER(senderToken, hodTokenData.data.fcm, noteTitle, 'Permission Request');
+                    } catch (notificationError) {
+                        console.warn('[PermissionEntryScreen] HOD FCM notification error:', notificationError);
+                    }
+                }
+                if ((approvalType === 'HR' || approvalType === 'BOTH') && hrTokenData?.data?.fcm) {
+                    try {
+                        await _FCM_SENDER(senderToken, hrTokenData.data.fcm, noteTitle, 'Permission Request');
+                    } catch (notificationError) {
+                        console.warn('[PermissionEntryScreen] HR FCM notification error:', notificationError);
+                    }
                 }
             }
 
@@ -237,11 +346,12 @@ export default function PermissionEntryScreen() {
             setReason('');
             refetchDocument();
         } catch (error) {
+            const friendlyDesc = formatUserFriendlyError(error, 'The permission request could not be saved. Please check connection and try again.');
             showMessage({
-                message: 'Permission request failed',
-                description: error?.data?.message || error?.data?.error || error?.message
-                    || 'Please check your connection and try again.',
+                message: 'Permission Request Failed',
+                description: friendlyDesc,
                 type: 'danger',
+                duration: 5000,
             });
         } finally {
             submittingRef.current = false;
@@ -371,9 +481,9 @@ export default function PermissionEntryScreen() {
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
+                    style={[styles.submitButton, (!canSubmit && !isSubmitting) && styles.submitButtonInactive, isSubmitting && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
-                    disabled={!canSubmit}
+                    disabled={isSubmitting}
                     accessibilityRole="button"
                 >
                     {isSubmitting ? (
@@ -488,5 +598,33 @@ const createStyles = theme => StyleSheet.create({
         gap: theme.spacing.sm,
     },
     submitButtonDisabled: { backgroundColor: theme.colors.disabledText },
+    submitButtonInactive: { opacity: 0.88 },
+    warningBanner: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.warningSoft,
+        borderColor: theme.colors.warning,
+        borderWidth: 1,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.md,
+        gap: theme.spacing.sm,
+    },
+    warningBannerTextGroup: {
+        flex: 1,
+    },
+    warningBannerTitle: {
+        ...theme.typography.subtitle,
+        fontSize: 13,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.warning,
+        marginBottom: 2,
+    },
+    warningBannerDesc: {
+        ...theme.typography.caption,
+        fontSize: 11,
+        color: theme.colors.textSecondary,
+        lineHeight: 16,
+    },
     submitButtonText: { ...theme.typography.button, color: theme.colors.brandContrast },
 });

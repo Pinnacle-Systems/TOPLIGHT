@@ -294,11 +294,11 @@ export default function RoleAllocation() {
                             <Text style={styles.usernameText}>{username || 'Admin'}</Text>
                         </View>
 
-                        <Text style={styles.label}>Role Name:</Text>
                         <View style={styles.dropdownContainer}>
                             <Dropdown
                                 selected={roleName}
-                                label={<Text>Select Role</Text>}
+                                label="Role Name"
+                                placeholder="Choose a role to configure"
                                 setSelected={setRoleName}
                                 width={"100%"}
                                 _label={"name"}
@@ -376,6 +376,34 @@ export default function RoleAllocation() {
                             })}
                         </View>
                     </ScrollView>
+                </View>
+
+                <View style={styles.actionButtonBar}>
+                    <TouchableOpacity
+                        style={styles.primaryActionButton}
+                        onPress={edit ? handleUpdate : handleSubmit}
+                        activeOpacity={0.8}
+                    >
+                        <MaterialIcons 
+                            name={edit ? "check" : "save"} 
+                            size={20} 
+                            color={theme.colors.brandContrast} 
+                        />
+                        <Text style={styles.primaryActionText}>
+                            {edit ? "Update Role" : "Save Role"}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.secondaryActionButton}
+                        onPress={onNew}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialIcons name={edit ? "close" : "add"} size={18} color={theme.colors.textSecondary} />
+                        <Text style={styles.secondaryActionText}>
+                            {edit ? "Cancel" : "New Role"}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.card}>
@@ -526,5 +554,49 @@ const createStyles = theme => StyleSheet.create({
     },
     permissionAlternateRow: {
         backgroundColor: theme.colors.backgroundSubtle,
+    },
+    actionButtonBar: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: theme.spacing.lg,
+    },
+    primaryActionButton: {
+        flex: 2,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.brand,
+        height: 48,
+        borderRadius: theme.radii.md,
+        elevation: 2,
+        shadowColor: theme.colors.brand,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    primaryActionText: {
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
+        fontWeight: theme.fontWeights.bold,
+        fontSize: 14,
+        marginLeft: 8,
+    },
+    secondaryActionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.surface,
+        height: 48,
+        borderRadius: theme.radii.md,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+    },
+    secondaryActionText: {
+        ...theme.typography.button,
+        color: theme.colors.textSecondary,
+        fontWeight: theme.fontWeights.semiBold,
+        fontSize: 13,
+        marginLeft: 6,
     },
 });

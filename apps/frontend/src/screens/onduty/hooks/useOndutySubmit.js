@@ -23,6 +23,7 @@ import {
 import { getCurrentLocationAsync } from '../../../components/Utils/CustomLocation';
 import { _FCM_SENDER } from '../../../components/Utils/FCM';
 import socket from '../../../utils/Socket';
+import { formatUserFriendlyError } from '../../../utils/userFriendlyError';
 import OndutyRTk from '../../../store/api/OndutyApi';
 
 const ONDUTY_API = `${BASE_URL}/onduty/requestOnduty`;
@@ -83,6 +84,55 @@ export function useOndutySubmit({
             return;
         }
 
+        if (!UserSelect?.idcard) {
+            showMessage({
+                message: 'Employee ID Missing',
+                description: 'Your employee ID is missing from your profile. Please log out and sign in again, or contact your administrator.',
+                type: 'danger',
+                duration: 4500,
+            });
+            return;
+        }
+
+        const approvalType = String(UserSelect?.approval || 'HOD').toUpperCase();
+        const hod = String(UserSelect?.hod || '').trim();
+        const hr = String(UserSelect?.hr || '').trim();
+
+        const isHodMissing = (approvalType === 'HOD' || approvalType === 'BOTH') && (!hod || hod === 'null' || hod === '0');
+        const isHrMissing = (approvalType === 'HR' || approvalType === 'BOTH') && (!hr || hr === 'null' || hr === '0');
+
+        if (approvalType === 'BOTH' && isHodMissing && isHrMissing) {
+            showMessage({
+                message: 'Reporting Authorities Not Assigned',
+                description: 'Your profile is configured for dual HOD and HR approval in User Control, but neither an HOD nor an HR is assigned. Please contact your administrator.',
+                type: 'danger',
+                duration: 5000,
+            });
+            return;
+        }
+        if (isHodMissing) {
+            showMessage({
+                message: 'Reporting HOD Not Assigned',
+                description: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HOD is assigned. Please contact your administrator in User Control.'
+                    : 'Your profile is configured for HOD approval, but no reporting HOD is assigned. OnDuty requests require an HOD for approval. Please contact your administrator in User Control.',
+                type: 'danger',
+                duration: 5000,
+            });
+            return;
+        }
+        if (isHrMissing) {
+            showMessage({
+                message: 'Reporting HR Not Assigned',
+                description: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HR is assigned. Please contact your administrator in User Control.'
+                    : 'Your profile is configured for HR approval, but no reporting HR is assigned. OnDuty requests require an HR for approval. Please contact your administrator in User Control.',
+                type: 'danger',
+                duration: 5000,
+            });
+            return;
+        }
+
         if (!formState.category) {
             showMessage({ message: 'Reason Required', description: 'Please select a category.', type: 'warning' });
             return;
@@ -122,14 +172,10 @@ export function useOndutySubmit({
 
             const formData = new FormData();
 
-            if (UserSelect?.approval === 'HOD') {
-                formData.append('hod', String(UserSelect?.hod || '0'));
-            } else if (UserSelect?.approval === 'HR') {
-                formData.append('hr', String(UserSelect?.hr || '0'));
-            } else {
-                formData.append('hod', String(UserSelect?.hod || '0'));
-                formData.append('hr',  String(UserSelect?.hr  || '0'));
-            }
+            const effectiveHod = hod || (approvalType === 'HR' ? hr : '0');
+            formData.append('hod', effectiveHod);
+            formData.append('hr', hr || '');
+            formData.append('approval', approvalType);
 
             formData.append('userId',       UserSelect?.UserId || '0');
             formData.append('idcard',       UserSelect?.UserId || '0');
@@ -181,7 +227,9 @@ export function useOndutySubmit({
                 showMessage({ message: 'OnDuty Started ✓', description: 'Your trip has been recorded.', type: 'success' });
 
                 socket.emit('onduty_request', {
-                    hod:      UserSelect?.hod,
+                    hod:      effectiveHod,
+                    hr:       hr || '',
+                    approval: approvalType,
                     compcode: UserSelect?.GCOMPCODE,
                     userdata: {
                         email:    '',
@@ -194,13 +242,18 @@ export function useOndutySubmit({
 
                 await onStartTracking?.(UserSelect?.UserId, finalDocId, UserSelect?.GCOMPCODE);
 
-                try {
-                    await _FCM_SENDER(
-                        refetchFCMTokens?.refToken,
-                        refetchFCMTokens?.hodFCMToken,
-                        `OnDuty By: ${UserSelect?.EMPNAME}`,
-                    );
-                } catch { /* silent */ }
+                if (refetchFCMTokens?.refToken) {
+                    const senderToken = refetchFCMTokens.refToken;
+                    const noteMsg = `OnDuty By: ${UserSelect?.EMPNAME}`;
+                    const fcmTasks = [];
+                    if ((approvalType === 'HOD' || approvalType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
+                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {}));
+                    }
+                    if ((approvalType === 'HR' || approvalType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
+                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {}));
+                    }
+                    await Promise.allSettled(fcmTasks);
+                }
 
                 await refreshAndReset();
 
@@ -223,12 +276,14 @@ export function useOndutySubmit({
                     ],
                 );
             } else {
-                Alert.alert('Submission Failed', data?.message || 'Server returned an error.');
+                const friendly = formatUserFriendlyError(data?.message || 'Server returned an error.', 'OnDuty submission failed.');
+                Alert.alert('Submission Failed', friendly);
             }
 
         } catch (e) {
             dispatch(OndutyRTk.util.resetApiState());
-            showMessage({ message: 'Error', description: e?.message || 'Submission failed', type: 'danger' });
+            const friendly = formatUserFriendlyError(e, 'Submission failed. Please check network connection and try again.');
+            showMessage({ message: 'Submission Failed', description: friendly, type: 'danger', duration: 4500 });
         } finally {
             isSubmittingRef.current = false;
             setIsSubmitting(false);
@@ -265,21 +320,27 @@ export function useOndutySubmit({
 
                 await onStopTracking?.();
 
-                try {
-                    await _FCM_SENDER(
-                        refetchFCMTokens?.refToken,
-                        refetchFCMTokens?.hodFCMToken,
-                        `OnDuty Out: ${UserSelect?.EMPNAME}`,
-                    );
-                } catch { /* silent */ }
+                if (refetchFCMTokens?.refToken) {
+                    const senderToken = refetchFCMTokens.refToken;
+                    const noteMsg = `OnDuty Out: ${UserSelect?.EMPNAME}`;
+                    const appType = refetchFCMTokens?.approvalType || 'HOD';
+                    if ((appType === 'HOD' || appType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {});
+                    }
+                    if ((appType === 'HR' || appType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {});
+                    }
+                }
 
                 await refreshAndReset();
 
             } else {
-                Alert.alert('Error', response?.message || 'Checkout failed');
+                const friendly = formatUserFriendlyError(response?.message || 'Checkout failed', 'Checkout failed');
+                Alert.alert('Checkout Failed', friendly);
             }
         } catch (e) {
-            showMessage({ message: 'Error', description: e?.message || 'Checkout failed', type: 'danger' });
+            const friendly = formatUserFriendlyError(e, 'Checkout failed. Please try again.');
+            showMessage({ message: 'Checkout Failed', description: friendly, type: 'danger', duration: 4500 });
         } finally {
             setIsSubmitting(false);
         }
@@ -302,21 +363,27 @@ export function useOndutySubmit({
 
                 await onStopTracking?.();
 
-                try {
-                    await _FCM_SENDER(
-                        refetchFCMTokens?.refToken,
-                        refetchFCMTokens?.hodFCMToken,
-                        `OnDuty Reached: ${UserSelect?.EMPNAME}`,
-                    );
-                } catch { /* silent */ }
+                if (refetchFCMTokens?.refToken) {
+                    const senderToken = refetchFCMTokens.refToken;
+                    const noteMsg = `OnDuty Reached: ${UserSelect?.EMPNAME}`;
+                    const appType = refetchFCMTokens?.approvalType || 'HOD';
+                    if ((appType === 'HOD' || appType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {});
+                    }
+                    if ((appType === 'HR' || appType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {});
+                    }
+                }
 
                 await refreshAndReset();
 
             } else {
-                Alert.alert('Error', response?.message || 'Failed');
+                const friendly = formatUserFriendlyError(response?.message || 'Failed', 'Operation failed');
+                Alert.alert('Error', friendly);
             }
         } catch (e) {
-            showMessage({ message: 'Error', description: e?.message || 'Failed', type: 'danger' });
+            const friendly = formatUserFriendlyError(e, 'Confirmation failed. Please try again.');
+            showMessage({ message: 'Failed', description: friendly, type: 'danger', duration: 4500 });
         } finally {
             setIsSubmitting(false);
         }

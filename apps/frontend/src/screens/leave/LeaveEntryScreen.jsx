@@ -27,6 +27,7 @@ import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/ap
 import { _FCM_SENDER } from '../../components/Utils/FCM';
 import socket from '../../utils/Socket';
 import { useAppTheme } from '../../theme';
+import { formatUserFriendlyError } from '../../utils/userFriendlyError';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HALF_DAY_OPTIONS = [
@@ -121,6 +122,8 @@ export default function LeaveEntryScreen() {
     const idcard = String(user?.UserId || user?.IDCARD || user?.Id || '').trim();
     const compCode = String(user?.GCOMPCODE || '').trim();
     const hod = String(user?.hod || '').trim();
+    const hr = String(user?.hr || '').trim();
+    const approvalType = String(user?.approval || 'HOD').toUpperCase();
     const employeeName = String(user?.EMPNAME || user?.userName || '').trim();
 
     const [category, setCategory] = useState('');
@@ -143,9 +146,15 @@ export default function LeaveEntryScreen() {
         useGet_LcodeQuery();
     const { data: documentData, refetch: refetchDocument } = useGetDocIDQuery();
     const { data: refreshTokenData } = useGet_refresh_tokenQuery();
+    const shouldFetchHod = (approvalType === 'HOD' || approvalType === 'BOTH') && Boolean(hod && hod !== 'null');
+    const shouldFetchHr = (approvalType === 'HR' || approvalType === 'BOTH') && Boolean(hr && hr !== 'null');
     const { data: hodTokenData } = useGet_hod_tokenQuery(
         { params: { hod } },
-        { skip: !hod },
+        { skip: !shouldFetchHod },
+    );
+    const { data: hrTokenData } = useGet_hod_tokenQuery(
+        { params: { hod: hr } },
+        { skip: !shouldFetchHr },
     );
     const [fetchLeaveBalance, {
         currentData: leaveBalanceData,
@@ -190,7 +199,38 @@ export default function LeaveEntryScreen() {
     const requestedDays = calculateRequestedDays(fromDate, toDate, firstDayType, lastDayType);
     const availableBalance = Number(selectedBalance?.LBAL ?? 0);
     const balance = Number.isFinite(availableBalance) ? availableBalance : 0;
-    const hasRequiredIdentity = Boolean(idcard && compCode && hod);
+
+    const isHodMissing = (approvalType === 'HOD' || approvalType === 'BOTH') && (!hod || hod === 'null' || hod === 'undefined' || hod === '0');
+    const isHrMissing = (approvalType === 'HR' || approvalType === 'BOTH') && (!hr || hr === 'null' || hr === 'undefined' || hr === '0');
+
+    const authorityWarning = useMemo(() => {
+        if (approvalType === 'BOTH' && isHodMissing && isHrMissing) {
+            return {
+                title: 'Reporting HOD and HR Not Assigned',
+                desc: 'Your profile is configured for dual HOD and HR approval in User Control, but neither an HOD nor an HR is assigned. Please ask your administrator to assign your reporting authorities.',
+            };
+        }
+        if (isHodMissing) {
+            return {
+                title: 'Reporting HOD Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HOD is assigned. Please ask your administrator to assign an HOD in User Control.'
+                    : 'Your profile is configured for HOD approval, but no reporting HOD is assigned. Leave requests require an HOD for approval. Please ask your administrator to assign an HOD in User Control.',
+            };
+        }
+        if (isHrMissing) {
+            return {
+                title: 'Reporting HR Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HR is assigned. Please ask your administrator to assign an HR in User Control.'
+                    : 'Your profile is configured for HR approval, but no reporting HR is assigned. Leave requests require an HR for approval. Please ask your administrator to assign an HR in User Control.',
+            };
+        }
+        return null;
+    }, [approvalType, isHodMissing, isHrMissing]);
+
+    const hasAuthority = !isHodMissing && !isHrMissing;
+    const hasRequiredIdentity = Boolean(idcard && compCode && hasAuthority);
     const dateRangeValid = Boolean(
         fromDate && toDate && toDateKey(toDate) >= toDateKey(fromDate),
     );
@@ -239,35 +279,114 @@ export default function LeaveEntryScreen() {
 
     const handleSubmit = async () => {
         if (isSubmittingRef.current) return;
-        if (!hasRequiredIdentity) {
+
+        // Specific, user-friendly intimation for each missing requirement
+        if (!idcard) {
             showMessage({
-                message: 'Leave request unavailable',
-                description: 'Your employee, company, or HOD details are missing from the user profile.',
+                message: 'Employee ID Missing',
+                description: 'Your employee ID is missing from your profile. Please log out and sign in again, or contact your administrator.',
                 type: 'danger',
+                duration: 4500,
             });
             return;
         }
+
+        if (!compCode) {
+            showMessage({
+                message: 'Company Not Selected',
+                description: 'No company is selected for this session. Please select your company on the login screen.',
+                type: 'danger',
+                duration: 4500,
+            });
+            return;
+        }
+
+        if (authorityWarning) {
+            showMessage({
+                message: authorityWarning.title,
+                description: authorityWarning.desc,
+                type: 'danger',
+                duration: 5000,
+            });
+            return;
+        }
+
+        if (!category) {
+            showMessage({
+                message: 'Select Leave Category',
+                description: 'Please select a leave category from the dropdown before submitting.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
+        if (!leaveCode) {
+            showMessage({
+                message: 'Select Leave Code',
+                description: 'Please select a leave code (e.g., Casual Leave, Sick Leave) to apply.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
+        if (!fromDate || !toDate) {
+            showMessage({
+                message: 'Select Leave Dates',
+                description: 'Please choose both From Date and To Date for your leave period.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
         if (!dateRangeValid) {
             showMessage({
-                message: 'Check the selected dates',
+                message: 'Invalid Date Range',
                 description: 'The To Date must be the same as or later than the From Date.',
                 type: 'danger',
+                duration: 3500,
             });
             return;
         }
+
+        if (balanceLoading) {
+            showMessage({
+                message: 'Leave Balance Loading',
+                description: 'Your leave balance is currently loading. Please wait a moment.',
+                type: 'warning',
+                duration: 3500,
+            });
+            return;
+        }
+
         if (!balanceResolved) {
             showMessage({
-                message: 'Leave balance is not ready',
-                description: 'Wait for the selected leave balance to load, then try again.',
+                message: 'Leave Balance Unavailable',
+                description: 'Could not load your leave balance for the selected leave code. Please retry or pick another leave code.',
                 type: 'warning',
+                duration: 4000,
             });
             return;
         }
+
         if (requestedDays > balance) {
             showMessage({
-                message: 'Leave balance exceeded',
-                description: `Available: ${balance} days. Requested: ${requestedDays} days.`,
+                message: 'Insufficient Leave Balance',
+                description: `You requested ${requestedDays} days, but your available balance for ${leaveCode} is ${balance} days.`,
                 type: 'danger',
+                duration: 4500,
+            });
+            return;
+        }
+
+        if (!reason.trim()) {
+            showMessage({
+                message: 'Reason Required',
+                description: 'Please enter a brief explanation for your leave request.',
+                type: 'warning',
+                duration: 3500,
             });
             return;
         }
@@ -280,6 +399,7 @@ export default function LeaveEntryScreen() {
                 ? `${compCode}/LEV-${String(count).padStart(6, '0')}`
                 : `${compCode}/LEV-PENDING`;
 
+            const effectiveHod = hod || (approvalType === 'HR' ? hr : '');
             const response = await addRequestLeave({
                 data: {
                     userId: idcard,
@@ -292,7 +412,9 @@ export default function LeaveEntryScreen() {
                     compCode,
                     createdBy: idcard,
                     modified_By: idcard,
-                    hod,
+                    hod: effectiveHod,
+                    hr: hr || null,
+                    approval: approvalType,
                     mobile: user?.MOBNO == null ? null : String(user.MOBNO),
                     fltype: firstDayType,
                     tltype: lastDayType,
@@ -300,7 +422,6 @@ export default function LeaveEntryScreen() {
                     finyear: financialYear,
                     empname: employeeName,
                     category: Number(category),
-                    hr: user?.hr == null ? null : String(user.hr),
                 },
                 params: {
                     docCount: count,
@@ -309,22 +430,26 @@ export default function LeaveEntryScreen() {
             }).unwrap();
 
             if (Number(response?.status) !== 1) {
-                throw new Error(response?.message || 'The leave request could not be saved.');
+                const rawMsg = response?.message || (typeof response?.error === 'string' ? response.error : response?.error?.message);
+                const friendly = formatUserFriendlyError(rawMsg, 'The leave request could not be saved.');
+                throw new Error(friendly);
             }
 
             showMessage({
-                message: 'Leave request sent',
-                description: 'Your leave request was submitted successfully.',
+                message: 'Leave Request Sent',
+                description: 'Your leave request was submitted successfully for approval.',
                 type: 'success',
             });
 
             try {
                 socket.emit('leave_request', {
-                    hod,
+                    hod: effectiveHod,
+                    hr: hr || '',
+                    approval: approvalType,
                     compcode: compCode,
                     userdata: {
                         email: '',
-                        username: user?.userName,
+                        username: user?.userName || employeeName,
                         Idcard: idcard,
                         mobile: user?.MOBNO,
                     },
@@ -334,16 +459,22 @@ export default function LeaveEntryScreen() {
                 console.warn('Leave request socket notification failed:', notificationError);
             }
 
-            if (refreshTokenData?.data?.token && hodTokenData?.data?.fcm) {
-                try {
-                    await _FCM_SENDER(
-                        refreshTokenData.data.token,
-                        hodTokenData.data.fcm,
-                        `Leave request from ${employeeName || idcard}`,
-                        'Leave Request',
-                    );
-                } catch (notificationError) {
-                    console.warn('Leave request notification failed:', notificationError);
+            if (refreshTokenData?.data?.token) {
+                const senderToken = refreshTokenData.data.token;
+                const noteTitle = `Leave request from ${employeeName || idcard}`;
+                if ((approvalType === 'HOD' || approvalType === 'BOTH') && hodTokenData?.data?.fcm) {
+                    try {
+                        await _FCM_SENDER(senderToken, hodTokenData.data.fcm, noteTitle, 'Leave Request');
+                    } catch (notificationError) {
+                        console.warn('[LeaveEntryScreen] HOD FCM notification error:', notificationError);
+                    }
+                }
+                if ((approvalType === 'HR' || approvalType === 'BOTH') && hrTokenData?.data?.fcm) {
+                    try {
+                        await _FCM_SENDER(senderToken, hrTokenData.data.fcm, noteTitle, 'Leave Request');
+                    } catch (notificationError) {
+                        console.warn('[LeaveEntryScreen] HR FCM notification error:', notificationError);
+                    }
                 }
             }
 
@@ -356,14 +487,12 @@ export default function LeaveEntryScreen() {
             setReason('');
             refetchDocument();
         } catch (error) {
+            const friendlyDesc = formatUserFriendlyError(error, 'The leave request could not be saved. Please check connection and try again.');
             showMessage({
-                message: 'Leave request failed',
-                description:
-                    error?.data?.message ||
-                    error?.data?.error ||
-                    error?.message ||
-                    'Please check your connection and try again.',
+                message: 'Leave Request Failed',
+                description: friendlyDesc,
                 type: 'danger',
+                duration: 5000,
             });
         } finally {
             isSubmittingRef.current = false;
@@ -419,11 +548,20 @@ export default function LeaveEntryScreen() {
                     </View>
                 </View>
 
-                {!hasRequiredIdentity && (
+                {authorityWarning && (
+                    <View style={styles.warningBanner}>
+                        <MaterialCommunityIcons name="alert-circle-outline" size={22} color={theme.colors.warning} />
+                        <View style={styles.warningBannerTextGroup}>
+                            <Text style={styles.warningBannerTitle}>{authorityWarning.title}</Text>
+                            <Text style={styles.warningBannerDesc}>{authorityWarning.desc}</Text>
+                        </View>
+                    </View>
+                )}
+                {(!idcard || !compCode) && (
                     <View style={styles.errorCard}>
                         <MaterialCommunityIcons name="alert-circle-outline" size={19} color={theme.colors.danger} />
                         <Text style={styles.errorCardText}>
-                            Your profile is missing employee, company, or HOD details. Contact your administrator.
+                            Your profile is missing employee or company details. Please log out and sign in again.
                         </Text>
                     </View>
                 )}
@@ -580,9 +718,9 @@ export default function LeaveEntryScreen() {
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
+                    style={[styles.submitButton, (!canSubmit && !submitting) && styles.submitButtonInactive, submitting && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
-                    disabled={!canSubmit}
+                    disabled={submitting}
                     accessibilityRole="button"
                 >
                     {submitting ? (
@@ -719,5 +857,33 @@ const createStyles = theme => StyleSheet.create({
         paddingVertical: theme.spacing.md,
     },
     submitButtonDisabled: { backgroundColor: theme.colors.disabledText },
+    submitButtonInactive: { opacity: 0.88 },
+    warningBanner: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.warningSoft,
+        borderColor: theme.colors.warning,
+        borderWidth: 1,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.md,
+        gap: theme.spacing.sm,
+    },
+    warningBannerTextGroup: {
+        flex: 1,
+    },
+    warningBannerTitle: {
+        ...theme.typography.subtitle,
+        fontSize: 13,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.warning,
+        marginBottom: 2,
+    },
+    warningBannerDesc: {
+        ...theme.typography.caption,
+        fontSize: 11,
+        color: theme.colors.textSecondary,
+        lineHeight: 16,
+    },
     submitButtonText: { ...theme.typography.button, color: theme.colors.brandContrast, textAlign: 'center' },
 });

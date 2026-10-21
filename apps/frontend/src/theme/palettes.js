@@ -83,7 +83,7 @@ export const darkColors = {
     brand: '#60A5FA',
     brandStrong: '#93C5FD',
     brandSoft: '#1E3A5F',
-    brandContrast: '#0B1220',
+    brandContrast: '#506685',
     secondary: '#5EEAD4',
     secondarySoft: '#123D3B',
     accent: '#C4B5FD',

@@ -95,10 +95,49 @@ export default function OndutyScreen() {
     );
     const lastRecordedKm = kmData?.data?.end_km || kmData?.data?.start_km;
 
+    const approvalType = String(UserSelect?.approval || 'HOD').toUpperCase();
+    const hod = String(UserSelect?.hod || '').trim();
+    const hr = String(UserSelect?.hr || '').trim();
+
+    const isHodMissing = (approvalType === 'HOD' || approvalType === 'BOTH') && (!hod || hod === 'null' || hod === 'undefined' || hod === '0');
+    const isHrMissing = (approvalType === 'HR' || approvalType === 'BOTH') && (!hr || hr === 'null' || hr === 'undefined' || hr === '0');
+
+    const authorityWarning = useMemo(() => {
+        if (approvalType === 'BOTH' && isHodMissing && isHrMissing) {
+            return {
+                title: 'Reporting HOD and HR Not Assigned',
+                desc: 'Your profile is configured for dual HOD and HR approval in User Control, but neither an HOD nor an HR is assigned. Please ask your administrator to assign your reporting authorities.',
+            };
+        }
+        if (isHodMissing) {
+            return {
+                title: 'Reporting HOD Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HOD is assigned. Please ask your administrator to assign an HOD in User Control.'
+                    : 'Your profile is configured for HOD approval, but no reporting HOD is assigned. OnDuty requests require an HOD for approval. Please ask your administrator to assign an HOD in User Control.',
+            };
+        }
+        if (isHrMissing) {
+            return {
+                title: 'Reporting HR Not Assigned',
+                desc: approvalType === 'BOTH'
+                    ? 'Your profile requires dual HOD and HR approval, but no reporting HR is assigned. Please ask your administrator to assign an HR in User Control.'
+                    : 'Your profile is configured for HR approval, but no reporting HR is assigned. OnDuty requests require an HR for approval. Please ask your administrator to assign an HR in User Control.',
+            };
+        }
+        return null;
+    }, [approvalType, isHodMissing, isHrMissing]);
+
+    const shouldFetchHod = (approvalType === 'HOD' || approvalType === 'BOTH') && Boolean(hod && hod !== 'null');
+    const shouldFetchHr = (approvalType === 'HR' || approvalType === 'BOTH') && Boolean(hr && hr !== 'null');
+
     const { data: refToken } = useGet_refresh_tokenQuery();
     const { data: hodToken } = useGet_hod_tokenQuery({
-        params: { hod: UserSelect?.hod },
-    }, { skip: !UserSelect?.hod });
+        params: { hod },
+    }, { skip: !shouldFetchHod });
+    const { data: hrToken } = useGet_hod_tokenQuery({
+        params: { hod: hr },
+    }, { skip: !shouldFetchHr });
 
     // Location Tracker Hook (persistent background service)
     const { startTracking, stopTracking } = useLocationTracker({
@@ -117,6 +156,8 @@ export default function OndutyScreen() {
         refetchFCMTokens: {
             refToken: refToken?.data?.token,
             hodFCMToken: hodToken?.data?.fcm,
+            hrFCMToken: hrToken?.data?.fcm,
+            approvalType,
         },
     });
 
@@ -343,7 +384,17 @@ export default function OndutyScreen() {
                     />
                 ) : (
                     /* 3. New Entry Form State */
-                    <OndutyEntryForm
+                    <>
+                        {authorityWarning && (
+                            <View style={styles.warningBanner}>
+                                <MaterialCommunityIcons name="alert-circle-outline" size={22} color={theme.colors.warning} />
+                                <View style={styles.warningBannerTextGroup}>
+                                    <Text style={styles.warningBannerTitle}>{authorityWarning.title}</Text>
+                                    <Text style={styles.warningBannerDesc}>{authorityWarning.desc}</Text>
+                                </View>
+                            </View>
+                        )}
+                        <OndutyEntryForm
                         docId={formState.docid}
                         categoryOptions={formState.category_options}
                         selectedCategory={formState.category}
@@ -370,6 +421,7 @@ export default function OndutyScreen() {
                         isAdmin={UserSelect?.isAdmin === 1 || UserSelect?.isAdmin === true}
                         onOpenBrowseModal={() => setIsBrowseModalOpen(true)}
                     />
+                    </>
                 )}
             </ScrollView>
 
@@ -488,5 +540,30 @@ const createStyles = theme => StyleSheet.create({
         marginTop: theme.spacing.md + 2,
         ...theme.typography.bodySmall,
         color: theme.colors.textMuted,
+    },
+    warningBanner: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.warningSoft,
+        borderColor: theme.colors.warning,
+        borderWidth: 1,
+        borderRadius: theme.radii.lg,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.lg,
+    },
+    warningBannerTextGroup: {
+        flex: 1,
+        marginLeft: theme.spacing.sm,
+    },
+    warningBannerTitle: {
+        ...theme.typography.label,
+        fontFamily: theme.typography.fontBold,
+        color: theme.colors.warning,
+        marginBottom: 2,
+    },
+    warningBannerDesc: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        lineHeight: 18,
     },
 });

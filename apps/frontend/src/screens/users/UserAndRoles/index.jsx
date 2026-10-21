@@ -26,12 +26,12 @@ export default function UserAndRoles() {
 
     const indicatorLeft = indicatorAnim.interpolate({
         inputRange: [0, 1, 2],
-        outputRange: ['2%', '36%', '70%'],
+        outputRange: ['1%', '42%', '83%'],
     });
 
     const indicatorWidth = indicatorAnim.interpolate({
         inputRange: [0, 1, 2],
-        outputRange: ['32%', '32%', '28%'],
+        outputRange: ['39%', '39%', '16%'],
     });
 
     return (
@@ -60,6 +60,7 @@ export default function UserAndRoles() {
                             styles.tabText,
                             activeTab === 'allocate' && styles.activeTabText
                         ]}
+                        numberOfLines={1}
                     >
                         Allocate Role
                     </CustomText>
@@ -80,6 +81,7 @@ export default function UserAndRoles() {
                             styles.tabText,
                             activeTab === 'create' && styles.activeTabText
                         ]}
+                        numberOfLines={1}
                     >
                         Create User
                     </CustomText>
@@ -115,47 +117,51 @@ const createStyles = theme => StyleSheet.create({
     },
     tabContainer: {
         flexDirection: 'row',
-        height: 50,
+        height: 48,
         backgroundColor: theme.colors.surfaceSunken,
-        borderRadius: theme.radii.md,
+        borderRadius: theme.radii.lg,
         marginHorizontal: theme.layout.screenGutter,
         marginTop: theme.spacing.md,
         marginBottom: theme.spacing.sm,
-        padding: theme.spacing.xs,
+        padding: 4,
         position: 'relative',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
     },
     activeIndicator: {
         position: 'absolute',
         top: 4,
         bottom: 4,
         backgroundColor: theme.colors.brand,
-        borderRadius: theme.radii.sm,
-        elevation: 2,
-        shadowColor: theme.colors.shadow,
+        borderRadius: theme.radii.md,
+        elevation: 3,
+        shadowColor: theme.colors.brand,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: theme.isDark ? 0.3 : 0.2,
+        shadowOpacity: 0.25,
         shadowRadius: 4,
     },
     tabButton: {
-        flex: 1,
+        flex: 2,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
-        borderRadius: theme.radii.sm,
+        borderRadius: theme.radii.md,
         zIndex: 1,
+        paddingHorizontal: 4,
     },
     settingsTabButton: {
-        flex: 0.7,
+        flex: 0.9,
     },
     activeTabButton: {
         // styled by activeIndicator underneath
     },
     tabText: {
         ...theme.typography.caption,
+        fontSize: 13,
         fontWeight: theme.fontWeights.semiBold,
-        marginLeft: theme.spacing.sm,
+        marginLeft: 6,
         color: theme.colors.textMuted,
     },
     activeTabText: {

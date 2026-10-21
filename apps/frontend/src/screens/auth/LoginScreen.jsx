@@ -179,6 +179,7 @@ export default function LoginScreen() {
                 COMPID: company?.companyid,
                 hr, 
                 hod: head, 
+                approval: userRecord?.approval || 'HOD',
                 roleId: roleid,
                 level: userRecord?.level || (userRecord?.isAdmin ? 'admin' : 'user'),
                 isAdmin: userRecord?.isAdmin === 1 || userRecord?.isAdmin === true ? 1 : 0,
@@ -257,7 +258,14 @@ export default function LoginScreen() {
                                 <Text style={styles.selectionTitle}>Select Your Company</Text>
                             </View>
                             <Text style={styles.selectionSubtitle}>Choose the organization to access</Text>
-                            <View style={styles.companyList}>
+                            <ScrollView 
+                                style={styles.companyList}
+                                contentContainerStyle={styles.companyListContent}
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                showsVerticalScrollIndicator={true}
+                                bounces={true}
+                            >
                                 {Globaldata.map(comp => (
                                     <TouchableOpacity 
                                         key={comp.companyid || comp.companyCode}
@@ -274,7 +282,7 @@ export default function LoginScreen() {
                                         <Icon name="arrow-forward" size={20} color={theme.colors.brand} />
                                     </TouchableOpacity>
                                 ))}
-                            </View>
+                            </ScrollView>
                         </Animated.View>
                     ) : (
                         <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
@@ -441,7 +449,10 @@ const createStyles = theme => StyleSheet.create({
         marginBottom: theme.spacing.lg,
     },
     companyList: {
-        maxHeight: 240,
+        maxHeight: 290,
+    },
+    companyListContent: {
+        paddingBottom: 4,
     },
     companyItem: {
         flexDirection: 'row',

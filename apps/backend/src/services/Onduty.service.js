@@ -35,7 +35,7 @@ export async function get__Onduty(req, res) {
     const hod=req.query?.hod
     const id=req.query?.id
         try {
-            const result=await  prisma_Connector.onduty.findMany({where:hod ? {compCode:COMPCODE,hod:hod,create:1} : {compCode:COMPCODE,userId:id,create:1},include:{userdata:{select:{Employee:true,username:true,Idcard:true}},createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
+            const result=await  prisma_Connector.onduty.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}],create:1} : {compCode:COMPCODE,userId:id,create:1},include:{userdata:{select:{Employee:true,username:true,Idcard:true}},createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
              res.json({status:1,data:result}) 
         }
         catch (err) {
@@ -452,6 +452,35 @@ export async function requestOnduty(req, res) {
       return res.status(400).json({ status: 0, message: 'Category and create fields are required.' });
     }
 
+    const approvalType = String(req.body.approval || 'HOD').toUpperCase();
+    const hodVal = req.body.hod && String(req.body.hod).trim() !== '' && req.body.hod !== 'null' && req.body.hod !== '0' ? String(req.body.hod).trim() : null;
+    const hrVal = req.body.hr && String(req.body.hr).trim() !== '' && req.body.hr !== 'null' && req.body.hr !== '0' ? String(req.body.hr).trim() : null;
+
+    if (approvalType === 'BOTH') {
+      if (!hodVal && !hrVal) {
+        cleanupFile();
+        return res.status(400).json({ status: 0, message: "Neither HOD nor HR is assigned to your profile in User Control. Dual approval requires both HOD and HR." });
+      }
+      if (!hodVal) {
+        cleanupFile();
+        return res.status(400).json({ status: 0, message: "Reporting HOD is not assigned to your profile in User Control. Dual approval requires an HOD." });
+      }
+      if (!hrVal) {
+        cleanupFile();
+        return res.status(400).json({ status: 0, message: "Reporting HR is not assigned to your profile in User Control. Dual approval requires an HR." });
+      }
+    } else if (approvalType === 'HR') {
+      if (!hrVal && !hodVal) {
+        cleanupFile();
+        return res.status(400).json({ status: 0, message: "Reporting HR is not assigned to your profile. Please contact your administrator to assign an HR in User Control before submitting." });
+      }
+    } else {
+      if (!hodVal) {
+        cleanupFile();
+        return res.status(400).json({ status: 0, message: "Reporting HOD is not assigned to your profile. Please contact your administrator to assign an HOD in User Control before submitting." });
+      }
+    }
+
     // 2. Block duplicate active session
     if (!Isgo_onduty) {
      const activeSession = await prisma_Connector.onduty.findFirst({
@@ -480,6 +509,30 @@ export async function requestOnduty(req, res) {
     }
 
     const prismaData = buildPrismaData(req.body, photoname, in_time);
+
+    // Defensive FK check: verify userId exists in MySQL User table to prevent P2003
+    if (prismaData.userId) {
+      const userExists = await prisma_Connector.user.findFirst({
+        where: { Idcard: String(prismaData.userId) },
+        select: { Idcard: true },
+      });
+      if (!userExists) {
+        console.warn(`[requestOnduty] Warning: userId '${prismaData.userId}' not found in MySQL User table. Setting to null for MySQL record.`);
+        delete prismaData.userId;
+      }
+    }
+
+    // Defensive FK check: verify category exists in OndutyMaster table to prevent P2003
+    if (prismaData.category) {
+      const categoryExists = await prisma_Connector.ondutyMaster.findUnique({
+        where: { id: prismaData.category },
+        select: { id: true },
+      });
+      if (!categoryExists) {
+        console.warn(`[requestOnduty] Warning: category '${prismaData.category}' not found in ondutyMaster table. Setting to null for MySQL record.`);
+        delete prismaData.category;
+      }
+    }
 
     // 3. Resolve or create Prisma row
     if (docid) {
@@ -623,6 +676,23 @@ export async function requestOnduty(req, res) {
     if (err.code === 'P2002') {
       return res.status(409).json({ status: 0, message: 'Duplicate entry detected' });
     }
+    if (err.code === 'P2003') {
+      const field = String(err.meta?.field_name || '');
+      let message = 'Unable to complete request because a related record was not found.';
+      if (field.includes('userId')) {
+        message = 'User profile not found. Please log out, sign in again, or contact your administrator.';
+      } else if (field.includes('category')) {
+        message = 'Selected on-duty category is invalid. Please select a valid category and try again.';
+      } else {
+        message = `Unable to process request due to an invalid reference (${field || 'record'}).`;
+      }
+      return res.status(400).json({
+        status: 0,
+        message,
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      });
+    }
+
     if (err.errorNum) {
       return res.status(500).json({ status: 0, message: `Oracle error: ${err.message}`, oraError: err.errorNum });
     }
@@ -1182,6 +1252,23 @@ export async function requestOndutyOut(req, res) {
     if (err.code === 'P2025') {
       return res.status(404).json({ status: 0, message: 'Onduty record not found.' });
     }
+    if (err.code === 'P2003') {
+      const field = String(err.meta?.field_name || '');
+      let message = 'Unable to complete request because a related record was not found.';
+      if (field.includes('userId')) {
+        message = 'User profile not found. Please log out, sign in again, or contact your administrator.';
+      } else if (field.includes('category')) {
+        message = 'Selected on-duty category is invalid. Please select a valid category and try again.';
+      } else {
+        message = `Unable to process request due to an invalid reference (${field || 'record'}).`;
+      }
+      return res.status(400).json({
+        status: 0,
+        message,
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      });
+    }
+
     if (err.errorNum) {
       return res.status(500).json({ status: 0, message: `Oracle error: ${err.message}`, oraError: err.errorNum });
     }
@@ -1353,6 +1440,23 @@ export async function requestOndutyOut(req, res) {
     
 
     // Oracle specific error
+    if (err.code === 'P2003') {
+      const field = String(err.meta?.field_name || '');
+      let message = 'Unable to complete request because a related record was not found.';
+      if (field.includes('userId')) {
+        message = 'User profile not found. Please log out, sign in again, or contact your administrator.';
+      } else if (field.includes('category')) {
+        message = 'Selected on-duty category is invalid. Please select a valid category and try again.';
+      } else {
+        message = `Unable to process request due to an invalid reference (${field || 'record'}).`;
+      }
+      return res.status(400).json({
+        status: 0,
+        message,
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      });
+    }
+
     if (err.errorNum) {
       return res.status(500).json({
         status:   0,

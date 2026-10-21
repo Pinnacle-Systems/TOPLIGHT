@@ -20,7 +20,17 @@ const PickerTickIcon = ({ style }) => {
 
 const PickerCloseIcon = ({ style }) => {
   const { theme } = useAppTheme();
-  return <MaterialIcons name="close" size={21} color={theme.colors.textMuted} style={style} />;
+  return <MaterialIcons name="close" size={22} color={theme.colors.textMuted} style={style} />;
+};
+
+const PickerArrowDownIcon = ({ style }) => {
+  const { theme } = useAppTheme();
+  return <MaterialIcons name="keyboard-arrow-down" size={22} color={theme.colors.textMuted} style={style} />;
+};
+
+const PickerArrowUpIcon = ({ style }) => {
+  const { theme } = useAppTheme();
+  return <MaterialIcons name="keyboard-arrow-up" size={22} color={theme.colors.brand} style={style} />;
 };
 
 export const Dropdown = ({ 
@@ -44,7 +54,7 @@ export const Dropdown = ({
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const isPortrait = screenHeight > screenWidth;
   const modalWidth = Math.min(screenWidth - 32, isPortrait ? 480 : 600);
-  const maxListHeight = Math.max(56, Math.min(screenHeight - 180, 336));
+  const maxListHeight = Math.max(56, Math.min(screenHeight - 180, 360));
   const modalListHeight = Math.max(
     56,
     Math.min(items.length * 48, maxListHeight),
@@ -56,20 +66,25 @@ export const Dropdown = ({
       value: item?.[_value || "id"]
     }));
     setItems(data);
-  }, [options?.data, _label, _value]  );
+  }, [options?.data, _label, _value]);
 
-  const dropdownWidth = width || (isPortrait ? screenWidth * 0.9 : screenWidth * 0.4);
+  const dropdownWidth = width || '100%';
+
+  const currentValue = multiple 
+    ? (Array.isArray(selected) ? selected : (selected ? [selected] : []))
+    : selected;
 
   return (
     <View style={[
       styles.container,
+      { width: dropdownWidth },
       style,
       open ? styles.openContainer : styles.closedContainer
     ]}>
       {label && <CustomText style={styles.label}>{label}</CustomText>}
       <DropDownPicker
         open={open}
-        value={multiple ? selected || [] : selected}
+        value={currentValue}
         items={items}
         setOpen={setOpen}
         setValue={setSelected}
@@ -77,6 +92,10 @@ export const Dropdown = ({
         setItems={setItems}
         showTickIcon
         TickIconComponent={PickerTickIcon}
+        showArrowIcon
+        ArrowDownIconComponent={PickerArrowDownIcon}
+        ArrowUpIconComponent={PickerArrowUpIcon}
+        arrowIconStyle={styles.arrowIcon}
         selectedItemContainerStyle={styles.selectedItemContainer}
         selectedItemLabelStyle={styles.selectedItemLabel}
         listItemContainerStyle={styles.modalItem}
@@ -87,18 +106,19 @@ export const Dropdown = ({
         searchPlaceholder="Search options..."
         searchPlaceholderTextColor={theme.colors.placeholder}
         placeholder={isLoading ? 'Loading...' : placeholder}
-        textStyle={styles.modalItemLabel}
+        textStyle={styles.dropdownText}
         placeholderStyle={styles.placeholder}
         dropDownDirection="AUTO"
         style={[
           styles.dropdown,
-          { width: dropdownWidth },
+          open && styles.dropdownOpen,
+          { width: '100%' },
           isPortrait ? styles.portraitDropdown : styles.landscapeDropdown
         ]}
         searchTextInputStyle={styles.searchTextInputStyle}
         dropDownContainerStyle={[
           styles.dropDownContainerStyle,
-          { width: dropdownWidth }
+          { width: '100%' }
         ]}
         listMode="MODAL"
         zIndex={100}
@@ -125,7 +145,11 @@ export const Dropdown = ({
           presentationStyle: 'overFullScreen',
           statusBarTranslucent: true,
         }}
-        mode="SIMPLE"
+        mode={multiple ? 'BADGE' : 'SIMPLE'}
+        badgeColors={[theme.colors.surfaceSelected]}
+        badgeDotColors={[theme.colors.brand]}
+        badgeTextStyle={styles.badgeText}
+        badgeStyle={styles.badge}
         {...props}
       />
     </View>
@@ -188,7 +212,7 @@ export const DateInput = ({ date, setDate }) => {
 
 const createInputStyles = theme => StyleSheet.create({
   container: {
-    marginVertical: 10,
+    marginVertical: 6,
   },
   openContainer: {
     zIndex: 1000,
@@ -208,6 +232,7 @@ const createInputStyles = theme => StyleSheet.create({
     ...theme.typography.label,
     marginBottom: theme.spacing.xs + 2,
     color: theme.colors.textSecondary,
+    fontWeight: theme.fontWeights.medium,
   },
   dropdown: {
     backgroundColor: theme.colors.inputBackground,
@@ -215,15 +240,31 @@ const createInputStyles = theme => StyleSheet.create({
     borderWidth: 1,
     borderRadius: theme.radii.md,
     justifyContent: 'center',
+    minHeight: 48,
   },
-  placeholder: { ...theme.typography.bodySmall, color: theme.colors.placeholder },
+  dropdownOpen: {
+    borderColor: theme.colors.brand,
+    borderWidth: 1.5,
+  },
+  placeholder: { 
+    ...theme.typography.bodySmall, 
+    color: theme.colors.placeholder 
+  },
+  dropdownText: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+  },
   portraitDropdown: {
-    minHeight: 45,
-    paddingHorizontal: 10,
+    minHeight: 48,
+    paddingHorizontal: 12,
   },
   landscapeDropdown: {
-    minHeight: 40,
-    paddingHorizontal: 8,
+    minHeight: 44,
+    paddingHorizontal: 10,
+  },
+  arrowIcon: {
+    width: 22,
+    height: 22,
   },
   dropDownContainerStyle: {
     backgroundColor: theme.colors.surface,
@@ -233,6 +274,8 @@ const createInputStyles = theme => StyleSheet.create({
   },
   selectedItemContainer: {
     backgroundColor: theme.colors.surfaceSelected,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.brand,
   },
   selectedItemLabel: {
     color: theme.colors.brand,
@@ -259,6 +302,8 @@ const createInputStyles = theme => StyleSheet.create({
     borderTopRightRadius: theme.radii.lg,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.divider,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   modalBackdrop: {
     flex: 1,
@@ -298,6 +343,20 @@ const createInputStyles = theme => StyleSheet.create({
   modalItemSeparator: {
     height: 1,
     backgroundColor: theme.colors.divider,
+  },
+  badge: {
+    backgroundColor: theme.colors.surfaceSelected,
+    borderColor: theme.colors.brandSoft,
+    borderWidth: 1,
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    margin: 2,
+  },
+  badgeText: {
+    ...theme.typography.caption,
+    color: theme.colors.brand,
+    fontWeight: theme.fontWeights.semiBold,
   },
   dateInputContainer: {
     borderWidth: 1,

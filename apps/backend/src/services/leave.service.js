@@ -381,141 +381,262 @@ ORDER BY A.FINYR
         await connection.close()
     }
 }
-export async function add_requestLeave(req,res){
-             const  data=req?.body?.data
-             const PAYCAT=req?.body?.params?.PAYCAT
+export async function add_requestLeave(req, res) {
+    const data = req?.body?.data;
+    const PAYCAT = req?.body?.params?.PAYCAT;
+    const approvalType = String(data?.approval || req?.body?.approval || 'HOD').toUpperCase();
+    if (data && 'approval' in data) {
+        delete data.approval;
+    }
 
-             console.log("Error",req?.body);
-             
-             
-    
-           const connection = await getConnection(res)
-           
-                try {
-                    const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
-                    const initialResult = await prisma_Connector.leaveEntry.create({
-                        data: { ...data, docid: tempDocid }
-                    });
-                    const paddedId = initialResult.id.toString().padStart(6, '0');
-                    const finalDocid = `${data.compCode}/LEV-${paddedId}`;
-                    const result = await prisma_Connector.leaveEntry.update({
-                        where: { id: initialResult.id },
-                        data: { docid: finalDocid }
-                    });
-                  var to=data?.toDate?.split("T")[0]
-                  var from=data?.fromDate?.split("T")[0]
-                  var createOn=formatDateToOracle(result?.createdOn)
-                  var Modified=formatDateToOracle(result?.modifiedOn)
-        
-                    var auvit_data={
-            CATNAME:PAYCAT || '',
-            TLTYPE:data?.tltype,
-            FLTYPE:data?.fltype,
-            TODATE:to,
-            DOCID:result?.docid,
-            APPROVALSTATUS:data?.approvalStatus || "pending",
-            REASON:data?.reason,
-            LEAVETYPE:data?.ltype,    
-            FROMDATE:from,
-            EMPNAME:data?.empname,
-            IDCARD:data?.userId,
-            COMPCODE:data?.compCode,
-            FINYEAR:data?.finyear,
-            USERID :data?.userId ,
-            MODIFIED_BY:data?.modified_By,
-            MODIFIED_ON:Modified,
-            CREATED_BY:data?.createdBy,
-            CREATED_ON:createOn,
-            UNIQUE_ID_FIELD:result?.leaveId,
-            IS_CANCELLED:data?.isCancelled,
-            HRLEAVEENTRYID:generateNumericId(),
+    const hodVal = data?.hod && String(data.hod).trim() !== '' && data.hod !== 'null' && data.hod !== 'undefined' && data.hod !== '0' ? String(data.hod).trim() : null;
+    const hrVal = data?.hr && String(data.hr).trim() !== '' && data.hr !== 'null' && data.hr !== 'undefined' && data.hr !== '0' ? String(data.hr).trim() : null;
 
-          }
-                 
-                  
-                  
-                    if(result?.id){
-                        
-                const sql =    `
-                       INSERT INTO HRLEAVEENTRY (HRLEAVEENTRYID,
-  CATNAME,
-  TLTYPE,
-  FLTYPE,
-  TODATE,
-  DOCID,
-  APPROVALSTATUS,
-  REASON,
-  LEAVETYPE,
-  FROMDATE,
-  EMPNAME,
-  IDCARD,
-  COMPCODE,
-  FINYEAR,
-  USERID,
-  MODIFIED_BY,
-  MODIFIED_ON,
-  CREATED_BY,
-  CREATED_ON,
-  UNIQUE_ID_FIELD,
-  IS_CANCELLED
-) VALUES (
- :HRLEAVEENTRYID
- ,
-  :CATNAME,
-  :TLTYPE,
-  :FLTYPE,
-  TO_DATE(:TODATE, 'YYYY-MM-DD HH24:MI:SS'), 
-  :DOCID,
-  :APPROVALSTATUS,
-  :REASON,
-  :LEAVETYPE,
-  TO_DATE(:FROMDATE,'YYYY-MM-DD HH24:MI:SS'),
-  :EMPNAME,
-  :IDCARD,
-  :COMPCODE,
-  :FINYEAR,
-  :USERID,
-  :MODIFIED_BY,
-  TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
-  :CREATED_BY,
-  TO_DATE(:CREATED_ON, 'YYYY-MM-DD HH24:MI:SS'),
-  :UNIQUE_ID_FIELD,
-  :IS_CANCELLED
-) `     
-                 const result_auvit = await connection.execute(sql,auvit_data) 
-                 
-                  if(result_auvit?.rowsAffected >0){
-        
-                    await prisma_Connector?.leaveEntry?.update({where:{docid:result?.docid},data:{create:1}}).then(()=>{
-                      return  res.json({status:1,data:{...result,count:result?.id}})
-                    }).catch(()=>{
-                    return  res.json({status:0,data:{}})
-                      })
-                        
-                    }else{
-                   await prisma_Connector?.leaveEntry?.delete({where:{id:result?.id}})
-                    res.json({status:0,message:"Failed to Request !"})   
-                    }
-                 //   }else{
-                    //    prisma_Connector?.permissionEntry?.delete({where:{userId:result?.userId}}) 
-                    //    res.json({status:0,data:{}}) 
-                    }   
-                   
+    if (approvalType === 'BOTH') {
+        if (!hodVal && !hrVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Neither HOD nor HR is assigned to your profile in User Control. Dual approval requires both HOD and HR." 
+            });
+        }
+        if (!hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HOD is not assigned to your profile in User Control. Dual approval requires an HOD." 
+            });
+        }
+        if (!hrVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HR is not assigned to your profile in User Control. Dual approval requires an HR." 
+            });
+        }
+    } else if (approvalType === 'HR') {
+        if (!hrVal && !hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HR is not assigned to your profile. Please contact your administrator to assign an HR in User Control before submitting." 
+            });
+        }
+    } else {
+        if (!hodVal) {
+            return res.json({ 
+                status: 0, 
+                message: "Reporting HOD is not assigned to your profile. Please contact your administrator to assign an HOD in User Control before submitting." 
+            });
+        }
+    }
 
-             } catch (err) {
-                   res.json({status:500,error:err})
-                   console.log(err);
-                   
-                 } finally {
-                    await connection?.commit()
-                    await connection.close()
+    if (!data?.userId || String(data.userId).trim() === '' || data.userId === 'null') {
+        return res.json({ 
+            status: 0, 
+            message: "Employee ID is missing from your profile. Please log out and sign in again, or contact your administrator." 
+        });
+    }
+
+    // Set effective hod so Prisma foreign key relation on LeaveEntry(hod) is satisfied
+    if (!data.hod && hrVal) {
+        data.hod = hrVal;
+    }
+
+    // Ensure assigned HOD and HR exist in the database to satisfy foreign key relations
+    try {
+        const hodIdStr = String(data.hod).trim();
+        const hodUser = await prisma_Connector.user.findFirst({
+            where: { Idcard: hodIdStr }
+        });
+        if (!hodUser) {
+            await prisma_Connector.user.create({
+                data: {
+                    username: `hod_${hodIdStr}_${Date.now()}`,
+                    Idcard: hodIdStr,
+                    level: 'hod',
                 }
-                
-                
+            });
+        }
+        if (hrVal && hrVal !== hodIdStr) {
+            const hrUser = await prisma_Connector.user.findFirst({
+                where: { Idcard: hrVal }
+            });
+            if (!hrUser) {
+                await prisma_Connector.user.create({
+                    data: {
+                        username: `hr_${hrVal}_${Date.now()}`,
+                        Idcard: hrVal,
+                        level: 'hr',
+                    }
+                });
+            }
+        }
+    } catch (checkErr) {
+        console.warn("Leave HOD/HR user auto-ensure warning:", checkErr);
+    }
 
+    // Ensure current user exists in the database
+    try {
+        const userIdStr = String(data.userId).trim();
+        const currentUser = await prisma_Connector.user.findFirst({
+            where: { Idcard: userIdStr }
+        });
+        if (!currentUser) {
+            await prisma_Connector.user.create({
+                data: {
+                    username: data.empname || data.username || `emp_${userIdStr}_${Date.now()}`,
+                    Idcard: userIdStr,
+                    level: 'user',
+                }
+            });
+        }
+    } catch (checkErr) {
+        console.warn("Leave user auto-ensure warning:", checkErr);
+    }
+
+    // Ensure createdBy and modified_By exist in User table
+    try {
+        const createdByStr = String(data.createdBy || data.userId).trim();
+        if (createdByStr && createdByStr !== String(data.userId).trim()) {
+            const cbUser = await prisma_Connector.user.findFirst({ where: { Idcard: createdByStr } });
+            if (!cbUser) {
+                await prisma_Connector.user.create({
+                    data: { username: `user_${createdByStr}_${Date.now()}`, Idcard: createdByStr, level: 'user' }
+                });
+            }
+        }
+        const modifiedByStr = String(data.modified_By || data.userId).trim();
+        if (modifiedByStr && modifiedByStr !== createdByStr && modifiedByStr !== String(data.userId).trim()) {
+            const mbUser = await prisma_Connector.user.findFirst({ where: { Idcard: modifiedByStr } });
+            if (!mbUser) {
+                await prisma_Connector.user.create({
+                    data: { username: `user_${modifiedByStr}_${Date.now()}`, Idcard: modifiedByStr, level: 'user' }
+                });
+            }
+        }
+    } catch (checkErr) {
+        console.warn("leave createdBy/modified_By auto-ensure warning:", checkErr);
+    }
+
+    // Ensure category exists in PermissionMaster to satisfy foreign key relations
+    try {
+        const catId = Number(data.category);
+        if (catId) {
+            const catExists = await prisma_Connector.permissionMaster.findFirst({ where: { id: catId } });
+            if (!catExists) {
+                const firstCat = await prisma_Connector.permissionMaster.findFirst();
+                if (firstCat) {
+                    data.category = firstCat.id;
+                }
+            }
+        }
+    } catch (catErr) {
+        console.warn("leave category auto-ensure warning:", catErr);
+    }
+
+    let connection;
+    try {
+        connection = await getConnection(res);
+    } catch (connErr) {
+        console.error("Database connection failed:", connErr);
+        return res.json({
+            status: 0,
+            message: "ERP database connection failed. Please ensure the organization server is reachable and try again.",
+            error: connErr?.message || connErr
+        });
+    }
+
+    try {
+        const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
+        const initialResult = await prisma_Connector.leaveEntry.create({
+            data: { ...data, docid: tempDocid }
+        });
+        const paddedId = initialResult.id.toString().padStart(6, '0');
+        const finalDocid = `${data.compCode}/LEV-${paddedId}`;
+        const result = await prisma_Connector.leaveEntry.update({
+            where: { id: initialResult.id },
+            data: { docid: finalDocid }
+        });
+        var to = data?.toDate?.split("T")[0];
+        var from = data?.fromDate?.split("T")[0];
+        var createOn = formatDateToOracle(result?.createdOn);
+        var Modified = formatDateToOracle(result?.modifiedOn);
+
+        var auvit_data = {
+            CATNAME: PAYCAT || '',
+            TLTYPE: data?.tltype,
+            FLTYPE: data?.fltype,
+            TODATE: to,
+            DOCID: result?.docid,
+            APPROVALSTATUS: data?.approvalStatus || "pending",
+            REASON: data?.reason,
+            LEAVETYPE: data?.ltype,    
+            FROMDATE: from,
+            EMPNAME: data?.empname,
+            IDCARD: data?.userId,
+            COMPCODE: data?.compCode,
+            FINYEAR: data?.finyear,
+            USERID: data?.userId,
+            MODIFIED_BY: data?.modified_By,
+            MODIFIED_ON: Modified,
+            CREATED_BY: data?.createdBy,
+            CREATED_ON: createOn,
+            UNIQUE_ID_FIELD: result?.leaveId,
+            IS_CANCELLED: data?.isCancelled,
+            HRLEAVEENTRYID: generateNumericId(),
+        };
+
+        if (result?.id) {
+            const sql = `
+                INSERT INTO HRLEAVEENTRY (
+                    HRLEAVEENTRYID, CATNAME, TLTYPE, FLTYPE, TODATE, DOCID,
+                    APPROVALSTATUS, REASON, LEAVETYPE, FROMDATE, EMPNAME,
+                    IDCARD, COMPCODE, FINYEAR, USERID, MODIFIED_BY, MODIFIED_ON,
+                    CREATED_BY, CREATED_ON, UNIQUE_ID_FIELD, IS_CANCELLED
+                ) VALUES (
+                    :HRLEAVEENTRYID, :CATNAME, :TLTYPE, :FLTYPE,
+                    TO_DATE(:TODATE, 'YYYY-MM-DD HH24:MI:SS'), 
+                    :DOCID, :APPROVALSTATUS, :REASON, :LEAVETYPE,
+                    TO_DATE(:FROMDATE,'YYYY-MM-DD HH24:MI:SS'),
+                    :EMPNAME, :IDCARD, :COMPCODE, :FINYEAR, :USERID,
+                    :MODIFIED_BY, TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
+                    :CREATED_BY, TO_DATE(:CREATED_ON, 'YYYY-MM-DD HH24:MI:SS'),
+                    :UNIQUE_ID_FIELD, :IS_CANCELLED
+                )
+            `;     
+            const result_auvit = await connection.execute(sql, auvit_data); 
+            if (result_auvit?.rowsAffected > 0) {
+                await prisma_Connector?.leaveEntry?.update({ where: { docid: result?.docid }, data: { create: 1 } });
+                return res.json({ status: 1, data: { ...result, count: result?.id } });
+            } else {
+                await prisma_Connector?.leaveEntry?.delete({ where: { id: result?.id } });
+                return res.json({ status: 0, message: "Could not save leave record to ERP database. Please try again." });   
+            }
+        }   
+    } catch (err) {
+        console.error("add_requestLeave error:", err);
+        let friendlyMsg = "Unable to save leave request. Please try again.";
+        const errMsg = String(err?.message || err || '');
+        if (err?.code === 'P2003' || errMsg.includes('LeaveHod') || errMsg.includes('hod')) {
+            friendlyMsg = `The assigned HOD (ID: ${data?.hod || 'not found'}) is not registered in User Control. Please ask your administrator to register or reassign your HOD.`;
+        } else if (err?.code === 'P2002' || errMsg.includes('docid')) {
+            friendlyMsg = "A leave request with this document number already exists. Please refresh and try again.";
+        } else if (errMsg.includes('leave_Category') || errMsg.includes('category')) {
+            friendlyMsg = "The selected leave category is invalid. Please select another category.";
+        } else if (errMsg.includes('ORA-') || errMsg.includes('NJS-')) {
+            friendlyMsg = "ERP database error: " + (errMsg.split('\n')[0] || 'Oracle database error');
+        } else if (err?.message) {
+            friendlyMsg = err.message;
+        }
+        return res.json({ status: 0, message: friendlyMsg, error: errMsg });
+    } finally {
+        try {
+            if (connection) {
+                await connection?.commit();
+                await connection.close();
+            }
+        } catch (closeErr) {
+            console.warn("Connection close warning:", closeErr);
+        }
+    }
 }
-
-
 
 export async function get__per(req, res) {
     const COMPCODE=String(req?.headers?.compcode).toUpperCase()
@@ -525,7 +646,7 @@ export async function get__per(req, res) {
     console.log(id);
     
         try {
-            const result=await  prisma_Connector.leaveEntry.findMany({where:hod ? {compCode:COMPCODE,hod:hod} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
+            const result=await  prisma_Connector.leaveEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
             res.json({status:1,data:result}) 
         }
         catch (err) {

@@ -5,6 +5,7 @@ import { showMessage } from 'react-native-flash-message';
 import { useSelector } from "react-redux";
 import { Checkbox } from "react-native-paper";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { 
     useCreateUserMutation, 
@@ -31,6 +32,7 @@ export default function UserCreationForm({ onClose, userDet }) {
     const [username, setUserName] = useState("");
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [isotpEmail, setOtpEmail] = useState(false);
     const [otpEmail, setOtpEmailInp] = useState("");
 
@@ -43,6 +45,7 @@ export default function UserCreationForm({ onClose, userDet }) {
     const [selectLevel, setSelectedLevel] = useState("user");
     const [isEditing, setIsEditing] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [createUser] = useCreateUserMutation();
     const { data: tableData, refetch: refetchUsers } = useGetUsersQuery();
@@ -70,6 +73,17 @@ export default function UserCreationForm({ onClose, userDet }) {
         return !!(data.username && data.password);
     };
 
+    const handleClearForm = () => {
+        setIsEditing(false);
+        setCurrentUserId(null);
+        ClearState(setUserName, setPassword, setEmail, setSelectedCompany, setSelectedEmply, setSelectedRole, setSelectedHod);
+        setSelectedKey(null);
+        setSelectedHR('');
+        setOtpEmailInp('');
+        setOtpEmail(false);
+        setSelectedLevel("user");
+    };
+
     const handleSubmitCustom = async (callback, data) => {
         try {
             setLoading(true);
@@ -87,7 +101,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                     description: "User created successfully",
                     type: "success",
                 });
-                ClearState(setUserName, setPassword, setEmail, setSelectedCompany, setSelectedEmply, setSelectedRole, setSelectedHod);
+                handleClearForm();
                 refetchUsers();
                 if (onClose) onClose();
             }
@@ -109,11 +123,23 @@ export default function UserCreationForm({ onClose, userDet }) {
         const hod = selectedHod?.split("-")[1];
         const hr = selectedHR?.split("-")[1];
 
-        if (selectLevel !== "admin" && selectLevel !== "top" && (!selectedEmply || !selectedHod || !username)) {
-            return Alert.alert(
-                "Warning",
-                !selectedEmply ? "Please Select Your Employee" : !username ? "Please Enter Your Username" : "Please Select Your HOD"
-            );
+        if (selectLevel !== "admin" && selectLevel !== "top") {
+            if (!selectedEmply) {
+                return Alert.alert("Warning", "Please Select Your Employee");
+            }
+            if (!username) {
+                return Alert.alert("Warning", "Please Enter Your Username");
+            }
+            if (selectedKey === "HOD" || selectedKey === "BOTH") {
+                if (!selectedHod) {
+                    return Alert.alert("Warning", "Please Select Your HOD");
+                }
+            }
+            if (selectedKey === "HR" || selectedKey === "BOTH") {
+                if (!selectedHR) {
+                    return Alert.alert("Warning", "Please Select Your HR");
+                }
+            }
         }
 
         const company_code = Array.isArray(selectedCompany) 
@@ -233,6 +259,24 @@ export default function UserCreationForm({ onClose, userDet }) {
     };
 
     const handleUpdate = async () => {
+        if (selectLevel !== "admin" && selectLevel !== "top") {
+            if (!selectedEmply) {
+                return Alert.alert("Warning", "Please Select Your Employee");
+            }
+            if (!username) {
+                return Alert.alert("Warning", "Please Enter Your Username");
+            }
+            if (selectedKey === "HOD" || selectedKey === "BOTH") {
+                if (!selectedHod) {
+                    return Alert.alert("Warning", "Please Select Your HOD");
+                }
+            }
+            if (selectedKey === "HR" || selectedKey === "BOTH") {
+                if (!selectedHR) {
+                    return Alert.alert("Warning", "Please Select Your HR");
+                }
+            }
+        }
         try {
             setLoading(true);
             const company_code = Array.isArray(selectedCompany)
@@ -281,9 +325,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                     type: "success",
                 });
                 refetchUsers();
-                ClearState(setUserName, setPassword, setEmail, setSelectedCompany, setSelectedEmply, setSelectedRole, setSelectedHod);
-                setIsEditing(false);
-                setCurrentUserId(null);
+                handleClearForm();
                 if (onClose) onClose();
             }
         } catch (error) {
@@ -299,6 +341,18 @@ export default function UserCreationForm({ onClose, userDet }) {
 
     const filterRole = all_Role_names?.data?.filter((data) => data?.RoleOnPage?.length > 0) || [];
 
+    // Filtered users for existing users table
+    const filteredUsers = useMemo(() => {
+        if (!tableData?.data) return [];
+        if (!searchQuery.trim()) return tableData.data;
+        const q = searchQuery.toLowerCase();
+        return tableData.data.filter(u => 
+            u.username?.toLowerCase().includes(q) ||
+            u?.role?.name?.toLowerCase().includes(q) ||
+            u.gmail?.toLowerCase().includes(q)
+        );
+    }, [tableData?.data, searchQuery]);
+
     return (
         <>
             {loading && (
@@ -311,9 +365,16 @@ export default function UserCreationForm({ onClose, userDet }) {
                 <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.headerTitle}>
-                            {isEditing ? "Edit User" : "Create New User"}
-                        </Text>
+                        <View style={styles.headerTextContainer}>
+                            <Text style={styles.headerTitle}>
+                                {isEditing ? "Edit User" : "Create New User"}
+                            </Text>
+                            <Text style={styles.headerSubtitle}>
+                                {isEditing 
+                                    ? `Update account details and role permissions` 
+                                    : `Configure account credentials, company, and permissions`}
+                            </Text>
+                        </View>
                         {onClose && (
                             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                                 <MaterialIcons name="close" size={24} color={theme.colors.textMuted} />
@@ -321,11 +382,35 @@ export default function UserCreationForm({ onClose, userDet }) {
                         )}
                     </View>
 
+                    {/* Edit mode banner */}
+                    {isEditing && (
+                        <View style={styles.editBanner}>
+                            <View style={styles.editBannerLeft}>
+                                <MaterialIcons name="edit" size={18} color={theme.colors.brand} />
+                                <Text style={styles.editBannerText}>
+                                    Editing user: <Text style={styles.editBannerUsername}>{username || 'Selected User'}</Text>
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={handleClearForm} style={styles.cancelEditButton}>
+                                <Text style={styles.cancelEditText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
                     {/* Company and Employee Selection */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Basic Information</Text>
+                        <View style={styles.sectionHeaderRow}>
+                            <View style={[styles.sectionIconBadge, { backgroundColor: theme.colors.brandSoft }]}>
+                                <MaterialIcons name="business" size={18} color={theme.colors.brand} />
+                            </View>
+                            <View style={styles.sectionTitleGroup}>
+                                <Text style={styles.sectionTitle}>Basic Information</Text>
+                                <Text style={styles.sectionSubtitle}>Associate user with company and employee record</Text>
+                            </View>
+                        </View>
 
                         <Dropdown
+                            width="100%"
                             selected={selectedCompany}
                             label="Select Company"
                             placeholder="Choose a company"
@@ -337,6 +422,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         />
 
                         <Dropdown
+                            width="100%"
                             selected={selectedEmply}
                             label="Select Employee"
                             placeholder="Choose an employee"
@@ -349,7 +435,15 @@ export default function UserCreationForm({ onClose, userDet }) {
 
                     {/* User Role and Level */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>User Role & Permissions</Text>
+                        <View style={styles.sectionHeaderRow}>
+                            <View style={[styles.sectionIconBadge, { backgroundColor: theme.colors.secondarySoft }]}>
+                                <MaterialIcons name="admin-panel-settings" size={18} color={theme.colors.secondary} />
+                            </View>
+                            <View style={styles.sectionTitleGroup}>
+                                <Text style={styles.sectionTitle}>User Role & Permissions</Text>
+                                <Text style={styles.sectionSubtitle}>Define system access tier and approval authority</Text>
+                            </View>
+                        </View>
 
                         <RoleLevelSelector
                             selected={selectLevel}
@@ -357,6 +451,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                         />
 
                         <Dropdown
+                            width="100%"
                             selected={selectedRole}
                             label="Select Pages Role"
                             placeholder="Choose a pages role"
@@ -370,6 +465,7 @@ export default function UserCreationForm({ onClose, userDet }) {
 
                         {(selectLevel === "user" || selectLevel === "hod") && (
                             <Dropdown
+                                width="100%"
                                 selected={selectedHod}
                                 label="Select HOD"
                                 placeholder="Choose an HOD"
@@ -382,6 +478,7 @@ export default function UserCreationForm({ onClose, userDet }) {
 
                         {(selectLevel === "user" || selectLevel === "hod") && (
                             <Dropdown
+                                width="100%"
                                 selected={selectedHR}
                                 label="Select HR"
                                 placeholder="Choose an HR"
@@ -392,61 +489,102 @@ export default function UserCreationForm({ onClose, userDet }) {
                             />
                         )}
 
-                        <Text style={styles.approvalLabel}>Approval Request To</Text>
-                        <CheckboxGroup
-                            selectedKey={selectedKey}
-                            setSelectedKey={setSelectedKey}
-                            options={["HOD", "HR", "BOTH"]}
-                        />
+                        <View style={styles.approvalSection}>
+                            <View style={styles.approvalHeaderRow}>
+                                <MaterialIcons name="approval" size={16} color={theme.colors.brand} />
+                                <Text style={styles.approvalLabel}>Approval Request To</Text>
+                            </View>
+                            <CheckboxGroup
+                                selectedKey={selectedKey}
+                                setSelectedKey={setSelectedKey}
+                                options={["HOD", "HR", "BOTH"]}
+                            />
+                        </View>
                     </View>
 
                     {/* Login Credentials */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Login Credentials</Text>
+                        <View style={styles.sectionHeaderRow}>
+                            <View style={[styles.sectionIconBadge, { backgroundColor: theme.colors.warningSoft }]}>
+                                <MaterialIcons name="lock" size={18} color={theme.colors.warning} />
+                            </View>
+                            <View style={styles.sectionTitleGroup}>
+                                <Text style={styles.sectionTitle}>Login Credentials</Text>
+                                <Text style={styles.sectionSubtitle}>Authentication details for application sign-in</Text>
+                            </View>
+                        </View>
 
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Username *</Text>
-                            <TextInput
-                                value={username}
-                                onChangeText={setUserName}
-                                style={styles.input}
-                                placeholder="Enter username"
-                                placeholderTextColor={theme.colors.placeholder}
-                                autoCapitalize="none"
-                            />
+                            <View style={styles.inputWithIconContainer}>
+                                <MaterialIcons name="person-outline" size={20} color={theme.colors.textMuted} style={styles.inputLeadingIcon} />
+                                <TextInput
+                                    value={username}
+                                    onChangeText={setUserName}
+                                    style={styles.inputWithIcon}
+                                    placeholder="Enter username"
+                                    placeholderTextColor={theme.colors.placeholder}
+                                    autoCapitalize="none"
+                                />
+                            </View>
                         </View>
 
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Password *</Text>
-                            <TextInput
-                                value={password}
-                                onChangeText={setPassword}
-                                style={styles.input}
-                                secureTextEntry
-                                placeholder="Enter password"
-                                placeholderTextColor={theme.colors.placeholder}
-                            />
+                            <View style={styles.inputWithIconContainer}>
+                                <MaterialIcons name="lock-outline" size={20} color={theme.colors.textMuted} style={styles.inputLeadingIcon} />
+                                <TextInput
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    style={[styles.inputWithIcon, { paddingRight: 44 }]}
+                                    secureTextEntry={!showPassword}
+                                    placeholder="Enter password"
+                                    placeholderTextColor={theme.colors.placeholder}
+                                />
+                                <TouchableOpacity 
+                                    style={styles.passwordToggle} 
+                                    onPress={() => setShowPassword(!showPassword)}
+                                    activeOpacity={0.7}
+                                >
+                                    <MaterialIcons 
+                                        name={showPassword ? "visibility" : "visibility-off"} 
+                                        size={20} 
+                                        color={theme.colors.textMuted} 
+                                    />
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
 
                     {/* Email Settings */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Email Settings</Text>
+                        <View style={styles.sectionHeaderRow}>
+                            <View style={[styles.sectionIconBadge, { backgroundColor: theme.colors.infoSoft }]}>
+                                <MaterialIcons name="alternate-email" size={18} color={theme.colors.info} />
+                            </View>
+                            <View style={styles.sectionTitleGroup}>
+                                <Text style={styles.sectionTitle}>Email Settings</Text>
+                                <Text style={styles.sectionSubtitle}>Email address for alerts, reports, and OTP verification</Text>
+                            </View>
+                        </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Email</Text>
-                            <TextInput
-                                value={email}
-                                onChangeText={(e) => {
-                                    if (!isotpEmail) setOtpEmailInp(e);
-                                    setEmail(e);
-                                }}
-                                style={styles.input}
-                                placeholder="Enter email"
-                                placeholderTextColor={theme.colors.placeholder}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                            />
+                            <Text style={styles.label}>Primary Email</Text>
+                            <View style={styles.inputWithIconContainer}>
+                                <MaterialIcons name="mail-outline" size={20} color={theme.colors.textMuted} style={styles.inputLeadingIcon} />
+                                <TextInput
+                                    value={email}
+                                    onChangeText={(e) => {
+                                        if (!isotpEmail) setOtpEmailInp(e);
+                                        setEmail(e);
+                                    }}
+                                    style={styles.inputWithIcon}
+                                    placeholder="Enter email address"
+                                    placeholderTextColor={theme.colors.placeholder}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
+                            </View>
                         </View>
 
                         <View style={styles.inputGroup}>
@@ -462,6 +600,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                                         }
                                         setOtpEmail(!isotpEmail);
                                     }}
+                                    activeOpacity={0.7}
                                 >
                                     <Checkbox
                                         status={isotpEmail ? 'checked' : 'unchecked'}
@@ -471,63 +610,147 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 </TouchableOpacity>
                             </View>
 
-                            <TextInput
-                                value={otpEmail}
-                                onChangeText={setOtpEmailInp}
-                                style={[styles.input, !isotpEmail && styles.disabledInput]}
-                                placeholder="Enter OTP email"
-                                placeholderTextColor={theme.colors.placeholder}
-                                keyboardType="email-address"
-                                editable={isotpEmail}
-                                autoCapitalize="none"
-                            />
+                            <View style={[styles.inputWithIconContainer, !isotpEmail && styles.disabledInputContainer]}>
+                                <MaterialIcons name="verified-user" size={20} color={isotpEmail ? theme.colors.textMuted : theme.colors.disabledText} style={styles.inputLeadingIcon} />
+                                <TextInput
+                                    value={otpEmail}
+                                    onChangeText={setOtpEmailInp}
+                                    style={[styles.inputWithIcon, !isotpEmail && styles.disabledInput]}
+                                    placeholder={isotpEmail ? "Enter OTP verification email" : "Uses primary email"}
+                                    placeholderTextColor={theme.colors.placeholder}
+                                    keyboardType="email-address"
+                                    editable={isotpEmail}
+                                    autoCapitalize="none"
+                                />
+                            </View>
                         </View>
+                    </View>
+
+                    {/* Form Action Buttons Bar */}
+                    <View style={styles.actionButtonBar}>
+                        <TouchableOpacity
+                            style={styles.primaryActionButton}
+                            onPress={isEditing ? handleUpdate : handleSubmit}
+                            activeOpacity={0.8}
+                        >
+                            <MaterialIcons 
+                                name={isEditing ? "check" : "person-add"} 
+                                size={20} 
+                                color={theme.colors.brandContrast} 
+                            />
+                            <Text style={styles.primaryActionText}>
+                                {isEditing ? "Update User" : "Save User"}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.secondaryActionButton}
+                            onPress={handleClearForm}
+                            activeOpacity={0.7}
+                        >
+                            <MaterialIcons name="refresh" size={18} color={theme.colors.textSecondary} />
+                            <Text style={styles.secondaryActionText}>
+                                {isEditing ? "Cancel" : "Reset Form"}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Existing Users Table */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Existing Users</Text>
-
-                        <View style={styles.tableHeader}>
-                            <Text style={[styles.tableHeaderText, { flex: 0.5 }]}>#</Text>
-                            <Text style={[styles.tableHeaderText, { flex: 2 }]}>Username</Text>
-                            <Text style={[styles.tableHeaderText, { flex: 2 }]}>Role</Text>
-                            <Text style={[styles.tableHeaderText, { flex: 2 }]}>Email</Text>
-                            <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>Actions</Text>
+                        <View style={styles.sectionHeaderRow}>
+                            <View style={[styles.sectionIconBadge, { backgroundColor: theme.colors.brandSoft }]}>
+                                <MaterialIcons name="people" size={18} color={theme.colors.brand} />
+                            </View>
+                            <View style={styles.sectionTitleGroup}>
+                                <Text style={styles.sectionTitle}>Existing Users</Text>
+                                <Text style={styles.sectionSubtitle}>
+                                    {tableData?.data ? `${tableData.data.length} registered system users` : "Registered system users"}
+                                </Text>
+                            </View>
                         </View>
 
-                        {tableData?.data && tableData.data.length > 0 ? (
-                            tableData.data.map((item, index) => (
-                                <View
-                                    key={item.id || index}
-                                    style={[
-                                        styles.tableRow,
-                                        index % 2 === 0 ? styles.evenRow : styles.oddRow
-                                    ]}
-                                >
-                                    <Text style={[styles.tableCell, { flex: 0.5 }]}>{index + 1}</Text>
-                                    <Text style={[styles.tableCell, { flex: 2 }]}>{item.username}</Text>
-                                    <Text style={[styles.tableCell, { flex: 2 }]}>{item?.role?.name || "-"}</Text>
-                                    <Text style={[styles.tableCell, { flex: 2 }]}>{item.gmail || "-"}</Text>
-                                    <View style={[styles.tableCell, { flex: 1.5, flexDirection: 'row', justifyContent: 'center' }]}>
-                                        <TouchableOpacity
-                                            onPress={() => editData(item)}
-                                            style={styles.actionButton}
-                                        >
-                                            <MaterialIcons name="edit" size={18} color={theme.colors.brand} />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={() => onDelete(item.id)}
-                                            style={[styles.actionButton, { marginLeft: 8 }]}
-                                        >
-                                            <MaterialIcons name="delete" size={18} color={theme.colors.danger} />
-                                        </TouchableOpacity>
+                        {/* Search Filter */}
+                        <View style={styles.tableSearchContainer}>
+                            <MaterialIcons name="search" size={20} color={theme.colors.textMuted} style={styles.tableSearchIcon} />
+                            <TextInput
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                placeholder="Search by name, role, email..."
+                                placeholderTextColor={theme.colors.placeholder}
+                                style={styles.tableSearchInput}
+                            />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearchQuery("")} style={styles.tableSearchClear}>
+                                    <MaterialIcons name="close" size={18} color={theme.colors.textMuted} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <View style={styles.tableContainer}>
+                            <View style={styles.tableHeader}>
+                                <Text style={[styles.tableHeaderText, { flex: 0.6 }]}>#</Text>
+                                <Text style={[styles.tableHeaderText, { flex: 2 }]}>Username</Text>
+                                <Text style={[styles.tableHeaderText, { flex: 1.8 }]}>Role</Text>
+                                <Text style={[styles.tableHeaderText, { flex: 2.2 }]}>Email</Text>
+                                <Text style={[styles.tableHeaderText, { flex: 1.6 }]}>Actions</Text>
+                            </View>
+
+                            {filteredUsers && filteredUsers.length > 0 ? (
+                                filteredUsers.map((item, index) => (
+                                    <View
+                                        key={item.id || index}
+                                        style={[
+                                            styles.tableRow,
+                                            index % 2 === 0 ? styles.evenRow : styles.oddRow,
+                                            currentUserId === item.id && styles.editingRow
+                                        ]}
+                                    >
+                                        <Text style={[styles.tableCell, { flex: 0.6, fontWeight: '600' }]}>{index + 1}</Text>
+                                        <View style={[styles.tableCell, { flex: 2, alignItems: 'flex-start' }]}>
+                                            <Text style={styles.usernameCellText} numberOfLines={1}>
+                                                {item.username}
+                                            </Text>
+                                            {item.level && (
+                                                <Text style={styles.levelBadgeText}>
+                                                    {item.level.toUpperCase()}
+                                                </Text>
+                                            )}
+                                        </View>
+                                        <View style={[styles.tableCell, { flex: 1.8 }]}>
+                                            <Text style={styles.roleCellText} numberOfLines={1}>
+                                                {item?.role?.name || "-"}
+                                            </Text>
+                                        </View>
+                                        <Text style={[styles.tableCell, styles.emailCellText, { flex: 2.2 }]} numberOfLines={1}>
+                                            {item.gmail || "-"}
+                                        </Text>
+                                        <View style={[styles.tableCell, { flex: 1.6, flexDirection: 'row', justifyContent: 'center' }]}>
+                                            <TouchableOpacity
+                                                onPress={() => editData(item)}
+                                                style={styles.actionButtonEdit}
+                                                activeOpacity={0.7}
+                                            >
+                                                <MaterialIcons name="edit" size={16} color={theme.colors.brand} />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => onDelete(item.id)}
+                                                style={styles.actionButtonDelete}
+                                                activeOpacity={0.7}
+                                            >
+                                                <MaterialIcons name="delete-outline" size={16} color={theme.colors.danger} />
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
+                                ))
+                            ) : (
+                                <View style={styles.noDataContainer}>
+                                    <MaterialIcons name="search-off" size={32} color={theme.colors.textDisabled} />
+                                    <Text style={styles.noDataText}>
+                                        {searchQuery ? "No matching users found" : "No users available"}
+                                    </Text>
                                 </View>
-                            ))
-                        ) : (
-                            <Text style={styles.noDataText}>No users available</Text>
-                        )}
+                            )}
+                        </View>
                     </View>
                 </ScrollView>
 
@@ -537,11 +760,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                     edit={editData}
                     Update={handleUpdate}
                     editable={isEditing}
-                    New={() => {
-                        setIsEditing(false);
-                        setCurrentUserId(null);
-                        ClearState(setUserName, setPassword, setEmail, setSelectedCompany, setSelectedEmply, setSelectedRole, setSelectedHod);
-                    }}
+                    New={handleClearForm}
                 />
             </View>
         </>
@@ -555,7 +774,7 @@ const createStyles = theme => StyleSheet.create({
     },
     scrollContainer: {
         padding: theme.layout.screenGutter,
-        paddingBottom: 110,
+        paddingBottom: 120,
     },
     header: {
         flexDirection: 'row',
@@ -563,58 +782,173 @@ const createStyles = theme => StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
     },
+    headerTextContainer: {
+        flex: 1,
+    },
     headerTitle: {
         ...theme.typography.h3,
+        fontSize: 22,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.text,
+    },
+    headerSubtitle: {
+        ...theme.typography.caption,
+        fontSize: 12,
+        color: theme.colors.textMuted,
+        marginTop: 2,
     },
     closeButton: {
         padding: 6,
+        borderRadius: theme.radii.sm,
+        backgroundColor: theme.colors.surfaceSunken,
     },
-    section: {
-        ...theme.styles.card,
-        ...theme.styles.shadow,
-        marginBottom: theme.spacing.lg,
+    editBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: theme.colors.surfaceSelected,
+        borderColor: theme.colors.brand,
+        borderWidth: 1,
+        borderRadius: theme.radii.md,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        marginBottom: 16,
+    },
+    editBannerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    editBannerText: {
+        ...theme.typography.bodySmall,
+        fontSize: 13,
+        color: theme.colors.text,
+        marginLeft: 8,
+    },
+    editBannerUsername: {
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.brand,
+    },
+    cancelEditButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: theme.radii.sm,
+        backgroundColor: theme.colors.surface,
         borderWidth: 1,
         borderColor: theme.colors.borderSubtle,
     },
-    sectionTitle: {
-        ...theme.typography.title,
-        color: theme.colors.text,
+    cancelEditText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
+    },
+    section: {
+        ...theme.styles.card,
+        marginBottom: theme.spacing.lg,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+        elevation: 1,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: theme.isDark ? 0.3 : 0.06,
+        shadowRadius: 6,
+    },
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: theme.spacing.md,
+        paddingBottom: theme.spacing.sm,
         borderBottomWidth: 1,
         borderBottomColor: theme.colors.divider,
-        paddingBottom: theme.spacing.sm,
+    },
+    sectionIconBadge: {
+        width: 32,
+        height: 32,
+        borderRadius: theme.radii.sm,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: theme.spacing.sm,
+    },
+    sectionTitleGroup: {
+        flex: 1,
+    },
+    sectionTitle: {
+        ...theme.typography.title,
+        fontSize: 15,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.text,
+    },
+    sectionSubtitle: {
+        ...theme.typography.caption,
+        fontSize: 11,
+        color: theme.colors.textMuted,
+        marginTop: 1,
     },
     dropdown: {
-        marginBottom: theme.spacing.md + 2,
+        marginBottom: theme.spacing.md,
+        width: '100%',
+    },
+    approvalSection: {
+        marginTop: theme.spacing.xs,
+        paddingTop: theme.spacing.sm,
+    },
+    approvalHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    approvalLabel: {
+        ...theme.typography.label,
+        fontSize: 13,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
+        marginLeft: 6,
     },
     inputGroup: {
         marginBottom: 14,
     },
     label: {
         ...theme.typography.label,
+        fontSize: 13,
+        fontWeight: theme.fontWeights.medium,
         color: theme.colors.textSecondary,
-        marginBottom: theme.spacing.xs,
+        marginBottom: 6,
     },
-    approvalLabel: {
-        ...theme.typography.label,
-        color: theme.colors.textSecondary,
-        marginTop: theme.spacing.sm,
-        marginBottom: theme.spacing.xs,
-    },
-    input: {
+    inputWithIconContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         height: 48,
         borderWidth: 1,
         borderColor: theme.colors.inputBorder,
         borderRadius: theme.radii.md,
-        paddingHorizontal: theme.spacing.md,
-        ...theme.typography.bodySmall,
         backgroundColor: theme.colors.inputBackground,
+        paddingHorizontal: 12,
+        position: 'relative',
+    },
+    disabledInputContainer: {
+        backgroundColor: theme.colors.disabledBackground,
+        borderColor: theme.colors.borderSubtle,
+    },
+    inputLeadingIcon: {
+        marginRight: 8,
+    },
+    inputWithIcon: {
+        flex: 1,
+        height: '100%',
+        ...theme.typography.bodySmall,
+        fontSize: 14,
         color: theme.colors.text,
+        paddingVertical: 0,
     },
     disabledInput: {
-        backgroundColor: theme.colors.disabledBackground,
         color: theme.colors.disabledText,
+    },
+    passwordToggle: {
+        position: 'absolute',
+        right: 12,
+        height: 48,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     otpEmailRow: {
         flexDirection: 'row',
@@ -628,22 +962,98 @@ const createStyles = theme => StyleSheet.create({
     },
     checkboxLabel: {
         ...theme.typography.caption,
+        fontSize: 12,
         color: theme.colors.textMuted,
-        marginLeft: theme.spacing.xs,
+        marginLeft: 2,
+    },
+    actionButtonBar: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: theme.spacing.lg,
+    },
+    primaryActionButton: {
+        flex: 2,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.brand,
+        height: 48,
+        borderRadius: theme.radii.md,
+        elevation: 2,
+        shadowColor: theme.colors.brand,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    primaryActionText: {
+        ...theme.typography.button,
+        color: theme.colors.brandContrast,
+        fontWeight: theme.fontWeights.bold,
+        fontSize: 14,
+        marginLeft: 8,
+    },
+    secondaryActionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.surface,
+        height: 48,
+        borderRadius: theme.radii.md,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+    },
+    secondaryActionText: {
+        ...theme.typography.button,
+        color: theme.colors.textSecondary,
+        fontWeight: theme.fontWeights.semiBold,
+        fontSize: 13,
+        marginLeft: 6,
+    },
+    tableSearchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 42,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+        paddingHorizontal: 12,
+        marginBottom: 12,
+    },
+    tableSearchIcon: {
+        marginRight: 8,
+    },
+    tableSearchInput: {
+        flex: 1,
+        height: '100%',
+        ...theme.typography.bodySmall,
+        fontSize: 13,
+        color: theme.colors.text,
+        paddingVertical: 0,
+    },
+    tableSearchClear: {
+        padding: 4,
+    },
+    tableContainer: {
+        borderRadius: theme.radii.md,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: theme.colors.divider,
     },
     tableHeader: {
         flexDirection: 'row',
         backgroundColor: theme.colors.brand,
-        paddingVertical: 10,
+        paddingVertical: 11,
         paddingHorizontal: 8,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
+        alignItems: 'center',
     },
     tableHeaderText: {
         fontWeight: '700',
         color: theme.colors.brandContrast,
         textAlign: 'center',
         ...theme.typography.caption,
+        fontSize: 12,
     },
     tableRow: {
         flexDirection: 'row',
@@ -659,20 +1069,56 @@ const createStyles = theme => StyleSheet.create({
     oddRow: {
         backgroundColor: theme.colors.backgroundSubtle,
     },
+    editingRow: {
+        backgroundColor: theme.colors.surfaceSelected,
+        borderColor: theme.colors.brandSoft,
+    },
     tableCell: {
         textAlign: 'center',
         ...theme.typography.caption,
+        fontSize: 12,
         color: theme.colors.textSecondary,
+    },
+    usernameCellText: {
+        fontSize: 12,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.text,
+    },
+    levelBadgeText: {
+        fontSize: 9,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.brand,
+        marginTop: 2,
+    },
+    roleCellText: {
+        fontSize: 12,
+        color: theme.colors.textSecondary,
+        textAlign: 'center',
+    },
+    emailCellText: {
+        fontSize: 11,
+        color: theme.colors.textMuted,
+    },
+    actionButtonEdit: {
+        padding: 6,
+        borderRadius: 6,
+        backgroundColor: theme.colors.brandSoft,
+        marginRight: 6,
+    },
+    actionButtonDelete: {
+        padding: 6,
+        borderRadius: 6,
+        backgroundColor: theme.colors.dangerSoft,
+    },
+    noDataContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
     },
     noDataText: {
         textAlign: 'center',
-        padding: 20,
+        marginTop: 6,
         ...theme.typography.bodySmall,
         color: theme.colors.textDisabled,
-    },
-    actionButton: {
-        padding: 6,
-        borderRadius: 8,
-        backgroundColor: theme.colors.surfaceSunken,
     },
 });

@@ -108,23 +108,6 @@ export default function AdvancedSettings() {
           </View>
         </View>
 
-        {/* Storage */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Storage & Data</Text>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Icon name="storage" size={22} color={theme.colors.brand} />
-              <Text style={styles.settingName}>Cache Size</Text>
-            </View>
-            <Text style={styles.cacheText}>{cacheSize}</Text>
-          </View>
-
-          <TouchableOpacity style={styles.clearCacheButton} onPress={clearCache}>
-            <Icon name="cleaning-services" size={18} color={theme.colors.danger} style={{ marginRight: 6 }} />
-            <Text style={styles.clearCacheText}>Clear Cache</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* About */}
         <View style={styles.section}>
