@@ -13,7 +13,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import moment from 'moment';
 import { useSelector } from 'react-redux';
 
-import { DateInput } from '../../components/ReusableComponents/inputs';
+import { DateInput } from '../../components/reusable_components/Inputs';
 import {
     useGet_history_locationQuery,
     useGet_live_locationQuery,

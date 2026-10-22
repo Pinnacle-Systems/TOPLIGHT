@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, ActivityIndicator } from 'react-native';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 
 const SkeletonLoader = ({
   width = '100%',

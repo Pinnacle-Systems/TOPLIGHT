@@ -11,7 +11,6 @@ import {
   FlatList,
   useWindowDimensions
 } from 'react-native';
-import CustomText from '../Text/CustomText';
 import Feather from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import { useGet_fcm_tokenQuery, useGet_refresh_tokenQuery } from '../../redux/service/user';

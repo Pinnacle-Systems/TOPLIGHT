@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { View } from 'react-native'
-import CustomDropdownSelect from '../../../../components/DropDownSelect/DropDownSelect'
-import { EsiandPFBodyStyle } from '../Style/EsiPfStyle'
-import CustomText from '../../../../components/Text/CustomText'
+import CustomDropdownSelect from '../../../../components/dropdown_select/DropDownSelect'
+import { EsiandPFBodyStyle } from '../style/EsiPfStyle'
+import CustomText from '../../../../components/text/CustomText'
 import { Button } from 'react-native-paper'
-import { screenWidth } from '../../../../components/Utils/Screens'
+import { screenWidth } from '../../../../components/utils/Screens'
 import { useAppTheme } from '../../../../theme'
 
 

@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useGetLoginLogsQuery } from '../../store/api/userApi';
+import { useGetLoginLogsQuery } from '../../store/api/UserApi';
 import { useAppTheme } from '../../theme';
 
 const formatLogDate = value => {

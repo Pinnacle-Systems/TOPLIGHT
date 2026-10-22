@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions, Animated } from 'react-native';
 import LottieView from 'lottie-react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import syncAnimation from '../../components/Utils/assets/Sync.json';
+import syncAnimation from '../../components/utils/assets/Sync.json';
 import { useAppTheme } from '../../theme';
 
 export default function DashboardLoading() {

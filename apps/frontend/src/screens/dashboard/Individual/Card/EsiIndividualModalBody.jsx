@@ -1,10 +1,10 @@
 import React, { useLayoutEffect, useState } from 'react'
 import { View ,Text, StyleSheet} from 'react-native'
-import CustomDropdownSelect from '../../../../components/DropDownSelect/DropDownSelect'
-import { EsiandPFBodyStyle } from '../Style/EsiPfStyle'
-import CustomText from '../../../../components/Text/CustomText'
-import { useGetESIQuery } from '../../../../store/api/dashboardApi'
-import { YearMonthRadio } from '../Widget/YearMonthRadio'
+import CustomDropdownSelect from '../../../../components/dropdown_select/DropDownSelect'
+import { EsiandPFBodyStyle } from '../style/EsiPfStyle'
+import CustomText from '../../../../components/text/CustomText'
+import { useGetESIQuery } from '../../../../store/api/DashboardApi'
+import { YearMonthRadio } from '../widget/YearMonthRadio'
 
 
 function EsiIndividualModalBody({CurrentESIAmt,CurrentYearandMonth,UserId}) {

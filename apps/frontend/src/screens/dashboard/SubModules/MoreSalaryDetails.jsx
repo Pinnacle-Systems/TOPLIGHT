@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, StyleSheet, useWindowDimensions, ActivityIndicator } from "react-native";
-import { NumbertoCurrency } from "../../../components/Utils/NumberToCurrency";
+import { NumbertoCurrency } from "../../../components/utils/NumberToCurrency";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataTable } from "react-native-paper";
 import SumofArray from "./SumOfArray";

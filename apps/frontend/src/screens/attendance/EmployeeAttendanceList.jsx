@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showMessage } from 'react-native-flash-message';
-import { usePunchInMutation, usePunchOutMutation } from '../../../store/api/attendanceApi';
-import { useAppTheme } from '../../../theme';
+import { usePunchInMutation, usePunchOutMutation } from '../../store/api/AttendanceApi';
+import { useAppTheme } from '../../theme';
 
 const displayTime = value => value || '--:--';
 

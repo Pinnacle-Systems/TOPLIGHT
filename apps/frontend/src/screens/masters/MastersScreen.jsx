@@ -12,13 +12,13 @@ import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { useGet_all_Onduty_reasonQuery } from '../../store/api/OndutyApi';
-import { useGet_all_Permission_reasonQuery } from '../../store/api/permissionApi';
+import { useGet_all_Permission_reasonQuery } from '../../store/api/PermissionApi';
 import { useGet_all_roleQuery } from '../../store/api/RoleOnApi';
 
 import OndutyMasterScreen from './OndutyMasterScreen';
 import PermissionMasterScreen from './PermissionMasterScreen';
 import RoleMasterScreen from './RoleMasterScreen';
-import { MASTER_TABS } from './constants/masterConfig';
+import { MASTER_TABS } from './MasterConfig';
 import { useAppTheme } from '../../theme';
 
 export default function MastersScreen() {

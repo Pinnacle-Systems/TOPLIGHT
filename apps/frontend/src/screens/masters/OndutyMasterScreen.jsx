@@ -13,19 +13,18 @@ import { showMessage } from 'react-native-flash-message';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useGet_all_Onduty_reasonQuery, useAddOnduty_masterMutation } from '../../store/api/OndutyApi';
-import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/commonMastersApi';
-import MasterTopBar from './components/MasterTopBar';
-import MasterStatsRow from './components/MasterStatsRow';
-import MasterSearchBar from './components/MasterSearchBar';
-import MasterItemCard from './components/MasterItemCard';
-import MasterFormModal from './components/MasterFormModal';
+import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/CommonMastersApi';
+import MasterTopBar from './MasterTopBar';
+import MasterStatsRow from './MasterStatsRow';
+import MasterSearchBar from './MasterSearchBar';
+import MasterItemCard from './MasterItemCard';
+import MasterFormModal from './MasterFormModal';
 import { useAppTheme } from '../../theme';
 
 export default function OndutyMasterScreen({ navigation }) {
     const { theme } = useAppTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
     const ACCENT = theme.colors.brand;
-    const UserSelect = useSelector(state => state.UserDetails);
 
     // ── API Hooks ────────────────────────────────────────────────────────────
     const { data: allReasons, isLoading, isFetching, refetch } = useGet_all_Onduty_reasonQuery();

@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { useGetFilterEmployeesQuery } from '../../../../store/api/dashboardApi';
-import { useGetUserBasicDetailsQuery } from '../../../../store/api/userApi';
-import CustomizeButton from '../../../../components/Buttons/CustomizeButton';
-import AntDesign from 'react-native-vector-icons/AntDesign'
+import { useGetFilterEmployeesQuery } from '../../../../store/api/DashboardApi';
+import { useGetUserBasicDetailsQuery } from '../../../../store/api/UserApi';
 import { useAppTheme } from '../../../../theme';
 function EmployeeFilter({ hod,admin, USER,setFilteredEmpId,closeModel,temp,set_tempsearch}) {
   const { theme } = useAppTheme();

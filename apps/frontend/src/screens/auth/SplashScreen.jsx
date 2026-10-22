@@ -4,9 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
-import { useGet_Change_SettingsQuery } from '../../store/api/userApi';
+import { useGet_Change_SettingsQuery } from '../../store/api/UserApi';
 import { useDispatch } from 'react-redux';
-import { setUserDetails } from '../../store/slices/userDetailsSlice';
+import { setUserDetails } from '../../store/slices/UserDetailsSlice';
 import { useAppTheme } from '../../theme';
 
 const GRADIENT_CONFIG = { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } };

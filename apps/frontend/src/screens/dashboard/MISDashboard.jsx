@@ -19,7 +19,7 @@ import {
     useGetYearWiseToTSalaryQuery,
     useGetTotalHeadCountQuery,
     useGetAgewiseEsiQuery,
-} from '../../store/api/dashboardApi';
+} from '../../store/api/DashboardApi';
 import { useGet_live_userQuery } from '../../store/api/OndutyApi';
 import { useSelector } from 'react-redux';
 import { useAppTheme } from '../../theme';

@@ -1,10 +1,9 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
-import CustomDropdownSelect from '../../../../components/DropDownSelect/DropDownSelect';
-import { EsiandPFBodyStyle } from '../Style/EsiPfStyle';
-import CustomText from '../../../../components/Text/CustomText';
-import { useGetOverTimeQuery } from '../../../../store/api/dashboardApi';
-import { NumbertoCurrency } from '../../../../components/Utils/NumberToCurrency';
+import CustomDropdownSelect from '../../../../components/dropdown_select/DropDownSelect';
+import CustomText from '../../../../components/text/CustomText';
+import { useGetOverTimeQuery } from '../../../../store/api/DashboardApi';
+import { NumbertoCurrency } from '../../../../components/utils/NumberToCurrency';
 import { useAppTheme } from '../../../../theme';
 
 function OTIndividualModalBody({ CurrentOTAmt, CurrentYearandMonth, UserId }) {

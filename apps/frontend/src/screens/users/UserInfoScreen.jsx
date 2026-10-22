@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
-import { useGetMoreDetailsQuery } from '../../store/api/dashboardApi';
+import { useGetMoreDetailsQuery } from '../../store/api/DashboardApi';
 import { useAppTheme } from '../../theme';
 
 const USER_DETAILS = [

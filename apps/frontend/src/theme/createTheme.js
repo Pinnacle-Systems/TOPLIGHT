@@ -1,6 +1,6 @@
 import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationLightTheme } from '@react-navigation/native';
-import { colorPalettes } from './palettes';
+import { colorPalettes } from './Palettes';
 import {
     controlSizes,
     durations,
@@ -15,7 +15,7 @@ import {
     spacing,
     typography,
     zIndex,
-} from './tokens';
+} from './Tokens';
 
 export function createAppTheme(mode = 'light') {
     const isDark = mode === 'dark';

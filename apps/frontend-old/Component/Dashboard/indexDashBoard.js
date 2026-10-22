@@ -17,7 +17,7 @@ import { Common_Context } from "../../Context/Common_Context";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'twrnc';
 import { useGetMisDashboardOrdersInHandQuery } from "../../redux/service/misDashboardService";
-import { setCountUnder20DueDays } from "../../redux/Slices/dueDaysSlice";
+import { setCountUnder20DueDays } from "../../redux/Slices/DueDaysSlice";
 import { CustomNavigation } from "../Utils/NavigationRef";
 import socket from "../Utils/Socket";
 import {TopManagement} from "./TopManage"; 

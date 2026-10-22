@@ -1,5 +1,5 @@
 import HomeScreen from '../screens/dashboard/HomeScreen';
-import UserAndRoles from '../screens/users/UserAndRoles';
+import UserAndRoles from '../screens/users/user_and_roles';
 import OndutyScreen from '../screens/onduty/OndutyScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import MastersScreen from '../screens/masters/MastersScreen';
@@ -18,7 +18,7 @@ import LocationTrackingScreen from '../screens/location/LocationTrackingScreen';
 
 export const APP_ROUTES = [
     { key: 'HOME', name: 'HOME', component: HomeScreen, isDefault: true },
-    { key: 'DashBoard', name: 'DashBoard', component: require('../screens/dashboard/indexDashBoard').default, isDefault: true },
+    { key: 'DashBoard', name: 'DashBoard', component: require('../screens/dashboard/IndexDashBoard').default, isDefault: true },
     { key: 'USERANDROLES', name: 'USERANDROLES', component: UserAndRoles, isDefault: true },
     { key: 'onduty', name: 'onduty', component: OndutyScreen, isDefault: false },
     { key: 'onduty_approval', name: 'onduty_approval', component: OndutyApprovalScreen, isDefault: true },

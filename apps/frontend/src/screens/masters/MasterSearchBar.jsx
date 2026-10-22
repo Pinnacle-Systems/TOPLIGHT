@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useAppTheme } from '../../../theme';
+import { useAppTheme } from '../../theme';
 
 export default function MasterSearchBar({ 
     searchQuery, 

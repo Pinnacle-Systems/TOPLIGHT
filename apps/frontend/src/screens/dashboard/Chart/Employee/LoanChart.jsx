@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Alert } from 'react-native';
-import { NumbertoCurrency } from '../../../../components/Utils/NumberToCurrency';
+import { NumbertoCurrency } from '../../../../components/utils/NumberToCurrency';
 import WebView from 'react-native-webview';
 import { useAppTheme } from '../../../../theme';
 

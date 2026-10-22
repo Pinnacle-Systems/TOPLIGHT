@@ -14,7 +14,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 import DateBanner from './DateBanner';
-import { useAppTheme } from '../../../theme';
+import { useAppTheme } from '../../theme';
 
 export default function OndutyEntryForm({
     docId,

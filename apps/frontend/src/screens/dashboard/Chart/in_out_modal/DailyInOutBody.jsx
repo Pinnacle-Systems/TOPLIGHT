@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native"
-import { useGetInOutQuery } from "../../../../store/api/dashboardApi"
+import { useGetInOutQuery } from "../../../../store/api/DashboardApi"
 import { useAppTheme } from "../../../../theme"
 
 function DailyInOutBody({ UserId, payperiod, COMPCODE }) {

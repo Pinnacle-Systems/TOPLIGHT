@@ -4,25 +4,19 @@ import {
 } from 'react-native';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import WebView from 'react-native-webview';
-import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from 'react-native-vector-icons';
-import CustomText from '../../components/Text/CustomText';
+import {  MaterialCommunityIcons } from 'react-native-vector-icons';
 import {
   useGetYearWiseToTSalaryQuery,
   useGetgendercountQuery,
   useGetTotalHeadCountQuery,
   useGetDepWise_gender_attenceQuery,
-} from '../../store/api/dashboardApi';
+} from '../../store/api/DashboardApi';
 import { useGet_live_userQuery } from '../../store/api/OndutyApi';
 import PagerView from 'react-native-pager-view';
 import LinearGradient from 'react-native-linear-gradient';
-import { UserProfileCard } from './UserProfile';
 import CustomizeProfile_Higher_Pos from './CustomizeProfile_Higher_Pos';
-import FilterModel from '../../components/FilterModal/FilterModel';
-import CustomDropdownSelect from '../../components/DropDownSelect/DropDownSelect';
 import { useSelector } from 'react-redux';
-import { LastMonthandYear } from '../../components/Utils/getCurrentMonth';
 import { useAppTheme } from '../../theme';
-// import LiveStatusCard from './Card/LiveStatusCard';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const W = Dimensions.get('window').width;

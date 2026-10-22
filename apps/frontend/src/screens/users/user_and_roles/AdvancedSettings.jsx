@@ -13,8 +13,8 @@ import { useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { getKmEntrySetting, setKmEntrySetting } from '../../../utils/kmSettings';
-import { setKmEntryEnabled } from '../../../store/slices/ondutyInputSlice';
+import { getKmEntrySetting, setKmEntrySetting } from '../../../utils/KmSettings';
+import { setKmEntryEnabled } from '../../../store/slices/OndutyInputSlice';
 import { useAppTheme } from '../../../theme';
 
 export default function AdvancedSettings() {

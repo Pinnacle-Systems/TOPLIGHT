@@ -1,6 +1,6 @@
 export { AppThemeProvider, useAppTheme } from './ThemeProvider';
-export { createAppTheme } from './createTheme';
-export { colorPalettes, darkColors, lightColors, neutralColors } from './palettes';
+export { createAppTheme } from './CreateTheme';
+export { colorPalettes, darkColors, lightColors, neutralColors } from './Palettes';
 export {
     controlSizes,
     durations,
@@ -15,4 +15,4 @@ export {
     spacing,
     typography,
     zIndex,
-} from './tokens';
+} from './Tokens';

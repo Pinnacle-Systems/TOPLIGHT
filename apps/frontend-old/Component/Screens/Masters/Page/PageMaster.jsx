@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useGetMisDashboardOrdersInHandQuery } from '../redux/service/misDashboardService';
 import { setTableData } from '../redux/Slices/insuranceDataSlice';
-import { setCountUnder20DueDays } from '../redux/Slices/dueDaysSlice';
+import { setCountUnder20DueDays } from '../redux/Slices/DueDaysSlice';
 import CustomText from '../../../Text/CustomText';
 
 

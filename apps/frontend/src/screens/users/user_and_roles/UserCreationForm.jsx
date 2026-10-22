@@ -5,22 +5,21 @@ import { showMessage } from 'react-native-flash-message';
 import { useSelector } from "react-redux";
 import { Checkbox } from "react-native-paper";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { 
     useCreateUserMutation, 
     useGetCompanycodeQuery, 
     useGetEmployeeidsQuery, 
     useGetUsersQuery 
-} from "../../../store/api/userApi";
+} from "../../../store/api/UserApi";
 import { useGet_all_roleQuery } from "../../../store/api/RoleOnApi";
-import { useDelete_CommonMutation, useUpdate_CommonMutation } from '../../../store/api/commonMastersApi';
+import { useDelete_CommonMutation, useUpdate_CommonMutation } from '../../../store/api/CommonMastersApi';
 
-import { Dropdown } from "../../../components/ReusableComponents/inputs";
-import FloatingButton from "../../../components/Buttons/Buttons";
-import ClearState from "../../../components/Utils/ClearState";
-import ProgressPopup from "../../../components/Utils/PopupLoading";
-import CheckboxGroup from "../../../components/CheckBoxes/GroupCheckBox";
+import { Dropdown } from "../../../components/reusable_components/Inputs";
+import FloatingButton from "../../../components/buttons/Buttons";
+import ClearState from "../../../components/utils/ClearState";
+import ProgressPopup from "../../../components/utils/PopupLoading";
+import CheckboxGroup from "../../../components/check_boxes/GroupCheckBox";
 import RoleLevelSelector from "./RoleLevelSelector";
 import { useAppTheme } from "../../../theme";
 

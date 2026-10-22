@@ -13,12 +13,12 @@ import { showMessage } from 'react-native-flash-message';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useAddRole_masterMutation, useGet_all_roleQuery } from '../../store/api/RoleOnApi';
-import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/commonMastersApi';
-import MasterTopBar from './components/MasterTopBar';
-import MasterStatsRow from './components/MasterStatsRow';
-import MasterSearchBar from './components/MasterSearchBar';
-import MasterItemCard from './components/MasterItemCard';
-import MasterFormModal from './components/MasterFormModal';
+import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/CommonMastersApi';
+import MasterTopBar from './MasterTopBar';
+import MasterStatsRow from './MasterStatsRow';
+import MasterSearchBar from './MasterSearchBar';
+import MasterItemCard from './MasterItemCard';
+import MasterFormModal from './MasterFormModal';
 import { useAppTheme } from '../../theme';
 
 export default function RoleMasterScreen({ navigation }) {

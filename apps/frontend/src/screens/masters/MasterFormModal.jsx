@@ -14,8 +14,8 @@ import {
     Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { PTYPE_OPTIONS } from '../constants/masterConfig';
-import { useAppTheme } from '../../../theme';
+import { PTYPE_OPTIONS } from './MasterConfig';
+import { useAppTheme } from '../../theme';
 
 export default function MasterFormModal({
     visible,

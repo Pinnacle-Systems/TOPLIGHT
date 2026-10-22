@@ -14,8 +14,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showMessage } from 'react-native-flash-message';
 import { useSelector } from 'react-redux';
-import { Dropdown } from '../../components/ReusableComponents/inputs';
-import { useGet__per_categoryQuery } from '../../store/api/permissionApi';
+import { Dropdown } from '../../components/reusable_components/Inputs';
+import { useGet__per_categoryQuery } from '../../store/api/PermissionApi';
 import {
     useAdd_requestLeaveMutation,
     useGetCurrent_FinYearQuery,
@@ -23,11 +23,11 @@ import {
     useGetDocIDQuery,
     useLazyGet_lcode_leave_availableQuery,
 } from '../../store/api/LeaveApi';
-import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/api/userApi';
-import { _FCM_SENDER } from '../../components/Utils/FCM';
+import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/api/UserApi';
+import { _FCM_SENDER } from '../../components/utils/Fcm';
 import socket from '../../utils/Socket';
 import { useAppTheme } from '../../theme';
-import { formatUserFriendlyError } from '../../utils/userFriendlyError';
+import { formatUserFriendlyError } from '../../utils/UserFriendlyError';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HALF_DAY_OPTIONS = [
@@ -499,22 +499,7 @@ export default function LeaveEntryScreen() {
         }
     };
 
-    const submitLabel = !dateRangeValid
-        ? 'Select valid leave dates'
-        : !financialYear
-            ? 'Select financial year'
-            : !category || !leaveCode || !reason.trim()
-            ? 'Complete required fields'
-            : balanceLoading
-                ? 'Loading leave balance'
-                : balanceLookupComplete && !selectedBalance
-                    ? 'No leave balance available'
-                    : !balanceResolved
-                        ? 'Load leave balance'
-                : requestedDays > balance
-                    ? `Exceeds balance (${balance} days)`
-                    : 'Submit leave request';
-
+   
     return (
         <View style={styles.screen}>
             <StatusBar
@@ -728,7 +713,7 @@ export default function LeaveEntryScreen() {
                     ) : (
                         <>
                             <MaterialCommunityIcons name="send-outline" size={18} color={theme.colors.brandContrast} />
-                            <Text style={styles.submitButtonText}>{canSubmit ? 'Submit leave request' : submitLabel}</Text>
+                            <Text style={styles.submitButtonText}>Submit</Text>
                         </>
                     )}
                 </TouchableOpacity>

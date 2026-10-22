@@ -2,12 +2,12 @@
 
 import React, { useLayoutEffect, useState } from 'react'
 import { View ,Text, StyleSheet} from 'react-native'
-import CustomDropdownSelect from '../../../../components/DropDownSelect/DropDownSelect'
-import { EsiandPFBodyStyle } from '../Style/EsiPfStyle'
-import CustomText from '../../../../components/Text/CustomText'
-import { useGetMonthESIPFQuery } from '../../../../store/api/dashboardApi'
-import { NumbertoCurrency } from '../../../../components/Utils/NumberToCurrency'
-import { YearMonthRadio } from '../Widget/YearMonthRadio'
+import CustomDropdownSelect from '../../../../components/dropdown_select/DropDownSelect'
+import { EsiandPFBodyStyle } from '../style/EsiPfStyle'
+import CustomText from '../../../../components/text/CustomText'
+import { useGetMonthESIPFQuery } from '../../../../store/api/DashboardApi'
+import { NumbertoCurrency } from '../../../../components/utils/NumberToCurrency'
+import { YearMonthRadio } from '../widget/YearMonthRadio'
 
 function PfIndividualModalBody({CurrentPFAmt,CurrentYearandMonth,UserId}) {
     

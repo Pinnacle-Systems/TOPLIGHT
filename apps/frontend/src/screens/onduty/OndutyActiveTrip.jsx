@@ -1,105 +1,153 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
     View, 
     Text, 
     StyleSheet, 
     TouchableOpacity, 
     TextInput, 
+    Animated, 
     ActivityIndicator 
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Checkbox } from 'react-native-paper';
+import moment from 'moment';
+import { useAppTheme } from '../../theme';
 
 import DateBanner from './DateBanner';
-import { useAppTheme } from '../../../theme';
 
-export default function OndutyReachedTrip({ 
-    reachedData, 
-    onConfirmReached, 
+export default function OndutyActiveTrip({ 
+    tripData, 
+    onSubmitOut, 
     isSubmitting,
     isKmEntryEnabled,
-    reachedKm,
-    onChangeReachedKm,
+    endKm,
+    onChangeEndKm,
 }) {
+    const [isAnotherOnduty, setIsAnotherOnduty] = useState(false);
+    const pulseAnim = useState(new Animated.Value(1))[0];
     const { theme } = useAppTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
+    useEffect(() => {
+        const anim = Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, { toValue: 1.35, duration: 800, useNativeDriver: true }),
+                Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+            ])
+        );
+        anim.start();
+        return () => anim.stop();
+    }, [pulseAnim]);
+
+    const formattedTime = tripData?.in_time 
+        ? moment(tripData.in_time).isValid()
+            ? moment(tripData.in_time).format('DD MMM YYYY, hh:mm A')
+            : tripData.in_time
+        : '—';
+
     return (
         <View style={styles.container}>
-            {/* Reached Hero Card */}
+            {/* Live Tracking Hero Card */}
             <View style={styles.heroCard}>
                 <View style={styles.heroTop}>
-                    <View style={styles.badge}>
-                        <MaterialCommunityIcons name="flag-checkered" size={14} color={theme.colors.success} />
-                        <Text style={styles.badgeText}>TRIP CONCLUDING</Text>
+                    <View style={styles.liveBadge}>
+                        <Animated.View style={[styles.pulseDot, { transform: [{ scale: pulseAnim }] }]} />
+                        <Text style={styles.liveText}>LIVE TRACKING ACTIVE</Text>
                     </View>
                     <View style={styles.heroIconBox}>
-                        <MaterialCommunityIcons name="office-building-marker" size={24} color={theme.colors.success} />
+                        <MaterialCommunityIcons name="navigation-variant" size={24} color={theme.colors.brand} />
                     </View>
                 </View>
 
-                <Text style={styles.heroTitle}>Back at Office!</Text>
+                <Text style={styles.heroTitle}>Active OnDuty Session</Text>
                 <Text style={styles.heroSubtitle}>
-                    Confirm your return to finalize and complete this OnDuty trip.
+                    Continuous location is actively tracking in the background.
                 </Text>
             </View>
 
             {/* Date Banner */}
             <DateBanner />
 
-            {/* Trip Summary Card */}
+            {/* Trip Details Card */}
             <View style={styles.detailsCard}>
                 <View style={styles.detailsHeader}>
-                    <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={theme.colors.success} />
-                    <Text style={styles.detailsHeaderText}>Trip Summary</Text>
+                    <MaterialCommunityIcons name="clipboard-text-clock-outline" size={20} color={theme.colors.brand} />
+                    <Text style={styles.detailsHeaderText}>Trip Information</Text>
                 </View>
 
                 <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>DOCUMENT ID</Text>
-                    <Text style={styles.infoValueMono}>{reachedData?.docid || '—'}</Text>
+                    <Text style={styles.infoValueMono}>{tripData?.docid || '—'}</Text>
                 </View>
 
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>DEPARTURE POINT</Text>
-                    <Text style={styles.infoValue}>{reachedData?.in_location || '—'}</Text>
+                    <Text style={styles.infoLabel}>DEPARTURE LOCATION</Text>
+                    <Text style={styles.infoValue}>{tripData?.in_location || '—'}</Text>
                 </View>
 
-                {isKmEntryEnabled && reachedData?.vechileno ? (
+                <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>START TIME</Text>
+                    <Text style={styles.infoValue}>{formattedTime}</Text>
+                </View>
+
+                {/* Show Vehicle & Start KM if enabled & available */}
+                {isKmEntryEnabled && tripData?.vechileno ? (
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>VEHICLE</Text>
-                        <Text style={styles.infoValue}>{reachedData?.vechileno}</Text>
+                        <Text style={styles.infoLabel}>VEHICLE NO</Text>
+                        <Text style={styles.infoValue}>{tripData.vechileno}</Text>
+                    </View>
+                ) : null}
+
+                {isKmEntryEnabled && tripData?.start_km && tripData.start_km !== '0' ? (
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>START ODOMETER</Text>
+                        <Text style={styles.infoValue}>{tripData.start_km} KM</Text>
                     </View>
                 ) : null}
             </View>
 
-            {/* Reached KM Entry (Shown ONLY when enabled in Settings) */}
+            {/* End KM Entry (Shown ONLY when enabled in Settings) */}
             {isKmEntryEnabled ? (
                 <View style={styles.detailsCard}>
                     <View style={styles.detailsHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.success} />
-                        <Text style={styles.detailsHeaderText}>Final Odometer Reading</Text>
+                        <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.brand} />
+                        <Text style={styles.detailsHeaderText}>Check-Out Odometer Reading</Text>
                     </View>
                     <View style={styles.kmInputWrapper}>
                         <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
                         <TextInput
                             style={styles.singleLineInput}
-                            placeholder="Enter final reached KM"
+                            placeholder="Enter ending KM (optional)"
                             placeholderTextColor={theme.colors.placeholder}
                             keyboardType="numeric"
-                            value={reachedKm}
-                            onChangeText={onChangeReachedKm}
+                            value={endKm}
+                            onChangeText={onChangeEndKm}
                         />
                         <Text style={styles.kmUnitText}>KM</Text>
                     </View>
                 </View>
             ) : null}
 
-            {/* Confirm Button */}
+            {/* Going to another onduty toggle */}
+            <View style={styles.checkboxCard}>
+                <Checkbox.Item
+                    label="Going to another OnDuty?"
+                    status={isAnotherOnduty ? 'checked' : 'unchecked'}
+                    onPress={() => setIsAnotherOnduty(!isAnotherOnduty)}
+                    color={theme.colors.brand}
+                    position="leading"
+                    labelStyle={styles.checkboxLabel}
+                    style={styles.checkboxItem}
+                />
+            </View>
+
+            {/* Check OUT Button */}
             <TouchableOpacity 
-                style={[styles.confirmBtn, isSubmitting && styles.btnDisabled]}
-                onPress={() => onConfirmReached({ 
-                    docId: reachedData?.docid, 
-                    vehicleNo: reachedData?.vechileno,
-                    reachedKm: reachedKm,
+                style={[styles.checkoutBtn, isSubmitting && styles.btnDisabled]}
+                onPress={() => onSubmitOut({ 
+                    docId: tripData?.docid, 
+                    toOnduty: isAnotherOnduty,
+                    endKm: endKm,
                 })}
                 disabled={isSubmitting}
                 activeOpacity={0.8}
@@ -108,8 +156,8 @@ export default function OndutyReachedTrip({
                     <ActivityIndicator size="small" color={theme.colors.brandContrast} />
                 ) : (
                     <>
-                        <MaterialCommunityIcons name="check-circle-outline" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
-                        <Text style={styles.confirmBtnText}>CONFIRM REACHED OFFICE</Text>
+                        <MaterialCommunityIcons name="logout-variant" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
+                        <Text style={styles.checkoutBtnText}>CHECK OUT NOW</Text>
                     </>
                 )}
             </TouchableOpacity>
@@ -128,7 +176,7 @@ const createStyles = theme => StyleSheet.create({
         borderWidth: 1,
         borderColor: theme.colors.borderSubtle,
         borderLeftWidth: 4,
-        borderLeftColor: theme.colors.success,
+        borderLeftColor: theme.colors.brand,
         marginBottom: 14,
         shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 3 },
@@ -142,24 +190,30 @@ const createStyles = theme => StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    badge: {
+    liveBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.successSoft,
+        backgroundColor: theme.colors.brandSoft,
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 20,
         gap: 6,
     },
-    badgeText: {
+    pulseDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: theme.colors.brand,
+    },
+    liveText: {
         ...theme.typography.overline,
-        color: theme.colors.success,
+        color: theme.colors.brand,
     },
     heroIconBox: {
         width: 40,
         height: 40,
         borderRadius: 12,
-        backgroundColor: theme.colors.successSoft,
+        backgroundColor: theme.colors.brandSoft,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -190,7 +244,7 @@ const createStyles = theme => StyleSheet.create({
     detailsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 14,
         gap: 8,
     },
     detailsHeaderText: {
@@ -204,6 +258,7 @@ const createStyles = theme => StyleSheet.create({
         ...theme.typography.caption,
         fontWeight: theme.fontWeights.semiBold,
         color: theme.colors.textDisabled,
+        letterSpacing: 0.4,
         marginBottom: 3,
     },
     infoValue: {
@@ -214,7 +269,7 @@ const createStyles = theme => StyleSheet.create({
     infoValueMono: {
         ...theme.typography.bodySmall,
         fontWeight: theme.fontWeights.bold,
-        color: theme.colors.success,
+        color: theme.colors.brand,
         fontFamily: 'monospace',
     },
     kmInputWrapper: {
@@ -239,25 +294,41 @@ const createStyles = theme => StyleSheet.create({
         color: theme.colors.textDisabled,
         marginLeft: 6,
     },
-    confirmBtn: {
-        backgroundColor: theme.colors.success,
+    checkboxCard: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+        marginBottom: 20,
+        overflow: 'hidden',
+    },
+    checkboxItem: {
+        paddingVertical: 4,
+    },
+    checkboxLabel: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.textSecondary,
+    },
+    checkoutBtn: {
+        backgroundColor: theme.colors.danger,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 16,
         borderRadius: 16,
-        shadowColor: theme.colors.success,
+        shadowColor: theme.colors.danger,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: theme.isDark ? 0.3 : 0.25,
+        shadowOpacity: 0.25,
         shadowRadius: 8,
         elevation: 4,
-        marginTop: 6,
     },
     btnDisabled: {
         opacity: 0.6,
     },
-    confirmBtnText: {
+    checkoutBtnText: {
         color: theme.colors.brandContrast,
         ...theme.typography.button,
+        letterSpacing: 0.5,
     },
 });

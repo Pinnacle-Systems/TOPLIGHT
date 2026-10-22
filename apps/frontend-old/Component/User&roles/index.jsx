@@ -1,21 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
-import { useGetUserDetQuery, useGetUsersQuery } from '../../redux/service/user';
+import { useGetUserDetQuery } from '../../redux/service/user';
 import UserCreation from './UserCreation';
 import Form from './Form';
-
-
-import { useCustomFonts } from '../CustomHooks/useFonts';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import LinearGradient from 'react-native-linear-gradient';
 import AdvancedSettingsScreen from './AdvanceSettings';
 
 
 export default function UserAndRoles() {
     const [role, setRole] = useState(true);
     const [others,setothers]=useState(false);
-    const {fontsLoaded}=useCustomFonts()
 
     const { data: userDet } = useGetUserDetQuery();
     const handleCreateUserPress = () =>[setRole(true), setothers(false) ]

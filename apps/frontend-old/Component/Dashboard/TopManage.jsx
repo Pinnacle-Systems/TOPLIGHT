@@ -3,10 +3,8 @@ import {
   TouchableOpacity, Animated, Text, Image, RefreshControl
 } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
-import NavBar from '../Navbar';
 import WebView from 'react-native-webview';
 import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from 'react-native-vector-icons';
-import CustomText from '../Text/CustomText';
 import {
   useGetYearWiseToTSalaryQuery,
   useGetgendercountQuery,
@@ -16,13 +14,9 @@ import {
 import { useGet_live_userQuery } from '../../redux/service/Onduty';
 import PagerView from 'react-native-pager-view';
 import LinearGradient from 'react-native-linear-gradient';
-import { UserProfileCard } from './UserProfile';
 import CustomizeProfile_Higher_Pos from './CustomizeProfile_Higher_Pos';
-import FilterModel from '../FilterModal/FilterModel';
-import CustomDropdownSelect from '../DropDownSelect/DropDownSelect';
 import { useSelector } from 'react-redux';
-import { LastMonthandYear } from '../Utils/getCurrentMonth';
-// import LiveStatusCard from './Card/LiveStatusCard';
+
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const W = Dimensions.get('window').width;

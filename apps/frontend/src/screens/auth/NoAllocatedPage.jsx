@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
-import { setClearAll } from '../../store/slices/userDetailsSlice';
+import { setClearAll } from '../../store/slices/UserDetailsSlice';
 // If we have a global logout function or need to restart
 import { NativeModules } from 'react-native';
 import { useAppTheme } from '../../theme';
@@ -32,7 +32,7 @@ export default function NoAllocatedPage() {
         <View style={styles.container}>
             {/* Animated Illustration */}
             <LottieView
-                source={require('../../assets/animations/Nopage.json')}
+                source={require('../../assets/animations/NoPage.json')}
                 autoPlay
                 loop
                 style={styles.animation}

@@ -6,19 +6,13 @@ import {
     Animated,
     TouchableOpacity,
     useWindowDimensions,
-    Alert,
-    Platform,
-    Linking,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import Share from 'react-native-share';
 import moment from 'moment';
 import { useSelector } from 'react-redux';
-import { useGetPayslipQuery } from '../../../store/api/dashboardApi';
-import CommonModal from '../../../components/Modal/CommonModal';
-import PayslipWithFilter from '../Payslip/FilterContent/PaySlipFilter_Content';
+import { useGetPayslipQuery } from '../../../store/api/DashboardApi';
+import CommonModal from '../../../components/modal/CommonModal';
+import PayslipWithFilter from '../payslip/filtercontent/PaySlipFilter_Content';
 import { useAppTheme } from '../../../theme';
 
 const SalaryAdvanceCard = ({
@@ -26,7 +20,6 @@ const SalaryAdvanceCard = ({
     month = 'Current Month',
     title = 'Advance Salary',
     status = 'Debited',
-    onPressDetails,
 }) => {
     const { theme } = useAppTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);

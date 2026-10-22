@@ -9,11 +9,12 @@ import FlashMessage from 'react-native-flash-message';
 import { ThemeProvider } from 'react-native-paper';
 import { Common_Context } from './src/context/CommonContext';
 import { AppThemeProvider, useAppTheme } from './src/theme';
-import { useGetUserRolesOnPageQuery } from './src/store/api/userApi';
+import { useGetUserRolesOnPageQuery } from './src/store/api/UserApi';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import SplashScreen from './src/screens/auth/SplashScreen';
 import MainNavigator from './src/navigation/MainNavigator';
-import { NavRef } from './src/components/Utils/NavigationRef';
+import { NavRef } from './src/components/utils/NavigationRef';
+
 
 const Stack = createNativeStackNavigator();
 

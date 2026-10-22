@@ -13,18 +13,18 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { getKmEntrySetting, setKmEntrySetting } from '../../utils/kmSettings';
-import { setKmEntryEnabled } from '../../store/slices/ondutyInputSlice';
-import { clearDnsCache } from '../../components/Utils/DnsResolver';
-import { UsersApi } from '../../store/api/userApi';
-import DashboardApi from '../../store/api/dashboardApi';
-import NotificationApi from '../../store/api/notificationApi';
+import { getKmEntrySetting, setKmEntrySetting } from '../../utils/KmSettings';
+import { setKmEntryEnabled } from '../../store/slices/OndutyInputSlice';
+import { clearDnsCache } from '../../components/utils/DnsResolver';
+import { UsersApi } from '../../store/api/UserApi';
+import DashboardApi from '../../store/api/DashboardApi';
+import NotificationApi from '../../store/api/NotificationApi';
 import OndutyRTk from '../../store/api/OndutyApi';
 import LeaveData from '../../store/api/LeaveApi';
 import RoleOnApi from '../../store/api/RoleOnApi';
-import { commonMastersApi } from '../../store/api/commonMastersApi';
-import { permissionApi } from '../../store/api/permissionApi';
-import AttendanceApi from '../../store/api/attendanceApi';
+import { commonMastersApi } from '../../store/api/CommonMastersApi';
+import { permissionApi } from '../../store/api/PermissionApi';
+import AttendanceApi from '../../store/api/AttendanceApi';
 import { useAppTheme } from '../../theme';
 
 const API_SLICES = [

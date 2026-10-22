@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useAppTheme } from '../../../theme';
+import { useAppTheme } from '../../theme';
 
 export default function MasterTopBar({ 
     title = 'Masters Hub', 

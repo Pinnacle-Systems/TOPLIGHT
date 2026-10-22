@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Common_Context } from '../context/CommonContext';
-import { APP_ROUTES } from './routes';
+import { APP_ROUTES } from './Routes';
 import { View, Text, ActivityIndicator } from 'react-native';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';

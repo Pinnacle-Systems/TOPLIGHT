@@ -12,8 +12,8 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 
-import { useGet__Onduty_editQuery } from '../../../store/api/OndutyApi';
-import { useAppTheme } from '../../../theme';
+import { useGet__Onduty_editQuery } from '../../store/api/OndutyApi';
+import { useAppTheme } from '../../theme';
 
 export default function OndutyModificationModal({ visible, onClose }) {
     const { theme } = useAppTheme();

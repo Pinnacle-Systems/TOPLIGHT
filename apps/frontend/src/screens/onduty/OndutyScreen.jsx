@@ -23,17 +23,17 @@ import {
     useGet__VechileQuery,
     useGet__vechilekmQuery,
 } from '../../store/api/OndutyApi';
-import { useGet_refresh_tokenQuery, useGet_hod_tokenQuery } from '../../store/api/userApi';
+import { useGet_refresh_tokenQuery, useGet_hod_tokenQuery } from '../../store/api/UserApi';
 import { 
     setOndutyField, 
     setOndutyLocation, 
     setOndutyDocId,
     setKmEntryEnabled,
-} from '../../store/slices/ondutyInputSlice';
+} from '../../store/slices/OndutyInputSlice';
 
 // Utilities
-import { getCurrentLocationAsync } from '../../components/Utils/CustomLocation';
-import { getKmEntrySetting } from '../../utils/kmSettings';
+import { getCurrentLocationAsync } from '../../components/utils/CustomLocation';
+import { getKmEntrySetting } from '../../utils/KmSettings';
 import socket from '../../utils/Socket';
 
 // Custom Hooks
@@ -41,11 +41,11 @@ import { useLocationTracker } from './hooks/useLocationTracker';
 import { useOndutySubmit } from './hooks/useOndutySubmit';
 
 // Components
-import OndutyActiveTrip from './components/OndutyActiveTrip';
-import OndutyReachedTrip from './components/OndutyReachedTrip';
-import OndutyEntryForm from './components/OndutyEntryForm';
-import OndutyModificationModal from './components/OndutyModificationModal';
-import CameraModal from '../../components/Modal/CameraModal';
+import OndutyActiveTrip from './OndutyActiveTrip';
+import OndutyReachedTrip from './OndutyReachedTrip';
+import OndutyEntryForm from './OndutyEntryForm';
+import OndutyModificationModal from './OndutyModificationModal';
+import CameraModal from '../../components/modal/CameraModal';
 import { useAppTheme } from '../../theme';
 
 const IMAGE_CONFIG = {

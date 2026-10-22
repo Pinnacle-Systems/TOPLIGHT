@@ -6,7 +6,7 @@ import moment from 'moment';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomText from './Text/CustomText';
 import { setTableData } from '../redux/Slices/insuranceDataSlice';
-import { setCountUnder20DueDays } from '../redux/Slices/dueDaysSlice';
+import { setCountUnder20DueDays } from '../redux/Slices/DueDaysSlice';
 import { useGetMisDashboardOrdersInHandQuery } from '../redux/service/misDashboardService';
 import tailwind from 'twrnc';
 

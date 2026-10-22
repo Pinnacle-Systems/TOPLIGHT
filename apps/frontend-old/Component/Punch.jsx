@@ -2,14 +2,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, Alert } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import { useGetMisDashboardOrdersInHandQuery } from '../redux/service/misDashboardService';
-import { setTableData } from '../redux/Slices/insuranceDataSlice';
-import { setCountUnder20DueDays } from '../redux/Slices/dueDaysSlice';
 import CustomText from './Text/CustomText';
 import { AllowedTabs_Filter } from './Utils/AllowedPagesFiltering';
 import { Common_Context } from '../Context/Common_Context';
-import { screenWidth } from './Utils/Screens';
-import tailwind from 'twrnc';
 
 
 const { width, height } = Dimensions.get('window');

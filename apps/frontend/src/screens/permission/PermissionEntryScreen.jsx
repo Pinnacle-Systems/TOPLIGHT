@@ -15,17 +15,17 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import moment from 'moment';
 import { useSelector } from 'react-redux';
 import { showMessage } from 'react-native-flash-message';
-import { Dropdown } from '../../components/ReusableComponents/inputs';
+import { Dropdown } from '../../components/reusable_components/Inputs';
 import {
     useGet__per_categoryQuery,
     useGetDocIDQuery,
     useRequestPermissionMutation,
-} from '../../store/api/permissionApi';
-import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/api/userApi';
-import { _FCM_SENDER } from '../../components/Utils/FCM';
+} from '../../store/api/PermissionApi';
+import { useGet_hod_tokenQuery, useGet_refresh_tokenQuery } from '../../store/api/UserApi';
+import { _FCM_SENDER } from '../../components/utils/Fcm';
 import socket from '../../utils/Socket';
 import { useAppTheme } from '../../theme';
-import { formatUserFriendlyError } from '../../utils/userFriendlyError';
+import { formatUserFriendlyError } from '../../utils/UserFriendlyError';
 
 const formatTime = value => moment(value).format('hh:mm A');
 
@@ -381,7 +381,7 @@ export default function PermissionEntryScreen() {
             >
                 <View style={styles.profileCard}>
                     <View style={styles.profileAvatar}>
-                        <MaterialCommunityIcons name="account-outline" size={22} color={theme.colors.accent} />
+                        <MaterialCommunityIcons name="account-outline" size={22} color={theme.colors.brand} />
                     </View>
                     <View style={styles.profileText}>
                         <Text style={styles.employeeName}>{employeeName || 'Employee'}</Text>
@@ -431,12 +431,13 @@ export default function PermissionEntryScreen() {
                             value={activePicker === 'date' ? docDate : activePicker === 'from' ? fromTime : toTime}
                             mode={activePicker === 'date' ? 'date' : 'time'}
                             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                            style={{backgroundColor: theme.colors.brand}}
                             onChange={handlePickerChange}
                         />
                     )}
 
                     <View style={styles.durationCard}>
-                        <MaterialCommunityIcons name="timer-outline" size={20} color={theme.colors.accent} />
+                        <MaterialCommunityIcons name="timer-outline" size={20} color={theme.colors.brand} />
                         <Text style={styles.durationLabel}>Total duration</Text>
                         <Text style={styles.durationValue}>{duration?.label || 'Choose a valid time range'}</Text>
                     </View>
@@ -491,7 +492,7 @@ export default function PermissionEntryScreen() {
                     ) : (
                         <>
                             <MaterialCommunityIcons name="send-outline" size={18} color={theme.colors.brandContrast} />
-                            <Text style={styles.submitButtonText}>Submit permission request</Text>
+                            <Text style={styles.submitButtonText}>Submit</Text>
                         </>
                     )}
                 </TouchableOpacity>
@@ -535,7 +536,7 @@ const createStyles = theme => StyleSheet.create({
         borderRadius: theme.radii.md,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.colors.accentSoft,
+        backgroundColor: theme.colors.brandSoft,
         marginRight: theme.spacing.md,
     },
     profileText: { flex: 1 },
@@ -567,14 +568,14 @@ const createStyles = theme => StyleSheet.create({
         minHeight: theme.controlSizes.inputHeight,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.accentSoft,
+        backgroundColor: theme.colors.brandSoft,
         borderRadius: theme.radii.md,
         paddingHorizontal: theme.spacing.md,
         marginTop: theme.spacing.lg,
         gap: theme.spacing.sm,
     },
-    durationLabel: { flex: 1, ...theme.typography.caption, color: theme.colors.accent, fontWeight: theme.fontWeights.semiBold },
-    durationValue: { ...theme.typography.caption, color: theme.colors.accent, fontWeight: theme.fontWeights.bold },
+    durationLabel: { flex: 1, ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.semiBold },
+    durationValue: { ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.bold },
     reasonInput: {
         minHeight: 112,
         borderWidth: 1,
@@ -592,7 +593,7 @@ const createStyles = theme => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.colors.accent,
+        backgroundColor: theme.colors.brand,
         borderRadius: theme.radii.md,
         marginTop: theme.spacing.lg,
         gap: theme.spacing.sm,

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import { useAppTheme } from '../../theme';
 
 export const TextOnlyDropdown = ({ 

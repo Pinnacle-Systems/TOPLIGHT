@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import Employee from "./Employee";
 import {HeadofDepartMent} from "./Head";
 
-import CustomText from "../../components/Text/CustomText";
+import CustomText from "../../components/text/CustomText";
 import {
     Alert, Animated, PermissionsAndroid,
     Text, TouchableOpacity, View, AppState, StyleSheet
@@ -11,15 +11,14 @@ import TabView_Wrapper from "../../components/layout/TabNavBar";
 import { useDispatch, useSelector } from "react-redux";
 import messaging from "@react-native-firebase/messaging";
 import notifee from '@notifee/react-native';
-import { useUpdate_user_fcmMutation } from "../../store/api/userApi";
+import { useUpdate_user_fcmMutation } from "../../store/api/UserApi";
 import DashboardLoading from "./DashboardLoading";
 import { Common_Context } from "../../context/CommonContext";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useGetMisDashboardOrdersInHandQuery } from "../../store/api/dashboardApi";
-import { setCountUnder20DueDays } from "../../store/slices/dueDaysSlice";
-import { CustomNavigation } from "../../components/Utils/NavigationRef";
+import { useGetMisDashboardOrdersInHandQuery } from "../../store/api/DashboardApi";
+import { setCountUnder20DueDays } from "../../store/slices/DueDaysSlice";
+import { CustomNavigation } from "../../components/utils/NavigationRef";
 import socket from "../../utils/Socket";
-import {TopManagement} from "./TopManage"; 
 import MISDashboard from "./MISDashboard";
 import { useAppTheme } from "../../theme";
 

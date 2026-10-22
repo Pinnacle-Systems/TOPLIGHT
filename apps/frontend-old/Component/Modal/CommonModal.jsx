@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   Platform
 } from 'react-native';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import tailwind from 'twrnc';
 
 const CommonModal = ({

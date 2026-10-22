@@ -9,14 +9,14 @@ import {
     useCreateRoleOnPageMutation, 
     useUpdateRoleOnPageMutation, 
     useGetCreatedRolesOnPageQuery 
-} from '../../../store/api/userApi';
+} from '../../../store/api/UserApi';
 import { useGet_all_roleQuery } from '../../../store/api/RoleOnApi';
-import { useDelete_CommonMutation } from '../../../store/api/commonMastersApi';
-import appTabs from '../../../constants/appTabs';
+import { useDelete_CommonMutation } from '../../../store/api/CommonMastersApi';
+import appTabs from '../../../constants/AppTabs';
 
-import { Dropdown } from '../../../components/ReusableComponents/inputs';
-import FloatingButton from '../../../components/Buttons/Buttons';
-import CustomDataTable from '../../../components/Utils/CommonDataTable';
+import { Dropdown } from '../../../components/reusable_components/Inputs';
+import FloatingButton from '../../../components/buttons/Buttons';
+import CustomDataTable from '../../../components/utils/CommonDataTable';
 import { useAppTheme } from '../../../theme';
 
 export default function RoleAllocation() {

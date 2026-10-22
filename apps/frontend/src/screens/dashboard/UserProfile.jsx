@@ -9,12 +9,12 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
-import { useGetUserBasicDetailsQuery } from '../../store/api/userApi';
+import { useGetUserBasicDetailsQuery } from '../../store/api/UserApi';
 import { useGetInQuery } from '../../store/api/OndutyApi';
 import { BASE_URL, USERS_API } from '@env';
-import ImageViewModal from '../../components/Modal/ImageViewModal';
-import { CustomNavigation } from '../../components/Utils/NavigationRef';
-import { Current_moment_dataformat } from '../../components/Utils/FormatedDate';
+import ImageViewModal from '../../components/modal/ImageViewModal';
+import { CustomNavigation } from '../../components/utils/NavigationRef';
+import { Current_moment_dataformat } from '../../components/utils/FormatedDate';
 import { useAppTheme } from '../../theme';
 
 export function UserProfileCard({ USER, picture, openCamera }) {

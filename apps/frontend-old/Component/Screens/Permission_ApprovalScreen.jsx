@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, PermissionsAndroid, Alert, Image, useWindowDimensions, ScrollView } from 'react-native';
-import CustomText from '../Text/CustomText';
 import { Linking } from 'react-native';
 import { useRequestPermission_ApprovalMutation } from '../../redux/service/permission';
 import  MaterialIcons  from 'react-native-vector-icons/MaterialIcons';

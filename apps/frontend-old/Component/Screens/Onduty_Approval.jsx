@@ -21,7 +21,7 @@ import { LinearGradient } from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import OpenGoogleMaps from './Location/Gmap/Googlemap';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import { getOndutyImageUrl } from '../../constants/apiUrl';
 import { TextInput } from 'react-native-paper';
 import tw from 'twrnc';

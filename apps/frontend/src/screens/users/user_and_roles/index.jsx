@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Easing, SafeAreaView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../../../components/Text/CustomText';
+import CustomText from '../../../components/text/CustomText';
 
 import RoleAllocation from './RoleAllocation';
 import UserCreationForm from './UserCreationForm';

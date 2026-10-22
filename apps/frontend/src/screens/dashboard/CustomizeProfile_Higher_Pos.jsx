@@ -5,7 +5,7 @@ import CustomText from '../../components/Text/CustomText'
 import { Feather } from 'react-native-vector-icons'
 import LogoutButton from '../../ReusableComponents/LogOutButton'
 import CameraModal from '../../components/Modal/CameraModal'
-import { useGetLastMonthSalaryQuery } from '../../store/api/dashboardApi'
+import { useGetLastMonthSalaryQuery } from '../../store/api/DashboardApi'
 import { NumbertoCurrency } from '../../components/Utils/NumberToCurrency'
 import { useAppTheme } from '../../theme'
 

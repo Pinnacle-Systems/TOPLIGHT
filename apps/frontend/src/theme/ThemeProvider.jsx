@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Appearance, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createAppTheme } from './createTheme';
+import { createAppTheme } from './CreateTheme';
 
 const THEME_STORAGE_KEY = '@toplight/theme-mode';
 const ThemeContext = createContext(null);

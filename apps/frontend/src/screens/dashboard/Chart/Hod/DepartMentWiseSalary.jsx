@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react'
 import { Dimensions, View, ActivityIndicator, StyleSheet, Modal, TouchableOpacity, Text, useWindowDimensions } from 'react-native';
 import WebView from 'react-native-webview'
-import CustomText from '../../../../components/Text/CustomText';
+import CustomText from '../../../../components/text/CustomText';
 import  MaterialIcons  from 'react-native-vector-icons/MaterialIcons';
 import { useAppTheme } from '../../../../theme';
 

@@ -12,7 +12,6 @@ import PullToRefresh from '../../ReusableComponents/PullToRefresh';
 import { Dropdown } from '../../ReusableComponents/inputs';
 import FloatingButton from '../Buttons/Buttons';
 import { useCustomFonts } from '../CustomHooks/useFonts';
-import CustomText from '../Text/CustomText';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';

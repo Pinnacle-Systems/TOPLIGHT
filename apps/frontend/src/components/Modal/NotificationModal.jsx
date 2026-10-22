@@ -14,7 +14,7 @@ import {
   Animated,
   LayoutAnimation 
 } from 'react-native';
-import { CustomNavigation } from '../Utils/NavigationRef';
+import { CustomNavigation } from '../utils/NavigationRef';
 import { useAppTheme } from '../../theme';
 
 export default function NotificationModal({refresh, close_modal, livedata={}, data, modalVisible, setModalVisible }) {

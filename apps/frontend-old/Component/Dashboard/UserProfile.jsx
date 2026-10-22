@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Image, Text } from 'react-native';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import { useGetUserBasicDetailsQuery } from '../../redux/service/user';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImageViewModal from '../Modal/ImageViewModal';
-import SkeletonLoader from '../SkeletonLoader/Skeleton';
+import SkeletonLoader from '../skeleton_loader/Skeleton';
 import { LinearGradient } from 'react-native-linear-gradient';
 import { BASE_URL, USERS_API } from '../../constants/apiUrl';
 import { useSelector } from 'react-redux';
 import { Current_moment_dataformat } from '../Utils/FormatedDate';
 import { useGetInQuery } from '../../redux/service/Onduty';
 import tw from 'twrnc';
-import { CustomNavigation } from '../Utils/NavigationRef';
+import { CustomNavigation } from '../utils/NavigationRef';
 
 export function UserProfileCard({ USER, picture, openCamera }) {
   const { data: data_IN } = useGetInQuery();

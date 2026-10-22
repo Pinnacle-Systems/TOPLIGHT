@@ -9,9 +9,9 @@ import {
   useWindowDimensions
 } from 'react-native';
 import WebView from 'react-native-webview';
-import CommonModal from '../../../../components/Modal/CommonModal';
+import CommonModal from '../../../../components/modal/CommonModal';
 import AllMonth from "../Month";
-import DailyInOutBody from '../_Modal_BodyComponents/DailyInOutBody';
+import DailyInOutBody from '../in_out_modal/DailyInOutBody';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from '../../../../theme';
 

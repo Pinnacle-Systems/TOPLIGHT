@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { showMessage } from 'react-native-flash-message';
 import { API_URL as BASE_URL } from '@env';
 
-import { resetOndutyForm } from '../../../store/slices/ondutyInputSlice';
+import { resetOndutyForm } from '../../../store/slices/OndutyInputSlice';
 import {
     useRequestOndutyOutMutation,
     useRequestReachedOutMutation,
@@ -21,9 +21,9 @@ import {
     useGet__VechileQuery,
 } from '../../../store/api/OndutyApi';
 import { getCurrentLocationAsync } from '../../../components/Utils/CustomLocation';
-import { _FCM_SENDER } from '../../../components/Utils/FCM';
+import { _FCM_SENDER } from '../../../components/utils/Fcm';
 import socket from '../../../utils/Socket';
-import { formatUserFriendlyError } from '../../../utils/userFriendlyError';
+import { formatUserFriendlyError } from '../../../utils/UserFriendlyError';
 import OndutyRTk from '../../../store/api/OndutyApi';
 
 const ONDUTY_API = `${BASE_URL}/onduty/requestOnduty`;

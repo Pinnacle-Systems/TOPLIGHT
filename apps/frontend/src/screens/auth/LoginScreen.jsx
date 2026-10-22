@@ -26,7 +26,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 // Store imports
-import { useLoginUserMutation, useUpdate_user_fcmMutation } from '../../store/api/userApi';
+import { useLoginUserMutation, useUpdate_user_fcmMutation } from '../../store/api/UserApi';
 import { useAppTheme } from '../../theme';
 
 // Reusable components could go to src/components/common, but for Login completeness we ensure they are handled

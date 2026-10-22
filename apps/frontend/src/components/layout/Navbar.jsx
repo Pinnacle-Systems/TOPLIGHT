@@ -7,14 +7,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import RNRestart from 'react-native-restart';
 
-import { useGetCompanycodeQuery } from '../../store/api/userApi';
-import { useGetPermissionRequestQuery } from '../../store/api/notificationApi';
-import { setUserDetails } from '../../store/slices/userDetailsSlice';
+import { useGetCompanycodeQuery } from '../../store/api/UserApi';
+import { useGetPermissionRequestQuery } from '../../store/api/NotificationApi';
+import { setUserDetails } from '../../store/slices/UserDetailsSlice';
 import socket from '../../utils/Socket';
 import { showMessage } from 'react-native-flash-message';
-import { Notofication_Approval_handler } from '../../utils/Notification_approval_Handler';
-import NotificationModal from '../Modal/NotificationModal';
-import { useGetUserMobDataQuery } from '../../store/api/dashboardApi';
+import { Notofication_Approval_handler } from '../../utils/Notification_Approval_Handler';
+import NotificationModal from '../modal/NotificationModal';
+import { useGetUserMobDataQuery } from '../../store/api/DashboardApi';
 import { useAppTheme } from '../../theme';
 
 // Reanimated for bell

@@ -2,9 +2,7 @@
 import React, { useState } from 'react'
 import { Alert, Dimensions, View,Text, useWindowDimensions } from 'react-native';
 import WebView from 'react-native-webview'
-import CommonModal from '../../../Modal/CommonModal';
 import AllMonth from "../Month"
-import DailyInOutBody from '../_Modal_BodyComponents/DailyInOutBody';
 import Feather from 'react-native-vector-icons/Feather';
 
 function GenderWiseStrength({data,setscroll,isLoading:GetDataLoad,UserId,year}) {

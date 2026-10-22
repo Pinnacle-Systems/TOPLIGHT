@@ -16,9 +16,9 @@ import Feather from "react-native-vector-icons/Feather";
 import { useSelector, useDispatch } from 'react-redux';
 import { Common_Context } from '../../context/CommonContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setClearAll } from '../../store/slices/userDetailsSlice';
+import { setClearAll } from '../../store/slices/UserDetailsSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavRef } from '../Utils/NavigationRef';
+import { NavRef } from '../utils/NavigationRef';
 import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');

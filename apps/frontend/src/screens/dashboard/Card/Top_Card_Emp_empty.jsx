@@ -56,7 +56,7 @@ const EmptyEmployeeCard = ({ onSelectEmployee }) => {
           >
             <View style={tailwind`items-center justify-center p-6`}>
               <LottieView
-                source={require('../../../components/Utils/assets/employeeanim.json')}
+                source={require('../../../components/utils/assets/EmployeeAnim.json')}
                 autoPlay
                 loop
                 style={styles.animation}

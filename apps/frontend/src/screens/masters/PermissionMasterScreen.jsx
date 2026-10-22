@@ -14,13 +14,13 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {
     useGet_all_Permission_reasonQuery,
     useAddPermission_MasterMutation,
-} from '../../store/api/permissionApi';
-import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/commonMastersApi';
-import MasterTopBar from './components/MasterTopBar';
-import MasterStatsRow from './components/MasterStatsRow';
-import MasterSearchBar from './components/MasterSearchBar';
-import MasterItemCard from './components/MasterItemCard';
-import MasterFormModal from './components/MasterFormModal';
+} from '../../store/api/PermissionApi';
+import { useUpdate_CommonMutation, useDelete_CommonMutation } from '../../store/api/CommonMastersApi';
+import MasterTopBar from './MasterTopBar';
+import MasterStatsRow from './MasterStatsRow';
+import MasterSearchBar from './MasterSearchBar';
+import MasterItemCard from './MasterItemCard';
+import MasterFormModal from './MasterFormModal';
 import { useAppTheme } from '../../theme';
 
 export default function PermissionMasterScreen({ navigation }) {

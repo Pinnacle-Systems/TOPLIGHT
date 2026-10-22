@@ -1,17 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { UsersApi } from "./api/userApi";
-import { DashboardApi } from "./api/dashboardApi";
-import { NotificationApi } from './api/notificationApi';
+import { UsersApi } from "./api/UserApi";
+import { DashboardApi } from "./api/DashboardApi";
+import { NotificationApi } from './api/NotificationApi';
 import OndutyRTk from './api/OndutyApi';
 import LeaveData from './api/LeaveApi';
 import { RoleOnApi } from './api/RoleOnApi';
-import { commonMastersApi } from './api/commonMastersApi';
-import { permissionApi } from './api/permissionApi';
-import AttendanceApi from './api/attendanceApi';
-import userDetailsReducer from "./slices/userDetailsSlice";
-import dueDaysReducer from "./slices/dueDaysSlice";
-import ondutyInputReducer from "./slices/ondutyInputSlice";
+import { commonMastersApi } from './api/CommonMastersApi';
+import { permissionApi } from './api/PermissionApi';
+import AttendanceApi from './api/AttendanceApi';
+import userDetailsReducer from "./slices/UserDetailsSlice";
+import dueDaysReducer from "./slices/DueDaysSlice";
+import ondutyInputReducer from "./slices/OndutyInputSlice";
 
 export const store = configureStore({
   reducer: {

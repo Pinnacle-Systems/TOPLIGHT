@@ -14,8 +14,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 // App imports
 import { Common_Context } from '../../context/CommonContext';
-import { HOME_CARDS } from '../../constants/homeCards';
-import { filterAllowedCards } from '../../utils/navigationUtils';
+import { HOME_CARDS } from '../../constants/HomeCards';
+import { filterAllowedCards } from '../../utils/NavigationUtils';
 import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');

@@ -11,7 +11,7 @@ import {
 import WebView from 'react-native-webview';
 import CommonModal from '../../../Modal/CommonModal';
 import AllMonth from "../Month";
-import DailyInOutBody from '../_Modal_BodyComponents/DailyInOutBody';
+import DailyInOutBody from '../in_out_modal/DailyInOutBody';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const LOAD_TIMEOUT = 8000;

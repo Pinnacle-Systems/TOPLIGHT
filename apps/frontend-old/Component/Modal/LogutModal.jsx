@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 
 const LogoutModal = ({isModalVisible,setIsModalVisible,confirm,cancel,Title="Logout",content="Are you sure you want to logout?"}) => {
   // Generate years from 1900 to the current year

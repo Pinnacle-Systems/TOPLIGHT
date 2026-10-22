@@ -20,10 +20,10 @@ import {
     useGetAttendanceStatusQuery,
     usePunchInMutation,
     usePunchOutMutation,
-} from '../../store/api/attendanceApi';
-import { useGetEmployeeIdsWithAttQuery } from '../../store/api/userApi';
-import { getCurrentLocation } from '../../components/Utils/CustomLocation';
-import EmployeeAttendanceList from './components/EmployeeAttendanceList';
+} from '../../store/api/AttendanceApi';
+import { useGetEmployeeIdsWithAttQuery } from '../../store/api/UserApi';
+import { getCurrentLocation } from '../../components/utils/CustomLocation';
+import EmployeeAttendanceList from './EmployeeAttendanceList';
 import { useAppTheme } from '../../theme';
 
 const { width } = Dimensions.get('window');
@@ -137,15 +137,6 @@ export default function AttendanceScreen() {
             </TouchableOpacity>
         );
     };
-
-    // ── Stats Cards ──────────────────────────────────────────────────────────────
-    const StatCard = ({ icon, label, value, color }) => (
-        <View style={[styles.statCard, { borderTopColor: color }]}>
-            <MaterialCommunityIcons name={icon} size={22} color={color} />
-            <Text style={styles.statValue}>{value ?? '--'}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
-        </View>
-    );
 
     return (
         <View style={styles.container}>

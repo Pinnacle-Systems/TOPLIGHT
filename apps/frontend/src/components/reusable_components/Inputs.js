@@ -10,7 +10,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../Text/CustomText';
+import CustomText from '../text/CustomText';
 import { useAppTheme } from '../../theme';
 
 const PickerTickIcon = ({ style }) => {
