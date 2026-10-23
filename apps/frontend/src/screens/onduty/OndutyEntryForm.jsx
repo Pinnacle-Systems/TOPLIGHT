@@ -72,7 +72,7 @@ export default function OndutyEntryForm({
                         onPress={onOpenBrowseModal}
                         activeOpacity={0.8}
                     >
-                        <Entypo name="browser" size={14} color={theme.colors.brand} />
+                        <Entypo name="browser" size={theme.controlSizes.iconXs} color={theme.colors.brand} />
                         <Text style={styles.browseBtnText}>Browse</Text>
                     </TouchableOpacity>
                 ) : null}
@@ -84,7 +84,7 @@ export default function OndutyEntryForm({
             {/* Document ID Pill */}
             {docId ? (
                 <View style={styles.docIdPill}>
-                    <MaterialCommunityIcons name="file-document-outline" size={18} color={theme.colors.brand} />
+                    <MaterialCommunityIcons name="file-document-outline" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
                     <Text style={styles.docIdText}>{docId}</Text>
                     <View style={styles.autoTag}>
                         <Text style={styles.autoTagText}>AUTO</Text>
@@ -95,7 +95,7 @@ export default function OndutyEntryForm({
             {/* Trip Details Card */}
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name="form-textbox" size={18} color={theme.colors.brand} />
+                    <MaterialCommunityIcons name="form-textbox" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
                     <Text style={styles.cardHeaderText}>Trip Details</Text>
                 </View>
 
@@ -138,7 +138,7 @@ export default function OndutyEntryForm({
             {isKmEntryEnabled ? (
                 <View style={styles.formCard}>
                     <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={18} color={theme.colors.brand} />
+                        <MaterialCommunityIcons name="speedometer" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
                         <Text style={styles.cardHeaderText}>Vehicle & KM Reading</Text>
                     </View>
 
@@ -170,7 +170,7 @@ export default function OndutyEntryForm({
                             ) : null}
                         </View>
                         <View style={styles.kmInputWrapper}>
-                            <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
+                            <MaterialCommunityIcons name="counter" size={theme.controlSizes.iconMd} color={theme.colors.textDisabled} style={{ marginRight: theme.spacing.sm }} />
                             <TextInput
                                 style={styles.singleLineInput}
                                 placeholder="e.g. 12540"
@@ -188,7 +188,7 @@ export default function OndutyEntryForm({
             {/* Photo Capture Section */}
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name="camera-outline" size={18} color={theme.colors.accent} />
+                    <MaterialCommunityIcons name="camera-outline" size={theme.controlSizes.iconSm} color={theme.colors.accent} />
                     <Text style={styles.cardHeaderText}>Location Photo *</Text>
                 </View>
 
@@ -197,7 +197,7 @@ export default function OndutyEntryForm({
                         <Image source={{ uri: photoUri }} style={styles.photoPreview} resizeMode="cover" />
                         <View style={styles.photoOverlayBar}>
                             <View style={styles.photoCapturedBadge}>
-                                <Feather name="check" size={12} color={theme.colors.brandContrast} />
+                                <Feather name="check" size={theme.fontSizes.xs} color={theme.colors.brandContrast} />
                                 <Text style={styles.photoCapturedText}>PHOTO READY</Text>
                             </View>
                             <TouchableOpacity 
@@ -205,7 +205,7 @@ export default function OndutyEntryForm({
                                 onPress={onOpenCamera}
                                 activeOpacity={0.8}
                             >
-                                <MaterialCommunityIcons name="camera-retake-outline" size={16} color={theme.colors.brandContrast} />
+                                <MaterialCommunityIcons name="camera-retake-outline" size={theme.controlSizes.iconSm} color={theme.colors.brandContrast} />
                                 <Text style={styles.retakeBtnText}>Retake</Text>
                             </TouchableOpacity>
                         </View>
@@ -217,7 +217,7 @@ export default function OndutyEntryForm({
                         activeOpacity={0.8}
                     >
                         <View style={styles.cameraCircle}>
-                            <Feather name="camera" size={26} color={theme.colors.accent} />
+                            <Feather name="camera" size={theme.controlSizes.iconLg} color={theme.colors.accent} />
                         </View>
                         <Text style={styles.cameraPromptTitle}>Tap to Capture Photo</Text>
                         <Text style={styles.cameraPromptSubtitle}>A selfie or location photo is required to start</Text>
@@ -239,7 +239,7 @@ export default function OndutyEntryForm({
                     <ActivityIndicator size="small" color={theme.colors.brandContrast} />
                 ) : (
                     <>
-                        <MaterialCommunityIcons name="car-brake-low-pressure" size={20} color={theme.colors.brandContrast} style={{ marginRight: 8 }} />
+                        <MaterialCommunityIcons name="car-brake-low-pressure" size={theme.controlSizes.iconMd} color={theme.colors.brandContrast} style={{ marginRight: theme.spacing.sm }} />
                         <Text style={styles.submitBtnText}>START ONDUTY (IN)</Text>
                     </>
                 )}
@@ -250,173 +250,172 @@ export default function OndutyEntryForm({
 
 const createStyles = theme => StyleSheet.create({
     container: {
-        paddingBottom: 40,
+        paddingBottom: theme.spacing.huge,
     },
     headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 14,
+        marginBottom: theme.spacing.md + theme.spacing.xxs,
     },
     headerTitle: {
-        fontSize: 22,
-        fontWeight: '800',
+        ...theme.typography.h2,
         color: theme.colors.text,
     },
     headerSubtitle: {
-        fontSize: 12,
+        ...theme.typography.caption,
         color: theme.colors.textMuted,
-        marginTop: 2,
+        marginTop: theme.spacing.xxs,
     },
     browseBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: theme.colors.brandSoft,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        borderWidth: 1,
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.xs + theme.spacing.xxs,
+        borderRadius: theme.radii.xl,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.brandSoft,
-        gap: 5,
+        gap: theme.spacing.xs + theme.spacing.xxs,
     },
     browseBtnText: {
-        fontSize: 12,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.brand,
     },
     docIdPill: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: theme.colors.surface,
-        borderRadius: 14,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        borderWidth: 1,
+        borderRadius: theme.radii.md + theme.spacing.xxs,
+        paddingHorizontal: theme.spacing.md + theme.layout.dividerWidth * 2,
+        paddingVertical: theme.spacing.md,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.borderSubtle,
-        marginBottom: 14,
-        gap: 8,
+        marginBottom: theme.spacing.md + theme.spacing.xxs,
+        gap: theme.spacing.sm,
     },
     docIdText: {
         flex: 1,
-        fontSize: 13,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.brand,
-        fontFamily: 'monospace',
+        fontFamily: theme.fontFamilies.monospace,
     },
     autoTag: {
         backgroundColor: theme.colors.brandSoft,
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 8,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xxs + theme.layout.dividerWidth,
+        borderRadius: theme.radii.sm,
     },
     autoTagText: {
-        fontSize: 10,
-        fontWeight: '800',
+        ...theme.typography.overline,
+        fontWeight: theme.fontWeights.extraBold,
         color: theme.colors.brand,
     },
     formCard: {
         backgroundColor: theme.colors.surface,
-        borderRadius: 20,
-        padding: 16,
-        borderWidth: 1,
+        borderRadius: theme.radii.xl,
+        padding: theme.spacing.lg,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.borderSubtle,
-        marginBottom: 14,
+        marginBottom: theme.spacing.md + theme.spacing.xxs,
         shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: theme.spacing.none, height: theme.spacing.xxs },
         shadowOpacity: 0.04,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowRadius: theme.spacing.sm - theme.spacing.xxs,
+        elevation: theme.elevation.sm,
     },
     cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 14,
-        gap: 8,
+        marginBottom: theme.spacing.md + theme.spacing.xxs,
+        gap: theme.spacing.sm,
     },
     cardHeaderText: {
-        fontSize: 14,
-        fontWeight: '700',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.text,
     },
     inputGroup: {
-        marginBottom: 14,
+        marginBottom: theme.spacing.md + theme.spacing.xxs,
     },
     inputLabel: {
-        fontSize: 12,
-        fontWeight: '600',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.semiBold,
         color: theme.colors.textMuted,
-        marginBottom: 6,
+        marginBottom: theme.spacing.xs + theme.spacing.xxs,
     },
     labelWithBadgeRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 6,
+        marginBottom: theme.spacing.xs + theme.spacing.xxs,
     },
     kmBadge: {
         backgroundColor: theme.colors.brandSoft,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 6,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xxs,
+        borderRadius: theme.radii.xs + theme.layout.dividerWidth,
     },
     kmBadgeText: {
-        fontSize: 11,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.brand,
     },
     kmInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: theme.colors.inputBackground,
-        borderWidth: 1,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.inputBorder,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        height: 46,
+        borderRadius: theme.radii.md,
+        paddingHorizontal: theme.spacing.md,
+        height: theme.controlSizes.inputHeightDropdown,
     },
     singleLineInput: {
         flex: 1,
-        fontSize: 14,
+        ...theme.typography.bodySmall,
         color: theme.colors.text,
-        padding: 0,
+        padding: theme.spacing.none,
     },
     kmUnitText: {
-        fontSize: 12,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.textDisabled,
-        marginLeft: 6,
+        marginLeft: theme.spacing.xs + theme.layout.dividerWidth,
     },
     dropdown: {
         backgroundColor: theme.colors.inputBackground,
         borderColor: theme.colors.inputBorder,
-        borderRadius: 12,
-        minHeight: 46,
+        borderRadius: theme.radii.md,
+        minHeight: theme.controlSizes.inputHeightDropdown,
     },
     dropdownContainer: {
         backgroundColor: theme.colors.surface,
         borderColor: theme.colors.borderSubtle,
-        borderRadius: 12,
-        elevation: 5,
+        borderRadius: theme.radii.md,
+        elevation: theme.elevation.md + theme.layout.dividerWidth,
     },
     dropdownText: {
-        fontSize: 14,
+        ...theme.typography.bodySmall,
         color: theme.colors.text,
     },
     multilineInput: {
         backgroundColor: theme.colors.inputBackground,
-        borderWidth: 1,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.inputBorder,
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        fontSize: 14,
+        borderRadius: theme.radii.md,
+        paddingHorizontal: theme.spacing.md + theme.spacing.xxs,
+        paddingVertical: theme.spacing.sm + theme.spacing.xxs,
+        ...theme.typography.bodySmall,
         color: theme.colors.text,
-        minHeight: 80,
+        minHeight: theme.controlSizes.inputHeightMultilineCompact,
     },
     photoPreviewWrapper: {
-        borderRadius: 16,
+        borderRadius: theme.radii.lg,
         overflow: 'hidden',
-        height: 200,
+        height: theme.controlSizes.photoPreviewHeight,
         position: 'relative',
     },
     photoPreview: {
@@ -432,85 +431,84 @@ const createStyles = theme => StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.sm,
     },
     photoCapturedBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: theme.spacing.xs,
     },
     photoCapturedText: {
         color: theme.colors.brandContrast,
-        fontSize: 11,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
     },
     retakeBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: theme.colors.scrim,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-        gap: 4,
+        paddingHorizontal: theme.spacing.sm + theme.spacing.xxs,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.radii.md,
+        gap: theme.spacing.xs,
     },
     retakeBtnText: {
         color: theme.colors.brandContrast,
-        fontSize: 12,
-        fontWeight: '700',
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
     },
     cameraPlaceholder: {
-        borderRadius: 16,
-        borderWidth: 1.5,
+        borderRadius: theme.radii.lg,
+        borderWidth: theme.layout.dividerWidth + theme.layout.dividerWidth / 2,
         borderStyle: 'dashed',
         borderColor: theme.colors.accentSoft,
         backgroundColor: theme.colors.surfaceRaised,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 28,
+        paddingVertical: theme.spacing.xxxl - theme.spacing.xs,
     },
     cameraCircle: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
+        width: theme.controlSizes.cameraIconContainer,
+        height: theme.controlSizes.cameraIconContainer,
+        borderRadius: theme.radii.circle,
         backgroundColor: theme.colors.accentSoft,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 8,
+        marginBottom: theme.spacing.sm,
     },
     cameraPromptTitle: {
-        fontSize: 14,
-        fontWeight: '700',
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
         color: theme.colors.accent,
     },
     cameraPromptSubtitle: {
-        fontSize: 11,
+        ...theme.typography.caption,
         color: theme.colors.accent,
-        marginTop: 2,
+        marginTop: theme.spacing.xxs,
     },
     submitBtn: {
         backgroundColor: theme.colors.brand,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 16,
-        borderRadius: 16,
+        paddingVertical: theme.spacing.lg,
+        borderRadius: theme.radii.lg,
         shadowColor: theme.colors.brand,
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: theme.spacing.none, height: theme.spacing.xs },
         shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 4,
-        marginTop: 6,
+        shadowRadius: theme.spacing.sm,
+        elevation: theme.elevation.md,
+        marginTop: theme.spacing.xs + theme.spacing.xxs,
     },
     submitBtnDisabled: {
         backgroundColor: theme.colors.disabledBackground,
         shadowOpacity: 0,
-        elevation: 0,
+        elevation: theme.elevation.none,
     },
     submitBtnText: {
         color: theme.colors.brandContrast,
-        fontSize: 15,
-        fontWeight: '800',
-        letterSpacing: 0.5,
+        ...theme.typography.button,
+        fontWeight: theme.fontWeights.extraBold,
     },
 });

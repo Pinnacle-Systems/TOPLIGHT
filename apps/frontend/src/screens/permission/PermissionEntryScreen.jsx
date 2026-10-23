@@ -62,7 +62,7 @@ function TimeField({ label, value, onPress, styles, theme }) {
                 accessibilityLabel={`${label}: ${formatTime(value)}`}
             >
                 <Text style={styles.inputText}>{formatTime(value)}</Text>
-                <MaterialCommunityIcons name="clock-outline" size={20} color={theme.colors.textMuted} />
+                <MaterialCommunityIcons name="clock-outline" size={theme.controlSizes.iconMd} color={theme.colors.textMuted} />
             </TouchableOpacity>
         </FormField>
     );
@@ -366,7 +366,7 @@ export default function PermissionEntryScreen() {
             />
             <View style={styles.header}>
                 <View style={styles.headerIcon}>
-                    <MaterialCommunityIcons name="account-clock-outline" size={23} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="account-clock-outline" size={theme.controlSizes.iconMd} color={theme.colors.brandContrast} />
                 </View>
                 <View style={styles.headerText}>
                     <Text style={styles.title}>Permission Request</Text>
@@ -381,7 +381,7 @@ export default function PermissionEntryScreen() {
             >
                 <View style={styles.profileCard}>
                     <View style={styles.profileAvatar}>
-                        <MaterialCommunityIcons name="account-outline" size={22} color={theme.colors.brand} />
+                        <MaterialCommunityIcons name="account-outline" size={theme.controlSizes.iconMd} color={theme.colors.brand} />
                     </View>
                     <View style={styles.profileText}>
                         <Text style={styles.employeeName}>{employeeName || 'Employee'}</Text>
@@ -414,7 +414,7 @@ export default function PermissionEntryScreen() {
                             accessibilityLabel={`Document date: ${moment(docDate).format('DD MMM YYYY')}`}
                         >
                             <Text style={styles.inputText}>{moment(docDate).format('DD MMM YYYY')}</Text>
-                            <MaterialCommunityIcons name="calendar-month-outline" size={20} color={theme.colors.textMuted} />
+                            <MaterialCommunityIcons name="calendar-month-outline" size={theme.controlSizes.iconMd} color={theme.colors.textMuted} />
                         </TouchableOpacity>
                     </FormField>
 
@@ -437,7 +437,7 @@ export default function PermissionEntryScreen() {
                     )}
 
                     <View style={styles.durationCard}>
-                        <MaterialCommunityIcons name="timer-outline" size={20} color={theme.colors.brand} />
+                        <MaterialCommunityIcons name="timer-outline" size={theme.controlSizes.iconMd} color={theme.colors.brand} />
                         <Text style={styles.durationLabel}>Total duration</Text>
                         <Text style={styles.durationValue}>{duration?.label || 'Choose a valid time range'}</Text>
                     </View>
@@ -491,7 +491,7 @@ export default function PermissionEntryScreen() {
                         <ActivityIndicator color={theme.colors.brandContrast} />
                     ) : (
                         <>
-                            <MaterialCommunityIcons name="send-outline" size={18} color={theme.colors.brandContrast} />
+                            <MaterialCommunityIcons name="send-outline" size={theme.controlSizes.iconSm} color={theme.colors.brandContrast} />
                             <Text style={styles.submitButtonText}>Submit</Text>
                         </>
                     )}
@@ -504,7 +504,7 @@ export default function PermissionEntryScreen() {
 const createStyles = theme => StyleSheet.create({
     screen: { flex: 1, backgroundColor: theme.colors.backgroundSubtle },
     header: {
-        minHeight: 78,
+        minHeight: theme.layout.screenHeaderMinHeight,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: theme.spacing.lg,
@@ -522,7 +522,7 @@ const createStyles = theme => StyleSheet.create({
     },
     headerText: { flex: 1 },
     title: { ...theme.typography.h4, color: theme.colors.brandContrast },
-    subtitle: { ...theme.typography.caption, color: theme.colors.brandContrast, opacity: 0.75, marginTop: theme.spacing.xxs + 1 },
+    subtitle: { ...theme.typography.caption, color: theme.colors.brandContrast, opacity: 0.75, marginTop: theme.spacing.xs },
     content: { padding: theme.layout.screenGutter, paddingBottom: theme.spacing.xxxl },
     profileCard: {
         ...theme.styles.card,
@@ -541,20 +541,20 @@ const createStyles = theme => StyleSheet.create({
     },
     profileText: { flex: 1 },
     employeeName: { ...theme.typography.subtitle, color: theme.colors.text, fontWeight: theme.fontWeights.bold },
-    employeeId: { ...theme.typography.caption, color: theme.colors.textMuted, marginTop: theme.spacing.xxs + 1 },
+    employeeId: { ...theme.typography.caption, color: theme.colors.textMuted, marginTop: theme.spacing.xs },
     formCard: {
         ...theme.styles.card,
     },
     sectionTitle: { ...theme.typography.title, color: theme.colors.text, marginBottom: theme.spacing.xs },
     field: { marginTop: theme.spacing.lg },
-    label: { ...theme.typography.caption, color: theme.colors.textSecondary, fontWeight: theme.fontWeights.semiBold, marginBottom: theme.spacing.xs + 3 },
+    label: { ...theme.typography.caption, color: theme.colors.textSecondary, fontWeight: theme.fontWeights.semiBold, marginBottom: theme.spacing.sm },
     required: { color: theme.colors.danger },
     input: {
         minHeight: theme.controlSizes.inputHeight,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderWidth: 1,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.inputBorder,
         borderRadius: theme.radii.md,
         paddingHorizontal: theme.spacing.md,
@@ -577,8 +577,8 @@ const createStyles = theme => StyleSheet.create({
     durationLabel: { flex: 1, ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.semiBold },
     durationValue: { ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.bold },
     reasonInput: {
-        minHeight: 112,
-        borderWidth: 1,
+        minHeight: theme.controlSizes.inputHeightMultiline,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.inputBorder,
         borderRadius: theme.radii.md,
         padding: theme.spacing.md,
@@ -605,7 +605,7 @@ const createStyles = theme => StyleSheet.create({
         alignItems: 'flex-start',
         backgroundColor: theme.colors.warningSoft,
         borderColor: theme.colors.warning,
-        borderWidth: 1,
+        borderWidth: theme.layout.dividerWidth,
         borderRadius: theme.radii.md,
         padding: theme.spacing.md,
         marginBottom: theme.spacing.md,
@@ -616,16 +616,13 @@ const createStyles = theme => StyleSheet.create({
     },
     warningBannerTitle: {
         ...theme.typography.subtitle,
-        fontSize: 13,
         fontWeight: theme.fontWeights.bold,
         color: theme.colors.warning,
-        marginBottom: 2,
+        marginBottom: theme.spacing.xxs,
     },
     warningBannerDesc: {
         ...theme.typography.caption,
-        fontSize: 11,
         color: theme.colors.textSecondary,
-        lineHeight: 16,
     },
     submitButtonText: { ...theme.typography.button, color: theme.colors.brandContrast },
 });

@@ -34,7 +34,7 @@ export default function DateBanner() {
             <View style={styles.right}>
                 <Text style={styles.time}>{d.time}</Text>
                 <View style={styles.lockRow}>
-                    <MaterialCommunityIcons name="lock-outline" size={12} color={theme.colors.textMuted} />
+                    <MaterialCommunityIcons name="lock-outline" size={theme.fontSizes.xs} color={theme.colors.textMuted} />
                     <Text style={styles.lockText}>Auto-locked to today</Text>
                 </View>
             </View>
@@ -49,15 +49,15 @@ const createStyles = theme => StyleSheet.create({
         backgroundColor: theme.colors.surface,
         borderRadius: theme.radii.lg,
         paddingHorizontal: theme.spacing.lg,
-        paddingVertical: theme.spacing.md + 2,
-        borderWidth: 1,
+        paddingVertical: theme.spacing.md + theme.layout.dividerWidth * 2,
+        borderWidth: theme.layout.dividerWidth,
         borderColor: theme.colors.borderSubtle,
-        marginBottom: theme.spacing.md + 2,
+        marginBottom: theme.spacing.md + theme.layout.dividerWidth * 2,
         shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: theme.spacing.none, height: theme.spacing.xxs },
         shadowOpacity: theme.isDark ? 0.3 : 0.04,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowRadius: theme.spacing.sm - theme.spacing.xxs,
+        elevation: theme.elevation.sm,
     },
     left: {
         flexDirection: 'row',
@@ -66,10 +66,10 @@ const createStyles = theme => StyleSheet.create({
         gap: theme.spacing.md,
     },
     bigNum: {
-        fontSize: 34,
-        fontWeight: '800',
+        fontSize: theme.fontSizes.display - theme.spacing.xxs,
+        fontWeight: theme.fontWeights.extraBold,
         color: theme.colors.brand,
-        lineHeight: 38,
+        lineHeight: theme.lineHeights.xxxl,
     },
     dateCol: {
         justifyContent: 'center',
@@ -83,11 +83,11 @@ const createStyles = theme => StyleSheet.create({
         ...theme.typography.caption,
         color: theme.colors.textMuted,
         fontWeight: theme.fontWeights.medium,
-        marginTop: 1,
+        marginTop: theme.layout.dividerWidth,
     },
     divider: {
-        width: 1,
-        height: 36,
+        width: theme.layout.dividerWidth,
+        height: theme.controlSizes.dateBannerDividerHeight,
         backgroundColor: theme.colors.divider,
         marginHorizontal: theme.spacing.md,
     },
@@ -101,8 +101,8 @@ const createStyles = theme => StyleSheet.create({
     lockRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 3,
-        gap: theme.spacing.xxs + 1,
+        marginTop: theme.spacing.xxs + theme.layout.dividerWidth,
+        gap: theme.spacing.xs + theme.layout.dividerWidth,
     },
     lockText: {
         ...theme.typography.caption,

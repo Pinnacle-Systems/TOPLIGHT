@@ -164,3 +164,54 @@ export function stopWatchingLocation(watchId) {
         console.warn('[CustomLocation] stopWatchingLocation error:', e);
     }
 }
+
+
+
+// reverseGeocode.js
+/**
+ * Get address information from OSM coordinates.
+ * @param {number} latitude - The latitude.
+ * @param {number} longitude - The longitude.
+ * @returns {Promise<Object|null>} - The address information or null if not found.
+ * formatted: Full address string
+ * street: Street name
+ * area: Area or locality
+ * city: City or town
+ * state: State or province
+ * country: Country name
+ * pincode: Postal code
+ */
+export async function getAddressFromOSM(latitude, longitude) {
+    try {
+        console.log(`[getAddressFromOSM] Fetching address for lat: ${latitude}, lon: ${longitude}`);
+        const url =
+            `https://nominatim.openstreetmap.org/reverse` +
+            `?format=jsonv2&lat=${latitude}&lon=${longitude}&addressdetails=1`;
+
+        const res = await fetch(url, {
+            headers: {
+               'User-Agent': 'PinnacleOnDuty/1.0 (PinnacleSystems@gmail.com)',
+                'Accept-Language': 'en',
+            },
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        if (!data?.display_name) throw new Error('No address found');
+
+        const a = data.address || {};
+        return {
+            formatted: data.display_name,
+            street: a.road || '',
+            area: a.suburb || a.neighbourhood || a.village || '',
+            city: a.city || a.town || a.village || a.county || '',
+            state: a.state || '',
+            country: a.country || '',
+            pincode: a.postcode || '',
+        };
+    } catch (e) {
+        console.warn('[getAddressFromOSM]', e.message);
+        return null;
+    }
+}

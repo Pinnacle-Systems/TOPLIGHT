@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, useMemo } from 'react';
+import React, { useState, useContext, useCallback, useMemo, useEffect } from 'react';
 import {
     View,
     Text,
@@ -22,9 +22,10 @@ import {
     usePunchOutMutation,
 } from '../../store/api/AttendanceApi';
 import { useGetEmployeeIdsWithAttQuery } from '../../store/api/UserApi';
-import { getCurrentLocation } from '../../components/utils/CustomLocation';
+import { getAddressFromOSM, getCurrentLocation } from '../../components/utils/CustomLocation';
 import EmployeeAttendanceList from './EmployeeAttendanceList';
 import { useAppTheme } from '../../theme';
+import useLocationWatcher from '../../components/custom_hooks/useLocationWatcher';
 
 const { width } = Dimensions.get('window');
 const formatTime = (t) => t || '--:--';
@@ -35,6 +36,8 @@ export default function AttendanceScreen() {
     const navigation = useNavigation();
     const { admin } = useContext(Common_Context);
     const user = useSelector((state) => state.UserDetails);
+    const [address, setAddress] = useState(null);
+    const locationWatcher = useLocationWatcher({ enable: true });
 
     const userIdcard = user?.IDCARD || user?.UserId || user?.Id;
     const normalizedUserId = String(userIdcard || '').trim().toUpperCase();
@@ -68,6 +71,37 @@ export default function AttendanceScreen() {
     const attendanceStatus = statusData?.data;
     const status = (attendanceStatus?.status || attendanceStatus?.STATUS || '').toUpperCase();
     const isPunchedIn = status === 'IN';
+
+     // ── Location Watcher ─────────────────────────────────────────────────────
+    const { location, error: locationError } = locationWatcher;
+
+    useEffect(() => {
+        if (locationError) {
+            showMessage({
+                message: 'Location Error',
+                description: locationError?.message || 'Could not capture location.',
+                type: 'danger',
+            });
+            setAddress(null);
+        }
+    }, [locationError]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const fetchAddress = async () => {
+        if (location) {
+            if (cancelled) return;
+            const { formatted } = await getAddressFromOSM(location.latitude, location.longitude);
+            setAddress(formatted);
+         }
+
+        }
+        fetchAddress();
+        return () => {
+            setAddress(null);
+        };
+    }, [location]);
+
 
     // ── Punch Handler ────────────────────────────────────────────────────────────
     const handlePunch = useCallback(async () => {
@@ -108,6 +142,8 @@ export default function AttendanceScreen() {
             setIsPunching(false);
         }
     }, [isPunchedIn, punchIn, punchOut, refetchStatus, user]);
+
+
 
     // ── Punch Button ─────────────────────────────────────────────────────────────
     const PunchButton = () => {
@@ -237,7 +273,7 @@ export default function AttendanceScreen() {
                         </Text>
                         <PunchButton />
                         <Text style={styles.locationHint}>
-                             Location will be captured automatically
+                            {address ? `Location: ${address}` : 'Capturing location...'}
                         </Text>
                     </View>
 
