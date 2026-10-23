@@ -1,16 +1,499 @@
-name: TopLight Api Deployment
+name: Deploy to VPS
 
+# Single workflow. Every step VERIFIES first and only acts when something is
+# missing. Already-installed software is never upgraded or replaced.
+#
+#   1. Verify server tools      -> install only what is missing
+#   2. Sync backend code
+#   3. DNS record on Hostinger  -> created only if missing
+#   4. nginx site + SSL         -> created only if missing
+#   5. .env, install, migrate, reload pm2
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Where to deploy"
+        description: 'Which environment to deploy'
+        default: 'production'
         type: choice
-        required: true
-        default: staging
         options:
-          - staging
           - production
-          - development
+          - staging
 
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ inputs.environment }}
+      cancel-in-progress: false
+
+    # Secrets/vars are exposed as env vars; never pasted into scripts with ${{ }}.
+    env:
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      REMOTE_TARGET: ${{ secrets.REMOTE_TARGET }}
+      PM2_APP_NAME: ${{ secrets.PM2_APP_NAME }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
+      APP_PORT: ${{ vars.PORT }}
+      SSL_EMAIL: ${{ vars.SSL_EMAIL }}
+      SERVER_IP: ${{ vars.SERVER_IP }}
+      ORACLE_CLIENT_PATH: ${{ vars.ORACLE_CLIENT_PATH }}
+      NODE_VERSION: ${{ vars.NODE_VERSION }}   # optional; used only if Node is missing
+      AUTO_INSTALL: ${{ vars.AUTO_INSTALL || 'true' }}   # 'false' = verify only, never install
+
+    steps:
+      # Pinned to the full commit SHA of actions/checkout v6.1.0
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Validate configuration
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 1; }
+          re_domain='^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$'
+          re_path='^/[A-Za-z0-9._/-]+$'
+
+          [[ "$REMOTE_HOST" =~ ^[A-Za-z0-9.:-]+$ ]]          || fail "REMOTE_HOST is invalid"
+          [[ "$REMOTE_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]   || fail "REMOTE_USER is invalid"
+          [[ "$REMOTE_TARGET" =~ $re_path && "$REMOTE_TARGET" != *..* ]] \
+                                                             || fail "REMOTE_TARGET must be an absolute path"
+          [[ "$PM2_APP_NAME" =~ ^[A-Za-z0-9._-]{1,64}$ ]]    || fail "PM2_APP_NAME is invalid"
+          [[ "$DOMAIN" =~ $re_domain ]]                      || fail "DOMAIN is invalid (lowercase, e.g. api.example.com)"
+          [[ "$ROOT_DOMAIN" =~ $re_domain ]]                 || fail "ROOT_DOMAIN is invalid"
+          [[ "$DOMAIN" == "$ROOT_DOMAIN" || "$DOMAIN" == *".$ROOT_DOMAIN" ]] \
+                                                             || fail "DOMAIN must be ROOT_DOMAIN or a subdomain of it"
+          [[ "$APP_PORT" =~ ^[0-9]{4,5}$ ]] && (( APP_PORT >= 1024 && APP_PORT <= 65535 )) \
+                                                             || fail "PORT must be 1024-65535"
+          [[ "$SSL_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$ ]] \
+                                                             || fail "SSL_EMAIL is invalid"
+          [[ -z "$NODE_VERSION" || "$NODE_VERSION" =~ ^[0-9]{2}$ ]] || fail "NODE_VERSION is invalid"
+          [[ "$AUTO_INSTALL" == "true" || "$AUTO_INSTALL" == "false" ]] || fail "AUTO_INSTALL must be true or false"
+          [[ -z "$ORACLE_CLIENT_PATH" || ( "$ORACLE_CLIENT_PATH" =~ $re_path && "$ORACLE_CLIENT_PATH" != *..* ) ]] \
+                                                             || fail "ORACLE_CLIENT_PATH must be an absolute path"
+          echo "Configuration OK"
+
+      # Plain ssh/rsync with strict host-key checking (no third-party SSH actions)
+      - name: Set up SSH (strict host key checking)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          [ -n "$SSH_PRIVATE_KEY" ] || { echo "::error::SSH_PRIVATE_KEY secret is empty"; exit 1; }
+          [ -n "$SSH_KNOWN_HOSTS" ] || { echo "::error::SSH_KNOWN_HOSTS secret is empty"; exit 1; }
+          install -d -m 700 ~/.ssh
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host deploy-target
+            HostName $REMOTE_HOST
+            User $REMOTE_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            BatchMode yes
+            ConnectTimeout 20
+            ServerAliveInterval 30
+          EOF
+          ssh deploy-target true
+          echo "SSH login verified against pinned host key."
+
+      # ------------------------------------------------------------------
+      # Verify every tool; install ONLY what is missing. Nothing is upgraded.
+      # ------------------------------------------------------------------
+      - name: Verify server tools (install only if missing)
+        run: |
+          set -euo pipefail
+          ssh deploy-target "bash -s -- $(printf '%q ' "$ORACLE_CLIENT_PATH" "$NODE_VERSION" "$AUTO_INSTALL")" <<'VERIFY'
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          ORACLE_PATH="$1"; NODE_VERSION="$2"; AUTO_INSTALL="$3"
+
+          ok()   { echo "    [ok]      $*"; }
+          add()  { echo "    [install] $*"; }
+          warn() { echo "::warning::$*"; }
+          have() { command -v "$1" >/dev/null 2>&1; }
+
+          # AUTO_INSTALL=false -> verify only; anything missing stops the deploy
+          allow_install() {
+            if [ "$AUTO_INSTALL" = "false" ]; then
+              echo "::error::$1 is missing on the server and AUTO_INSTALL=false. Install it manually."
+              exit 1
+            fi
+          }
+
+          # Root commands use sudo only when not already root
+          SUDO=""; [ "$(id -u)" -eq 0 ] || SUDO="sudo -n"
+          need_root() {
+            [ -z "$SUDO" ] || $SUDO true 2>/dev/null \
+              || { echo "::error::Installing $1 needs root. Install it manually or give $(whoami) sudo."; exit 1; }
+          }
+          pkg_installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed"; }
+          APT_UPDATED=0
+          apt_add() {   # --no-upgrade: never touches already-installed packages
+            local need=() p
+            for p in "$@"; do pkg_installed "$p" || need+=("$p"); done
+            [ ${#need[@]} -eq 0 ] && return 0
+            allow_install "${need[*]}"
+            need_root "${need[*]}"
+            [ $APT_UPDATED -eq 1 ] || { $SUDO apt-get update -y >/dev/null; APT_UPDATED=1; }
+            add "${need[*]}"
+            $SUDO apt-get install -y --no-upgrade --no-install-recommends "${need[@]}" >/dev/null
+          }
+          # Find tools exactly the way the server's own shells do (nvm, volta, fnm,
+          # asdf, n, npm-global, pnpm standalone, ~/.bashrc PATH ...). Only APPENDS
+          # to PATH, so whatever the server already prefers keeps priority.
+          load_env() {
+            local f d p
+            export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+            for f in "${NVM_DIR:-$HOME/.nvm}/nvm.sh" "$HOME/.nvm/nvm.sh" /usr/local/nvm/nvm.sh /opt/nvm/nvm.sh; do
+              if [ -s "$f" ]; then . "$f" >/dev/null 2>&1 || true; break; fi
+            done
+            for d in "$HOME/.npm-global/bin" "$HOME/.local/bin" "$HOME/.volta/bin" "$HOME/.local/share/pnpm" \
+                     "$HOME/.asdf/shims" "$HOME/.local/share/fnm" "$HOME/n/bin" /usr/local/n/bin; do
+              if [ -d "$d" ]; then PATH="$PATH:$d"; fi
+            done
+            if command -v fnm >/dev/null 2>&1; then eval "$(fnm env 2>/dev/null)" || true; fi
+            # Last resort: the PATH an interactive login shell would have (reads ~/.bashrc etc.)
+            if ! command -v node >/dev/null 2>&1; then
+              p="$(bash -lic 'printf "__P__%s\n" "$PATH"' 2>/dev/null | sed -n 's/^__P__//p' | tail -n1 || true)"
+              if [ -n "$p" ]; then PATH="$PATH:$p"; fi
+            fi
+            export PATH
+          }
+
+          load_env
+
+          echo "==> Basic tools"
+          for t in curl rsync; do
+            if have "$t"; then ok "$t"; else apt_add "$t"; fi
+          done
+
+          echo "==> Web server"
+          OTHER_WEB=""
+          for w in apache2 httpd lshttpd litespeed openlitespeed caddy; do
+            if have "$w" || systemctl is-active --quiet "$w" 2>/dev/null; then OTHER_WEB="$w"; break; fi
+          done
+          if [ -z "$OTHER_WEB" ] && [ -d /usr/local/lsws ]; then OTHER_WEB="litespeed"; fi
+          if have nginx; then
+            ok "nginx $(nginx -v 2>&1 | sed 's/.*\///') (existing sites untouched)"
+          elif [ -n "$OTHER_WEB" ]; then
+            warn "Existing web server '$OTHER_WEB' found - nginx NOT installed. Point $OTHER_WEB to the app port in your panel; the nginx/SSL step will be skipped."
+          else
+            apt_add nginx
+            $SUDO rm -f /etc/nginx/sites-enabled/default   # only on a fresh install
+            $SUDO systemctl enable --now nginx
+          fi
+          if have nginx; then
+            if have certbot; then
+              ok "certbot $(certbot --version 2>&1 | awk '{print $2}')"
+              if pkg_installed certbot && ! pkg_installed python3-certbot-nginx; then apt_add python3-certbot-nginx; fi
+            else
+              apt_add certbot python3-certbot-nginx
+            fi
+          fi
+
+          echo "==> Oracle Instant Client"
+          FOUND=""
+          if [ -n "$ORACLE_PATH" ] && ls "$ORACLE_PATH"/libclntsh.so* >/dev/null 2>&1; then
+            FOUND="$ORACLE_PATH"
+          else
+            L="$(ldconfig -p 2>/dev/null | awk '/libclntsh\.so/{print $NF; exit}')"
+            if [ -z "$L" ]; then          # LD_LIBRARY_PATH / ld.so.conf.d entries
+              for d in ${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH//:/ }} $(cat /etc/ld.so.conf.d/*.conf 2>/dev/null | grep '^/'); do
+                L="$(ls "$d"/libclntsh.so* 2>/dev/null | head -n1)"; [ -n "$L" ] && break
+              done
+            fi
+            if [ -z "$L" ]; then          # anywhere it is usually installed
+              L="$(find /opt /usr/lib/oracle /usr/local /usr/lib /u01 /home /root -maxdepth 5 \
+                     -name 'libclntsh.so*' 2>/dev/null | head -n1 || true)"
+            fi
+            if [ -n "$L" ]; then FOUND="$(dirname "$(readlink -f "$L")")"; fi
+          fi
+          if [ -n "$FOUND" ]; then
+            ok "Oracle client at $FOUND (not changed)"
+            if [ -n "$ORACLE_PATH" ] && [ "$(readlink -f "$ORACLE_PATH" 2>/dev/null || true)" != "$FOUND" ]; then
+              warn "ORACLE_CLIENT_PATH is '$ORACLE_PATH' but the client is at '$FOUND' - update the GitHub variable."
+            fi
+            # libaio is needed by the client; only add if it is really missing
+            if ldconfig -p | grep -qE 'libaio\.so\.1(t64)? ' || pkg_installed libaio1t64 || pkg_installed libaio1; then
+              ok "libaio"
+            else
+              apt_add libaio1t64 2>/dev/null || apt_add libaio1
+            fi
+          elif [ -z "$ORACLE_PATH" ]; then
+            ok "ORACLE_CLIENT_PATH not set - skipped (fine for node-oracledb Thin mode)"
+          else
+            allow_install "Oracle Instant Client"
+            need_root "Oracle Instant Client"
+            TARGET="$ORACLE_PATH"; PARENT="$(dirname "$TARGET")"
+            add "Oracle Instant Client -> $TARGET"
+            have unzip || apt_add unzip
+            pkg_installed libaio1t64 || pkg_installed libaio1 || apt_add libaio1t64 2>/dev/null || apt_add libaio1
+            TMPD="$(mktemp -d)"
+            curl -fsSL -o "$TMPD/ic.zip" \
+              https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip
+            $SUDO mkdir -p "$PARENT"
+            $SUDO unzip -q -n "$TMPD/ic.zip" -d "$PARENT"; rm -rf "$TMPD"
+            EXTRACTED="$(ls -d "$PARENT"/instantclient_* | sort -V | tail -n1)"
+            [ -e "$TARGET" ] || $SUDO ln -s "$EXTRACTED" "$TARGET"
+            echo "$TARGET" | $SUDO tee /etc/ld.so.conf.d/oracle-instantclient.conf >/dev/null
+            $SUDO ldconfig
+          fi
+
+          echo "==> MySQL / MariaDB (check only, never installed)"
+          if have mysql || have mariadb; then ok "$( (mysql --version || mariadb --version) 2>/dev/null | head -n1)"
+          else ok "no local MySQL client (fine if the database is remote)"; fi
+          for s in mysql mariadb mysqld; do
+            if systemctl is-active --quiet "$s" 2>/dev/null; then ok "service $s running"; fi
+          done
+
+          echo "==> Node.js, pnpm, pm2 (for $(whoami))"
+          if have node; then
+            ok "node $(node -v) at $(command -v node) (not changed)"
+          else
+            OTHER="$(find /root/.nvm /home/*/.nvm /usr/local/bin /opt -maxdepth 6 -type f -name node -perm -u+x 2>/dev/null | head -n1 || true)"
+            if [ -n "$OTHER" ]; then
+              echo "::error::Node exists at $OTHER but is not usable by $(whoami). Deploy as that user (REMOTE_USER) instead of installing another Node."
+              exit 1
+            fi
+            allow_install "Node.js"
+            V="${NODE_VERSION:-22}"
+            add "nvm + Node $V for $(whoami) only"
+            [ -s "$HOME/.nvm/nvm.sh" ] || curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash >/dev/null
+            . "$HOME/.nvm/nvm.sh"
+            nvm install "$V" >/dev/null && nvm alias default "$V" >/dev/null
+          fi
+          for t in pnpm pm2; do
+            if have "$t"; then
+              ok "$t $("$t" --version 2>/dev/null | head -n1) at $(command -v "$t") (not changed)"
+            elif [ "$t" = pnpm ] && have corepack && corepack pnpm --version >/dev/null 2>&1; then
+              ok "pnpm via corepack (not changed)"
+            else
+              allow_install "$t"
+              P="$(npm config get prefix)"
+              [ -w "$P" ] || [ -w "$P/lib" ] || { mkdir -p "$HOME/.npm-global"; npm config set prefix "$HOME/.npm-global"; }
+              add "$t"; npm install -g "$t" >/dev/null 2>&1
+            fi
+          done
+
+          echo "==> pm2 auto-start on reboot"
+          if grep -lqs "User=$(whoami)" /etc/systemd/system/pm2-*.service; then
+            ok "pm2 startup service for $(whoami)"
+          elif [ "$AUTO_INSTALL" != "false" ] && { [ -z "$SUDO" ] || $SUDO true 2>/dev/null; }; then
+            add "pm2-$(whoami) systemd service"
+            $SUDO env PATH="$PATH" "$(command -v pm2)" startup systemd -u "$(whoami)" --hp "$HOME" >/dev/null
+          else
+            warn "pm2 startup not configured: run 'pm2 startup' on the server once."
+          fi
+          VERIFY
+
+      # Monorepo: the lockfile usually lives at the repo root, but only
+      # apps/backend is synced. Copy it in so --frozen-lockfile works.
+      - name: Bundle lockfile with backend
+        run: |
+          if [ ! -f apps/backend/pnpm-lock.yaml ] && [ -f pnpm-lock.yaml ]; then
+            cp pnpm-lock.yaml apps/backend/pnpm-lock.yaml
+          fi
+
+      - name: Deploy backend source to VPS
+        run: |
+          set -euo pipefail
+          ssh deploy-target "mkdir -p $(printf '%q ' "$REMOTE_TARGET/apps/backend" "$REMOTE_TARGET/apps/backend/uploads" "$REMOTE_TARGET/apps/backend/logs")" \
+            || { echo "::error::Cannot create $REMOTE_TARGET - give $REMOTE_USER write access to it"; exit 1; }
+          rsync -az --stats --delete \
+            --exclude 'node_modules/' --exclude '.env' \
+            --exclude 'uploads/' --exclude 'logs/' \
+            -e ssh \
+            apps/backend/ "deploy-target:$REMOTE_TARGET/apps/backend/"
+
+      # Creates the DNS A record in Hostinger only if it does not exist yet.
+      # Existing records are never touched.
+      - name: Create domain DNS record on Hostinger (if missing)
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          IP="${SERVER_IP:-$REMOTE_HOST}"
+          [[ "$IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] \
+            || { echo "::error::Set vars.SERVER_IP to the VPS IPv4 address"; exit 1; }
+
+          API="https://developers.hostinger.com/api/dns/v1/zones/$ROOT_DOMAIN"
+          if [ "$DOMAIN" = "$ROOT_DOMAIN" ]; then NAME="@"; else NAME="${DOMAIN%.$ROOT_DOMAIN}"; fi
+
+          ZONE=$(curl -fsS --max-time 30 "$API" \
+            -H "Authorization: Bearer $HOSTINGER_API_TOKEN" \
+            -H "Accept: application/json")
+
+          EXISTS=$(echo "$ZONE" | jq --arg n "$NAME" \
+            '[.[] | select(.name == $n and (.type == "A" or .type == "CNAME"))] | length')
+
+          if [ "$EXISTS" -gt 0 ]; then
+            echo "DNS record for $DOMAIN already exists - skipping."
+            exit 0
+          fi
+
+          echo "Creating A record: $DOMAIN -> $IP"
+          curl -fsS --max-time 30 -X PUT "$API" \
+            -H "Authorization: Bearer $HOSTINGER_API_TOKEN" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg n "$NAME" --arg ip "$IP" \
+                  '{overwrite: false, zone: [{name: $n, type: "A", ttl: 300, records: [{content: $ip}]}]}')" \
+            > /dev/null
+          echo "DNS record created."
+
+      - name: Create site (nginx + SSL) on Hostinger (if missing)
+        run: |
+          set -euo pipefail
+          ssh deploy-target "bash -s -- $(printf '%q ' "$DOMAIN" "$APP_PORT" "$SSL_EMAIL")" <<'SITE'
+          set -euo pipefail
+          DOMAIN="$1"; PORT="$2"; EMAIL="$3"
+          SUDO=""; [ "$(id -u)" -eq 0 ] || SUDO="sudo -n"
+          export PATH="$PATH:/usr/sbin:/sbin:/snap/bin"
+          if ! command -v nginx >/dev/null 2>&1; then
+            echo "::warning::nginx is not installed (another web server is used) - skipping site/SSL creation."
+            exit 0
+          fi
+          SITE="app-$DOMAIN"
+          CONF="/etc/nginx/sites-available/$SITE"
+
+          # 1) nginx site - skip if this domain is already served by any config
+          if [ -f "$CONF" ]; then
+            echo "nginx site $SITE already exists - keeping it."
+          elif grep -rqsE "server_name[^;]*[[:space:]]$DOMAIN([[:space:]]|;)" /etc/nginx/sites-enabled /etc/nginx/conf.d; then
+            echo "Domain $DOMAIN is already configured in an existing nginx site - keeping it."
+          else
+            $SUDO tee "$CONF" >/dev/null <<NGINX
+          server {
+              listen 80;
+              server_name $DOMAIN;
+              client_max_body_size 25M;
+
+              location / {
+                  proxy_pass http://127.0.0.1:$PORT;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+          }
+          NGINX
+            $SUDO ln -sfn "$CONF" "/etc/nginx/sites-enabled/$SITE"
+            $SUDO nginx -t
+            $SUDO systemctl reload nginx
+            echo "Created nginx site $SITE"
+          fi
+
+          # 2) SSL - only if no certificate yet; waits for new DNS to resolve
+          if $SUDO test -d "/etc/letsencrypt/live/$DOMAIN"; then
+            echo "SSL certificate for $DOMAIN already exists - keeping it."
+          else
+            MY_IPS=" $(hostname -I) "
+            for _ in $(seq 1 30); do
+              R="$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}' || true)"
+              [ -n "$R" ] && [[ "$MY_IPS" == *" $R "* ]] && break
+              echo "Waiting for $DOMAIN to resolve to this server (got: ${R:-none})..."
+              sleep 20
+            done
+            $SUDO certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --redirect
+          fi
+          SITE
+
+      - name: Create .env on the server
+        env:
+          DB_USER: ${{ vars.DB_USER }}
+          DB_CONNECT_STRING: ${{ vars.DB_CONNECT_STRING }}
+          MAIL_USER: ${{ vars.MAIL_USER }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # Escape \ and " so any password characters stay valid in .env
+          q() { local v="${1//\\/\\\\}"; v="${v//\"/\\\"}"; printf '"%s"' "$v"; }
+          ENV_TMP="$REMOTE_TARGET/apps/backend/.env.tmp"
+          ENV_FILE="$REMOTE_TARGET/apps/backend/.env"
+          # Built in memory and streamed over SSH; never written to the runner disk
+          {
+            echo "NODE_ENV=production"
+            echo "PORT=$APP_PORT"
+            echo "ORACLE_CLIENT_PATH=$(q "$ORACLE_CLIENT_PATH")"
+            echo "DATABASE_URL=$(q "$DATABASE_URL")"
+            echo "MAIL_USER=$(q "$MAIL_USER")"
+            echo "MAIL_PASSWORD=$(q "$MAIL_PASSWORD")"
+            echo "DB_USER=$(q "$DB_USER")"
+            echo "DB_PASSWORD=$(q "$DB_PASSWORD")"
+            echo "DB_CONNECT_STRING=$(q "$DB_CONNECT_STRING")"
+          } | ssh deploy-target "umask 077 && cat > $(printf '%q' "$ENV_TMP") && mv -f $(printf '%q %q' "$ENV_TMP" "$ENV_FILE")"
+          echo ".env written (mode 600)."
+
+      - name: Run remote install, migrate, and restart
+        run: |
+          set -euo pipefail
+          ssh deploy-target "bash -s -- $(printf '%q ' "$REMOTE_TARGET" "$PM2_APP_NAME")" <<'REMOTE'
+          set -euo pipefail
+          TARGET="$1"; APP="$2"
+
+          # Find tools exactly the way the server's own shells do (nvm, volta, fnm,
+          # asdf, n, npm-global, pnpm standalone, ~/.bashrc PATH ...). Only APPENDS
+          # to PATH, so whatever the server already prefers keeps priority.
+          load_env() {
+            local f d p
+            export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+            for f in "${NVM_DIR:-$HOME/.nvm}/nvm.sh" "$HOME/.nvm/nvm.sh" /usr/local/nvm/nvm.sh /opt/nvm/nvm.sh; do
+              if [ -s "$f" ]; then . "$f" >/dev/null 2>&1 || true; break; fi
+            done
+            for d in "$HOME/.npm-global/bin" "$HOME/.local/bin" "$HOME/.volta/bin" "$HOME/.local/share/pnpm" \
+                     "$HOME/.asdf/shims" "$HOME/.local/share/fnm" "$HOME/n/bin" /usr/local/n/bin; do
+              if [ -d "$d" ]; then PATH="$PATH:$d"; fi
+            done
+            if command -v fnm >/dev/null 2>&1; then eval "$(fnm env 2>/dev/null)" || true; fi
+            # Last resort: the PATH an interactive login shell would have (reads ~/.bashrc etc.)
+            if ! command -v node >/dev/null 2>&1; then
+              p="$(bash -lic 'printf "__P__%s\n" "$PATH"' 2>/dev/null | sed -n 's/^__P__//p' | tail -n1 || true)"
+              if [ -n "$p" ]; then PATH="$PATH:$p"; fi
+            fi
+            export PATH
+          }
+
+          load_env
+          # Use the Node already on the server - never switch versions
+          if ! command -v pnpm >/dev/null 2>&1 && command -v corepack >/dev/null 2>&1; then
+            pnpm() { corepack pnpm "$@"; }
+          fi
+          echo "Using node $(node -v), pnpm $(pnpm -v), pm2 $(pm2 -v)"
+
+          cd "$TARGET/apps/backend"
+
+          # Full install first: prisma CLI is normally a devDependency,
+          # so `--prod` alone would make `prisma generate` fail.
+          pnpm install --frozen-lockfile
+          pnpm exec prisma generate
+          pnpm exec prisma migrate deploy
+          pnpm prune --prod
+
+          if pm2 describe "$APP" > /dev/null 2>&1; then
+            pm2 reload "$APP" --update-env
+          else
+            pm2 start index.js --name "$APP" --time
+          fi
+
+          # Persist process list so pm2 restores it on reboot
+          pm2 save
+          REMOTE
+
+      - name: Remove SSH key from runner
+        if: always()
+        run: rm -rf ~/.ssh

@@ -212,7 +212,7 @@ const SplashScreen = React.memo(({ onAuthResolved }) => {
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
                 {/* Fallback View if Image is not present */}
                 <Animated.Image 
-                    source={require('../../assets/images/logo_splash1.png')} 
+                    source={require('../../assets/images/logo-splash-1.png')} 
                     style={[styles.logo, { transform: [{ scale: logoScale }] }]}
                     resizeMode="contain"
                 />

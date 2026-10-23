@@ -32,7 +32,7 @@ export default function NoAllocatedPage() {
         <View style={styles.container}>
             {/* Animated Illustration */}
             <LottieView
-                source={require('../../assets/animations/NoPage.json')}
+                source={require('../../assets/animations/no-page.json')}
                 autoPlay
                 loop
                 style={styles.animation}

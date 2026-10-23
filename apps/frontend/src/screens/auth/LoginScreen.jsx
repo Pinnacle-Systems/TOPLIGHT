@@ -243,7 +243,7 @@ export default function LoginScreen() {
                     {/* Branding & Logo Header */}
                     <View style={styles.logoContainer}>
                         <Image
-                            source={require('../../assets/login_logo.png')}
+                            source={require('../../assets/login-logo.png')}
                             style={styles.logo}
                             resizeMode="contain"
                         />

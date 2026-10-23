@@ -236,7 +236,7 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Image 
-                source={require("../../assets/Notification.png")} 
+                source={require("../../assets/notification.png")} 
                 style={styles.icon} 
               />
               <Text style={styles.headerTitle}>Notifications</Text>
@@ -262,7 +262,7 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
           ) : (
             <View style={styles.emptyContainer}>
               <Image 
-                source={require("../../assets/noNotification.jpg")} 
+                source={require("../../assets/no-notification.jpg")} 
                 style={styles.emptyImage} 
               />
               <Text style={styles.emptyTitle}>No notifications yet</Text>
