@@ -41,10 +41,18 @@ const ondutyInputSlice = createSlice({
             state.isKmEntryEnabled = Boolean(action.payload);
         },
         resetOndutyForm: (state) => {
-            // Preserve isKmEntryEnabled setting across resets
+            // Preserve isKmEntryEnabled setting and vehicle options across resets
             const kmSetting = state.isKmEntryEnabled;
             const categoryOptions = state.category_options;
-            return { ...initialState, isKmEntryEnabled: kmSetting, category_options: categoryOptions };
+            const categoryVechileno = state.category_vechileno;
+            const vechileno = state.vechileno;
+            return { 
+                ...initialState, 
+                isKmEntryEnabled: kmSetting, 
+                category_options: categoryOptions,
+                category_vechileno: categoryVechileno,
+                vechileno: vechileno,
+            };
         },
         setOndutyLocation: (state, action) => {
             state.latitude = action.payload.latitude;

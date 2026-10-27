@@ -153,36 +153,55 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
     fun getCurrentLocation(promise: Promise) {
         try {
             val fusedClient = LocationServices.getFusedLocationProviderClient(reactContext)
-            val cts = CancellationTokenSource()
-            fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
-                .addOnSuccessListener { location ->
-                    if (location != null) {
-                        val map = Arguments.createMap().apply {
-                            putDouble("latitude", location.latitude)
-                            putDouble("longitude", location.longitude)
-                            putDouble("accuracy", location.accuracy.toDouble())
-                        }
-                        promise.resolve(map)
-                    } else {
-                        fusedClient.lastLocation.addOnSuccessListener { lastLoc ->
-                            if (lastLoc != null) {
+            
+            // 1. Immediately check lastLocation first (returns in < 15ms!)
+            fusedClient.lastLocation.addOnSuccessListener { lastLoc ->
+                if (lastLoc != null) {
+                    val map = Arguments.createMap().apply {
+                        putDouble("latitude", lastLoc.latitude)
+                        putDouble("longitude", lastLoc.longitude)
+                        putDouble("accuracy", lastLoc.accuracy.toDouble())
+                    }
+                    promise.resolve(map)
+                } else {
+                    // 2. Fallback to fresh location request
+                    val cts = CancellationTokenSource()
+                    fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
+                        .addOnSuccessListener { location ->
+                            if (location != null) {
                                 val map = Arguments.createMap().apply {
-                                    putDouble("latitude", lastLoc.latitude)
-                                    putDouble("longitude", lastLoc.longitude)
-                                    putDouble("accuracy", lastLoc.accuracy.toDouble())
+                                    putDouble("latitude", location.latitude)
+                                    putDouble("longitude", location.longitude)
+                                    putDouble("accuracy", location.accuracy.toDouble())
                                 }
                                 promise.resolve(map)
                             } else {
                                 promise.reject("LOCATION_NULL", "Unable to get location")
                             }
-                        }.addOnFailureListener { e ->
-                            promise.reject("LOCATION_ERROR", e.message ?: "Failed last location")
+                        }
+                        .addOnFailureListener { e ->
+                            promise.reject("LOCATION_ERROR", e.message ?: "Failed current location")
+                        }
+                }
+            }.addOnFailureListener {
+                val cts = CancellationTokenSource()
+                fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
+                    .addOnSuccessListener { location ->
+                        if (location != null) {
+                            val map = Arguments.createMap().apply {
+                                putDouble("latitude", location.latitude)
+                                putDouble("longitude", location.longitude)
+                                putDouble("accuracy", location.accuracy.toDouble())
+                            }
+                            promise.resolve(map)
+                        } else {
+                            promise.reject("LOCATION_NULL", "Unable to get location")
                         }
                     }
-                }
-                .addOnFailureListener { e ->
-                    promise.reject("LOCATION_ERROR", e.message ?: "Failed current location")
-                }
+                    .addOnFailureListener { e ->
+                        promise.reject("LOCATION_ERROR", e.message ?: "Failed current location")
+                    }
+            }
         } catch (e: SecurityException) {
             promise.reject("PERMISSION_DENIED", "Location permission denied: ${e.message}")
         } catch (e: Exception) {

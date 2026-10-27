@@ -131,7 +131,7 @@ export default function LocationTrackingScreen() {
     const { data: staffResponse, isLoading: staffLoading, isError: staffError, refetch } =
         useGet_tracking_usersQuery();
     const staff = staffResponse?.data || [];
-    const selectedStaff = staff.find(person => String(person.UserId) === selectedUserId);
+    const selectedStaff = staff.find(person => String(person.UserId || person.userId || person.idCard) === selectedUserId);
 
     const {
         data: liveResponse,
@@ -165,7 +165,7 @@ export default function LocationTrackingScreen() {
 
     useEffect(() => {
         if (!selectedUserId && staff.length) {
-            setSelectedUserId(String(staff[0].UserId));
+            setSelectedUserId(String(staff[0].UserId || staff[0].userId || staff[0].idCard));
         }
     }, [selectedUserId, staff]);
 
@@ -257,13 +257,14 @@ export default function LocationTrackingScreen() {
                         <Text style={styles.inlineError}>Could not load your permitted employee list. Please refresh.</Text>
                     ) : staff.length ? (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.staffList}>
-                            {staff.map(person => {
-                                const isSelected = String(person.UserId) === selectedUserId;
+                            {staff.map((person, index) => {
+                                const personId = String(person.UserId || person.userId || person.idCard || index);
+                                const isSelected = personId === selectedUserId;
                                 return (
                                     <TouchableOpacity
-                                        key={person.UserId}
+                                        key={personId}
                                         style={[styles.staffChip, isSelected && styles.staffChipSelected]}
-                                        onPress={() => setSelectedUserId(String(person.UserId))}
+                                        onPress={() => setSelectedUserId(personId)}
                                         accessibilityRole="button"
                                         accessibilityState={{ selected: isSelected }}
                                     >
@@ -273,7 +274,7 @@ export default function LocationTrackingScreen() {
                                             color={isSelected ? theme.colors.brandContrast : theme.colors.textSecondary}
                                         />
                                         <Text style={[styles.staffName, isSelected && styles.staffNameSelected]} numberOfLines={1}>
-                                            {person.empname || person.UserId}
+                                            {person.empName || person.empname || person.userName || personId}
                                         </Text>
                                         {person.isLive && <View style={styles.chipLiveDot} />}
                                     </TouchableOpacity>
@@ -292,7 +293,7 @@ export default function LocationTrackingScreen() {
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tripList}>
                                 {trips.map(([docId], index) => (
                                     <TouchableOpacity
-                                        key={docId}
+                                        key={docId || `trip-${index}`}
                                         onPress={() => setSelectedDocId(docId)}
                                         style={[styles.tripChip, selectedDocId === docId && styles.tripChipSelected]}
                                     >
@@ -313,7 +314,7 @@ export default function LocationTrackingScreen() {
                                 {mode === 'live' ? 'Live employee location' : 'On-duty route'}
                             </Text>
                             <Text style={styles.mapSubtitle} numberOfLines={1}>
-                                {selectedStaff?.empname || selectedUserId || 'Select an employee'}
+                                {selectedStaff?.empName || selectedStaff?.empname || selectedStaff?.userName || selectedUserId || 'Select an employee'}
                             </Text>
                         </View>
                         {mode === 'live' && selectedStaff?.isLive && (

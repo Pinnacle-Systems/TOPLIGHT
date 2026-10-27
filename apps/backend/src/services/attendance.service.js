@@ -1,4 +1,4 @@
-import { getConnection } from "../constants/dbConnection.js";
+﻿import { getConnection } from "../constants/dbConnection.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
 import { prisma_Connector } from "../../index.js";
@@ -31,11 +31,11 @@ async function resolvePunchTarget(req, res) {
     }
 
     const requester = await prisma_Connector.user.findUnique({
-      where: { Idcard: requesterIdcard },
+      where: { idCard: requesterIdcard },
       select: {
-        Idcard: true,
+        idCard: true,
         isAdmin: true,
-        Companies: { select: { companyCode: true } },
+        companies: { select: { companyCode: true } },
       },
     });
 
@@ -45,7 +45,7 @@ async function resolvePunchTarget(req, res) {
     }
 
     if (!requester.isAdmin) {
-      const hasCompanyAccess = requester.Companies.some(
+      const hasCompanyAccess = requester.companies.some(
         company => String(company.companyCode || "").trim().toUpperCase() === targetCompCode
       );
       if (!hasCompanyAccess) {
@@ -54,8 +54,8 @@ async function resolvePunchTarget(req, res) {
       }
 
       const assignedEmployee = await prisma_Connector.user.findFirst({
-        where: { Idcard: targetIdcard, hod: requester.Idcard },
-        select: { Idcard: true },
+        where: { idCard: targetIdcard, hod: requester.idCard },
+        select: { idCard: true },
       });
 
       if (!assignedEmployee) {
@@ -69,7 +69,7 @@ async function resolvePunchTarget(req, res) {
 }
 
 // ---------------------------------------------------------------------------
-// SHARED HELPER — get last punch row for today
+// SHARED HELPER â€” get last punch row for today
 // Returns: { inout: 0|1, atttime, unqid } or null
 // ---------------------------------------------------------------------------
 async function getLastPunchToday(connection, COMPCODE, Idcard) {
@@ -94,7 +94,7 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
 }
 
 // ---------------------------------------------------------------------------
-// SHARED HELPER — INSERT a new punch row
+// SHARED HELPER â€” INSERT a new punch row
 // ---------------------------------------------------------------------------
 async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, atttime, empname, location }) {
   const UNQID = String(generateUniqueId_Number());
@@ -129,7 +129,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
     INOUT    : inout,               // 1 = IN, 0 = OUT
     PMNO     : pmno,
     UNQID,
-    CHK,                                                        // ✅ max 28 chars
+    CHK,                                                        // âœ… max 28 chars
     DTYPE    : "MOB-BULK",    
   };
 
@@ -139,7 +139,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
 
 
 // ---------------------------------------------------------------------------
-// PUNCH IN  — POST /attendance/punch-in
+// PUNCH IN  â€” POST /attendance/punch-in
 // Headers : compcode, idcard
 // Body    : { idcard, compcode, empname, location }
 // ---------------------------------------------------------------------------
@@ -155,12 +155,12 @@ export async function punchIn(req, res) {
     const { COMPCODE, Idcard } = target;
     connection = await getConnection(res);
 
-    // 1. Check last punch — must be INOUT=0 (OUT) or no row at all to allow IN
+    // 1. Check last punch â€” must be INOUT=0 (OUT) or no row at all to allow IN
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
 
     
     if (lastPunch && lastPunch.inout === 1) {
-      // Last punch was IN → already punched in, block duplicate
+      // Last punch was IN â†’ already punched in, block duplicate
       return res.status(400).json({
         status : 0,
         message: "Already punched in. Please punch out first.",
@@ -215,7 +215,7 @@ export async function punchIn(req, res) {
 
 
 // ---------------------------------------------------------------------------
-// PUNCH OUT  — PUT /attendance/punch-out
+// PUNCH OUT  â€” PUT /attendance/punch-out
 // Headers : compcode, idcard
 // Body    : { latitude, longitude, location }
 // ---------------------------------------------------------------------------
@@ -229,7 +229,7 @@ export async function punchOut(req, res) {
     const { COMPCODE, Idcard } = target;
     connection = await getConnection(res);
 
-    // 1. Check last punch — must be INOUT=1 (IN) to allow OUT
+    // 1. Check last punch â€” must be INOUT=1 (IN) to allow OUT
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
 
     if (!lastPunch) {
@@ -240,7 +240,7 @@ export async function punchOut(req, res) {
     }
 
     if (lastPunch.inout === 0) {
-      // Last punch was OUT → already punched out
+      // Last punch was OUT â†’ already punched out
       return res.status(400).json({
         status : 0,
         message: "Already punched out. Please punch in first.",
@@ -248,7 +248,7 @@ export async function punchOut(req, res) {
       });
     }
 
-    // 2. lastPunch.inout === 1 → valid, insert OUT row
+    // 2. lastPunch.inout === 1 â†’ valid, insert OUT row
     const now     = new Date();
     const outTime = formatDateToOracle(now).split(" ")[1]; // "HH24:MI:SS"
 
@@ -295,7 +295,7 @@ export async function punchOut(req, res) {
 
 
 // ---------------------------------------------------------------------------
-// GET STATUS  — GET /attendance/status
+// GET STATUS  â€” GET /attendance/status
 // Headers : compcode, idcard
 // Returns : { punchIn, punchOut, status: "NONE"|"IN"|"OUT" }
 // ---------------------------------------------------------------------------
@@ -306,7 +306,7 @@ export async function getAttendanceStatus(req, res) {
   const connection = await getConnection(res);
 
   try {
-    // Fetch all today's rows ordered oldest→newest
+    // Fetch all today's rows ordered oldestâ†’newest
     const result = await connection.execute(
       `SELECT INOUT, ATTTIME
        FROM PSSATT
@@ -342,8 +342,8 @@ export async function getAttendanceStatus(req, res) {
       data  : {
         punchIn,
         punchOut,
-        // "IN"  → last punch was IN  → show PUNCH OUT button
-        // "OUT" → last punch was OUT → show PUNCH IN button
+        // "IN"  â†’ last punch was IN  â†’ show PUNCH OUT button
+        // "OUT" â†’ last punch was OUT â†’ show PUNCH IN button
         status: lastInout === 1 ? "IN" : "OUT",
       },
     });
@@ -359,7 +359,7 @@ export async function getAttendanceStatus(req, res) {
 
 
 // ---------------------------------------------------------------------------
-// GET PUNCH SUMMARY  — GET /attendance/summary
+// GET PUNCH SUMMARY  â€” GET /attendance/summary
 // Headers : compcode, idcard  (via SetHeader)
 // Returns : punches[], totalPunches, totalMinutesWorked, totalTimeFormatted
 // ---------------------------------------------------------------------------
@@ -394,7 +394,7 @@ export async function getPunchSummary(req, res) {
 
     const rows = result.rows; // [[INOUT, ATTTIME, ATTDATE], ...]
 
-    // ── Build punch pairs (IN→OUT) ──────────────────────────────────────────
+    // â”€â”€ Build punch pairs (INâ†’OUT) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const punches       = [];
     let   totalSeconds  = 0;
     let   pendingIn     = null;   // holds the unmatched IN row
@@ -433,7 +433,7 @@ export async function getPunchSummary(req, res) {
       });
     }
 
-    // ── Calculate total span (first punch to last punch/now) ──────────────────
+    // â”€â”€ Calculate total span (first punch to last punch/now) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const firstRow  = rows[0];
     const lastRow   = rows[rows.length - 1];
     
@@ -468,9 +468,9 @@ export async function getPunchSummary(req, res) {
   }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// "09:30:05" → 34205 (seconds since midnight)
+// "09:30:05" â†’ 34205 (seconds since midnight)
 function timeToSeconds(timeStr) {
   if (!timeStr) return 0;
   const [h, m, s] = timeStr.split(":").map(Number);

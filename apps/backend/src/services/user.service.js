@@ -1,3 +1,4 @@
+import { mapRole, mapUser } from "../utils/responseMapper.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
 import OracleDB from "oracledb";
@@ -9,7 +10,6 @@ import { sendMail } from "../utils/mailer.js";
 import fs from "fs"
 import path from "path";
 import fetch  from  "node-fetch"
-import moment from "moment";
 
 
 export async function login(req, res) {
@@ -18,10 +18,10 @@ export async function login(req, res) {
     if (!username) return res.json({ statusCode: 1, message: "Username is Required" })
     if (!password) return res.json({ statusCode: 1, message: "Password is Required" });
 
-    const sql =await prisma_Connector.user.findFirst({where:{username:username},include:{Companies:true}})
+    const sql =await prisma_Connector.user.findFirst({where:{userName:username},include:{companies:true}})
 
    
-    if (!sql?.username) return res.json({ statusCode: 1, message: "Username Doesn't Exist" })
+    if (!sql?.userName && !sql?.username) return res.json({ statusCode: 1, message: "Username Doesn't Exist" })
     let storedPassword = sql?.password
 
     const isMatched = await bcrypt.compare(password, storedPassword)
@@ -56,8 +56,8 @@ export async function login(req, res) {
     //    });
   
     // await connection.close()
-    await prisma_Connector?.userLog.create({data:{MobileName:deviceName,MobileIP,User:sql.username,COMPCODE,Idcard:sql?.Idcard,type:"Login"}})
-    return res.json({ statusCode: 0, message: "Login Successfull" ,data:sql})
+    await prisma_Connector?.userLog.create({data:{mobileName:deviceName,mobileIp:MobileIP,user:sql.userName,compCode:COMPCODE,idCard:sql?.idCard,type:"Login"}})
+    return res.json({ statusCode: 0, message: "Login Successfull" ,data:mapUser(sql)})
 
 }
 
@@ -81,49 +81,90 @@ export async function UserLogs(req,res){
 }
 
 export async function create(req, res) {
-    const connection = await getConnection();
-    const { username, password, checkboxes,hod, email,otpemail, roleId,Idcard,Compcodes,level,...reset} = req.body;
-   // console.log(role, 'check');
+    const { 
+        username, 
+        userName, 
+        password, 
+        checkboxes, 
+        hod, 
+        hr, 
+        email, 
+        otpemail, 
+        otpEmail, 
+        roleId, 
+        Idcard, 
+        idCard, 
+        Compcodes, 
+        companies, 
+        approval, 
+        level, 
+        isAdmin, 
+        ...reset 
+    } = req.body;
 
-    const roles = checkboxes || [].map((item) => item.id)
-    console.log(roles, 'roles');
-  //  const createdDate = new Date();
+    const userTargetName = String(userName || username || '').trim();
+    const userTargetIdCard = String(idCard || Idcard || '').trim();
+    const userTargetOtpEmail = otpEmail || otpemail || email;
 
-    if (!username || !password) {
+    if (!userTargetName || !password) {
         return res.json({ statusCode: 1, message: 'Username and Password are Required' });
     }
 
     try {
-         const userNameResult = await prisma_Connector.user.findFirst({where:{username:username}})
-         if (userNameResult?.name) {
-           //  await connection.close();
-             return res.json({ statusCode: 1, message: 'UserName Already Exsist' });
-         }
+        const userNameResult = await prisma_Connector.user.findFirst({
+            where: { userName: userTargetName }
+        });
+        if (userNameResult?.userName) {
+            return res.json({ statusCode: 1, message: 'UserName Already Exists' });
+        }
+
+        const rawCompanies = Compcodes || companies;
+        const normalizedCompanies = Array.isArray(rawCompanies)
+            ? rawCompanies.map(item => {
+                const cCode = String(item.companyCode || item.COMPCODE || item.compCode || '').trim();
+                const cId = String(item.companyId || item.companyid || item.COMPID || item.gtcompmastid || item.GTCOMPMASTID || '').trim();
+                const gComp = item.gComp || item.GCOMP || undefined;
+                return {
+                    companyCode: cCode,
+                    companyId: cId && cId !== 'undefined' && cId !== 'null' ? cId : (cCode || '0'),
+                    ...(gComp ? { gComp: String(gComp) } : {})
+                };
+            }).filter(c => c.companyCode)
+            : [];
 
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        var UserCreation=await prisma_Connector.user.create({data:{username:username,roleId,otpemail, password:hashedPassword,email:email,Idcard,hod,level,Companies:{create:Compcodes},...reset}})
-    
-    
 
-        // const sql = 'INSERT INTO mobileuser(username, password,email,role) VALUES (:username, :hashedPassword, :email, :role)';
+        const userCreationData = {
+            userName: userTargetName,
+            roleId: roleId || undefined,
+            otpEmail: userTargetOtpEmail,
+            password: hashedPassword,
+            email: email || undefined,
+            idCard: userTargetIdCard,
+            hod: hod || undefined,
+            hr: hr || undefined,
+            approval: approval || 'HOD',
+            level: level || 'user',
+            isAdmin: Boolean(isAdmin),
+            ...(normalizedCompanies.length > 0 ? { companies: { create: normalizedCompanies } } : {})
+        };
 
-        // await connection.execute(sql, { username, hashedPassword, email, role });
+        const UserCreation = await prisma_Connector.user.create({
+            data: userCreationData
+        });
 
-           
-
-        // const userRoleSql = 'INSERT INTO mobuserlog(userName, ALLOWEDPAGES, createdDate) VALUES (:username, :ALLOWEDPAGES, :createdDate)';
-        // for (const role of roles) {
-        //     await connection.execute(userRoleSql, { username, ALLOWEDPAGES: role, createdDate });
-        //     console.log(role, 'role');
-        // }
-        // await connection.commit();
-        // await connection.close();
-        return res.json({ statusCode: 0, message: 'User created successfully' ,data:UserCreation});
+        return res.json({ 
+            statusCode: 0, 
+            message: 'User created successfully', 
+            data: mapUser(UserCreation) 
+        });
     } catch (error) {
-        console.error(error);
-       // await connection.close();
-        return res.json({ statusCode: 1, message: 'An error occurred while creating the user' });
+        console.error('Error in create user:', error);
+        return res.json({ 
+            statusCode: 1, 
+            message: error.message || 'An error occurred while creating the user' 
+        });
     }
 }
 
@@ -134,7 +175,7 @@ export async function get_hod_token(req, res) {
     const hod=req?.query?.hod
 
     try {
-        const result =await prisma_Connector.user.findUnique({where:{Idcard:hod},select:{
+        const result =await prisma_Connector.user.findUnique({where:{idCard:hod},select:{
             fcm:true
         }})
 
@@ -151,7 +192,7 @@ export async function get_hod_token(req, res) {
 export async function get_fcm_token(req, res) {
     const Idcard=req?.query?.Idcard
     try {
-        const result =await prisma_Connector.user.findUnique({where:{Idcard},select:{
+        const result =await prisma_Connector.user.findUnique({where:{idCard:Idcard},select:{
             fcm:true
         }})
 
@@ -196,11 +237,47 @@ export async function get(req, res) {
     const connection = await getConnection(res)
     try {
         
-        const result =await prisma_Connector.user.findMany({include:{Companies:true,role:true},where:{active:true}})
+        const result =await prisma_Connector.user.findMany({include:{companies:true,role:true},where:{active:true}})
 
-        const mapdata=result.map((data)=>({
-               gmail:data?.email,...data
-        }))
+        let empMap = {};
+        try {
+            const empSql = `SELECT B.IDCARD, D.FNAME, C.COMPCODE FROM HREMPLOYMAST A 
+JOIN HREMPLOYDETAILS B ON A.HREMPLOYMASTID = B.HREMPLOYMASTID
+JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE
+JOIN HREMPLOYMAST D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID`;
+            const empRes = await connection.execute(empSql);
+            if (empRes?.rows) {
+                empRes.rows.forEach(r => {
+                    const idCard = String(r[0] || '').trim();
+                    const fName = r[1];
+                    const compCode = r[2];
+                    if (idCard) {
+                        empMap[idCard] = fName;
+                        if (compCode) {
+                            empMap[`${compCode}-${idCard}`] = fName;
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('[user.service.js:get] Could not fetch employee names:', e);
+        }
+
+        const mapdata = result.map((data) => {
+            const rawId = String(data?.idCard || '').trim();
+            const empName = empMap[rawId] || null;
+            const finalUsername = data?.userName || data?.username || '';
+            return {
+                ...data,
+                gmail: data?.email,
+                username: finalUsername,
+                userName: finalUsername,
+                Idcard: data?.idCard,
+                idCard: data?.idCard,
+                empName: empName,
+                employeeName: empName,
+            };
+        });
 
         return res.json({ statusCode: 0, data:mapdata })
     }
@@ -223,7 +300,7 @@ const fcm=req.body?.fcm
     
     try {
        if(Idcard && fcm){
-        const result =await prisma_Connector.user.update({where:{Idcard:Idcard},data:{fcm}})
+        const result =await prisma_Connector.user.update({where:{idCard:Idcard},data:{fcm}})
         return res.json({ statusCode: 0, data:result })
        }
 
@@ -372,7 +449,7 @@ export async function getUserImage(req, res) {
 
     try {
 
-       var pic=await prisma_Connector?.user?.findFirst({where:{username:USERNAME}})
+       var pic=await prisma_Connector?.user?.findFirst({where:{userName:USERNAME}})
        console.log(pic);
        
        if(pic?.pic){
@@ -451,7 +528,7 @@ export async function UploadImage(req, res) {
       }
       
       
-     var result= await prisma_Connector?.user.update({data:{pic:req?.file?.filename},where:{Idcard:req?.headers?.idcard}})
+     var result= await prisma_Connector?.user.update({data:{pic:req?.file?.filename},where:{idCard:req?.headers?.idcard}})
   
 
 
@@ -503,20 +580,24 @@ export async function getDesignation(req, res) {
 
 
 export async function getCreatedRolesOnPage(req, res) {
-      const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+      const COMPCODE = String(req?.headers?.compcode || '').toUpperCase();
     try { 
+        const queryWhere = { roleOnPage: { some: {} } };
+        if (COMPCODE && COMPCODE !== 'UNDEFINED' && COMPCODE !== 'NULL') {
+            queryWhere.compCode = COMPCODE;
+        }
         const result = await prisma_Connector.role.findMany({
-            where: { COMPCODE,RoleOnPage:{some:{}} },
-            select: {name:true,id:true,active:true,RoleOnPage:true}
+            where: queryWhere,
+            select: { name: true, id: true, active: true, roleOnPage: true }
         });
        
    
-        res.json({ status: 1, data: result});
+        res.json({ status: 1, data: (result || []).map(mapRole) });
     } catch (error) {
         console.error('Error fetching roles:', error);
         res.json({ 
             status:  500,
-            data: {},
+            data: [],
             message: 'An error occurred while fetching roles'
         });
     }
@@ -541,7 +622,7 @@ export async function getRolesOnPage(req, res) {
             read: data?.read,
             delete: data?.delete,
             edit: data?.edit,
-            isdefault: data?.isdefault,
+            isdefault: data?.isDefault ?? data?.isdefault ?? false,
             link: data?.link
         }});
 
@@ -551,7 +632,7 @@ export async function getRolesOnPage(req, res) {
         console.error('Error fetching roles:', error);
         res.json({ 
             status:  500,
-            data: {},
+            data: [],
             message: 'An error occurred while fetching roles'
         });
     }
@@ -560,102 +641,111 @@ export async function getRolesOnPage(req, res) {
 
 
 export async function getUserRolesOnPage(req, res) {
-    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-    const {RoleId}=req?.query
+    const COMPCODE = String(req?.headers?.compcode || '').toUpperCase();
+    const { RoleId } = req?.query || {};
+
+    if (!RoleId || RoleId.startsWith('undefined')) {
+        return res.json({ status: 1, data: [] });
+    }
+
     try {
-      const result = await prisma_Connector.role.findMany({
-           where:{name:RoleId,COMPCODE},select:{RoleOnPage:true}
-       });
+        const queryWhere = { name: RoleId };
+        if (COMPCODE && COMPCODE !== 'UNDEFINED' && COMPCODE !== 'NULL') {
+            queryWhere.compCode = COMPCODE;
+        }
 
-         const filterResult = result[0]?.RoleOnPage?.map((data) => {
+        const result = await prisma_Connector.role.findMany({
+            where: queryWhere,
+            select: { roleOnPage: true }
+        });
 
-         return {
-
+        const rolePages = result[0]?.roleOnPage || [];
+        const filterResult = rolePages.map((data) => ({
             id: data?.roleId,
             create: data?.create,
             read: data?.read,
             delete: data?.delete,
             edit: data?.edit,
-            isdefault: data?.isdefault,
+            isdefault: data?.isDefault ?? data?.isdefault ?? false,
             link: data?.link
-        }});
+        }));
 
         res.json({ status: 1, data: filterResult });
-  
     } catch (error) {
         console.error('Error fetching roles:', error);
         res.json({ 
             status: 500,
-            data: {},
+            data: [],
             message: 'An error occurred while fetching roles'
         });
     }
 }
 
 export async function createRoleOnPage(req, res) {
-   
     const { roleName, permissions } = req.body;
 
-   // const createdDate = new Date();
-
     try {
-        // Prepare to insert each page's permissions
-        const insertPromises = [];
-
-        
-
-        for (const page in permissions) {
-            const pagePermissions = permissions[page];
-
-            // Prepare the SQL values for each permission type
-                const read = pagePermissions.read ? true : false;
-            const create = pagePermissions.create ? true : false;
-            const edit = pagePermissions.edit ? true : false;
-            const del = pagePermissions.delete ? true: false;
-            const isdefault = pagePermissions.isdefault ? true : false;
-          
-            insertPromises.push({read,create,edit,delete:del,isdefault,roleName,link:page})
-
-            // Construct the SQL query for each page's permissions
-            // const sql = `INSERT INTO mobuserlog ("ROLE", "CREATE", "EDIT", "DELETE", "READ", "PAGE", "ISDEFAULT")
-            //              VALUES ('${roleName}', ${create}, ${edit}, ${del}, ${read}, '${page}', ${isdefault})`;
-
-            // insertPromises.push(connection.execute(sql));
+        if (!roleName) {
+            return res.status(400).json({ status: 0, message: 'roleName is required' });
         }
 
-      
-        
+        if (!permissions || typeof permissions !== 'object' || Object.keys(permissions).length === 0) {
+            return res.status(400).json({ status: 0, message: 'permissions are required' });
+        }
 
-        // Execute all insert statements
-        // await Promise.all(insertPromises);
-        // await connection.commit(); // Commit after all queries are executed
-        // await connection.close(); // Close connection
+        const role = await prisma_Connector.role.findUnique({
+            where: { name: roleName }
+        });
 
-         try {
-           const result=await  prisma_Connector.roleOnPage.createMany({data:insertPromises})
-            res.json({status:1,data:result}) 
-            }
-            catch (err) {
-               
-                res.json({status:0,data:{}}) 
-               
-            }
-       
-      
-       
+        if (!role) {
+            return res.status(404).json({ status: 0, message: `Role "${roleName}" does not exist` });
+        }
 
+        const insertPromises = [];
+
+        for (const page in permissions) {
+            const pagePermissions = permissions[page] || {};
+
+            const read = Boolean(pagePermissions.read);
+            const create = Boolean(pagePermissions.create);
+            const edit = Boolean(pagePermissions.edit);
+            const del = Boolean(pagePermissions.delete);
+            const isdefault = Boolean(pagePermissions.isdefault ?? pagePermissions.isDefault);
+
+            insertPromises.push({
+                roleId: role.id,
+                roleName,
+                link: page,
+                read,
+                create,
+                edit,
+                delete: del,
+                isDefault: isdefault,
+            });
+        }
+
+        // Clean up any existing permissions for this role and insert fresh ones in a transaction
+        const [deleteResult, createResult] = await prisma_Connector.$transaction([
+            prisma_Connector.roleOnPage.deleteMany({ where: { roleName } }),
+            prisma_Connector.roleOnPage.createMany({ data: insertPromises })
+        ]);
+
+        return res.json({
+            status: 1,
+            data: createResult,
+            message: 'Role permissions created successfully'
+        });
     } catch (error) {
-        console.error(error);
-        return res.json({ status: 500, message: 'An error occurred while creating the user' });
+        console.error('createRoleOnPage error:', error);
+        return res.status(500).json({
+            status: 0,
+            message: 'An error occurred while creating role permissions: ' + error.message
+        });
     }
 }
 
 export async function UpdateRoleOnPage(req, res) {
     const { roleName, permissions } = req.body;
-
-  
-    console.log(permissions);
-    
 
     try {
         // Validate required fields
@@ -666,40 +756,48 @@ export async function UpdateRoleOnPage(req, res) {
             });
         }
 
+        const role = await prisma_Connector.role.findUnique({
+            where: { name: roleName }
+        });
+
         // Process each permission in parallel
         const results = await Promise.all(
             Object.entries(permissions).map(async ([page, pagePermissions]) => {
                 try {
-                    const { read, create,edit, delete: del, isdefault, dbid } = pagePermissions;
+                    const { read, create, edit, delete: del, isdefault, isDefault, dbid } = pagePermissions;
 
-                   
-                    
-                    // Prepare the upsert data
+                    // Prepare the update/create data
                     const upsertData = {
                         read: Boolean(read),
                         create: Boolean(create),
                         edit: Boolean(edit),
                         delete: Boolean(del),
-                        isdefault: Boolean(isdefault),
+                        isDefault: Boolean(isdefault ?? isDefault),
                         roleName: roleName,
-                        link: page
+                        link: page,
+                        ...(role ? { roleId: role.id } : {})
                     };
 
-                    // Execute upsert operation
-                    return await prisma_Connector.roleOnPage.upsert({
-                        where: { 
-                            id: dbid ? dbid : -1,
-                            link: page,
-                            roleName: roleName,
-                            AND: {
-                                roleName: roleName,
-                                link: page,
-                                id: dbid ? dbid : -1
-                            }
-                        },
-                        update: upsertData,
-                        create: upsertData
-                    });
+                    if (dbid && Number(dbid) > 0) {
+                        return await prisma_Connector.roleOnPage.update({
+                            where: { id: Number(dbid) },
+                            data: upsertData
+                        });
+                    } else {
+                        const existing = await prisma_Connector.roleOnPage.findFirst({
+                            where: { roleName, link: page }
+                        });
+                        if (existing) {
+                            return await prisma_Connector.roleOnPage.update({
+                                where: { id: existing.id },
+                                data: upsertData
+                            });
+                        } else {
+                            return await prisma_Connector.roleOnPage.create({
+                                data: upsertData
+                            });
+                        }
+                    }
 
                 } catch (err) {
                     console.error(`Error processing page ${page}:`, err);
@@ -708,19 +806,23 @@ export async function UpdateRoleOnPage(req, res) {
             })
         );
 
-         
-
         // Check if any operations failed
         const failedOperations = results.filter(result => result === null).length;
-        if (failedOperations > 0) {
-            console.warn(`${failedOperations} permission updates failed`);
+        const successCount = results.length - failedOperations;
+
+        if (successCount === 0 && failedOperations > 0) {
+            return res.status(500).json({
+                status: 0,
+                message: 'Failed to update any permissions'
+            });
         }
 
         return res.json({ 
             status: 1, 
             data: { 
                 message: 'Permissions processed successfully',
-                successCount: results.length - failedOperations,
+                count: successCount,
+                successCount,
                 failedCount: failedOperations
             } 
         });
@@ -729,7 +831,7 @@ export async function UpdateRoleOnPage(req, res) {
         console.error('Unexpected error in UpdateRoleOnPage:', error);
         return res.status(500).json({ 
             status: 0, 
-            message: 'An error occurred while updating permissions',
+            message: 'An error occurred while updating permissions: ' + error.message,
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
@@ -744,8 +846,8 @@ export async function getCompanyCode(req,res) {
     if (Idcard) {
         try {
             const allocatedCompanies = await prisma_Connector.companyCode.findMany({
-                where: { Idcard: String(Idcard) },
-                select: { companyCode: true, companyid: true },
+                where: { idCard: String(Idcard) },
+                select: { companyCode: true, companyId: true },
                 orderBy: { companyCode: 'asc' },
             });
 
@@ -754,7 +856,7 @@ export async function getCompanyCode(req,res) {
                 data: allocatedCompanies.map(company => ({
                     id: company.companyCode,
                     value: company.companyCode,
-                    COMPID: company.companyid,
+                    COMPID: company.companyId,
                 })),
             });
         } catch (err) {
@@ -796,7 +898,17 @@ export async function getEmployeeIds(req,res) {
     const connection = await getConnection(res)
       try {
         
-        const sql =`SELECT C.COMPCODE||'('||B.IDCARD ||')'||'('|| D.FNAME ||')' "value",C.COMPCODE||'-'||B.IDCARD "id",C.COMPCODE,C.COMPNAME,B.DEPTNAME FROM HREMPLOYMAST A 
+        const sql =`SELECT C.COMPCODE||'('||B.IDCARD ||')'||'('|| D.FNAME ||')' "value",
+C.COMPCODE||'-'||B.IDCARD "id",
+C.COMPCODE,
+C.COMPNAME,
+B.DEPTNAME,
+D.FNAME "empName",
+D.FNAME "EMPNAME",
+D.FNAME "FNAME",
+B.IDCARD "idCard",
+B.IDCARD "IDCARD"
+FROM HREMPLOYMAST A 
 JOIN HREMPLOYDETAILS B ON A.HREMPLOYMASTID = B.HREMPLOYMASTID
 JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE
 JOIN HREMPLOYMAST D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID
@@ -850,7 +962,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
       return res.json({ statusCode: 0, data: [] });
     }
 
-    // Oracle bind-safe IN list  → :0, :1, :2 ...
+    // Oracle bind-safe IN list  â†’ :0, :1, :2 ...
     const bindPlaceholders = Ids.map((_, i) => `:id${i}`).join(", ");
     const bindValues       = Object.fromEntries(Ids.map((id, i) => [`id${i}`, id]));
 
@@ -925,7 +1037,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
         punchIn  : summary.firstInTime,
         punchOut : summary.lastOutTime,
 
-        // last row's INOUT — drives the button (0=OUT→show IN, 1=IN→show OUT)
+        // last row's INOUT â€” drives the button (0=OUTâ†’show IN, 1=INâ†’show OUT)
         lastInout: summary.lastInout,
 
         // summary stats
@@ -949,7 +1061,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
 }
 
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function computeAttSummary(rows) {
   // rows: [{ inout: 0|1, atttime: "HH:MI:SS" }, ...] ordered ASC
@@ -989,7 +1101,7 @@ function computeAttSummary(rows) {
     }
   }
 
-  // Unmatched IN → still active
+  // Unmatched IN â†’ still active
   if (pendingIn) {
     punches.push({
       inTime           : pendingIn,
@@ -1009,14 +1121,14 @@ function computeAttSummary(rows) {
   };
 }
 
-// "09:30:00" → 570
+// "09:30:00" â†’ 570
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(":").map(Number);
   return h * 60 + m;
 }
 
-// 570 → "09:30"
+// 570 â†’ "09:30"
 function minutesToFormatted(totalMinutes) {
   if (!totalMinutes || totalMinutes <= 0) return "00:00";
   const h = Math.floor(totalMinutes / 60);
@@ -1028,10 +1140,46 @@ function minutesToFormatted(totalMinutes) {
 
 
 export async function remove(req, res) {
-    const connection = await getConnection.apply(res);
-    try {
+    const rawId = req.body?.id || req.query?.id || req.params?.id;
+    const userId = Number(rawId);
+    if (!userId) {
+        return res.json({ statusCode: 1, status: 0, message: "User ID is required" });
     }
-    catch (err) {
+    try {
+        const userRecord = await prisma_Connector.user.findUnique({ where: { id: userId } });
+        if (!userRecord) {
+            return res.json({ statusCode: 1, status: 0, message: "User not found" });
+        }
+        try {
+            await prisma_Connector.notification.deleteMany({
+                where: { OR: [{ senderId: userId }, { receiverId: userId }] }
+            }).catch(() => {});
+
+            if (userRecord.idCard) {
+                await prisma_Connector.companyCode.deleteMany({
+                    where: { idCard: userRecord.idCard }
+                }).catch(() => {});
+                await prisma_Connector.settings.deleteMany({
+                    where: { userId: userRecord.idCard }
+                }).catch(() => {});
+            }
+
+            await prisma_Connector.user.delete({ where: { id: userId } });
+            return res.json({ statusCode: 0, status: 1, message: "User deleted successfully" });
+        } catch (deleteErr) {
+            console.warn('[user.service.js:remove] Hard delete failed, soft deleting:', deleteErr?.message);
+            await prisma_Connector.user.update({
+                where: { id: userId },
+                data: {
+                    active: false,
+                    userName: `${userRecord.userName}_deleted_${Date.now()}`
+                }
+            });
+            return res.json({ statusCode: 0, status: 1, message: "User deleted successfully" });
+        }
+    } catch (err) {
+        console.error("Error in user remove:", err);
+        return res.status(500).json({ statusCode: 1, status: 0, message: "Internal server error" });
     }
 }
 
@@ -1135,7 +1283,7 @@ const data=req.body?.data
 
     try {
        
-        const result =await prisma_Connector.settings.upsert({where:{UserId:Idcard,COMPCODE:compCode},update:data,create:data}) 
+        const result =await prisma_Connector.settings.upsert({where:{userId:Idcard},update:data,create:data}) 
         
         return res.json({ statusCode: 1, data:result })
       
@@ -1178,7 +1326,7 @@ const connection = await getConnection(res)
                 return keyValuePair;
                });
        
-           const result = Idcard ? await prisma_Connector.user.findUnique({where:{Idcard}})  : {}
+           const result = Idcard ? await prisma_Connector.user.findUnique({where:{idCard:Idcard}})  : {}
             var data= transformedResult ? Object.assign(result,...transformedResult) : {}
         
         return res.json({ statusCode: 1, data })
@@ -1199,7 +1347,7 @@ const compCode=String(req.headers?.compcode).toUpperCase()
 const Idcard=req.query?.Idcard
     try {
        
-        const result = Idcard ? await prisma_Connector.settings.findUnique({where:{UserId:Idcard,COMPCODE:compCode}})  : {}
+        const result = Idcard ? await prisma_Connector.settings.findUnique({where:{userId:Idcard}})  : {}
         
         return res.json({ statusCode: 0, data:result })
       

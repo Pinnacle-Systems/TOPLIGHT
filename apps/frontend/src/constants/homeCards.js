@@ -3,7 +3,6 @@ export const HOME_CARDS = [
     { label: 'Leave Entry', action: 'lentry', icon: 'calendar-account-outline', bg: '#dc2626' },
     { label: 'Permission Entry', action: 'pentry', icon: 'account-clock-outline', bg: '#7c3aed' },
    // { label: 'Attendance Report', action: 'ATTENDANCEREPORT', icon: 'file-chart-outline', bg: '#d97706' },
- //   { label: 'Advance Entry', action: 'aentry', icon: 'cash-plus', bg: '#db2777' },
     { label: 'Attendance', action: 'Att', icon: 'fingerprint', bg: '#10b981' },
   //  { label: 'Available Leave', action: 'l_available', icon: 'calendar-check', bg: '#0891b2' },
   //  { label: 'Map View', action: 'map', icon: 'map-marker-radius', bg: '#4f46e5' },

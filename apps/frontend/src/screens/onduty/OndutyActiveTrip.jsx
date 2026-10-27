@@ -20,8 +20,6 @@ export default function OndutyActiveTrip({
     onSubmitOut, 
     isSubmitting,
     isKmEntryEnabled,
-    endKm,
-    onChangeEndKm,
 }) {
     const [isAnotherOnduty, setIsAnotherOnduty] = useState(false);
     const pulseAnim = useState(new Animated.Value(1))[0];
@@ -82,7 +80,15 @@ export default function OndutyActiveTrip({
 
                 <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>DEPARTURE LOCATION</Text>
-                    <Text style={styles.infoValue}>{tripData?.in_location || '—'}</Text>
+                    <Text style={styles.infoValue}>
+                        {(!tripData?.in_location || tripData.in_location === 'Location unavailable') && tripData?.in_latitude && Number(tripData.in_latitude) !== 0
+                            ? `Near ${Number(tripData.in_latitude).toFixed(4)}, ${Number(tripData.in_longtiude).toFixed(4)}`
+                            : (tripData?.in_location && tripData.in_location !== 'Location unavailable'
+                                ? tripData.in_location
+                                : (tripData?.in_latitude && Number(tripData.in_latitude) !== 0
+                                    ? `Near ${Number(tripData.in_latitude).toFixed(4)}, ${Number(tripData.in_longtiude).toFixed(4)}`
+                                    : 'Office / Base Location'))}
+                    </Text>
                 </View>
 
                 <View style={styles.infoRow}>
@@ -106,28 +112,6 @@ export default function OndutyActiveTrip({
                 ) : null}
             </View>
 
-            {/* End KM Entry (Shown ONLY when enabled in Settings) */}
-            {isKmEntryEnabled ? (
-                <View style={styles.detailsCard}>
-                    <View style={styles.detailsHeader}>
-                        <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.brand} />
-                        <Text style={styles.detailsHeaderText}>Check-Out Odometer Reading</Text>
-                    </View>
-                    <View style={styles.kmInputWrapper}>
-                        <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
-                        <TextInput
-                            style={styles.singleLineInput}
-                            placeholder="Enter ending KM (optional)"
-                            placeholderTextColor={theme.colors.placeholder}
-                            keyboardType="numeric"
-                            value={endKm}
-                            onChangeText={onChangeEndKm}
-                        />
-                        <Text style={styles.kmUnitText}>KM</Text>
-                    </View>
-                </View>
-            ) : null}
-
             {/* Going to another onduty toggle */}
             <View style={styles.checkboxCard}>
                 <Checkbox.Item
@@ -147,7 +131,6 @@ export default function OndutyActiveTrip({
                 onPress={() => onSubmitOut({ 
                     docId: tripData?.docid, 
                     toOnduty: isAnotherOnduty,
-                    endKm: endKm,
                 })}
                 disabled={isSubmitting}
                 activeOpacity={0.8}

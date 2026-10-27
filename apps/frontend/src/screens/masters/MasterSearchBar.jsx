@@ -41,7 +41,7 @@ export default function MasterSearchBar({
                 ) : null}
             </View>
 
-            {/* Ptype Filter Chips (If master has ptype like Permission / Advance / Leave) */}
+            {/* Ptype Filter Chips (If master has ptype like Permission / Leave) */}
             {hasPtype && onPtypeChange ? (
                 <ScrollView 
                     horizontal 
@@ -51,7 +51,6 @@ export default function MasterSearchBar({
                     {[
                         { label: 'All Types', value: 'all' },
                         { label: 'Permission', value: 'permission' },
-                        { label: 'Advance', value: 'advance' },
                         { label: 'Leave', value: 'leave' },
                     ].map((chip) => {
                         const isSelected = filterPtype === chip.value;

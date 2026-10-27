@@ -17,26 +17,37 @@ import {
     useGet_refresh_tokenQuery,
     useLazyGet_fcm_tokenQuery,
 } from '../../store/api/UserApi';
+import { useGetPermissionRequestQuery } from '../../store/api/NotificationApi';
+import { useGet__per_categoryQuery } from '../../store/api/PermissionApi';
 import { _FCM_SENDER } from '../../components/utils/Fcm';
 import socket from '../../utils/Socket';
 import { useAppTheme } from '../../theme';
 
-const getPermissionRequests = params => {
-    if (!params || typeof params !== 'object') return [];
+const getPermissionRequests = (params, apiData) => {
     const requests = [];
-    const selectedRequest = { ...params };
-    delete selectedRequest.all;
-    delete selectedRequest.refresh;
-    if (selectedRequest.docid) requests.push(selectedRequest);
-    if (Array.isArray(params.all)) {
-        requests.push(...params.all.filter(
+
+    if (params && typeof params === 'object') {
+        const selectedRequest = { ...params };
+        delete selectedRequest.all;
+        delete selectedRequest.refresh;
+        const clickedDocid = selectedRequest?.docid || selectedRequest?.docId;
+        if (clickedDocid) requests.push(selectedRequest);
+        if (Array.isArray(params.all)) {
+            requests.push(...params.all.filter(
+                request => String(request?.group || '').toLowerCase() === 'permission',
+            ));
+        }
+    }
+
+    if (Array.isArray(apiData?.data)) {
+        requests.push(...apiData.data.filter(
             request => String(request?.group || '').toLowerCase() === 'permission',
         ));
     }
 
     const seenDocIds = new Set();
     return requests.filter(request => {
-        const docid = String(request?.docid || '').trim();
+        const docid = String(request?.docid || request?.docId || '').trim();
         const status = String(request?.approvalStatus || 'pending').toLowerCase();
         if (!docid || status !== 'pending' || seenDocIds.has(docid)) return false;
         seenDocIds.add(docid);
@@ -67,10 +78,35 @@ function DetailRow({ label, value, icon, styles, theme }) {
     );
 }
 
-function PermissionRequestCard({ item, isBusy, isProcessing, onApprove, onReject, onCall, styles, theme }) {
-    const employeeName = item?.userdata?.username || item?.username || 'Employee';
-    const employeeId = item?.userdata?.Idcard || item?.userId || item?.IDCARD;
+function PermissionRequestCard({ item, categoryMap, isBusy, isProcessing, onApprove, onReject, onCall, styles, theme }) {
+    const employeeName =
+        item?.userdata?.username ||
+        item?.userdata?.userName ||
+        item?.userData?.userName ||
+        item?.userName ||
+        item?.username ||
+        item?.empName ||
+        item?.empname ||
+        'Employee';
+    const employeeId =
+        item?.userdata?.Idcard ||
+        item?.userdata?.idCard ||
+        item?.userData?.idCard ||
+        item?.idCard ||
+        item?.idcard ||
+        item?.userId ||
+        item?.IDCARD;
+    const docid = item?.docid || item?.docId;
+    const docdate = item?.docDate || item?.docdate || item?.createdAt;
     const phone = item?.userdata?.phone || item?.userdata?.mobile || item?.mobile;
+
+    const rawCategory = item?.categoryName || item?.categoryData?.name || item?.category;
+    const categoryDisplay =
+        item?.categoryName ||
+        item?.categoryData?.name ||
+        (rawCategory != null && categoryMap?.[String(rawCategory)]) ||
+        (item?.category != null && categoryMap?.[String(item?.category)]) ||
+        (rawCategory != null && isNaN(Number(rawCategory)) ? String(rawCategory) : null);
 
     return (
         <View style={styles.card}>
@@ -88,17 +124,17 @@ function PermissionRequestCard({ item, isBusy, isProcessing, onApprove, onReject
             </View>
 
             <View style={styles.divider} />
-            <DetailRow styles={styles} theme={theme} label="Document" value={item?.docid} icon="file-document-outline" />
-            <DetailRow styles={styles} theme={theme} label="Date" value={formatDate(item?.docDate || item?.docdate)} icon="calendar-blank-outline" />
+            <DetailRow styles={styles} theme={theme} label="Document" value={docid} icon="file-document-outline" />
+            <DetailRow styles={styles} theme={theme} label="Date" value={formatDate(docdate)} icon="calendar-blank-outline" />
             <DetailRow styles={styles} theme={theme} label="From" value={item?.fTime || item?.ftime} icon="clock-start" />
             <DetailRow styles={styles} theme={theme} label="To" value={item?.tTime || item?.ttime} icon="clock-end" />
-            <DetailRow styles={styles} theme={theme} label="Duration" value={item?.thrs || item?.totalHours} icon="timer-outline" />
-            {!!(item?.categoryName || item?.category) && (
+            <DetailRow styles={styles} theme={theme} label="Duration" value={item?.thrs || item?.totalHours || item?.totalHrs} icon="timer-outline" />
+            {!!categoryDisplay && (
                 <DetailRow
                     styles={styles}
                     theme={theme}
                     label="Category"
-                    value={item?.categoryName || item?.category}
+                    value={categoryDisplay}
                     icon="tag-outline"
                 />
             )}
@@ -155,7 +191,32 @@ export default function PermissionApprovalScreen({ route }) {
     const styles = useMemo(() => createStyles(theme), [theme]);
     const user = useSelector(state => state.UserDetails);
     const params = route?.params;
-    const [requests, setRequests] = useState(() => getPermissionRequests(params));
+
+    const isHodOrHr = user?.IDCARD == user?.hod || user?.IDCARD == user?.hr || user?.level != 'user';
+    const queryParams = isHodOrHr
+        ? { hod: user?.IDCARD, hr: user?.IDCARD }
+        : { emp: user?.IDCARD };
+
+    const { data: apiData, isLoading, refetch } = useGetPermissionRequestQuery(
+        { params: queryParams },
+        { skip: !user?.IDCARD, refetchOnMountOrArgChange: true }
+    );
+
+    const { data: catApiData } = useGet__per_categoryQuery({ type: 'permission' });
+
+    const categoryMap = useMemo(() => {
+        const map = {};
+        (catApiData?.data || []).forEach(cat => {
+            const id = cat?.value ?? cat?.id;
+            const name = cat?.label ?? cat?.name;
+            if (id != null && name) {
+                map[String(id)] = name;
+            }
+        });
+        return map;
+    }, [catApiData?.data]);
+
+    const [requests, setRequests] = useState(() => getPermissionRequests(params, apiData));
     const [processingDocId, setProcessingDocId] = useState(null);
     const processingDocIdRef = useRef(null);
     const [updateStatus] = useRequestPermission_ApprovalMutation();
@@ -163,11 +224,11 @@ export default function PermissionApprovalScreen({ route }) {
     const [fetchEmployeeToken] = useLazyGet_fcm_tokenQuery();
 
     useEffect(() => {
-        setRequests(getPermissionRequests(params));
-    }, [params]);
+        setRequests(getPermissionRequests(params, apiData));
+    }, [params, apiData]);
 
     const handleAction = useCallback(async (item, status) => {
-        const docid = String(item?.docid || '').trim();
+        const docid = String(item?.docid || item?.docId || '').trim();
         if (!docid || processingDocIdRef.current) return;
 
         processingDocIdRef.current = docid;
@@ -214,12 +275,14 @@ export default function PermissionApprovalScreen({ route }) {
                 }
             }
 
-            setRequests(previous => previous.filter(request => String(request?.docid) !== docid));
+            setRequests(previous => previous.filter(request => String(request?.docid || request?.docId) !== docid));
             showMessage({
                 message: `Permission request ${savedStatus}`,
                 description: `Request ${docid} was ${savedStatus}.`,
                 type: savedStatus === 'approved' ? 'success' : 'danger',
             });
+
+            refetch?.();
 
             if (typeof params?.refresh === 'function') {
                 try {
@@ -238,7 +301,7 @@ export default function PermissionApprovalScreen({ route }) {
             processingDocIdRef.current = null;
             setProcessingDocId(null);
         }
-    }, [fetchEmployeeToken, params, refreshTokenData, updateStatus, user]);
+    }, [fetchEmployeeToken, params, refetch, refreshTokenData, updateStatus, user]);
 
     const callEmployee = useCallback(async item => {
         const number = String(
@@ -262,10 +325,11 @@ export default function PermissionApprovalScreen({ route }) {
     }, []);
 
     const renderRequest = useCallback(({ item }) => {
-        const docid = String(item?.docid || '');
+        const docid = String(item?.docid || item?.docId || '');
         return (
             <PermissionRequestCard
                 item={item}
+                categoryMap={categoryMap}
                 isBusy={processingDocId !== null}
                 isProcessing={processingDocId === docid}
                 onApprove={() => handleAction(item, 'approved')}
@@ -275,7 +339,7 @@ export default function PermissionApprovalScreen({ route }) {
                 theme={theme}
             />
         );
-    }, [callEmployee, handleAction, processingDocId, styles, theme]);
+    }, [callEmployee, categoryMap, handleAction, processingDocId, styles, theme]);
 
     return (
         <View style={styles.screen}>
@@ -294,16 +358,25 @@ export default function PermissionApprovalScreen({ route }) {
             <FlatList
                 data={requests}
                 renderItem={renderRequest}
-                keyExtractor={(item, index) => String(item?.docid || item?.id || index)}
+                keyExtractor={(item, index) => String(item?.docid || item?.docId || item?.id || index)}
                 contentContainerStyle={requests.length ? styles.listContent : styles.emptyContent}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={(
-                    <View style={styles.emptyState}>
-                        <MaterialCommunityIcons name="inbox-outline" size={46} color={theme.colors.textDisabled} />
-                        <Text style={styles.emptyTitle}>No pending permission requests</Text>
-                        <Text style={styles.emptySubtitle}>Open a permission approval notification to review a request.</Text>
-                    </View>
-                )}
+                refreshing={isLoading}
+                onRefresh={refetch}
+                ListEmptyComponent={
+                    isLoading ? (
+                        <View style={styles.emptyState}>
+                            <ActivityIndicator size="large" color="#007AFF" />
+                            <Text style={[styles.emptySubtitle, { marginTop: 12 }]}>Checking for pending permission requests...</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <MaterialCommunityIcons name="inbox-outline" size={46} color={theme.colors.textDisabled} />
+                            <Text style={styles.emptyTitle}>No pending permission requests</Text>
+                            <Text style={styles.emptySubtitle}>All permission requests are up to date.</Text>
+                        </View>
+                    )
+                }
             />
         </View>
     );

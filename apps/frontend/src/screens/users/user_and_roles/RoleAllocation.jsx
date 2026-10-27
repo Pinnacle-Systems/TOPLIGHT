@@ -107,11 +107,26 @@ export default function RoleAllocation() {
         setPermissions({});
         setRoleName(null);
         setEdit(false);
-        setDisabled(false);
+        setDisabled(true);
         setCurrentEditingId(null);
     };
 
+    const handleRoleSelect = (valOrFn) => {
+        const val = typeof valOrFn === 'function' ? valOrFn(roleName) : valOrFn;
+        setRoleName(val);
+        if (val) {
+            setDisabled(false);
+        } else {
+            setDisabled(true);
+        }
+    };
+
     const handlePermissionChange = (page, permission) => {
+        if (!roleName && !edit) {
+            Toast.show({ type: 'info', text1: 'Please choose a role to configure first' });
+            return;
+        }
+
         setPermissions(prev => {
             const updated = { ...prev };
             if (!updated[page]) {
@@ -125,71 +140,101 @@ export default function RoleAllocation() {
             }
 
             if (permission === 'isdefault') {
+                const newDefaultVal = !updated[page].isdefault;
                 updated[page] = {
-                    read: true,
-                    create: true,
-                    edit: true,
-                    delete: true,
-                    isdefault: true,
+                    read: newDefaultVal,
+                    create: newDefaultVal,
+                    edit: newDefaultVal,
+                    delete: newDefaultVal,
+                    isdefault: newDefaultVal,
                     ...(edit && { dbid: updated[page].dbid }),
                 };
             } else {
-                updated[page] = {
+                const newVal = !updated[page][permission];
+                const newPerms = {
                     ...updated[page],
-                    [permission]: !updated[page][permission],
-                    isdefault: ['read', 'create', 'edit', 'delete'].every(
-                        p => p === permission ? !updated[page][p] : updated[page][p]
-                    ),
+                    [permission]: newVal,
                 };
+                newPerms.isdefault = ['read', 'create', 'edit', 'delete'].every(p => newPerms[p]);
+                updated[page] = newPerms;
             }
             return updated;
         });
     };
 
     const handleSubmit = async () => {
-        if (!roleName || Object.keys(permissions).length === 0) {
-            Toast.show({ type: 'info', text1: 'Please fill all required fields' });
+        const targetRole = edit ? (currentEditingId || roleName) : roleName;
+
+        if (!targetRole) {
+            Toast.show({ type: 'info', text1: 'Please choose a role to configure' });
             return;
         }
 
-        try {
-            const permission_data = !edit ? {
-                ...permissions,
-                HOME: { read: true, create: true, edit: true, delete: true, isdefault: true, roleName },
-                DashBoard: { read: true, create: true, edit: true, delete: true, isdefault: true, roleName }
-            } : permissions;
+        // Build default permissions for all default tabs in appTabs
+        const defaultPagePermissions = (appTabs || [])
+            .filter(tab => tab.default)
+            .reduce((acc, tab) => {
+                acc[tab.name] = {
+                    read: true,
+                    create: true,
+                    edit: true,
+                    delete: true,
+                    isdefault: true,
+                    roleName: targetRole,
+                    link: tab.name,
+                };
+                return acc;
+            }, {});
 
+        // Merge default permissions with explicitly toggled permissions
+        const permission_data = {
+            ...defaultPagePermissions,
+            ...permissions,
+        };
+
+        // Guarantee all default tabs retain full access
+        for (const tab of (appTabs || []).filter(t => t.default)) {
+            permission_data[tab.name] = {
+                ...(permissions[tab.name] || {}),
+                read: true,
+                create: true,
+                edit: true,
+                delete: true,
+                isdefault: true,
+                roleName: targetRole,
+                link: tab.name,
+            };
+        }
+
+        try {
             const formData = {
-                roleName,
+                roleName: targetRole,
                 permissions: permission_data,
-                ...(edit && { roleName: currentEditingId }),
             };
 
             const response = edit
                 ? await updateUserOnRole(formData).unwrap()
                 : await createUserOnRole(formData).unwrap();
 
-            if (response.data?.count > 0 || response.status === 1 || response.statusCode === 1) {
+            if (response?.status === 1 || response?.statusCode === 1 || response?.data?.count > 0 || response?.data?.successCount > 0) {
                 Toast.show({
                     type: 'success',
-                    text1: `Role ${edit ? 'Updated' : 'Created'} Successfully`,
+                    text1: `Role ${edit ? 'Updated' : 'Allocated'} Successfully`,
                 });
-                refetchCreatedRoles();
-                userRefetch();
+                await Promise.all([refetchCreatedRoles(), userRefetch()]);
                 onNew();
             } else {
                 Toast.show({
-                    type: 'success',
-                    text1: `Role ${edit ? 'Updated' : 'Created'} Successfully`,
+                    type: 'error',
+                    text1: response?.message || `Failed to ${edit ? 'update' : 'allocate'} role`,
                 });
-                refetchCreatedRoles();
-                userRefetch();
-                onNew();
             }
         } catch (error) {
+            console.error("Save role error:", error);
+            const errorMsg = error?.data?.message || error?.message || 'Failed to save role';
             Toast.show({
                 type: 'error',
-                text1: `Error: ${error.message || 'Failed to save role'}`,
+                text1: `Error: ${errorMsg}`,
             });
         }
     };
@@ -209,7 +254,7 @@ export default function RoleAllocation() {
                 create: !!perm.create,
                 edit: !!perm.edit,
                 delete: !!perm.delete,
-                isdefault: !!perm.isdefault,
+                isdefault: !!(perm.isDefault ?? perm.isdefault),
             };
             return acc;
         }, {});
@@ -222,14 +267,11 @@ export default function RoleAllocation() {
             setRoleName(item.name);
             setCurrentEditingId(item?.name);
 
-            const data = item.RoleOnPage;
-            if (data) {
+            const data = item.RoleOnPage || item.roleOnPage;
+            if (data && data.length > 0) {
                 setPermissions(transformPermissions(data));
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'No permission data returned for this role',
-                });
+                setPermissions({});
             }
         } catch (error) {
             Toast.show({
@@ -265,7 +307,17 @@ export default function RoleAllocation() {
         },
     ];
 
-    const filterRole = all_Role_names?.data?.filter((data) => data?.RoleOnPage?.length === 0) || [];
+    const filterRole = useMemo(() => {
+        const roles = all_Role_names?.data || [];
+        const currentName = currentEditingId || roleName;
+        if (edit && currentName) {
+            return roles.filter(data => 
+                ((data?.RoleOnPage?.length || 0) === 0 && (data?.roleOnPage?.length || 0) === 0) || 
+                data?.name === currentName
+            );
+        }
+        return roles.filter(data => (data?.RoleOnPage?.length || 0) === 0 && (data?.roleOnPage?.length || 0) === 0);
+    }, [all_Role_names, edit, roleName, currentEditingId]);
 
     return (
         <Animated.View
@@ -299,7 +351,7 @@ export default function RoleAllocation() {
                                 selected={roleName}
                                 label="Role Name"
                                 placeholder="Choose a role to configure"
-                                setSelected={setRoleName}
+                                setSelected={handleRoleSelect}
                                 width={"100%"}
                                 _label={"name"}
                                 _value={"name"}
@@ -343,8 +395,9 @@ export default function RoleAllocation() {
                                             {item.list_name}
                                         </Text>
                                         {permissionColumns.map(column => {
-                                            const isActive = !!(item.default || pagePermissions[column.key]);
-                                            const isDisabled = !!item.default || disabled;
+                                            const isDefaultTab = !!item.default;
+                                            const isActive = isDefaultTab || !!pagePermissions[column.key];
+                                            const isDisabled = isDefaultTab || disabled || !roleName;
                                             return (
                                                 <View key={column.key} style={styles.permissionColumn}>
                                                     <TouchableOpacity
@@ -355,7 +408,7 @@ export default function RoleAllocation() {
                                                         style={[
                                                             styles.permissionCell,
                                                             isActive && styles.permissionActiveCell,
-                                                            isDisabled && styles.permissionDisabledCell,
+                                                            isDisabled && !isDefaultTab && styles.permissionDisabledCell,
                                                         ]}
                                                         onPress={() => handlePermissionChange(item.name, column.key)}
                                                         activeOpacity={0.75}
@@ -364,7 +417,7 @@ export default function RoleAllocation() {
                                                             <MaterialIcons
                                                                 name="check"
                                                                 size={17}
-                                                                color={isDisabled ? theme.colors.textMuted : theme.colors.success}
+                                                                color={isDefaultTab ? theme.colors.success : (isDisabled ? theme.colors.textMuted : theme.colors.success)}
                                                             />
                                                         )}
                                                     </TouchableOpacity>

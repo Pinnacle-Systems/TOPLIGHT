@@ -20,7 +20,6 @@ import MoreSalaryDetails from './submodules/MoreSalaryDetails';
 import EmployeeFilter from './chart/hod/EmployeeFilter';
 import LoanCard from './card/LoanCard';
 import ExpandableSearch from './FloatSearchView';
-import SalaryAdvanceCard from './card/AdvanceCard';
 import SalarySummaryCard from './card/SalarySummaryCard';
 import EsiPfOtCard from './card/EsiPfOtCard';
 import { Common_Context } from '../../context/CommonContext';
@@ -489,9 +488,6 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
             period={selectMonthSalary?.format}
             onPress={() => SET_OPEN_MORE_SALARY(true)}
           />
-
-          {/* Advance Salary Card */}
-          <SalaryAdvanceCard amount={NumbertoCurrency(LastMonthSalary?.data?.adv)} />
 
           {/* Loan Card & Leave Summary Card */}
           <View style={{ width: '100%', flexDirection: isLandscape ? 'row' : 'column' }}>

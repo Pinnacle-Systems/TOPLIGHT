@@ -1,6 +1,7 @@
 import { prisma_Connector } from "../../index.js";
 import { getConnection } from "../constants/dbConnection.js";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
+import { mapUser } from "../utils/responseMapper.js";
 
 
 export async function get(req, res) {
@@ -108,53 +109,50 @@ GROUP BY C.COMPCODE`
 
 
 export async function chat(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const chat_data=req?.body
+    const compCode = String(req?.headers?.compcode).toUpperCase()
+    const chat_data = req?.body || {}
     
+    try {
+        const chat_ = await prisma_Connector?.chat?.create({
+            data: { ...chat_data, compCode }
+        })
 
-   var chat_=await prisma_Connector?.chat?.create({
-        data:{...chat_data,COMPCODE}
-    })
-
-    if(chat_?.id){
-        res?.json({status:1,data:chat_})
-    }else{
-         res?.json({status:0,data:{}})
+        if (chat_?.id) {
+            res?.json({ status: 1, data: chat_ })
+        } else {
+            res?.json({ status: 0, data: {} })
+        }
+    } catch (err) {
+        console.log(err);
+        res?.json({ status: 0, data: {} })
     }
-
-    
-
-
-
-
 }
 
 
 
 
 export async function get_chat(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const DEPARTMENT=req?.query?.DEPARTMENT
+    const compCode = String(req?.headers?.compcode).toUpperCase()
+    const DEPARTMENT = req?.query?.DEPARTMENT
     
+    try {
+        const chat_ = await prisma_Connector?.chat?.findMany({
+            where: {
+                compCode,
+                groupId: DEPARTMENT
+            },
+            include: { userData: true }
+        })
 
-   var chat_=await prisma_Connector?.chat?.findMany({
-    where:{
-        COMPCODE,groupId:DEPARTMENT
-    },
-    include:{userdata:true}
-   })
-
-    if(chat_){
-        res?.json({status:1,data:chat_})
-    }else{
-         res?.json({status:0,data:{}})
+        if (chat_) {
+            res?.json({ status: 1, data: chat_ })
+        } else {
+            res?.json({ status: 0, data: {} })
+        }
+    } catch (err) {
+        console.log(err);
+        res?.json({ status: 0, data: {} })
     }
-
-    
-
-
-
-
 }
 
 const getModel = (t) => {
@@ -163,84 +161,173 @@ const getModel = (t) => {
            prisma_Connector?.[t.charAt(0).toLowerCase() + t.slice(1)] ||
            prisma_Connector?.[t.charAt(0).toUpperCase() + t.slice(1)];
 };
-  
+
+// Helper function to map where/data objects from frontend names to schema names
+function mapPayloadFields(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    const mapped = { ...obj };
+    if ('COMPCODE' in mapped) {
+        mapped.compCode = mapped.COMPCODE;
+        delete mapped.COMPCODE;
+    }
+    if ('Idcard' in mapped) {
+        mapped.idCard = mapped.Idcard;
+        delete mapped.Idcard;
+    }
+    if ('idcard' in mapped) {
+        mapped.idCard = mapped.idcard;
+        delete mapped.idcard;
+    }
+    if ('username' in mapped) {
+        mapped.userName = mapped.username;
+        delete mapped.username;
+    }
+    if ('ptype' in mapped) {
+        mapped.pType = mapped.ptype;
+        delete mapped.ptype;
+    }
+    if ('GCOMP' in mapped) {
+        mapped.gComp = mapped.GCOMP;
+        delete mapped.GCOMP;
+    }
+    return mapped;
+}
+
 export async function delete_Common_Data(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const onlywhere=req?.body?.onlywhere
-    const where=req?.body?.where
-    const table=req?.body?.table
-        try {
-            const model = getModel(table);
-            const result=await model?.delete({where:onlywhere ?{...where} : {COMPCODE,...where}})
-            res.json({status:1,data:result}) 
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    const onlywhere = req?.body?.onlywhere;
+    const where = mapPayloadFields(req?.body?.where || {});
+    const table = req?.body?.table;
+
+    try {
+        if (table && String(table).toLowerCase() === 'user') {
+            const rawId = where.id || where.userId || req?.body?.where?.id;
+            const userId = Number(rawId);
+            if (!userId) {
+                return res.json({ status: 0, message: "Invalid user ID" });
+            }
+
+            const userRecord = await prisma_Connector.user.findUnique({ where: { id: userId } });
+            if (!userRecord) {
+                return res.json({ status: 0, message: "User not found" });
+            }
+
+            try {
+                // Remove dependent notifications
+                await prisma_Connector.notification.deleteMany({
+                    where: { OR: [{ senderId: userId }, { receiverId: userId }] }
+                }).catch(() => {});
+
+                // Remove company allocations and settings for this user's idCard
+                if (userRecord.idCard) {
+                    await prisma_Connector.companyCode.deleteMany({
+                        where: { idCard: userRecord.idCard }
+                    }).catch(() => {});
+                    await prisma_Connector.settings.deleteMany({
+                        where: { userId: userRecord.idCard }
+                    }).catch(() => {});
+                }
+
+                // Attempt hard delete
+                const result = await prisma_Connector.user.delete({ where: { id: userId } });
+                return res.json({ status: 1, data: result, message: "User deleted successfully" });
+            } catch (deleteErr) {
+                console.warn('[delete_Common_Data] User hard delete failed, executing soft-delete:', deleteErr?.message);
+                const result = await prisma_Connector.user.update({
+                    where: { id: userId },
+                    data: {
+                        active: false,
+                        userName: `${userRecord.userName}_deleted_${Date.now()}`
+                    }
+                });
+                return res.json({ status: 1, data: result, message: "User deleted successfully" });
+            }
         }
-        catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
-        }
+
+        const model = getModel(table);
+        const queryWhere = onlywhere ? { ...where } : { compCode: COMPCODE, ...where };
+        const result = await model?.delete({ where: queryWhere });
+        res.json({ status: 1, data: result });
+    }
+    catch (err) {
+        console.log(err);
+        res.json({ status: 0, data: {}, error: err?.message });
+    }
 }
 
 
 export async function Update_Common_Data_prisma(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const where=req?.body?.where
-    const onlywhere=req?.body?.onlywhere
-    const table=req?.body?.table
-    const data=req?.body?.data
-    const Comp_data=req?.body?.data?.Compcodes
-    const user_updation=req?.body?.data?.user_updation
-    
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase()
+    const where = mapPayloadFields(req?.body?.where || {})
+    const onlywhere = req?.body?.onlywhere
+    const table = req?.body?.table
+    const data = { ...req?.body?.data }
+    const Comp_data = req?.body?.data?.Compcodes
+    const user_updation = req?.body?.data?.user_updation
 
-      if(data?.password){
-
+    if (data?.password) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(data?.password, saltRounds);
-        data.password=hashedPassword
+        data.password = hashedPassword;
+    }
 
-        }
+    if (Comp_data && user_updation) {
+        const userTargetIdCard = data?.idCard || data?.Idcard;
+        const userTargetGComp = data?.gComp || data?.GCOMP || COMPCODE;
+        
+        const delete_succesued = await prisma_Connector?.companyCode?.deleteMany({
+            where: { idCard: userTargetIdCard, gComp: userTargetGComp }
+        });
 
+        if (delete_succesued?.count > 0 || delete_succesued?.count == 0) {
+            try {
+                const { GCOMP, gComp, user_updation, Compcodes, Companies, Idcard, idcard, username, otpemail, ...reset } = data;
+                
+                const normalizedCompanies = Array.isArray(Comp_data) ? Comp_data.map(item => ({
+                    companyCode: item.companyCode,
+                    companyId: String(item.companyid || item.companyId || ''),
+                    gComp: item.GCOMP || item.gComp || userTargetGComp
+                })) : [];
 
-        if(Comp_data &&  user_updation){
- 
-         const delete_succesued= await  prisma_Connector?.companyCode?.deleteMany({where:{Idcard:data?.Idcard,GCOMP:COMPCODE}})
-           if(delete_succesued?.count>0 || delete_succesued?.count==0){
-              try {
-             const {GCOMP,user_updation,Compcodes,...reset}=data
-              const result=await  prisma_Connector?.[table]?.update({data:{...reset,Companies:{create:Comp_data}},where:onlywhere ? {...where} : {COMPCODE,...where}})
-              res.json({status:1,data:result}) 
-               
+                const userUpdateData = {
+                    ...reset,
+                    ...(userTargetIdCard ? { idCard: userTargetIdCard } : {}),
+                    ...(username ? { userName: username } : {}),
+                    ...(otpemail ? { otpEmail: otpemail } : {}),
+                    companies: { create: normalizedCompanies }
+                };
+
+                const queryWhere = onlywhere ? { ...where } : { compCode: COMPCODE, ...where };
+                const model = getModel(table);
+                const result = await model?.update({
+                    data: userUpdateData,
+                    where: queryWhere
+                });
+
+                res.json({ status: 1, data: mapUser(result) });
             }
-
-
             catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
+                console.log(err);
+                res.json({ status: 0, data: {} });
             }
-
         }
-
-
-
-        }else{
-
-       
-
+    } else {
         try {
             const model = getModel(table);
-            const result=await  model?.update({data,where:onlywhere ? {...where} : {COMPCODE,...where}})
+            const mappedData = mapPayloadFields(data);
+            const queryWhere = onlywhere ? { ...where } : { compCode: COMPCODE, ...where };
+            const result = await model?.update({
+                data: mappedData,
+                where: queryWhere
+            });
 
-            res.json({status:1,data:result}) 
+            // Map response back if user table or contains user fields
+            const responseData = (table?.toLowerCase() === 'user') ? mapUser(result) : result;
+            res.json({ status: 1, data: responseData });
         }
-
-
         catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
+            console.log(err);
+            res.json({ status: 0, data: {} });
         }
-
-         }
+    }
 }
-

@@ -15,7 +15,7 @@ export const MASTER_TABS = [
         routeKey: 'm_permission',
         title: 'Permission & Reasons',
         shortTitle: 'Permissions',
-        subtitle: 'Manage request categories across Permission, Advance, and Leave',
+        subtitle: 'Manage request categories across Permission and Leave',
         icon: 'account-clock-outline',
         tableName: 'PermissionMaster',
         badge: 'Approvals',
@@ -36,6 +36,5 @@ export const MASTER_TABS = [
 
 export const PTYPE_OPTIONS = [
     { label: 'Permission', value: 'permission' },
-    { label: 'Advance', value: 'advance' },
     { label: 'Leave', value: 'leave' },
 ];

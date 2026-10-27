@@ -54,20 +54,44 @@ export function useOndutySubmit({
     // ── Helper: get current GPS coords ────────────────────────────────────────
     const fetchCoords = useCallback(async () => {
         try {
-            const coords = await getCurrentLocationAsync(15000);
+            const coords = await getCurrentLocationAsync(6000);
+            const lat = Number(coords?.latitude) || 0;
+            const lon = Number(coords?.longitude) || 0;
+
+            if (lat !== 0 || lon !== 0) {
+                return {
+                    latitude: lat,
+                    longitude: lon,
+                    address: coords?.address || `Near ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+                };
+            }
+
+            // Fallback to formState coordinates if valid
+            const formLat = Number(formState.latitude) || 0;
+            const formLon = Number(formState.longitude) || 0;
+            if (formLat !== 0 || formLon !== 0) {
+                return {
+                    latitude: formLat,
+                    longitude: formLon,
+                    address: formState.address || `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}`,
+                };
+            }
+
             return {
-                latitude: coords.latitude,
-                longitude: coords.longitude,
-                address: 'Location retrieved on submission',
+                latitude: 0,
+                longitude: 0,
+                address: coords?.address || 'Location unavailable',
             };
         } catch {
+            const formLat = Number(formState.latitude) || 0;
+            const formLon = Number(formState.longitude) || 0;
             return {
-                latitude: formState.latitude || 0,
-                longitude: formState.longitude || 0,
-                address: 'Location unavailable',
+                latitude: formLat,
+                longitude: formLon,
+                address: formState.address || (formLat !== 0 || formLon !== 0 ? `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}` : 'Location unavailable'),
             };
         }
-    }, [formState.latitude, formState.longitude]);
+    }, [formState.latitude, formState.longitude, formState.address]);
 
     // ── Helper: refetch all and reset form ────────────────────────────────────
     const refreshAndReset = useCallback(async () => {
@@ -84,7 +108,7 @@ export function useOndutySubmit({
             return;
         }
 
-        if (!UserSelect?.idcard) {
+        if (!UserSelect?.UserId) {
             showMessage({
                 message: 'Employee ID Missing',
                 description: 'Your employee ID is missing from your profile. Please log out and sign in again, or contact your administrator.',
@@ -195,9 +219,10 @@ export function useOndutySubmit({
             formData.append('inout',        'IN');
             formData.append('empname',      UserSelect?.EMPNAME || 'Employee');
             formData.append('category',     String(formState.category || '0'));
-            formData.append('in_location',  coords.address);
-            formData.append('in_latitude',  String(coords.latitude));
-            formData.append('in_longtiude', String(coords.longitude));
+            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
+            formData.append('in_location',  hasValidCoords ? coords.address : (coords?.address && coords.address !== 'Location unavailable' ? coords.address : ''));
+            formData.append('in_latitude',  hasValidCoords ? String(coords.latitude) : '');
+            formData.append('in_longtiude', hasValidCoords ? String(coords.longitude) : '');
             formData.append('docCount',     String(latestCount));
 
             const safeName = String(UserSelect?.EMPNAME || 'emp').replace(/\s/g, '_');
@@ -226,18 +251,22 @@ export function useOndutySubmit({
             if (data?.status === 1) {
                 showMessage({ message: 'OnDuty Started ✓', description: 'Your trip has been recorded.', type: 'success' });
 
+                const employeeName = UserSelect?.EMPNAME || UserSelect?.userName || 'Employee';
                 socket.emit('onduty_request', {
                     hod:      effectiveHod,
                     hr:       hr || '',
                     approval: approvalType,
                     compcode: UserSelect?.GCOMPCODE,
+                    ...data?.data,
+                    empName:  data?.data?.empName || data?.data?.empname || employeeName,
+                    empname:  data?.data?.empname || data?.data?.empName || employeeName,
                     userdata: {
                         email:    '',
-                        username: UserSelect?.userName,
+                        username: UserSelect?.userName || employeeName,
                         Idcard:   UserSelect?.UserId,
                         mobile:   UserSelect?.MOBNO,
+                        ...(data?.data?.userdata || {}),
                     },
-                    ...data?.data,
                 });
 
                 await onStartTracking?.(UserSelect?.UserId, finalDocId, UserSelect?.GCOMPCODE);
@@ -304,12 +333,13 @@ export function useOndutySubmit({
             const coords = await fetchCoords();
             const targetDocId = overrideDocId || docId;
             const hasKmEnabled = Boolean(formState.isKmEntryEnabled);
+            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestOndutyOut({
                 docid:         targetDocId,
-                out_latitude:  String(coords.latitude),
-                out_longtiude: String(coords.longitude),
-                out_location:  coords.address,
+                out_latitude:  hasValidCoords ? String(coords.latitude) : null,
+                out_longtiude: hasValidCoords ? String(coords.longitude) : null,
+                out_location:  hasValidCoords ? coords.address : null,
                 end_km:        hasKmEnabled ? (endKm || formState.end_km || '0') : '0',
                 inout:         'OUT',
                 to_onduty:     toOnduty,
@@ -350,12 +380,20 @@ export function useOndutySubmit({
     const handleReached = useCallback(async ({ docId, vehicleNo, reachedKm } = {}) => {
         setIsSubmitting(true);
         try {
+            const coords = await fetchCoords();
             const hasKmEnabled = Boolean(formState.isKmEntryEnabled);
+            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestReachedOut({
-                docid:      docId,
-                Evechilekm: hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
-                VEHICLENO:  hasKmEnabled ? (vehicleNo || formState.vechileno || '') : '',
+                docid:         docId,
+                end_km:        hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
+                Evechilekm:    hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
+                VEHICLENO:     hasKmEnabled ? (vehicleNo || formState.vechileno || '') : '',
+                ...(hasValidCoords ? {
+                    out_latitude:  String(coords.latitude),
+                    out_longtiude: String(coords.longitude),
+                    out_location:  coords.address,
+                } : {}),
             }).unwrap();
 
             if (response?.status === 1) {
@@ -387,7 +425,7 @@ export function useOndutySubmit({
         } finally {
             setIsSubmitting(false);
         }
-    }, [requestReachedOut, formState.isKmEntryEnabled, formState.reached_km, formState.vechileno, onStopTracking, refreshAndReset, refetchFCMTokens, UserSelect, setIsSubmitting]);
+    }, [fetchCoords, requestReachedOut, formState.isKmEntryEnabled, formState.reached_km, formState.vechileno, onStopTracking, refreshAndReset, refetchFCMTokens, UserSelect, setIsSubmitting]);
 
     return { handleSubmitIN, handleSubmitOUT, handleReached };
 }

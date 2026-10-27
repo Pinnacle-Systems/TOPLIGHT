@@ -144,9 +144,18 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     const Get_Notification_handler = (data) => {
         setNotificationCount((c) => c + 1);
         setLiveNotifi(data);
+        const sender =
+            data?.data?.userdata?.username ||
+            data?.data?.userdata?.userName ||
+            data?.data?.empName ||
+            data?.data?.empname ||
+            data?.data?.userName ||
+            data?.data?.username ||
+            data?.data?.Idcard ||
+            'Employee';
         showMessage({
             message: 'New Notification',
-            description: `Request from ${data?.data?.userdata?.username || 'Unknown User'}`,
+            description: `Request from ${sender}`,
             type: 'success',
             backgroundColor: theme.colors.success,
             color: theme.colors.brandContrast,
@@ -168,13 +177,11 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             [`get_Notifi_permission_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
             [`get_Notifi_leave_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
             [`get_Notifi_onduty_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
-            [`get_Notifi_advance_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
         };
 
         const approvalEvents = {
             [`get_Approval_Notifi:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
             [`get_leave_Approval_Notifi:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
-            [`get_advance_Approval_Notifi:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
             [`get_Onduty_Approval_status:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
         };
 

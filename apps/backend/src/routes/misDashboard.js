@@ -15,8 +15,6 @@ import {
     getFilterEmployees, 
     getGenderCount, 
     getInOut, 
-    getInsuranceData, 
-    getInsuranceData_Alert, 
     getLastMonthSalary, 
     getMonthESIPF, 
     getMoreDetails, 
@@ -73,8 +71,6 @@ const router = Router();
 router.get('/', get);
 
 // Original Routes
-router.get('/getInsuranceData', getInsuranceData);
-router.get('/getInsuranceDataAlert', getInsuranceData_Alert);
 router.get('/getTotalStrength', getTotalStrength);
 router.get('/getYearWiseToTSalary', getYearWiseToTSalary);
 router.get("/getLastMonthSalary", getLastMonthSalary);

@@ -6,11 +6,11 @@ import { useSelector } from "react-redux";
 import { Checkbox } from "react-native-paper";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import { 
-    useCreateUserMutation, 
-    useGetCompanycodeQuery, 
-    useGetEmployeeidsQuery, 
-    useGetUsersQuery 
+import {
+    useCreateUserMutation,
+    useGetCompanycodeQuery,
+    useGetEmployeeidsQuery,
+    useGetUsersQuery
 } from "../../../store/api/UserApi";
 import { useGet_all_roleQuery } from "../../../store/api/RoleOnApi";
 import { useDelete_CommonMutation, useUpdate_CommonMutation } from '../../../store/api/CommonMastersApi';
@@ -30,6 +30,7 @@ export default function UserCreationForm({ onClose, userDet }) {
     const [selectedKey, setSelectedKey] = useState(null);
     const [username, setUserName] = useState("");
     const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isotpEmail, setOtpEmail] = useState(false);
@@ -58,6 +59,64 @@ export default function UserCreationForm({ onClose, userDet }) {
     const { data: companyCode } = useGetCompanycodeQuery();
     const { data: employee } = useGetEmployeeidsQuery();
 
+    // Helper to extract employee name from employee option/value
+    const extractEmpName = useCallback((emp) => {
+        if (!emp) return '';
+        if (typeof emp === 'object') {
+            if (emp.empName) return String(emp.empName).trim();
+            if (emp.EMPNAME) return String(emp.EMPNAME).trim();
+            if (emp.FNAME) return String(emp.FNAME).trim();
+            if (emp.value) {
+                const match = String(emp.value).match(/\(([^()]+)\)$/);
+                if (match && match[1]) return match[1].trim();
+            }
+        } else if (typeof emp === 'string') {
+            const match = emp.match(/\(([^()]+)\)$/);
+            if (match && match[1]) return match[1].trim();
+            const parts = emp.split('-');
+            if (parts.length > 1 && isNaN(parts[0])) return parts[0].trim();
+        }
+        return '';
+    }, []);
+
+    // Find the currently selected employee object
+    const selectedEmployeeObj = useMemo(() => {
+        if (!selectedEmply || !employee?.data) return null;
+        return employee.data.find(emp => {
+            const idStr = String(emp.id || '');
+            return idStr === selectedEmply || emp.value === selectedEmply || idStr.endsWith(`-${selectedEmply}`);
+        });
+    }, [selectedEmply, employee?.data]);
+
+    // Auto-populate username when employee is chosen in creation mode
+    useEffect(() => {
+        if (isEditing || !selectedEmply) return;
+        const name = extractEmpName(selectedEmployeeObj) || extractEmpName(selectedEmply);
+        if (name) {
+            setUserName(name);
+        }
+        // Also auto-select company if currently unselected and available
+        if (selectedEmployeeObj?.COMPCODE && (!selectedCompany || (Array.isArray(selectedCompany) && selectedCompany.length === 0))) {
+            setSelectedCompany([selectedEmployeeObj.COMPCODE]);
+        }
+    }, [selectedEmply, selectedEmployeeObj, isEditing, extractEmpName]);
+
+    // Helper to get employee name for any user item (e.g., in table)
+    const getEmployeeName = useCallback((userItem) => {
+        if (!userItem) return '';
+        if (userItem.empName) return String(userItem.empName).trim();
+        if (userItem.employeeName) return String(userItem.employeeName).trim();
+        if (!employee?.data) return '';
+        const rawId = String(userItem.idCard || userItem.Idcard || '').trim();
+        if (!rawId) return '';
+        const found = employee.data.find(emp => {
+            const empIdStr = String(emp.id || '');
+            const idPart = empIdStr.includes('-') ? empIdStr.split('-')[1] : empIdStr;
+            return idPart === rawId || empIdStr === rawId || String(emp.idCard || emp.IDCARD || '') === rawId;
+        });
+        return extractEmpName(found);
+    }, [employee?.data, extractEmpName]);
+
     useEffect(() => {
         if (userDet) {
             editData(userDet);
@@ -81,10 +140,12 @@ export default function UserCreationForm({ onClose, userDet }) {
         setOtpEmailInp('');
         setOtpEmail(false);
         setSelectedLevel("user");
+        setLoadingMessage("");
     };
 
     const handleSubmitCustom = async (callback, data) => {
         try {
+            setLoadingMessage(isEditing ? "Updating User..." : "Creating User...");
             setLoading(true);
             const response = await callback(data).unwrap();
 
@@ -141,11 +202,18 @@ export default function UserCreationForm({ onClose, userDet }) {
             }
         }
 
-        const company_code = Array.isArray(selectedCompany) 
+        const company_code = Array.isArray(selectedCompany)
             ? selectedCompany.map((data) => {
                 const companyId = companyCode?.data?.find((cdata) => cdata?.value === data);
-                return { companyCode: data, companyid: String(companyId?.COMPID), GCOMP: UserSelect?.GCOMPCODE };
-            }) 
+                const compIdStr = String(companyId?.COMPID || companyId?.companyId || companyId?.id || data || '0');
+                return {
+                    companyCode: data,
+                    companyId: compIdStr,
+                    companyid: compIdStr,
+                    GCOMP: UserSelect?.GCOMPCODE,
+                    gComp: UserSelect?.GCOMPCODE
+                };
+            })
             : [];
 
         const idCardRandom = String(Date.now() + Math.floor(Math.random() * 10000));
@@ -189,24 +257,45 @@ export default function UserCreationForm({ onClose, userDet }) {
         try {
             setIsEditing(true);
             setCurrentUserId(item.id);
-            setUserName(item.username || '');
-            setEmail(item.gmail || '');
-            setOtpEmailInp(item?.otpemail || '');
-            setSelectedHR(item?.role?.COMPCODE ? `${item.role.COMPCODE}-${item.hr}` : '');
+            setUserName(item.username || item.userName || '');
+            setEmail(item.gmail || item.email || '');
+            setOtpEmailInp(item?.otpemail || item?.otpEmail || '');
+
+            const comp = item?.role?.COMPCODE || item?.role?.compCode || item?.companies?.[0]?.companyCode || item?.Companies?.[0]?.companyCode || '';
+            setSelectedHR(item.hr ? (comp ? `${comp}-${item.hr}` : item.hr) : '');
             setSelectedRole(item.roleId);
             setSelectedLevel(item.level || 'user');
             setSelectedKey(item?.approval);
-            setSelectedEmply(item?.role?.COMPCODE ? `${item.role.COMPCODE}-${item.Idcard}` : '');
-            setSelectedHod(item?.role?.COMPCODE ? `${item.role.COMPCODE}-${item.hod}` : '');
 
-            if (item?.Companies) {
-                const companyValues = item.Companies.map(code => code.companyCode);
+            const rawId = String(item.idCard || item.Idcard || '').trim();
+            if (rawId) {
+                const matchedEmp = employee?.data?.find(e => {
+                    const idPart = String(e.id || '').includes('-') ? e.id.split('-')[1] : e.id;
+                    return idPart === rawId || String(e.id) === rawId || String(e.idCard || e.IDCARD || '') === rawId;
+                });
+                if (matchedEmp) {
+                    setSelectedEmply(matchedEmp.id);
+                } else if (comp) {
+                    setSelectedEmply(`${comp}-${rawId}`);
+                } else {
+                    setSelectedEmply(rawId);
+                }
+            } else {
+                setSelectedEmply('');
+            }
+
+            setSelectedHod(item.hod ? (comp ? `${comp}-${item.hod}` : item.hod) : '');
+
+            if (item?.companies || item?.Companies) {
+                const comps = item.companies || item.Companies;
+                const companyValues = comps.map(code => code.companyCode || code.companycode);
                 setSelectedCompany(companyValues);
             }
 
+            const dispName = getEmployeeName(item) || item.username || item.userName;
             showMessage({
                 message: "Edit Mode",
-                description: `Editing user: ${item.username}`,
+                description: `Editing user: ${dispName}`,
                 type: "info",
             });
         } catch (error) {
@@ -216,7 +305,7 @@ export default function UserCreationForm({ onClose, userDet }) {
                 type: "danger",
             });
         }
-    }, []);
+    }, [employee?.data, getEmployeeName]);
 
     const onDelete = (id) => {
         Alert.alert(
@@ -231,25 +320,35 @@ export default function UserCreationForm({ onClose, userDet }) {
 
     const handleDelete = async (id) => {
         try {
+            setLoadingMessage("Deleting User...");
             setLoading(true);
             const response = await delete_row({
                 table: 'user',
-                where: { id: id, GCOMP: UserSelect?.GCOMPCODE },
+                where: { id: Number(id) },
                 onlywhere: true
             }).unwrap();
 
-            if (response.status === 1) {
+            if (response.status === 1 || response.statusCode === 0) {
                 showMessage({
                     message: "Success",
                     description: "User deleted successfully",
                     type: "success",
                 });
                 refetchUsers();
+                if (currentUserId === id) {
+                    handleClearForm();
+                }
+            } else {
+                showMessage({
+                    message: "Error",
+                    description: response.message || "Failed to delete user",
+                    type: "danger",
+                });
             }
         } catch (error) {
             showMessage({
                 message: "Error",
-                description: "Failed to delete user",
+                description: error?.data?.message || error.message || "Failed to delete user",
                 type: "danger",
             });
         } finally {
@@ -277,6 +376,7 @@ export default function UserCreationForm({ onClose, userDet }) {
             }
         }
         try {
+            setLoadingMessage("Updating User...");
             setLoading(true);
             const company_code = Array.isArray(selectedCompany)
                 ? selectedCompany.map((data) => {
@@ -345,19 +445,26 @@ export default function UserCreationForm({ onClose, userDet }) {
         if (!tableData?.data) return [];
         if (!searchQuery.trim()) return tableData.data;
         const q = searchQuery.toLowerCase();
-        return tableData.data.filter(u => 
-            u.username?.toLowerCase().includes(q) ||
-            u?.role?.name?.toLowerCase().includes(q) ||
-            u.gmail?.toLowerCase().includes(q)
-        );
-    }, [tableData?.data, searchQuery]);
+        return tableData.data.filter(u => {
+            const empName = getEmployeeName(u) || '';
+            const uName = u.username || u.userName || '';
+            const roleName = u?.role?.name || '';
+            const emailAddr = u.gmail || u.email || '';
+            return (
+                uName.toLowerCase().includes(q) ||
+                empName.toLowerCase().includes(q) ||
+                roleName.toLowerCase().includes(q) ||
+                emailAddr.toLowerCase().includes(q)
+            );
+        });
+    }, [tableData?.data, searchQuery, getEmployeeName]);
 
     return (
         <>
             {loading && (
                 <ProgressPopup
                     visible={loading}
-                    message={isEditing ? "Updating User..." : "Creating User..."}
+                    message={loadingMessage || (isEditing ? "Updating User..." : "Creating User...")}
                 />
             )}
             <View style={styles.container}>
@@ -369,8 +476,8 @@ export default function UserCreationForm({ onClose, userDet }) {
                                 {isEditing ? "Edit User" : "Create New User"}
                             </Text>
                             <Text style={styles.headerSubtitle}>
-                                {isEditing 
-                                    ? `Update account details and role permissions` 
+                                {isEditing
+                                    ? `Update account details and role permissions`
                                     : `Configure account credentials, company, and permissions`}
                             </Text>
                         </View>
@@ -514,17 +621,30 @@ export default function UserCreationForm({ onClose, userDet }) {
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Username *</Text>
+                            <View style={styles.labelRow}>
+                                <Text style={styles.label}>Username *</Text>
+                                {selectedEmply && username ? (
+                                    <View style={styles.autoFilledBadge}>
+                                        <MaterialIcons name="check-circle" size={13} color={theme.colors.success || '#2E7D32'} />
+                                        <Text style={styles.autoFilledText}>Auto-filled from employee</Text>
+                                    </View>
+                                ) : null}
+                            </View>
                             <View style={styles.inputWithIconContainer}>
                                 <MaterialIcons name="person-outline" size={20} color={theme.colors.textMuted} style={styles.inputLeadingIcon} />
                                 <TextInput
                                     value={username}
                                     onChangeText={setUserName}
                                     style={styles.inputWithIcon}
-                                    placeholder="Enter username"
+                                    placeholder={selectedEmply ? "Username auto-filled from employee" : "Enter username"}
                                     placeholderTextColor={theme.colors.placeholder}
                                     autoCapitalize="none"
                                 />
+                                {username ? (
+                                    <TouchableOpacity onPress={() => setUserName("")} style={styles.inputClearButton}>
+                                        <MaterialIcons name="close" size={16} color={theme.colors.textMuted} />
+                                    </TouchableOpacity>
+                                ) : null}
                             </View>
                         </View>
 
@@ -540,15 +660,15 @@ export default function UserCreationForm({ onClose, userDet }) {
                                     placeholder="Enter password"
                                     placeholderTextColor={theme.colors.placeholder}
                                 />
-                                <TouchableOpacity 
-                                    style={styles.passwordToggle} 
+                                <TouchableOpacity
+                                    style={styles.passwordToggle}
                                     onPress={() => setShowPassword(!showPassword)}
                                     activeOpacity={0.7}
                                 >
-                                    <MaterialIcons 
-                                        name={showPassword ? "visibility" : "visibility-off"} 
-                                        size={20} 
-                                        color={theme.colors.textMuted} 
+                                    <MaterialIcons
+                                        name={showPassword ? "visibility" : "visibility-off"}
+                                        size={20}
+                                        color={theme.colors.textMuted}
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -632,10 +752,10 @@ export default function UserCreationForm({ onClose, userDet }) {
                             onPress={isEditing ? handleUpdate : handleSubmit}
                             activeOpacity={0.8}
                         >
-                            <MaterialIcons 
-                                name={isEditing ? "check" : "person-add"} 
-                                size={20} 
-                                color={theme.colors.brandContrast} 
+                            <MaterialIcons
+                                name={isEditing ? "check" : "person-add"}
+                                size={20}
+                                color={theme.colors.brandContrast}
                             />
                             <Text style={styles.primaryActionText}>
                                 {isEditing ? "Update User" : "Save User"}
@@ -707,13 +827,20 @@ export default function UserCreationForm({ onClose, userDet }) {
                                         <Text style={[styles.tableCell, { flex: 0.6, fontWeight: '600' }]}>{index + 1}</Text>
                                         <View style={[styles.tableCell, { flex: 2, alignItems: 'flex-start' }]}>
                                             <Text style={styles.usernameCellText} numberOfLines={1}>
-                                                {item.username}
+                                                {getEmployeeName(item) || item.username || item.userName || "-"}
                                             </Text>
-                                            {item.level && (
-                                                <Text style={styles.levelBadgeText}>
-                                                    {item.level.toUpperCase()}
-                                                </Text>
-                                            )}
+                                            <View style={styles.userMetaRow}>
+                                                {(item.username || item.userName) && getEmployeeName(item) && getEmployeeName(item) !== (item.username || item.userName) ? (
+                                                    <Text style={styles.subUsernameText} numberOfLines={1}>
+                                                        @{item.username || item.userName}
+                                                    </Text>
+                                                ) : null}
+                                                {item.level && (
+                                                    <Text style={styles.levelBadgeText}>
+                                                        {item.level.toUpperCase()}
+                                                    </Text>
+                                                )}
+                                            </View>
                                         </View>
                                         <View style={[styles.tableCell, { flex: 1.8 }]}>
                                             <Text style={styles.roleCellText} numberOfLines={1}>
@@ -906,6 +1033,30 @@ const createStyles = theme => StyleSheet.create({
     inputGroup: {
         marginBottom: 14,
     },
+    labelRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+    autoFilledBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.successSoft || '#E8F5E9',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: theme.radii.full || 12,
+    },
+    autoFilledText: {
+        fontSize: 11,
+        fontWeight: theme.fontWeights.medium,
+        color: theme.colors.success || '#2E7D32',
+        marginLeft: 4,
+    },
+    inputClearButton: {
+        padding: 4,
+        marginLeft: 4,
+    },
     label: {
         ...theme.typography.label,
         fontSize: 13,
@@ -1083,11 +1234,22 @@ const createStyles = theme => StyleSheet.create({
         fontWeight: theme.fontWeights.semiBold,
         color: theme.colors.text,
     },
+    userMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 4,
+        marginTop: 2,
+    },
+    subUsernameText: {
+        fontSize: 10,
+        color: theme.colors.textMuted,
+        fontWeight: theme.fontWeights.medium,
+    },
     levelBadgeText: {
         fontSize: 9,
         fontWeight: theme.fontWeights.bold,
         color: theme.colors.brand,
-        marginTop: 2,
     },
     roleCellText: {
         fontSize: 12,

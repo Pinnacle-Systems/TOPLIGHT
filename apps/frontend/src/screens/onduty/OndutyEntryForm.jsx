@@ -29,12 +29,9 @@ export default function OndutyEntryForm({
     isKmEntryEnabled,
     vehicleOptions,
     selectedVehicle,
-    onSelectVehicle,
-    vehicleDropdownOpen,
-    setVehicleDropdownOpen,
     startKm,
-    onChangeStartKm,
     lastRecordedKm,
+    onOpenKmModal,
     // Photo & Submit
     photoUri,
     onOpenCamera,
@@ -52,11 +49,13 @@ export default function OndutyEntryForm({
         value: item.id,
     }));
 
-    // Map vehicles for DropDownPicker
-    const vehicleItems = (vehicleOptions || []).map(item => ({
-        label: item.vechilename || item.vechileno,
-        value: item.vechileno,
-    }));
+    const selectedVehicleName = useMemo(() => {
+        if (!selectedVehicle) return '';
+        const found = (vehicleOptions || []).find(v => v.vechileno === selectedVehicle);
+        return found ? (found.vechilename || found.vechileno) : selectedVehicle;
+    }, [selectedVehicle, vehicleOptions]);
+
+    const isKmReady = Boolean(selectedVehicle && startKm && String(startKm).trim() !== '');
 
     return (
         <View style={styles.container}>
@@ -140,48 +139,57 @@ export default function OndutyEntryForm({
                     <View style={styles.cardHeader}>
                         <MaterialCommunityIcons name="speedometer" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
                         <Text style={styles.cardHeaderText}>Vehicle & KM Reading</Text>
+                        {isKmReady ? (
+                            <View style={styles.readyBadge}>
+                                <MaterialCommunityIcons name="check-circle" size={12} color={theme.colors.success} />
+                                <Text style={styles.readyBadgeText}>READY</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.requiredBadge}>
+                                <Text style={styles.requiredBadgeText}>REQUIRED</Text>
+                            </View>
+                        )}
                     </View>
 
-                    {/* Vehicle Dropdown */}
-                    <View style={[styles.inputGroup, { zIndex: 2000 }]}>
-                        <Text style={styles.inputLabel}>Select Vehicle</Text>
-                        <DropDownPicker
-                            open={vehicleDropdownOpen}
-                            value={selectedVehicle}
-                            items={vehicleItems}
-                            setOpen={setVehicleDropdownOpen}
-                            setValue={onSelectVehicle}
-                            placeholder="Select Vehicle"
-                            listMode="SCROLLVIEW"
-                            style={styles.dropdown}
-                            dropDownContainerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                        />
-                    </View>
-
-                    {/* Starting KM Reading */}
-                    <View style={styles.inputGroup}>
-                        <View style={styles.labelWithBadgeRow}>
-                            <Text style={styles.inputLabel}>Starting Odometer (KM)</Text>
-                            {lastRecordedKm !== undefined && lastRecordedKm !== null ? (
-                                <View style={styles.kmBadge}>
-                                    <Text style={styles.kmBadgeText}>Last: {lastRecordedKm} KM</Text>
+                    {isKmReady ? (
+                        <View style={styles.kmSummaryContainer}>
+                            <View style={styles.kmSummaryRow}>
+                                <View style={styles.kmSummaryItem}>
+                                    <Text style={styles.kmSummaryLabel}>VEHICLE</Text>
+                                    <Text style={styles.kmSummaryValue}>{selectedVehicleName}</Text>
                                 </View>
-                            ) : null}
+                                <View style={styles.kmSummaryItem}>
+                                    <Text style={styles.kmSummaryLabel}>START ODOMETER</Text>
+                                    <Text style={styles.kmSummaryValueHighlight}>{startKm} KM</Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.editKmBtn}
+                                onPress={onOpenKmModal}
+                                activeOpacity={0.8}
+                            >
+                                <MaterialCommunityIcons name="pencil-outline" size={16} color={theme.colors.brand} />
+                                <Text style={styles.editKmBtnText}>Edit KM Details</Text>
+                            </TouchableOpacity>
                         </View>
-                        <View style={styles.kmInputWrapper}>
-                            <MaterialCommunityIcons name="counter" size={theme.controlSizes.iconMd} color={theme.colors.textDisabled} style={{ marginRight: theme.spacing.sm }} />
-                            <TextInput
-                                style={styles.singleLineInput}
-                                placeholder="e.g. 12540"
-                                placeholderTextColor={theme.colors.placeholder}
-                                keyboardType="numeric"
-                                value={startKm}
-                                onChangeText={onChangeStartKm}
-                            />
-                            <Text style={styles.kmUnitText}>KM</Text>
-                        </View>
-                    </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={styles.enterKmBtn}
+                            onPress={onOpenKmModal}
+                            activeOpacity={0.8}
+                        >
+                            <View style={styles.enterKmIconCircle}>
+                                <MaterialCommunityIcons name="speedometer" size={24} color={theme.colors.brand} />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                                <Text style={styles.enterKmTitle}>Enter Vehicle & Starting KM</Text>
+                                <Text style={styles.enterKmSubtitle}>
+                                    Tap to record odometer reading for today's trip
+                                </Text>
+                            </View>
+                            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textDisabled} />
+                        </TouchableOpacity>
+                    )}
                 </View>
             ) : null}
 
@@ -362,6 +370,106 @@ const createStyles = theme => StyleSheet.create({
         ...theme.typography.caption,
         fontWeight: theme.fontWeights.bold,
         color: theme.colors.brand,
+    },
+    readyBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.successSoft,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: 3,
+        borderRadius: theme.radii.xs + theme.layout.dividerWidth,
+        gap: 4,
+    },
+    readyBadgeText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.success,
+        fontSize: 10,
+    },
+    requiredBadge: {
+        backgroundColor: theme.colors.warningSoft,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: 3,
+        borderRadius: theme.radii.xs + theme.layout.dividerWidth,
+    },
+    requiredBadgeText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.warning,
+        fontSize: 10,
+    },
+    kmSummaryContainer: {
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md,
+        borderWidth: theme.layout.dividerWidth,
+        borderColor: theme.colors.borderSubtle,
+    },
+    kmSummaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: theme.spacing.sm,
+    },
+    kmSummaryItem: {
+        flex: 1,
+    },
+    kmSummaryLabel: {
+        ...theme.typography.caption,
+        fontSize: 10,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.textMuted,
+        letterSpacing: 0.5,
+        marginBottom: 2,
+    },
+    kmSummaryValue: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.medium,
+        color: theme.colors.text,
+    },
+    kmSummaryValueHighlight: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.brand,
+    },
+    editKmBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingVertical: 4,
+        paddingHorizontal: theme.spacing.xs,
+        gap: 4,
+    },
+    editKmBtnText: {
+        ...theme.typography.caption,
+        color: theme.colors.brand,
+        fontWeight: theme.fontWeights.bold,
+    },
+    enterKmBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+    },
+    enterKmIconCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: theme.colors.brandSoft,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    enterKmTitle: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.text,
+    },
+    enterKmSubtitle: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: 2,
     },
     kmInputWrapper: {
         flexDirection: 'row',

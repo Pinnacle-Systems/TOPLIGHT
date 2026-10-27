@@ -17,28 +17,41 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { API_URL } from '@env';
 import { showMessage } from 'react-native-flash-message';
 import { useRequestOnduty_ApprovalMutation } from '../../../store/api/OndutyApi';
+import {
+    useGet_refresh_tokenQuery,
+    useLazyGet_fcm_tokenQuery,
+} from '../../../store/api/UserApi';
+import { useGetPermissionRequestQuery } from '../../../store/api/NotificationApi';
+import { _FCM_SENDER } from '../../../components/utils/Fcm';
 import socket from '../../../utils/Socket';
 
-const getRequests = (params) => {
-    if (!params || typeof params !== 'object') return [];
-
-    const { all, ...clickedRequest } = params;
+const getRequests = (params, apiData) => {
     const requests = [];
 
-    if (clickedRequest.docid) requests.push(clickedRequest);
+    if (params && typeof params === 'object') {
+        const { all, refresh, ...clickedRequest } = params;
+        const clickedDocid = clickedRequest?.docid || clickedRequest?.docId;
+        if (clickedDocid) requests.push(clickedRequest);
 
-    if (Array.isArray(all)) {
+        if (Array.isArray(all)) {
+            requests.push(
+                ...all.filter(request => String(request?.group || '').toLowerCase() === 'onduty'),
+            );
+        }
+    }
+
+    if (Array.isArray(apiData?.data)) {
         requests.push(
-            ...all.filter(request => String(request?.group || '').toLowerCase() === 'onduty'),
+            ...apiData.data.filter(request => String(request?.group || '').toLowerCase() === 'onduty'),
         );
     }
 
     const seenDocIds = new Set();
     return requests.filter(request => {
-        if (!request?.docid) return false;
+        const docid = String(request?.docid || request?.docId || '').trim();
+        if (!docid) return false;
         const status = String(request?.approvalStatus || 'pending').toLowerCase();
         if (status !== 'pending') return false;
-        const docid = String(request.docid);
         if (seenDocIds.has(docid)) return false;
         seenDocIds.add(docid);
         return true;
@@ -53,7 +66,7 @@ const formatDate = (value) => {
 
 const formatTime = (value) => {
     if (!value) return '—';
-    const parsed = moment(value, ['HH:mm:ss', 'YYYY-MM-DD HH:mm:ss', moment.ISO_8601], true);
+    const parsed = moment(value, ['HH:mm:ss', 'HH:mm', 'h:mm A', 'hh:mm A', 'YYYY-MM-DD HH:mm:ss', moment.ISO_8601]);
     return parsed.isValid() ? parsed.format('hh:mm A') : String(value);
 };
 
@@ -112,17 +125,47 @@ function DetailRow({ label, value, icon }) {
 }
 
 function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onApprove, onReject }) {
-    const rawLatitude = item?.in_latitude;
-    const rawLongitude = item?.in_longtiude ?? item?.in_longitude;
+    const rawLatitude = item?.in_latitude ?? item?.inLatitude;
+    const rawLongitude = item?.in_longtiude ?? item?.inLongtiude ?? item?.in_longitude ?? item?.inLongitude;
     const latitude = Number(rawLatitude);
     const longitude = Number(rawLongitude);
     const hasCoordinates = rawLatitude != null && String(rawLatitude).trim() !== ''
         && rawLongitude != null && String(rawLongitude).trim() !== ''
         && Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
         && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
-    const employeeName = item?.userdata?.username || item?.empname || 'Employee';
-    const employeeId = item?.userdata?.Idcard || item?.userId;
-    const phone = item?.userdata?.phone;
+
+    const employeeName =
+        item?.userdata?.username ||
+        item?.userdata?.userName ||
+        item?.userData?.userName ||
+        item?.userData?.username ||
+        item?.empName ||
+        item?.empname ||
+        item?.userName ||
+        item?.username ||
+        'Employee';
+
+    const employeeId =
+        item?.userdata?.Idcard ||
+        item?.userdata?.idCard ||
+        item?.userData?.idCard ||
+        item?.userData?.Idcard ||
+        item?.idCard ||
+        item?.idcard ||
+        item?.userId ||
+        item?.UserId;
+
+    const docid = item?.docid || item?.docId;
+    const docdate = item?.docdate || item?.docDate || item?.createdAt;
+    const inTime = item?.in_time || item?.inTime;
+    const inLocation =
+        item?.in_location ||
+        item?.inLocation ||
+        (hasCoordinates ? `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : null) ||
+        (item?.others && item.others !== 'ONDUTY' ? item.others : null) ||
+        'Office / Base Location';
+
+    const phone = item?.userdata?.phone || item?.userdata?.mobile || item?.mobile;
 
     const openMap = async () => {
         const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
@@ -168,10 +211,10 @@ function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onAppr
 
             <View style={styles.divider} />
 
-            <DetailRow label="Document" value={item?.docid} icon="file-document-outline" />
-            <DetailRow label="Date" value={formatDate(item?.docdate)} icon="calendar-blank-outline" />
-            <DetailRow label="Time" value={formatTime(item?.in_time)} icon="clock-outline" />
-            <DetailRow label="Location" value={item?.in_location} icon="map-marker-outline" />
+            <DetailRow label="Document" value={docid} icon="file-document-outline" />
+            <DetailRow label="Date" value={formatDate(docdate)} icon="calendar-blank-outline" />
+            <DetailRow label="Time" value={formatTime(inTime)} icon="clock-outline" />
+            <DetailRow label="Location" value={inLocation} icon="map-marker-outline" />
 
             <View style={styles.reasonBox}>
                 <Text style={styles.sectionTitle}>Reason</Text>
@@ -253,19 +296,32 @@ function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onAppr
 export default function OndutyApprovalScreen({ route }) {
     const user = useSelector(state => state.UserDetails);
     const params = route?.params;
-    const [requests, setRequests] = useState(() => getRequests(params));
+
+    const isHodOrHr = user?.IDCARD == user?.hod || user?.IDCARD == user?.hr || user?.level != 'user';
+    const queryParams = isHodOrHr
+        ? { hod: user?.IDCARD, hr: user?.IDCARD }
+        : { emp: user?.IDCARD };
+
+    const { data: apiData, isLoading, refetch } = useGetPermissionRequestQuery(
+        { params: queryParams },
+        { skip: !user?.IDCARD, refetchOnMountOrArgChange: true }
+    );
+
+    const [requests, setRequests] = useState(() => getRequests(params, apiData));
     const [rejectionReasons, setRejectionReasons] = useState({});
     const [processingDocId, setProcessingDocId] = useState(null);
     const processingDocIdRef = useRef(null);
     const [updateStatus] = useRequestOnduty_ApprovalMutation();
+    const { data: refreshTokenData } = useGet_refresh_tokenQuery();
+    const [fetchEmployeeToken] = useLazyGet_fcm_tokenQuery();
 
     useEffect(() => {
-        setRequests(getRequests(params));
+        setRequests(getRequests(params, apiData));
         setRejectionReasons({});
-    }, [params]);
+    }, [params, apiData]);
 
     const handleAction = useCallback(async (item, status) => {
-        const docid = String(item?.docid || '');
+        const docid = String(item?.docid || item?.docId || '');
         if (!docid || processingDocIdRef.current) return;
 
         const rejectionReason = String(rejectionReasons[docid] || '').trim();
@@ -296,7 +352,7 @@ export default function OndutyApprovalScreen({ route }) {
             const savedStatus = String(response?.data?.approvalStatus || status).toLowerCase();
             try {
                 socket.emit('onduty_Approval_Response', {
-                    Idcard: item?.userdata?.Idcard || item?.userId,
+                    Idcard: item?.userdata?.Idcard || item?.userId || item?.idCard,
                     compcode: user?.GCOMPCODE,
                     status: savedStatus,
                     approved: savedStatus === 'approved',
@@ -305,13 +361,33 @@ export default function OndutyApprovalScreen({ route }) {
                 console.warn('[OndutyApprovalScreen] Unable to emit approval update:', socketError);
             }
 
-            setRequests(previous => previous.filter(request => String(request?.docid) !== docid));
+            const employeeId = item?.userdata?.Idcard || item?.userId || item?.idCard;
+            if (employeeId && refreshTokenData?.data?.token) {
+                try {
+                    const tokenResponse = await fetchEmployeeToken({ Idcard: employeeId }).unwrap();
+                    const employeeToken = tokenResponse?.data?.fcm;
+                    if (employeeToken) {
+                        await _FCM_SENDER(
+                            refreshTokenData.data.token,
+                            employeeToken,
+                            `${savedStatus === 'approved' ? '✔ APPROVED' : '❌ REJECTED'} your OnDuty request (${docid})`,
+                            'OnDuty Request Update',
+                        );
+                    }
+                } catch (notificationError) {
+                    console.warn('[OndutyApprovalScreen] Unable to send approval notification:', notificationError);
+                }
+            }
+
+            setRequests(previous => previous.filter(request => String(request?.docid || request?.docId) !== docid));
             setRejectionReasons(previous => ({ ...previous, [docid]: '' }));
             showMessage({
                 message: `On-duty request ${savedStatus}`,
                 description: `Request ${docid} was ${savedStatus}.`,
                 type: savedStatus === 'approved' ? 'success' : 'danger',
             });
+
+            refetch?.();
 
             if (typeof params?.refresh === 'function') {
                 try {
@@ -330,10 +406,10 @@ export default function OndutyApprovalScreen({ route }) {
             processingDocIdRef.current = null;
             setProcessingDocId(null);
         }
-    }, [params, rejectionReasons, updateStatus, user]);
+    }, [fetchEmployeeToken, params, refetch, refreshTokenData, rejectionReasons, updateStatus, user]);
 
     const renderRequest = useCallback(({ item }) => {
-        const docid = String(item?.docid || '');
+        const docid = String(item?.docid || item?.docId || '');
         return (
             <RequestCard
                 item={item}
@@ -361,16 +437,25 @@ export default function OndutyApprovalScreen({ route }) {
             <FlatList
                 data={requests}
                 renderItem={renderRequest}
-                keyExtractor={(item, index) => String(item?.docid || item?.id || index)}
+                keyExtractor={(item, index) => String(item?.docid || item?.docId || item?.id || index)}
                 contentContainerStyle={requests.length ? styles.listContent : styles.emptyContent}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={(
-                    <View style={styles.emptyState}>
-                        <MaterialCommunityIcons name="inbox-outline" size={46} color="#94A3B8" />
-                        <Text style={styles.emptyTitle}>No pending on-duty requests</Text>
-                        <Text style={styles.mutedText}>Open an on-duty approval notification to review a request.</Text>
-                    </View>
-                )}
+                refreshing={isLoading}
+                onRefresh={refetch}
+                ListEmptyComponent={
+                    isLoading ? (
+                        <View style={styles.emptyState}>
+                            <ActivityIndicator size="large" color="#007AFF" />
+                            <Text style={[styles.mutedText, { marginTop: 12 }]}>Checking for pending on-duty requests...</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <MaterialCommunityIcons name="inbox-outline" size={46} color="#94A3B8" />
+                            <Text style={styles.emptyTitle}>No pending on-duty requests</Text>
+                            <Text style={styles.mutedText}>All on-duty approval requests are up to date.</Text>
+                        </View>
+                    )
+                }
             />
         </LinearGradient>
     );

@@ -3,6 +3,7 @@ import { getConnection } from "../constants/dbConnection.js";
 import { convert12to24 } from "../utils/timeConverter24h.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
+import { mapPermission, mapPermissionSingle, mapPermissionMaster, mapPermissionMasterList } from "../utils/responseMapper.js";
 
 
 export async function get__per(req, res) {
@@ -11,8 +12,8 @@ export async function get__per(req, res) {
     const id=req.query?.id
 
         try {
-            const result=await  prisma_Connector.permissionEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
-            res.json({status:1,data:result}) 
+            const result=await  prisma_Connector.permissionEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdByUser:{select:{userName:true,idCard:true}},modifiedByUser:{select:{userName:true,idCard:true}}}});
+            res.json({status:1,data:result.map(mapPermission)}) 
         }
         catch (err) {
            console.log(err);
@@ -28,37 +29,41 @@ export async function get__per_category(req, res) {
 
   
       try {
-          const result=await  prisma_Connector.permissionMaster.findMany({where: {AND:[ {COMPCODE:COMPCODE},{ptype:Qtype}]}})
+          const result=await  prisma_Connector.permissionMaster.findMany({where: {AND:[ {compCode:COMPCODE},{pType:Qtype}]}})
           console.log(result);
           
           var filter_data=result?.map((data)=>{return {label:data.name,value:data.id}})
            res.json({status:1,data:filter_data}) 
       }
       catch (err) {
-         console.log(err);
-      }
+        console.log(err);
+        res.json({ status: 0, data: [] });
+    }
 }
 
 
 export async function addPermission_master(req, res) {
-  const  data=req?.body?.data
-  const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-          try {
-           const result=await  prisma_Connector.permissionMaster.create({data:{...data,COMPCODE}})  
-          // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
-           if(result?.id){
-            return  res.json({status:1,data:result})  
-           }else{
-            return  res.json({status:0,data:{}})  
-           }
-      
-          }catch(err){
-             console.log(err);
-             
-       }
+    const data = req?.body?.data || {};
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    try {
+        const mappedData = {
+            ...data,
+            compCode: COMPCODE,
+            pType: data.ptype || data.pType,
+        };
+        delete mappedData.ptype;
 
-
-      }
+        const result = await prisma_Connector.permissionMaster.create({ data: mappedData });
+        if (result?.id) {
+            return res.json({ status: 1, data: mapPermissionMaster(result) });
+        } else {
+            return res.json({ status: 0, data: null });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.json({ status: 0, message: err?.message || 'Failed to add permission master', data: null });
+    }
+}
 
 
 
@@ -164,26 +169,26 @@ export async function getDocId(req, res) {
     try {
         const hodIdStr = String(data.hod).trim();
         const hodUser = await prisma_Connector.user.findFirst({
-            where: { Idcard: hodIdStr }
+            where: { idCard: hodIdStr }
         });
         if (!hodUser) {
             await prisma_Connector.user.create({
                 data: {
-                    username: `hod_${hodIdStr}_${Date.now()}`,
-                    Idcard: hodIdStr,
+                    userName: `hod_${hodIdStr}_${Date.now()}`,
+                    idCard: hodIdStr,
                     level: 'hod',
                 }
             });
         }
         if (hrVal && hrVal !== hodIdStr) {
             const hrUser = await prisma_Connector.user.findFirst({
-                where: { Idcard: hrVal }
+                where: { idCard: hrVal }
             });
             if (!hrUser) {
                 await prisma_Connector.user.create({
                     data: {
-                        username: `hr_${hrVal}_${Date.now()}`,
-                        Idcard: hrVal,
+                        userName: `hr_${hrVal}_${Date.now()}`,
+                        idCard: hrVal,
                         level: 'hr',
                     }
                 });
@@ -197,13 +202,13 @@ export async function getDocId(req, res) {
     try {
         const userIdStr = String(data.userId).trim();
         const currentUser = await prisma_Connector.user.findFirst({
-            where: { Idcard: userIdStr }
+            where: { idCard: userIdStr }
         });
         if (!currentUser) {
             await prisma_Connector.user.create({
                 data: {
-                    username: data.username || `emp_${userIdStr}_${Date.now()}`,
-                    Idcard: userIdStr,
+                    userName: data.username || `emp_${userIdStr}_${Date.now()}`,
+                    idCard: userIdStr,
                     level: 'user',
                 }
             });
@@ -216,19 +221,19 @@ export async function getDocId(req, res) {
     try {
         const createdByStr = String(data.createdBy || data.userId).trim();
         if (createdByStr && createdByStr !== String(data.userId).trim()) {
-            const cbUser = await prisma_Connector.user.findFirst({ where: { Idcard: createdByStr } });
+            const cbUser = await prisma_Connector.user.findFirst({ where: { idCard: createdByStr } });
             if (!cbUser) {
                 await prisma_Connector.user.create({
-                    data: { username: `user_${createdByStr}_${Date.now()}`, Idcard: createdByStr, level: 'user' }
+                    data: { userName: `user_${createdByStr}_${Date.now()}`, idCard: createdByStr, level: 'user' }
                 });
             }
         }
         const modifiedByStr = String(data.modified_By || data.userId).trim();
         if (modifiedByStr && modifiedByStr !== createdByStr && modifiedByStr !== String(data.userId).trim()) {
-            const mbUser = await prisma_Connector.user.findFirst({ where: { Idcard: modifiedByStr } });
+            const mbUser = await prisma_Connector.user.findFirst({ where: { idCard: modifiedByStr } });
             if (!mbUser) {
                 await prisma_Connector.user.create({
-                    data: { username: `user_${modifiedByStr}_${Date.now()}`, Idcard: modifiedByStr, level: 'user' }
+                    data: { userName: `user_${modifiedByStr}_${Date.now()}`, idCard: modifiedByStr, level: 'user' }
                 });
             }
         }
@@ -266,14 +271,22 @@ export async function getDocId(req, res) {
 
     try {
         const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
+        const { docid, username, thrs, modified_By, ...cleanData } = data;
         const initialResult = await prisma_Connector.permissionEntry.create({
-            data: { ...data, docid: tempDocid, permissionId: String(generateUniqueId_Number()) }
+            data: {
+                ...cleanData,
+                docId: tempDocid,
+                userName: username || data.userName || '',
+                totalHrs: String(thrs || data.totalHrs || ''),
+                modifiedBy: String(modified_By || data.modifiedBy || data.userId || ''),
+                permissionId: String(generateUniqueId_Number()),
+            }
         });
         const paddedId = initialResult.id.toString().padStart(6, '0');
         const finalDocid = `PER-${paddedId}`;
         const result = await prisma_Connector.permissionEntry.update({
             where: { id: initialResult.id },
-            data: { docid: finalDocid }
+            data: { docId: finalDocid }
         });
         
         const Ttime_24 = convert12to24(result?.tTime);
@@ -281,17 +294,17 @@ export async function getDocId(req, res) {
 
         var auvit_data = {
             PERMISSIONID: result?.permissionId,
-            USERID: result?.username,
-            THRS: result?.thrs,
+            USERID: result?.userName || data?.username,
+            THRS: result?.totalHrs || data?.thrs,
             APPROVALSTATUS: String(result?.approvalStatus),
-            DOCID: String(result?.docid),
+            DOCID: String(result?.docId),
             REASON: result?.reason,
             TTIME: Ttime_24,
             FTIME: FTime_24,
             COMPCODE: String(result?.compCode),
             CREATED_BY: String(result?.createdBy),
             CREATED_ON: formatDateToOracle(result?.createdOn),
-            MODIFIED_BY: result?.createdBy,
+            MODIFIED_BY: result?.modifiedBy || result?.createdBy,
             MODIFIED_ON: formatDateToOracle(result?.modifiedOn),
             IDCARD: Number(result?.userId),
             DOCDATE: formatDateToOracle(result?.docDate),
@@ -318,8 +331,8 @@ export async function getDocId(req, res) {
             `;     
             const result_auvit = await connection.execute(sql, auvit_data); 
             if (result_auvit?.rowsAffected > 0) {
-                await prisma_Connector?.permissionEntry?.update({ where: { docid: result?.docid }, data: { create: 1 } });
-                return res.json({ status: 1, data: { ...result, count: result?.id } });
+                await prisma_Connector?.permissionEntry?.update({ where: { docId: result?.docId }, data: { create: 1 } });
+                return res.json({ status: 1, data: mapPermission({ ...result, count: result?.id }) });
             } else {
                 await prisma_Connector?.permissionEntry?.delete({ where: { id: result?.id } });
                 return res.json({ status: 0, message: "Could not save permission record to ERP database. Please try again." });   
@@ -354,26 +367,20 @@ export async function getDocId(req, res) {
 }
 
 export async function get_all_Permission_reason(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
 
-        try {
-            const result=await  prisma_Connector.permissionMaster.findMany({where:{COMPCODE}})
-            res.json({status:1,data:result}) 
-        }
-        catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
-        }
+    try {
+        const result = await prisma_Connector.permissionMaster.findMany({
+            where: { compCode: COMPCODE }
+        });
+        res.json({ status: 1, data: mapPermissionMasterList(result) });
+    }
+    catch (err) {
+        console.log(err);
+        res.json({ status: 0, data: [] });
+    }
 }
-            
-        
 
-
-          
-
-
-        
 //     export async function requestPermission_Approval(req, res) {
 //       const COMPCODE=String(req?.headers?.compcode).toUpperCase()
 //         const  docid=req?.body?.docid
@@ -454,7 +461,7 @@ export async function get_all_Permission_reason(req, res) {
                             
 //            }
 
-//              await prisma_Connector?.permissionEntry?.update({where:{docid:result?.docid}, data:{update:1}}).then(()=>{
+//              await prisma_Connector?.permissionEntry?.update({where:{docid:result?.docId}, data:{update:1}}).then(()=>{
 //                 return  res.json({status:1,data:{...result}}) 
                
 //                }).catch(()=>{
@@ -496,7 +503,7 @@ export async function requestPermission_Approval(req, res) {
     const connection = await getConnection(res)
     if (!connection || res.headersSent) return;
 
-    // ✅ Normalize Oracle TIMESTAMP or any date format → 'DD-MON-YYYY' e.g. '10-APR-2026'
+    // âœ… Normalize Oracle TIMESTAMP or any date format â†’ 'DD-MON-YYYY' e.g. '10-APR-2026'
     function toOracleDate(str) {
         if (!str) return null
 
@@ -504,7 +511,7 @@ export async function requestPermission_Approval(req, res) {
         if (/^\d{2}-[A-Z]{3}-\d{2}/i.test(str)) {
             const datePart = str.split(' ')[0]              // '10-APR-26'
             const [day, mon, yr] = datePart.split('-')
-            const fullYear = Number(yr) >= 50 ? `19${yr}` : `20${yr}`  // 26 → 2026
+            const fullYear = Number(yr) >= 50 ? `19${yr}` : `20${yr}`  // 26 â†’ 2026
             return `${day}-${mon}-${fullYear}`              // '10-APR-2026'
         }
 
@@ -622,12 +629,12 @@ export async function requestPermission_Approval(req, res) {
         }
 
         const result = await prisma_Connector.permissionEntry.update({
-            where: { docid },
+            where: { docId: docid },
             data: { approvalStatus: p_app, approvedBy, rejectBy, update: 1 }
         })
 
         await connection.commit()
-        return res.json({ status: 1, data: result })
+        return res.json({ status: 1, data: mapPermission(result) })
     } catch (err) {
         console.error('[requestPermission_Approval] Approval failed:', err)
         try {

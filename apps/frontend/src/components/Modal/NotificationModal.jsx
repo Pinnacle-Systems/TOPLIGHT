@@ -25,14 +25,15 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
   const [expandedGroups, setExpandedGroups] = useState({});
   
   useEffect(() => {
-    if (livedata?.data?.docid) {
+    const liveDocId = livedata?.data?.docid || livedata?.data?.docId;
+    if (liveDocId) {
       setlivedata_man(prev => {
-        const exists = prev.some(item => item.docid === livedata.data.docid);
+        const exists = prev.some(item => (item.docid || item.docId) === liveDocId);
         if (!exists) return [...prev, livedata.data];
         return prev;
       });
     }
-  }, [livedata?.data?.docid]);
+  }, [livedata?.data?.docid, livedata?.data?.docId]);
 
   const mergedData = useMemo(() => {
     return [...(data?.data || []), ...livedata_man];
@@ -45,12 +46,18 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
     mergedData.forEach(notification => {
       const date = new Date(notification.createdAt || Date.now());
       const dateKey = date.toLocaleDateString();
-      const groupKey = notification.group || 'Other';
-      const key = `${groupKey}-${dateKey}`;
+      const rawGroup = notification.group || 'Other';
+      const normalizedGroup = rawGroup.toLowerCase();
+      const groupTitle = normalizedGroup === 'onduty' ? 'ONDUTY'
+        : normalizedGroup === 'leave' ? 'LEAVE'
+        : normalizedGroup === 'permission' ? 'PERMISSION'
+        : rawGroup;
+      const key = `${normalizedGroup}-${dateKey}`;
       
       if (!groups[key]) {
         groups[key] = {
-          title: groupKey,
+          title: groupTitle,
+          groupType: normalizedGroup,
           date: dateKey,
           data: [],
           isExpanded: expandedGroups[key] || false
@@ -78,76 +85,76 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
   };
 
   const onPress = (data) => {
-    switch(data?.group) {
-      case "Leave":
-        CustomNavigation("l_approval", {...data, refresh,all:mergedData});
+    const grp = String(data?.group || '').toLowerCase();
+    switch(grp) {
+      case "leave":
+        CustomNavigation("l_approval", {...data, refresh, all: mergedData});
         break;
-      case "Permission":
-        CustomNavigation("p_approval", {...data, refresh,all:mergedData});
-        break;
-      case "Advance":
-        CustomNavigation("ln_approval", {...data, refresh,all:mergedData});
+      case "permission":
+        CustomNavigation("p_approval", {...data, refresh, all: mergedData});
         break;
       case "onduty":
-        CustomNavigation("onduty_approval", {...data, refresh,all:mergedData});
+        CustomNavigation("onduty_approval", {...data, refresh, all: mergedData});
         break;
       default:
         break;
     }
     close_modal?.(false);
-  }
+  };
 
-  const NotificationItem = ({ sendBy, description, group, onPress, loanamt, data }) => (
-    <TouchableOpacity 
-      onPress={() => onPress(data)} 
-      style={[
-        styles.notificationContainer,
-        group === "Leave" && styles.leaveContainer,
-        group === "Permission" && styles.permissionContainer,
-        group === "Advance" && styles.advanceContainer,
-        group === "onduty" && styles.ondutyContainer
-      ]}
-      activeOpacity={0.7}
-    >
-      <View style={styles.notificationHeader}>
-        <View style={styles.timeBadge}>
-          <Text style={styles.notificationTime}>Now</Text>
-        </View>
-      </View>
-      
-      <View style={styles.senderRow}>
-        <AntDesign name="user" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
-        <Text style={styles.notificationSender}>{sendBy || "Unknown"}</Text>
-      </View>
-      
-      <View style={styles.statusRow}>
-        {group === "Advance" ? (
-          <View style={styles.loanRow}>
-            <AntDesign name="creditcard" size={isLandscape ? 16 : 14} color={theme.colors.success} />
-            <Text style={styles.loanDescription}>₹{loanamt}</Text>
+  const NotificationItem = ({ sendBy, description, group, onPress, loanamt, data }) => {
+    const isLeave = String(group || '').toLowerCase() === 'leave';
+    const isPermission = String(group || '').toLowerCase() === 'permission';
+    const isOnduty = String(group || '').toLowerCase() === 'onduty';
+
+    return (
+      <TouchableOpacity 
+        onPress={() => onPress(data)} 
+        style={[
+          styles.notificationContainer,
+          isLeave && styles.leaveContainer,
+          isPermission && styles.permissionContainer,
+          isOnduty && styles.ondutyContainer
+        ]}
+        activeOpacity={0.7}
+      >
+        <View style={styles.notificationHeader}>
+          <View style={styles.timeBadge}>
+            <Text style={styles.notificationTime}>Now</Text>
           </View>
-        ) : (
+        </View>
+        
+        <View style={styles.senderRow}>
+          <AntDesign name="user" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
+          <Text style={styles.notificationSender}>{sendBy || "Unknown"}</Text>
+        </View>
+        
+        <View style={styles.statusRow}>
           <View style={styles.reasonRow}>
-            {group === "onduty" ? 
+            {isOnduty ? 
               <Entypo name="location-pin" size={isLandscape ? 26 : 24} color={theme.colors.brand} /> :
               <AntDesign name="infocirlceo" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
             }  
             <Text style={styles.notificationDescription} numberOfLines={isLandscape ? 1 : 2}>
-              {group === "onduty" ? data?.in_location : description}
+              {description}
             </Text>
           </View>
-        )}
-        
-        <View style={styles.unseenBadge}>
-          <Text style={styles.unseenText}>New</Text>
+          
+          <View style={styles.unseenBadge}>
+            <Text style={styles.unseenText}>New</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
-  const NotificationGroup = ({ title, date, data, isExpanded, onToggle }) => {
+  const NotificationGroup = ({ title, groupType, date, data, isExpanded, onToggle }) => {
     const count = data.length;
     const rotation = new Animated.Value(isExpanded ? 1 : 0);
+    const grp = String(groupType || title || '').toLowerCase();
+    const isLeave = grp === 'leave';
+    const isPermission = grp === 'permission';
+    const isOnduty = grp === 'onduty';
     
     Animated.timing(rotation, {
       toValue: isExpanded ? 1 : 0,
@@ -170,12 +177,16 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
           <View style={styles.groupHeaderContent}>
             <View style={[
               styles.groupBadge,
-              title === "Leave" && styles.leaveBadge,
-              title === "Permission" && styles.permissionBadge,
-              title === "Advance" && styles.advanceBadge,
-              title === "onduty" && styles.ondutyBadge
+              isLeave && styles.leaveBadge,
+              isPermission && styles.permissionBadge,
+              isOnduty && styles.ondutyBadge
             ]}>
-              <Text style={styles.groupText}>{title}</Text>
+              <Text style={[
+                styles.groupText,
+                isLeave && styles.leaveText,
+                isPermission && styles.permissionText,
+                isOnduty && styles.ondutyText
+              ]}>{title}</Text>
             </View>
             <Text style={styles.groupDate}>{date}</Text>
           </View>
@@ -192,17 +203,49 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
         
         {isExpanded && (
           <View style={styles.groupItems}>
-            {data.map((item, index) => (
-              <NotificationItem
-                key={item?.docid?.toString() || index.toString()}
-                sendBy={item?.userdata?.username}
-                group={item?.group}
-                loanamt={item?.total}
-                description={item?.reason}
-                data={item}
-                onPress={(data) => onPress(data)}
-              />
-            ))}
+            {data.map((item, index) => {
+              const sendBy =
+                item?.userdata?.username ||
+                item?.userdata?.userName ||
+                item?.userData?.userName ||
+                item?.userData?.username ||
+                item?.empName ||
+                item?.empname ||
+                item?.userName ||
+                item?.username ||
+                item?.userdata?.Employee ||
+                item?.Employee ||
+                item?.idCard ||
+                item?.idcard ||
+                'Employee';
+
+              const ondutyLocation =
+                item?.in_location ||
+                item?.inLocation ||
+                (item?.inLatitude || item?.in_latitude
+                  ? `Near ${Number(item?.inLatitude || item?.in_latitude).toFixed(4)}, ${Number(item?.inLongtiude || item?.in_longtiude).toFixed(4)}`
+                  : null) ||
+                item?.others ||
+                'OnDuty Trip';
+
+              const itemGroup = String(item?.group || '').toLowerCase();
+              const description =
+                itemGroup === 'onduty'
+                  ? ondutyLocation
+                  : (item?.reason || item?.description || item?.others || (itemGroup === 'leave' ? 'Leave Application' : 'Permission Request'));
+
+              return (
+                <NotificationItem
+                  key={(item?.docid || item?.docId || index).toString()}
+                  sendBy={sendBy}
+                  group={item?.group}
+                  loanamt={item?.total}
+                  description={description}
+                  data={item}
+                  onPress={(data) => onPress(data)}
+                />
+              );
+            })}
           </View>
         )}
       </View>
@@ -212,10 +255,11 @@ export default function NotificationModal({refresh, close_modal, livedata={}, da
   const renderItem = ({ item }) => (
     <NotificationGroup
       title={item.title}
+      groupType={item.groupType}
       date={item.date}
       data={item.data}
       isExpanded={item.isExpanded}
-      onToggle={() => toggleGroup(`${item.title}-${item.date}`)}
+      onToggle={() => toggleGroup(`${item.groupType || item.title}-${item.date}`)}
     />
   );
 
@@ -374,9 +418,6 @@ const createStyles = (isLandscape, width, height, theme) => StyleSheet.create({
   permissionBadge: {
     backgroundColor: theme.colors.infoSoft,
   },
-  advanceBadge: {
-    backgroundColor: theme.colors.successSoft,
-  },
   ondutyBadge: {
     backgroundColor: theme.colors.warningSoft,
   },
@@ -391,9 +432,6 @@ const createStyles = (isLandscape, width, height, theme) => StyleSheet.create({
   },
   permissionText: {
     color: theme.colors.info,
-  },
-  advanceText: {
-    color: theme.colors.success,
   },
   ondutyText: {
     color: theme.colors.warning,
@@ -438,9 +476,6 @@ const createStyles = (isLandscape, width, height, theme) => StyleSheet.create({
   },
   permissionContainer: {
     borderLeftColor: theme.colors.info,
-  },
-  advanceContainer: {
-    borderLeftColor: theme.colors.success,
   },
   ondutyContainer: {
     borderLeftColor: theme.colors.warning,

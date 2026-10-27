@@ -120,28 +120,28 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 });
 
 exports.Prisma.SettingsScalarFieldEnum = {
-  SettingId: 'SettingId',
-  UserId: 'UserId',
-  Notification: 'Notification',
-  BioMatrics: 'BioMatrics',
-  COMPCODE: 'COMPCODE'
+  settingId: 'settingId',
+  userId: 'userId',
+  notification: 'notification',
+  bioMatrics: 'bioMatrics',
+  compCode: 'compCode'
 };
 
 exports.Prisma.NotifyApprovalGroupScalarFieldEnum = {
   id: 'id',
-  Idcard: 'Idcard',
-  COMPCODE: 'COMPCODE'
+  idCard: 'idCard',
+  compCode: 'compCode'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  username: 'username',
+  userName: 'userName',
   pic: 'pic',
   email: 'email',
-  otpemail: 'otpemail',
+  otpEmail: 'otpEmail',
   approval: 'approval',
   password: 'password',
-  Idcard: 'Idcard',
+  idCard: 'idCard',
   roleId: 'roleId',
   otp: 'otp',
   hod: 'hod',
@@ -159,38 +159,38 @@ exports.Prisma.UserScalarFieldEnum = {
 
 exports.Prisma.OndutyScalarFieldEnum = {
   id: 'id',
-  docid: 'docid',
-  docdate: 'docdate',
-  idcard: 'idcard',
-  empname: 'empname',
+  docId: 'docId',
+  docDate: 'docDate',
+  idCard: 'idCard',
+  empName: 'empName',
   hod: 'hod',
   hr: 'hr',
-  Svechilekm: 'Svechilekm',
-  Evechilekm: 'Evechilekm',
+  startVehicleKm: 'startVehicleKm',
+  endVehicleKm: 'endVehicleKm',
   approvalStatus: 'approvalStatus',
   userId: 'userId',
   others: 'others',
   group: 'group',
-  in_time: 'in_time',
-  out_time: 'out_time',
-  inout: 'inout',
+  inTime: 'inTime',
+  outTime: 'outTime',
+  inOut: 'inOut',
   photo: 'photo',
-  reject_reason: 'reject_reason',
+  rejectReason: 'rejectReason',
   compCode: 'compCode',
   updatedOn: 'updatedOn',
-  in_location: 'in_location',
-  in_latitude: 'in_latitude',
-  in_longtiude: 'in_longtiude',
-  vechileno: 'vechileno',
+  inLocation: 'inLocation',
+  inLatitude: 'inLatitude',
+  inLongtiude: 'inLongtiude',
+  vehicleNo: 'vehicleNo',
   bunk: 'bunk',
-  start_km: 'start_km',
-  end_km: 'end_km',
-  out_location: 'out_location',
-  out_latitude: 'out_latitude',
-  out_longtiude: 'out_longtiude',
-  to_onduty: 'to_onduty',
+  startKm: 'startKm',
+  endKm: 'endKm',
+  outLocation: 'outLocation',
+  outLatitude: 'outLatitude',
+  outLongtiude: 'outLongtiude',
+  toOnduty: 'toOnduty',
   createdBy: 'createdBy',
-  modified_By: 'modified_By',
+  modifiedBy: 'modifiedBy',
   rejectBy: 'rejectBy',
   approvedBy: 'approvedBy',
   create: 'create',
@@ -202,24 +202,24 @@ exports.Prisma.OndutyScalarFieldEnum = {
 
 exports.Prisma.AdvanceRequestScalarFieldEnum = {
   id: 'id',
-  docid: 'docid',
-  docdate: 'docdate',
-  idcard: 'idcard',
+  docId: 'docId',
+  docDate: 'docDate',
+  idCard: 'idCard',
   fromDate: 'fromDate',
   toDate: 'toDate',
-  empname: 'empname',
-  finyear: 'finyear',
-  advtype: 'advtype',
+  empName: 'empName',
+  finYear: 'finYear',
+  advType: 'advType',
   total: 'total',
-  paytype: 'paytype',
+  payType: 'payType',
   hod: 'hod',
   hr: 'hr',
   group: 'group',
   isCancelled: 'isCancelled',
   userId: 'userId',
-  preloan: 'preloan',
-  totalloan: 'totalloan',
-  predue: 'predue',
+  preLoan: 'preLoan',
+  totalLoan: 'totalLoan',
+  preDue: 'preDue',
   ins: 'ins',
   due: 'due',
   remark: 'remark',
@@ -231,34 +231,34 @@ exports.Prisma.AdvanceRequestScalarFieldEnum = {
   mobile: 'mobile',
   create: 'create',
   update: 'update',
-  modified_By: 'modified_By',
+  modifiedBy: 'modifiedBy',
   rejectBy: 'rejectBy',
   approvedBy: 'approvedBy',
   category: 'category',
-  fincode: 'fincode',
-  paycode: 'paycode'
+  finCode: 'finCode',
+  payCode: 'payCode'
 };
 
 exports.Prisma.CompanyCodeScalarFieldEnum = {
   id: 'id',
-  Idcard: 'Idcard',
+  idCard: 'idCard',
   companyCode: 'companyCode',
-  GCOMP: 'GCOMP',
-  companyid: 'companyid'
+  gComp: 'gComp',
+  companyId: 'companyId'
 };
 
 exports.Prisma.UserLogScalarFieldEnum = {
   id: 'id',
-  User: 'User',
-  MobileName: 'MobileName',
+  user: 'user',
+  mobileName: 'mobileName',
   date: 'date',
-  MobileIP: 'MobileIP',
+  mobileIp: 'mobileIp',
   type: 'type',
-  Idcard: 'Idcard',
-  COMPCODE: 'COMPCODE'
+  idCard: 'idCard',
+  compCode: 'compCode'
 };
 
-exports.Prisma.PermissionDocIDScalarFieldEnum = {
+exports.Prisma.PermissionDocIdScalarFieldEnum = {
   id: 'id',
   count: 'count'
 };
@@ -267,28 +267,28 @@ exports.Prisma.PermissionMasterScalarFieldEnum = {
   id: 'id',
   name: 'name',
   active: 'active',
-  ptype: 'ptype',
-  COMPCODE: 'COMPCODE'
+  pType: 'pType',
+  compCode: 'compCode'
 };
 
 exports.Prisma.OndutyMasterScalarFieldEnum = {
   id: 'id',
   name: 'name',
   active: 'active',
-  COMPCODE: 'COMPCODE'
+  compCode: 'compCode'
 };
 
 exports.Prisma.LocationScalarFieldEnum = {
   id: 'id',
   latitude: 'latitude',
   longitude: 'longitude',
-  timestamp: 'timestamp',
+  timeStamp: 'timeStamp',
   accuracy: 'accuracy',
   speed: 'speed',
   bearing: 'bearing',
   altitude: 'altitude',
   provider: 'provider',
-  COMPCODE: 'COMPCODE',
+  compCode: 'compCode',
   userId: 'userId',
   docId: 'docId',
   createdAt: 'createdAt'
@@ -298,24 +298,24 @@ exports.Prisma.PermissionEntryScalarFieldEnum = {
   id: 'id',
   createdOn: 'createdOn',
   createdBy: 'createdBy',
-  modified_By: 'modified_By',
+  modifiedBy: 'modifiedBy',
   modifiedOn: 'modifiedOn',
   group: 'group',
   isCancelled: 'isCancelled',
   userId: 'userId',
   compCode: 'compCode',
-  docid: 'docid',
+  docId: 'docId',
   docDate: 'docDate',
   fTime: 'fTime',
   tTime: 'tTime',
-  thrs: 'thrs',
+  totalHrs: 'totalHrs',
   mobile: 'mobile',
   create: 'create',
   update: 'update',
   approvedBy: 'approvedBy',
   rejectBy: 'rejectBy',
   permissionId: 'permissionId',
-  username: 'username',
+  userName: 'userName',
   reason: 'reason',
   approvalStatus: 'approvalStatus',
   hod: 'hod',
@@ -325,18 +325,18 @@ exports.Prisma.PermissionEntryScalarFieldEnum = {
 
 exports.Prisma.TrackersScalarFieldEnum = {
   id: 'id',
-  UserId: 'UserId',
+  userId: 'userId',
   isLive: 'isLive',
-  COMPCODE: 'COMPCODE',
-  docid: 'docid',
-  empname: 'empname',
-  endDocid: 'endDocid'
+  compCode: 'compCode',
+  docId: 'docId',
+  empName: 'empName',
+  endDocId: 'endDocId'
 };
 
 exports.Prisma.VechilekmScalarFieldEnum = {
   id: 'id',
-  VEHICLENO: 'VEHICLENO',
-  COMPCODE: 'COMPCODE',
+  vehicleNo: 'vehicleNo',
+  compCode: 'compCode',
   km: 'km'
 };
 
@@ -344,22 +344,22 @@ exports.Prisma.LeaveEntryScalarFieldEnum = {
   id: 'id',
   createdOn: 'createdOn',
   createdBy: 'createdBy',
-  modified_By: 'modified_By',
+  modifiedBy: 'modifiedBy',
   modifiedOn: 'modifiedOn',
   isCancelled: 'isCancelled',
   userId: 'userId',
   compCode: 'compCode',
   group: 'group',
-  finyear: 'finyear',
-  docid: 'docid',
+  finYear: 'finYear',
+  docId: 'docId',
   docDate: 'docDate',
   fromDate: 'fromDate',
   toDate: 'toDate',
   totalDays: 'totalDays',
   hr: 'hr',
-  ltype: 'ltype',
-  fltype: 'fltype',
-  tltype: 'tltype',
+  lType: 'lType',
+  flType: 'flType',
+  tlType: 'tlType',
   mobile: 'mobile',
   reason: 'reason',
   approvalStatus: 'approvalStatus',
@@ -368,7 +368,7 @@ exports.Prisma.LeaveEntryScalarFieldEnum = {
   hod: 'hod',
   leaveId: 'leaveId',
   create: 'create',
-  empname: 'empname',
+  empName: 'empName',
   update: 'update',
   category: 'category'
 };
@@ -376,7 +376,7 @@ exports.Prisma.LeaveEntryScalarFieldEnum = {
 exports.Prisma.RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  COMPCODE: 'COMPCODE',
+  compCode: 'compCode',
   active: 'active',
   defaultRole: 'defaultRole'
 };
@@ -390,7 +390,7 @@ exports.Prisma.RoleOnPageScalarFieldEnum = {
   edit: 'edit',
   link: 'link',
   delete: 'delete',
-  isdefault: 'isdefault'
+  isDefault: 'isDefault'
 };
 
 exports.Prisma.NotificationScalarFieldEnum = {
@@ -415,20 +415,20 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  settings: 'settings',
+  Settings: 'Settings',
   NotifyApprovalGroup: 'NotifyApprovalGroup',
   User: 'User',
-  onduty: 'onduty',
+  Onduty: 'Onduty',
   AdvanceRequest: 'AdvanceRequest',
   CompanyCode: 'CompanyCode',
   UserLog: 'UserLog',
-  PermissionDocID: 'PermissionDocID',
+  PermissionDocId: 'PermissionDocId',
   PermissionMaster: 'PermissionMaster',
   OndutyMaster: 'OndutyMaster',
   Location: 'Location',
   PermissionEntry: 'PermissionEntry',
-  trackers: 'trackers',
-  vechilekm: 'vechilekm',
+  Trackers: 'Trackers',
+  Vechilekm: 'Vechilekm',
   LeaveEntry: 'LeaveEntry',
   Role: 'Role',
   RoleOnPage: 'RoleOnPage',

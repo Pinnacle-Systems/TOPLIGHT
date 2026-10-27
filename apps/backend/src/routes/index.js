@@ -8,7 +8,6 @@ export { default as user } from './user.js'
 export { default as Leave } from './leave.js'
 export { default as Permission } from "./permissionEntry.js"
 export { default as Notification } from "./notification.js"
-export { default as Advance } from "./advance.js"
 export { default as Role } from "./roleOnPage.js"
 export { default as Onduty } from "./onDuty.js"
 

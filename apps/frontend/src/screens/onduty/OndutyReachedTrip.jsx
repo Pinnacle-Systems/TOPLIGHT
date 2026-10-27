@@ -19,9 +19,29 @@ export default function OndutyReachedTrip({
     isKmEntryEnabled,
     reachedKm,
     onChangeReachedKm,
+    onOpenEndKmModal,
 }) {
     const { theme } = useAppTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
+
+    const startKmVal = reachedData?.start_km ?? reachedData?.Svechilekm;
+    const distanceTraveled = useMemo(() => {
+        if (!reachedKm || !startKmVal) return null;
+        const diff = Number(reachedKm) - Number(startKmVal);
+        return (!isNaN(diff) && diff >= 0) ? diff : null;
+    }, [reachedKm, startKmVal]);
+
+    const handlePressConfirm = () => {
+        if (isKmEntryEnabled && (!reachedKm || String(reachedKm).trim() === '')) {
+            onOpenEndKmModal?.();
+            return;
+        }
+        onConfirmReached({ 
+            docId: reachedData?.docid, 
+            vehicleNo: reachedData?.vechileno,
+            reachedKm: reachedKm,
+        });
+    };
 
     return (
         <View style={styles.container}>
@@ -60,13 +80,29 @@ export default function OndutyReachedTrip({
 
                 <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>DEPARTURE POINT</Text>
-                    <Text style={styles.infoValue}>{reachedData?.in_location || '—'}</Text>
+                    <Text style={styles.infoValue}>
+                        {(!reachedData?.in_location || reachedData.in_location === 'Location unavailable') && reachedData?.in_latitude && Number(reachedData.in_latitude) !== 0
+                            ? `Near ${Number(reachedData.in_latitude).toFixed(4)}, ${Number(reachedData.in_longtiude).toFixed(4)}`
+                            : (reachedData?.in_location && reachedData.in_location !== 'Location unavailable'
+                                ? reachedData.in_location
+                                : (reachedData?.in_latitude && Number(reachedData.in_latitude) !== 0
+                                    ? `Near ${Number(reachedData.in_latitude).toFixed(4)}, ${Number(reachedData.in_longtiude).toFixed(4)}`
+                                    : (reachedData?.out_location && reachedData.out_location !== 'Location unavailable'
+                                        ? reachedData.out_location
+                                        : 'Office / Base Location')))}
+                    </Text>
                 </View>
 
                 {isKmEntryEnabled && reachedData?.vechileno ? (
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>VEHICLE</Text>
                         <Text style={styles.infoValue}>{reachedData?.vechileno}</Text>
+                    </View>
+                ) : null}
+                {isKmEntryEnabled && startKmVal && startKmVal !== '0' ? (
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>START ODOMETER</Text>
+                        <Text style={styles.infoValue}>{startKmVal} KM</Text>
                     </View>
                 ) : null}
             </View>
@@ -77,30 +113,66 @@ export default function OndutyReachedTrip({
                     <View style={styles.detailsHeader}>
                         <MaterialCommunityIcons name="speedometer" size={20} color={theme.colors.success} />
                         <Text style={styles.detailsHeaderText}>Final Odometer Reading</Text>
+                        {reachedKm ? (
+                            <View style={styles.readyBadge}>
+                                <MaterialCommunityIcons name="check-circle" size={12} color={theme.colors.success} />
+                                <Text style={styles.readyBadgeText}>RECORDED</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.requiredBadge}>
+                                <Text style={styles.requiredBadgeText}>REQUIRED</Text>
+                            </View>
+                        )}
                     </View>
-                    <View style={styles.kmInputWrapper}>
-                        <MaterialCommunityIcons name="counter" size={20} color={theme.colors.textDisabled} style={{ marginRight: 8 }} />
-                        <TextInput
-                            style={styles.singleLineInput}
-                            placeholder="Enter final reached KM"
-                            placeholderTextColor={theme.colors.placeholder}
-                            keyboardType="numeric"
-                            value={reachedKm}
-                            onChangeText={onChangeReachedKm}
-                        />
-                        <Text style={styles.kmUnitText}>KM</Text>
-                    </View>
+
+                    {reachedKm ? (
+                        <View style={styles.kmSummaryContainer}>
+                            <View style={styles.kmSummaryRow}>
+                                <View style={styles.kmSummaryItem}>
+                                    <Text style={styles.kmSummaryLabel}>FINAL ODOMETER</Text>
+                                    <Text style={styles.kmSummaryValueHighlight}>{reachedKm} KM</Text>
+                                </View>
+                                {distanceTraveled !== null ? (
+                                    <View style={styles.kmSummaryItem}>
+                                        <Text style={styles.kmSummaryLabel}>DISTANCE TRAVELED</Text>
+                                        <Text style={styles.kmSummaryDistance}>{distanceTraveled} KM</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                            <TouchableOpacity
+                                style={styles.editKmBtn}
+                                onPress={onOpenEndKmModal}
+                                activeOpacity={0.8}
+                            >
+                                <MaterialCommunityIcons name="pencil-outline" size={16} color={theme.colors.success} />
+                                <Text style={styles.editKmBtnText}>Edit Final KM</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={styles.enterKmBtn}
+                            onPress={onOpenEndKmModal}
+                            activeOpacity={0.8}
+                        >
+                            <View style={styles.enterKmIconCircle}>
+                                <MaterialCommunityIcons name="speedometer" size={24} color={theme.colors.success} />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                                <Text style={styles.enterKmTitle}>Enter Final Odometer Reading</Text>
+                                <Text style={styles.enterKmSubtitle}>
+                                    Record your ending KM before concluding the trip
+                                </Text>
+                            </View>
+                            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textDisabled} />
+                        </TouchableOpacity>
+                    )}
                 </View>
             ) : null}
 
             {/* Confirm Button */}
             <TouchableOpacity 
                 style={[styles.confirmBtn, isSubmitting && styles.btnDisabled]}
-                onPress={() => onConfirmReached({ 
-                    docId: reachedData?.docid, 
-                    vehicleNo: reachedData?.vechileno,
-                    reachedKm: reachedKm,
-                })}
+                onPress={handlePressConfirm}
                 disabled={isSubmitting}
                 activeOpacity={0.8}
             >
@@ -196,6 +268,107 @@ const createStyles = theme => StyleSheet.create({
     detailsHeaderText: {
         ...theme.typography.title,
         color: theme.colors.text,
+        flex: 1,
+    },
+    readyBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.successSoft,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 4,
+        gap: 4,
+    },
+    readyBadgeText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.success,
+        fontSize: 10,
+    },
+    requiredBadge: {
+        backgroundColor: theme.colors.warningSoft,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 4,
+    },
+    requiredBadgeText: {
+        ...theme.typography.caption,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.warning,
+        fontSize: 10,
+    },
+    kmSummaryContainer: {
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+    },
+    kmSummaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+    kmSummaryItem: {
+        flex: 1,
+    },
+    kmSummaryLabel: {
+        ...theme.typography.caption,
+        fontSize: 10,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.textMuted,
+        letterSpacing: 0.5,
+        marginBottom: 2,
+    },
+    kmSummaryValueHighlight: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.success,
+    },
+    kmSummaryDistance: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.brand,
+    },
+    editKmBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingVertical: 4,
+        paddingHorizontal: 4,
+        gap: 4,
+    },
+    editKmBtnText: {
+        ...theme.typography.caption,
+        color: theme.colors.success,
+        fontWeight: theme.fontWeights.bold,
+    },
+    enterKmBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
+    },
+    enterKmIconCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: theme.colors.successSoft,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    enterKmTitle: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.text,
+    },
+    enterKmSubtitle: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: 2,
     },
     infoRow: {
         marginBottom: 14,

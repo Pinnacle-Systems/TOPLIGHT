@@ -134,9 +134,7 @@ export default function MasterFormModal({
                                         const isSelected = ptype === option.value;
                                         const optionColor = option.value === 'permission'
                                             ? theme.colors.accent
-                                            : option.value === 'advance'
-                                                ? theme.colors.brand
-                                                : theme.colors.warning;
+                                            : theme.colors.warning;
                                         return (
                                             <TouchableOpacity
                                                 key={option.value}

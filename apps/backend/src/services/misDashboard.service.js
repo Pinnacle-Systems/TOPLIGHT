@@ -15,7 +15,8 @@ import {
 } from "../queries/misDashboard.js";
 import moment from "moment";
 import { prisma_Connector } from "../../index.js";
-import formatDateToOracle from "../utils/oracleDateFormat.js";
+
+import { mapUser } from "../utils/responseMapper.js";
 
 const month = [
   "January",
@@ -43,11 +44,11 @@ const currentDt = [monthName, yearName].join(" ");
 const lstMnth = [lastMonthName, lastMonthYear].join(" ");
 
 function getFinYear1(monthName, year) {
-  const mIndex = month.indexOf(monthName); // 0–11
+  const mIndex = month.indexOf(monthName); // 0Ã¢â‚¬â€œ11
 
   let startYear, endYear;
 
-  // Jan=0, Feb=1, Mar=2 → previous FY
+  // Jan=0, Feb=1, Mar=2 Ã¢â€ â€™ previous FY
   if (mIndex <= 2) {
     startYear = year - 1;
     endYear = year;
@@ -144,112 +145,6 @@ export async function get(req, res) {
     await connection.close();
   }
 }
-
-export async function getInsuranceData(req, res) {
-    const connection = await getConnection(res)
-    const COMPCODE=String(req.headers?.compcode).toUpperCase()
-    try {
-        
-
-
-        const sql = ` 
-
-        SELECT ROWNUM SNO,AA.*
-FROM(
-SELECT A.DOCID,A.DOCDATE,C.INSURANCEDESC DESCOFINSASSET,B.OWNERSHIPP,D.VEHICLENO,D.VEHICLENAME,E.INSCOMPNAME INSUREDBY,
-B.INSREFNO POLICYNO,B.VALIDFROM,B.VALIDTO,B.VALIDTO-TO_DATE(SYSDATE) DUEDAYS,
-B.INSPREMIUMVALUE,B.TOTALPREMIUM,B.PAYMENTDETAILS,B.PAYMENTMODE,'' USEDBY
-FROM GTINSURANCE A
-JOIN GTINSURANCEDET B ON A.GTINSURANCEID=B.GTINSURANCEID
-JOIN GTINSDESCMAST C ON B.DESCOFINSASSET=C.GTINSDESCMASTID
-LEFT JOIN HRVEHMAST D ON B.VEHICLENO=D.HRVEHMASTID
-JOIN GTINSCOMPMAST E ON B.INSUREDBY=E.GTINSCOMPMASTID
-JOIN GTCOMPMAST F ON A.COMPGROUP=F.COMPCODE
-WHERE F.COMPCODE='${COMPCODE}'  AND B.VALIDTO-TO_DATE(SYSDATE) >= 0
-ORDER BY DUEDAYS
-)AA
-`
-        console.log(sql, 'sql60');
-        let result = await connection.execute(sql);
-        result = result.rows.map(row => ({
-            sno: row[0], docId: row[1], docDate: row[2], discoFinAsset: row[3], ownership: row[4], vehNo: row[5], vehName: row[6],
-            insuredby: row[7], policyNo: row[8], validFrom: row[9],
-            validTo: row[10], dueDays: row[11], insPremiumValue: row[12],
-            totalPremium: row[13], paymentDetails: row[14], paymentMode: row[
-                15],
-                 usedby: row[16]
-
-        }))
-
-       
-        
-        return res.json({
-            statusCode: 0, data: result
-        })
-    }
-    catch (err) {
-        console.error('Error retrieving data:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-    finally {
-        await connection.close()
-    }
-}
-
-
-
-export async function getInsuranceData_Alert(req, res) {
-    const connection = await getConnection(res)
-    const COMPCODE=String(req.headers?.compcode).toUpperCase()
-    try {
-        
-
-        const sql = ` 
-SELECT ROWNUM SNO,AA.*
-FROM(SELECT A.DOCID,A.DOCDATE,C.INSURANCEDESC DESCOFINSASSET,B.OWNERSHIPP,D.VEHICLENO,D.VEHICLENAME,E.INSCOMPNAME INSUREDBY,
-B.INSREFNO POLICYNO,B.VALIDFROM,B.VALIDTO,B.VALIDTO-TO_DATE(SYSDATE) DUEDAYS,
-B.INSPREMIUMVALUE,B.TOTALPREMIUM,B.PAYMENTDETAILS,B.PAYMENTMODE,B.USEDBY
-FROM GTINSURANCE A
-JOIN GTINSURANCEDET B ON A.GTINSURANCEID=B.GTINSURANCEID
-JOIN GTINSDESCMAST C ON B.DESCOFINSASSET=C.GTINSDESCMASTID
-LEFT JOIN HRVEHMAST D ON B.VEHICLENO=D.HRVEHMASTID
-JOIN GTINSCOMPMAST E ON B.INSUREDBY=E.GTINSCOMPMASTID
-JOIN GTCOMPMAST F ON A.COMPCODE=F.GTCOMPMASTID
-WHERE F.COMPCODE='${COMPCODE}'  AND B.VALIDTO-TO_DATE(SYSDATE) between  0 and 30
-ORDER BY DUEDAYS)AA
-`
-        console.log(sql, 'sql60');
-        let result = await connection.execute(sql);
-        result = result.rows.map(row => ({
-            sno: row[0], docId: row[1], docDate: row[2], discoFinAsset: row[3], ownership: row[4], vehNo: row[5], vehName: row[6],
-            insuredby: row[7], policyNo: row[8], validFrom: row[9],
-            validTo: row[10], dueDays: row[11], insPremiumValue: row[12],
-            totalPremium: row[13], paymentDetails: row[14], paymentMode: row[
-                15],
-                 usedby: row[16]
-
-        }))
-
-       
-        
-        return res.json({
-            statusCode: 0, data: result
-        })
-    }
-    catch (err) {
-        console.error('Error retrieving data:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-    finally {
-        await connection.close()
-    }
-}
-
-
-
-
-
-
 
 export async function getTotalStrength(req, res) {
     const connection = await getConnection(res)
@@ -795,11 +690,11 @@ export async function getFilterEmployees(req,res) {
              const admin=req?.query?.admin
               try {
               
-                const result =await prisma_Connector.user.findMany({select:{Idcard:true},where:admin ? {Idcard:{not:"undefined"}} : {hod}})
+                const result = await prisma_Connector.user.findMany({select:{idCard:true},where:admin ? {idCard:{not:"undefined"}} : {hod}})
 
                 console.log("userlog",result);
                 
-                  return res.json({ statusCode: 0, data: result })
+                  return res.json({ statusCode: 0, data: result.map(u => ({ ...u, Idcard: u.idCard })) })
                  
             }
             catch (err) {
@@ -1176,7 +1071,7 @@ export async function getUserMobData(req,res) {
       try {
         const sql =
             `SELECT * FROM MOBUSERVIEW  where IDCARD=:Idcard and GCOMPCODE=:GCOMPCODE`
-        const fcm_data=await prisma_Connector?.user?.findUnique({where:{Idcard:Idcard},select:{fcm:true,level:true}})
+        const fcm_data=await prisma_Connector?.user?.findUnique({where:{idCard:Idcard},select:{fcm:true,level:true}})
         
    
         const result = await connection.execute(sql,{GCOMPCODE,Idcard})
@@ -1519,7 +1414,7 @@ ORDER BY
         const result = await connection.execute(sql)
        
         
-        return res.json({ statusCode: 0, data: result })
+        return res.json({ statusCode: 0, data: result.map(u => ({ ...u, Idcard: u.idCard })) })
     }
     catch (err) {
         console.error('Error retrieving data:', err);
@@ -1966,7 +1861,7 @@ export async function getAgewiseESI(req, res) {
     return res.status(200).json({ success: true, data: [] });
   }
 
-  // Build search filters — FF is MISTABLE alias in this query
+  // Build search filters Ã¢â‚¬â€ FF is MISTABLE alias in this query
   let searchClause = "";
   if (search.FNAME)
     searchClause += ` AND LOWER(FF.FNAME) LIKE LOWER('%${search.FNAME}%')`;
@@ -2297,7 +2192,7 @@ export async function getOTwagesdet(req, res) {
 
 export async function getpfdet(req, res) {
   const connection = await getConnection(res);
-  const { filterBuyer, search = {}, filterPeriod } = req.query; // ← pass payperiod as param
+  const { filterBuyer, search = {}, filterPeriod } = req.query; // Ã¢â€ Â pass payperiod as param
 
   // Guard: prevent IN () crash
   if (!filterBuyer || filterBuyer.trim() === "") {

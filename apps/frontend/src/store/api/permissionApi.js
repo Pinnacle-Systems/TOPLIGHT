@@ -83,6 +83,17 @@ export const permissionApi = createApi({
             }),
             invalidatesTags: ["requestPermission"],
         }),
+        getHod_showable_data: builder.query({
+            query: ({ params } = {}) => ({
+                url: PERMISSION_BASE,
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+                params,
+            }),
+            providesTags: ['Permission'],
+        }),
     }),
 });
 
@@ -93,6 +104,7 @@ export const {
     useAddPermission_MasterMutation,
     useRequestPermissionMutation,
     useRequestPermission_ApprovalMutation,
+    useGetHod_showable_dataQuery,
 } = permissionApi;
 
 export default permissionApi;

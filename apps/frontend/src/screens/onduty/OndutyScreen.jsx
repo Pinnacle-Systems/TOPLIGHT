@@ -45,6 +45,8 @@ import OndutyActiveTrip from './OndutyActiveTrip';
 import OndutyReachedTrip from './OndutyReachedTrip';
 import OndutyEntryForm from './OndutyEntryForm';
 import OndutyModificationModal from './OndutyModificationModal';
+import OndutyStartKmModal from './OndutyStartKmModal';
+import OndutyEndKmModal from './OndutyEndKmModal';
 import CameraModal from '../../components/modal/CameraModal';
 import { useAppTheme } from '../../theme';
 
@@ -70,11 +72,12 @@ export default function OndutyScreen() {
     const [compressedPhoto, setCompressedPhoto] = useState(null);
     const [isCameraModal, setIsCameraModal] = useState(false);
     const [isBrowseModalOpen, setIsBrowseModalOpen] = useState(false);
+    const [isStartKmModalOpen, setIsStartKmModalOpen] = useState(false);
+    const [isEndKmModalOpen, setIsEndKmModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-    const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
 
     // Queries
     const { data: docidData, refetch: refetchDocId } = useGetDocIDQuery();
@@ -93,7 +96,7 @@ export default function OndutyScreen() {
         { VEHICLENO: formState.vechileno },
         { skip: !formState.isKmEntryEnabled || !formState.vechileno }
     );
-    const lastRecordedKm = kmData?.data?.end_km || kmData?.data?.start_km;
+    const lastRecordedKm = kmData?.data?.km || kmData?.data?.end_km || kmData?.data?.start_km;
 
     const approvalType = String(UserSelect?.approval || 'HOD').toUpperCase();
     const hod = String(UserSelect?.hod || '').trim();
@@ -208,11 +211,13 @@ export default function OndutyScreen() {
             try {
                 setLoadingLocation(true);
                 const coords = await getCurrentLocationAsync(10000);
-                if (isMounted && coords) {
+                if (isMounted && coords && (Number(coords.latitude) !== 0 || Number(coords.longitude) !== 0)) {
                     dispatch(setOndutyLocation({
-                        latitude: coords.latitude || 0,
-                        longitude: coords.longitude || 0,
-                        address: coords.address || 'GPS coordinates ready',
+                        latitude: Number(coords.latitude),
+                        longitude: Number(coords.longitude),
+                        address: coords.address && coords.address !== 'Location unavailable'
+                            ? coords.address
+                            : `Near ${Number(coords.latitude).toFixed(4)}, ${Number(coords.longitude).toFixed(4)}`,
                     }));
                 }
             } catch (err) {
@@ -306,7 +311,20 @@ export default function OndutyScreen() {
     };
 
     const handleStartOnduty = () => {
+        if (formState.isKmEntryEnabled) {
+            const hasVehicle = Boolean(formState.vechileno);
+            const hasStartKm = Boolean(formState.start_km && String(formState.start_km).trim() !== '');
+            if (!hasVehicle || !hasStartKm) {
+                setIsStartKmModalOpen(true);
+                return;
+            }
+        }
         handleSubmitIN(compressedPhoto);
+    };
+
+    const handleStartKmConfirm = ({ vehicle, startKm: enteredKm }) => {
+        if (vehicle) dispatch(setOndutyField({ vechileno: vehicle }));
+        if (enteredKm) dispatch(setOndutyField({ start_km: enteredKm }));
     };
 
     // ── Render States ───────────────────────────────────────────────────────────
@@ -371,6 +389,7 @@ export default function OndutyScreen() {
                         isKmEntryEnabled={formState.isKmEntryEnabled}
                         reachedKm={formState.reached_km}
                         onChangeReachedKm={onChangeReachedKm}
+                        onOpenEndKmModal={() => setIsEndKmModalOpen(true)}
                     />
                 ) : data_IN?.data?.docid && data_IN?.data?.inout === 'IN' ? (
                     /* 2. Active Trip (IN) State */
@@ -379,8 +398,6 @@ export default function OndutyScreen() {
                         onSubmitOut={handleSubmitOUT}
                         isSubmitting={isSubmitting}
                         isKmEntryEnabled={formState.isKmEntryEnabled}
-                        endKm={formState.end_km}
-                        onChangeEndKm={onChangeEndKm}
                     />
                 ) : (
                     /* 3. New Entry Form State */
@@ -407,12 +424,9 @@ export default function OndutyScreen() {
                         isKmEntryEnabled={formState.isKmEntryEnabled}
                         vehicleOptions={formState.category_vechileno}
                         selectedVehicle={formState.vechileno}
-                        onSelectVehicle={onSelectVehicle}
-                        vehicleDropdownOpen={vehicleDropdownOpen}
-                        setVehicleDropdownOpen={setVehicleDropdownOpen}
                         startKm={formState.start_km}
-                        onChangeStartKm={onChangeStartKm}
                         lastRecordedKm={lastRecordedKm}
+                        onOpenKmModal={() => setIsStartKmModalOpen(true)}
                         // Photo & Submit
                         photoUri={compressedPhoto}
                         onOpenCamera={() => setIsCameraModal(true)}
@@ -424,6 +438,30 @@ export default function OndutyScreen() {
                     </>
                 )}
             </ScrollView>
+
+            {/* Start KM Modal */}
+            <OndutyStartKmModal
+                visible={isStartKmModalOpen}
+                onClose={() => setIsStartKmModalOpen(false)}
+                vehicleOptions={formState.category_vechileno}
+                selectedVehicle={formState.vechileno}
+                onSelectVehicle={onSelectVehicle}
+                startKm={formState.start_km}
+                onChangeStartKm={onChangeStartKm}
+                lastRecordedKm={lastRecordedKm}
+                onConfirm={handleStartKmConfirm}
+            />
+
+            {/* End KM Modal */}
+            <OndutyEndKmModal
+                visible={isEndKmModalOpen}
+                onClose={() => setIsEndKmModalOpen(false)}
+                reachedData={reachedData?.data}
+                reachedKm={formState.reached_km}
+                onChangeReachedKm={onChangeReachedKm}
+                onConfirmReached={handleReached}
+                isSubmitting={isSubmitting}
+            />
 
             {/* Camera Modal */}
             <CameraModal

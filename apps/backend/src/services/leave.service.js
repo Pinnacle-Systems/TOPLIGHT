@@ -4,6 +4,7 @@ import { getConnection, fetchActiveFinYearFromDB } from "../constants/dbConnecti
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { generateNumericId } from "../utils/uniqueId.js";
 import { log } from "node:console";// Function exported through global db configuration now
+import { mapLeave, mapLeaveSingle } from "../utils/responseMapper.js";
 
 
 export async function get(req, res) {
@@ -443,20 +444,20 @@ export async function add_requestLeave(req, res) {
     try {
         const hodIdStr = String(data.hod).trim();
         const hodUser = await prisma_Connector.user.findFirst({
-            where: { Idcard: hodIdStr }
+            where: { idCard: hodIdStr }
         });
         if (!hodUser) {
             await prisma_Connector.user.create({
                 data: {
-                    username: `hod_${hodIdStr}_${Date.now()}`,
-                    Idcard: hodIdStr,
+                    userName: `hod_${hodIdStr}_${Date.now()}`,
+                    idCard: hodIdStr,
                     level: 'hod',
                 }
             });
         }
         if (hrVal && hrVal !== hodIdStr) {
             const hrUser = await prisma_Connector.user.findFirst({
-                where: { Idcard: hrVal }
+                where: { idCard: hrVal }
             });
             if (!hrUser) {
                 await prisma_Connector.user.create({
@@ -476,13 +477,13 @@ export async function add_requestLeave(req, res) {
     try {
         const userIdStr = String(data.userId).trim();
         const currentUser = await prisma_Connector.user.findFirst({
-            where: { Idcard: userIdStr }
+            where: { idCard: userIdStr }
         });
         if (!currentUser) {
             await prisma_Connector.user.create({
                 data: {
-                    username: data.empname || data.username || `emp_${userIdStr}_${Date.now()}`,
-                    Idcard: userIdStr,
+                    userName: data.empName || data.userName || `emp_${userIdStr}_${Date.now()}`,
+                    idCard: userIdStr,
                     level: 'user',
                 }
             });
@@ -495,19 +496,19 @@ export async function add_requestLeave(req, res) {
     try {
         const createdByStr = String(data.createdBy || data.userId).trim();
         if (createdByStr && createdByStr !== String(data.userId).trim()) {
-            const cbUser = await prisma_Connector.user.findFirst({ where: { Idcard: createdByStr } });
+            const cbUser = await prisma_Connector.user.findFirst({ where: { idCard: createdByStr } });
             if (!cbUser) {
                 await prisma_Connector.user.create({
-                    data: { username: `user_${createdByStr}_${Date.now()}`, Idcard: createdByStr, level: 'user' }
+                    data: { userName: `user_${createdByStr}_${Date.now()}`, idCard: createdByStr, level: 'user' }
                 });
             }
         }
         const modifiedByStr = String(data.modified_By || data.userId).trim();
         if (modifiedByStr && modifiedByStr !== createdByStr && modifiedByStr !== String(data.userId).trim()) {
-            const mbUser = await prisma_Connector.user.findFirst({ where: { Idcard: modifiedByStr } });
+            const mbUser = await prisma_Connector.user.findFirst({ where: { idCard: modifiedByStr } });
             if (!mbUser) {
                 await prisma_Connector.user.create({
-                    data: { username: `user_${modifiedByStr}_${Date.now()}`, Idcard: modifiedByStr, level: 'user' }
+                    data: { userName: `user_${modifiedByStr}_${Date.now()}`, idCard: modifiedByStr, level: 'user' }
                 });
             }
         }
@@ -546,13 +547,13 @@ export async function add_requestLeave(req, res) {
     try {
         const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
         const initialResult = await prisma_Connector.leaveEntry.create({
-            data: { ...data, docid: tempDocid }
+            data: { ...data, docId: tempDocid }
         });
         const paddedId = initialResult.id.toString().padStart(6, '0');
         const finalDocid = `${data.compCode}/LEV-${paddedId}`;
         const result = await prisma_Connector.leaveEntry.update({
             where: { id: initialResult.id },
-            data: { docid: finalDocid }
+            data: { docId: finalDocid }
         });
         var to = data?.toDate?.split("T")[0];
         var from = data?.fromDate?.split("T")[0];
@@ -564,7 +565,7 @@ export async function add_requestLeave(req, res) {
             TLTYPE: data?.tltype,
             FLTYPE: data?.fltype,
             TODATE: to,
-            DOCID: result?.docid,
+            DOCID: result?.docId,
             APPROVALSTATUS: data?.approvalStatus || "pending",
             REASON: data?.reason,
             LEAVETYPE: data?.ltype,    
@@ -603,7 +604,7 @@ export async function add_requestLeave(req, res) {
             `;     
             const result_auvit = await connection.execute(sql, auvit_data); 
             if (result_auvit?.rowsAffected > 0) {
-                await prisma_Connector?.leaveEntry?.update({ where: { docid: result?.docid }, data: { create: 1 } });
+                await prisma_Connector?.leaveEntry?.update({ where: { docId: result?.docId }, data: { create: 1 } });
                 return res.json({ status: 1, data: { ...result, count: result?.id } });
             } else {
                 await prisma_Connector?.leaveEntry?.delete({ where: { id: result?.id } });
@@ -646,8 +647,8 @@ export async function get__per(req, res) {
     console.log(id);
     
         try {
-            const result=await  prisma_Connector.leaveEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
-            res.json({status:1,data:result}) 
+            const result=await  prisma_Connector.leaveEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdByUser:{select:{userName:true,idCard:true}},modifiedByUser:{select:{userName:true,idCard:true}}}});
+            res.json({status:1,data:result.map(mapLeave)})
         }
         catch (err) {
            console.log(err);
@@ -704,7 +705,7 @@ const value=req.query.value
         const rejectBy=req?.body?.rejectBy
         const connection = await getConnection(res)
              try {
-             const result=await  prisma_Connector.leaveEntry.update({where:{docid},data:{approvalStatus:p_app,approvedBy,rejectBy}})
+             const result=await  prisma_Connector.leaveEntry.update({where:{docId:docid},data:{approvalStatus:p_app,approvedBy,rejectBy}})
                  if(result?.id){
                     //APPROVED_BY=:approvedBy,REJECTED_BY=:rejectBy
                     
@@ -730,7 +731,7 @@ SELECT DISTINCT A.* FROM LEAVEMOB A WHERE A.DOCID = :DOCID
 )`     
  await connection.execute(sql,{DOCID:docid}) 
 
-  var levaeaupdate=  await prisma_Connector?.leaveEntry?.update({where:{docid:result?.docid}, data:{update:1}})
+  var levaeaupdate=  await prisma_Connector?.leaveEntry?.update({where:{docId:result?.docId}, data:{update:1}})
 
     
 
@@ -742,7 +743,7 @@ SELECT DISTINCT A.* FROM LEAVEMOB A WHERE A.DOCID = :DOCID
               
             }else{
 
-             await  prisma_Connector?.permissionEntry?.delete({where:{docid:docid}})
+             await  prisma_Connector?.permissionEntry?.delete({where:{docId:docid}})
             
                 res.json({status:0,message:"Failed to Request !"})   
             }

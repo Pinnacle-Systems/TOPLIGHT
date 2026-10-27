@@ -265,19 +265,6 @@ const MisDashboard = createApi({
       },
       providesTags: ["MisDashboard"],
     }),
-    getMisDashboardOrdersInHand: builder.query({
-      query: ({ params }) => {
-        return {
-          url: MIS_DASHBOARD + "/ordersInHand",
-          method: "GET",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-          params,
-        };
-      },
-      providesTags: ["MisDashboard"],
-    }),
     getSalaryAgewise: builder.query({
       query: ({ params }) => {
         return {
@@ -874,7 +861,6 @@ export const {
   useGetMisDashboardBgDetQuery,
   useGetMisDashboardPfDataDetQuery,
   useGetMisDashboardEsiDataDetQuery,
-  useGetMisDashboardOrdersInHandQuery,
   useGetMisDashboardOrdersInHandMonthWiseQuery,
   useGetMisDashboardActualVsBudgetValueMonthWiseQuery,
   useGetYearlyCompQuery,

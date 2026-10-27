@@ -32,7 +32,6 @@ import {
   Leave,
   Permission,
   Notification,
-  Advance,
   Role,
   Onduty,
   attendance
@@ -88,7 +87,6 @@ app.use('/ordManagement', ordManagement)
 app.use('/leave',Leave)
 app.use('/Permission',Permission)
 app.use('/Notifi',Notification)
-app.use("/advance",Advance)
 app.use("/onduty",Onduty)
 app.use("/attendance",attendance)
 
@@ -304,19 +302,7 @@ io.on('connection', client => {
 
 
 
-    client.on("advance_request", (data) => {
-  client.broadcast.emit("get_Notifi_advance_id:"+data.compcode+""+data.hod, {
-    data,
-  });
-   })
 
-
-     client.on("advance_Approval_Response", (data) => {
-  client.broadcast.emit("get_advance_Approval_Notifi:"+data.compcode+""+data.Idcard, {
-    data,
-  });
-   }) 
-   
 
 });
 

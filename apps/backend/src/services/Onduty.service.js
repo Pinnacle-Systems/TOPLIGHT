@@ -1,239 +1,272 @@
 import { prisma_Connector } from "../../index.js";
 import fs from "fs"
 import { v4 as uuidv4 } from 'uuid';
-
-import { upload } from '../utils/multer.js';
 import path from "path";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { getConnection } from "../constants/dbConnection.js";
-import { generateKey } from "crypto";
 import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
 import { compressedFilePaths, jsonFilePaths } from "../utils/paths.js";
 import { __readStream } from "../utils/streams.js";
+import { mapOnduty, mapOndutyeSingle, mapOndutyMaster, mapOndutyMasterList } from "../utils/responseMapper.js";
 
 import { promises as fsp } from 'fs';
 import fetch from "node-fetch";
 import { gunzipSync } from 'fflate';
 
 async function getAddressFromCoords(lat, lon) {
-    if (!lat || !lon) return null;
-    try {
-        const url = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=uCLvWhKdNKupgoRI1jEfdpo8Uca7OxMu&radius=50&language=en-US`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const best = data.addresses?.[0]?.address;
-        const address = best?.freeformAddress ||
-            `${best?.streetNumber || ''} ${best?.streetName || ''}, ${best?.municipality || 'Unknown'}`.trim();
-        return address || `Near ${lat}, ${lon}`;
-    } catch (e) {
-        return `Near ${lat}, ${lon}`;
-    }
+  if (!lat || !lon) return null;
+  const nLat = Number(lat);
+  const nLon = Number(lon);
+  if (isNaN(nLat) || isNaN(nLon) || (nLat === 0 && nLon === 0)) return null;
+
+  try {
+    const url = `https://api.tomtom.com/search/2/reverseGeocode/${nLat},${nLon}.json?key=uCLvWhKdNKupgoRI1jEfdpo8Uca7OxMu&radius=50&language=en-US`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const best = data.addresses?.[0]?.address;
+    if (!best) return null;
+
+    const street = `${best?.streetNumber || ''} ${best?.streetName || ''}`.trim();
+    const municipality = best?.municipality || best?.countrySubdivision || '';
+    const rawAddr = best?.freeformAddress || (street ? `${street}, ${municipality}` : municipality);
+    const clean = String(rawAddr || '').trim().replace(/^,\s*/, '');
+    return clean && clean !== 'Unknown' && clean !== ', Unknown' ? clean : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function get__Onduty(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const hod=req.query?.hod
-    const id=req.query?.id
-        try {
-            const result=await  prisma_Connector.onduty.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}],create:1} : {compCode:COMPCODE,userId:id,create:1},include:{userdata:{select:{Employee:true,username:true,Idcard:true}},createdBy_user:{select:{Employee:true,username:true,Idcard:true}},modifiedBy_user:{select:{Employee:true,username:true,Idcard:true}}}});
-             res.json({status:1,data:result}) 
-        }
-        catch (err) {
-           console.log(err);
-        }
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  const hod = req.query?.hod;
+  const id = req.query?.id;
+  try {
+    const result = await prisma_Connector.onduty.findMany({
+      where: hod
+        ? { compCode: COMPCODE, OR: [{ hod: hod }, { hr: hod }], create: 1 }
+        : { compCode: COMPCODE, userId: id, create: 1 },
+      include: {
+        userData: { select: { userName: true, idCard: true } },
+        createdByUser: { select: { userName: true, idCard: true } },
+        modifiedByUser: { select: { userName: true, idCard: true } }
+      }
+    });
+    res.json({ status: 1, data: (result || []).map(mapOnduty) });
+  }
+  catch (err) {
+    console.log(err);
+    res.json({ status: 0, data: [] });
+  }
 }
 
 
 
 
 export async function get__Onduty_edit(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    // const hod=req.query?.hod
-    // const id=req.query?.id
-        try {
-            const result=await  prisma_Connector.onduty.findMany({where:{compCode:COMPCODE}});
-             res.json({status:1,data:result}) 
-        }
-        catch (err) {
-           console.log(err);
-        }
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  try {
+    const result = await prisma_Connector.onduty.findMany({ where: { compCode: COMPCODE } });
+    res.json({ status: 1, data: (result || []).map(mapOnduty) });
+  }
+  catch (err) {
+    console.log(err);
+    res.json({ status: 0, data: [] });
+  }
 }
 
 
 
 export async function get__vechilekm(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-        const VEHICLENO=req.query?.VEHICLENO
-    // const id=req.query?.id
-        try {
-            const result=await  prisma_Connector.vechilekm.findFirst({where:{COMPCODE,VEHICLENO}});
-             res.json({status:1,data:result}) 
-        }
-        catch (err) {
-           console.log(err);
-        }
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase()
+  const VEHICLENO = req.query?.VEHICLENO
+  // const id=req.query?.id
+  try {
+    const result = await prisma_Connector.vechilekm.findFirst({ where: { compCode: COMPCODE, vehicleNo: VEHICLENO } });
+    res.json({ status: 1, data: result })
+  }
+  catch (err) {
+    console.log(err);
+  }
 }
 
 
 
 export async function Add__vechilekm(req, res) {
-        const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-        const Idcard=String(req?.headers?.idcard)
-        const VEHICLE=req?.body
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase()
+  const Idcard = String(req?.headers?.idcard)
+  const VEHICLE = req?.body
 
-       
-        
-    // const id=req.query?.id
-        try {
-            const result=await  prisma_Connector.vechilekm.upsert({where:{COMPCODE,VEHICLENO:VEHICLE?.VEHICLENO || ""+Idcard},create:VEHICLE?.VEHICLENO ? {...VEHICLE,COMPCODE,VEHICLENO:""+Idcard}:{...VEHICLE,COMPCODE},update:VEHICLE?.VEHICLENO ? {...VEHICLE,COMPCODE,VEHICLENO:""+Idcard}:{...VEHICLE,COMPCODE}});
-            if(result?.id){
-            
-              
-             res.json({status:1,data:VEHICLE?.VEHICLENO ? result : {...result,VEHICLENO:undefined}}) 
-            }else{
-              res.json({status:0,data:[]}) 
-            }
-        }
-        catch (err) {
-           console.log(err);
-        }
+
+
+  // const id=req.query?.id
+  try {
+    const result = await prisma_Connector.vechilekm.upsert({ where: { vehicleNo: VEHICLE?.vehicleNo || "" + Idcard }, create: VEHICLE?.vehicleNo ? { ...VEHICLE, compCode: COMPCODE, vehicleNo: "" + Idcard } : { ...VEHICLE, compCode: COMPCODE }, update: VEHICLE?.vehicleNo ? { ...VEHICLE, compCode: COMPCODE, vehicleNo: "" + Idcard } : { ...VEHICLE, compCode: COMPCODE } });
+    if (result?.id) {
+
+
+      res.json({ status: 1, data: VEHICLE?.VEHICLENO ? result : { ...result, VEHICLENO: undefined } })
+    } else {
+      res.json({ status: 0, data: [] })
+    }
+  }
+  catch (err) {
+    console.log(err);
+  }
 }
 
 
 
 
 export async function get__Vechile(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const  where=req?.query?.where ? JSON.parse(req?.query?.where) : undefined
-console.log("where",where);
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  const where = req?.query?.where ? JSON.parse(req?.query?.where) : undefined;
+  console.log("where", where);
 
-   
-    const connection = await getConnection(res)
-        try {
+  let connection = null;
+  try {
+    connection = await getConnection(res);
+    if (!connection) return;
 
-                const sql = `
-             SELECT ROWNUM SNO,AA.*
-       FROM(SELECT D.VEHICLENO "vechileno",  D.VEHICLENAME||' - '|| D.VEHICLENO  "vechilename" ,D.VEHINCHARGE USEDBY
-FROM GTINSURANCE A
-JOIN GTINSURANCEDET B ON A.GTINSURANCEID=B.GTINSURANCEID
-JOIN GTINSDESCMAST C ON B.DESCOFINSASSET=C.GTINSDESCMASTID
-LEFT JOIN HRVEHMAST D ON B.VEHICLENO=D.HRVEHMASTID
-JOIN GTINSCOMPMAST E ON B.INSUREDBY=E.GTINSCOMPMASTID
-JOIN GTCOMPMAST F ON A.COMPGROUP=F.COMPCODE
-WHERE F.COMPCODE=:COMPCODE  AND B.VALIDTO-TO_DATE(SYSDATE) >= 0 )AA
-`;
+    const sql = `
+             SELECT ROWNUM SNO, AA.*
+             FROM (
+                SELECT D.VEHICLENO "vechileno", D.VEHICLENAME||' - '|| D.VEHICLENO "vechilename", D.VEHINCHARGE USEDBY
+                FROM GTINSURANCE A
+                JOIN GTINSURANCEDET B ON A.GTINSURANCEID=B.GTINSURANCEID
+                JOIN GTINSDESCMAST C ON B.DESCOFINSASSET=C.GTINSDESCMASTID
+                LEFT JOIN HRVEHMAST D ON B.VEHICLENO=D.HRVEHMASTID
+                JOIN GTINSCOMPMAST E ON B.INSUREDBY=E.GTINSCOMPMASTID
+                JOIN GTCOMPMAST F ON A.COMPGROUP=F.COMPCODE
+                WHERE F.COMPCODE=:COMPCODE AND B.VALIDTO-TO_DATE(SYSDATE) >= 0
+             ) AA
+        `;
 
+    const oracleResult = await connection.execute(sql, { COMPCODE });
+    const transformedResult = oracleResult?.rows?.map(row => {
+      const keyValuePair = {};
+      oracleResult.metaData.forEach((col, index) => {
+        keyValuePair[col.name] = row[index];
+      });
+      return keyValuePair;
+    });
 
-//${ where ? 'AND D.VEHINCHARGE=:USEDBY' : ""}
-            const oracleResult = await connection.execute(sql, {COMPCODE});        
-         const transformedResult = oracleResult?.rows?.map(row => {
-            const keyValuePair = {};
-            // Assuming the first row contains the column names
-            oracleResult.metaData.forEach((col, index) => {
-              keyValuePair[col.name] = row[index];
-            });
-            return keyValuePair;
-           });
-          
-          return res.json({ statusCode: 0, data: transformedResult })
-           
-        }
-        catch (err) {
-          console.log(err);
-           return res.json({ statusCode: 0, data: [] })
-           
-        }
+    return res.json({ statusCode: 0, data: transformedResult || [] });
+  }
+  catch (err) {
+    if (err.errorNum === 942 || err.code === 'ORA-00942') {
+      console.warn(`[get__Vechile] Vehicle/insurance tables not found in Oracle schema (ORA-00942) for ${COMPCODE}. Returning empty vehicle list.`);
+    } else {
+      console.error('get__Vechile error:', err);
+    }
+    return res.json({ statusCode: 0, data: [] });
+  }
+  finally {
+    try {
+      await connection?.close();
+    } catch (_) { }
+  }
 }
 
 export async function getPermissionRequest(req, res) {
-  
-    const hod=req?.query?.hod
-    const emp=req?.query?.emp
 
-   
-    
- const COMPCODE=String(req?.headers?.compcode).toUpperCase()
- if(hod){
+  const hod = req?.query?.hod
+  const emp = req?.query?.emp
+
+
+
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase()
+  if (hod) {
     try {
-        const result = await prisma_Connector?.permissionEntry?.findMany({where:{compCode:COMPCODE,hod,approvalStatus:"pending",AND:{create:1}},include:{userdata:{select:{
-            email:true,username:true,Idcard:true
-        }}},})
+      const result = await prisma_Connector?.permissionEntry?.findMany({
+        where: { compCode: COMPCODE, hod, approvalStatus: "pending", AND: { create: 1 } }, include: {
+          userData: {
+            select: {
+              email: true, userName: true, idCard: true
+            }
+          }
+        },
+      })
 
-      const result_Leave=await prisma_Connector?.leaveEntry?.findMany({where:{compCode:COMPCODE,hod,approvalStatus:"pending",AND:{create:1}},include:{userdata:{select:{
-            email:true,username:true,Idcard:true
-        }}},})
+      const result_Leave = await prisma_Connector?.leaveEntry?.findMany({
+        where: { compCode: COMPCODE, hod, approvalStatus: "pending", AND: { create: 1 } }, include: {
+          userData: {
+            select: {
+              email: true, userName: true, idCard: true
+            }
+          }
+        },
+      })
 
-        const advance_request=await prisma_Connector?.advanceRequest?.findMany({where:{compCode:COMPCODE,hod,approvalStatus:"pending",AND:{create:1}},include:{userdata:{select:{
-            email:true,username:true,Idcard:true
-        }}},})
+      console.log([...result, ...result_Leave]);
 
-        console.log([...result,...result_Leave]);
-        
-        return res.json({ statusCode: 0, data: [...result,...result_Leave,...advance_request] })
+      return res.json({ statusCode: 0, data: [...result, ...result_Leave] })
     }
     catch (err) {
-        console.error('Error retrieving data:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+      console.error('Error retrieving data:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
     }
-}else if(emp){
-    return res.json({ statusCode: 0, data: []})
-}
-}
-
-
-async function get_last_Row_Onduty(COMPCODE){
-     const result=await  prisma_Connector.onduty.findFirst({
-             orderBy: {
-                  id: 'desc',
-                },
-               select: {
-                  id: true,
-              },where:{compCode:COMPCODE}
-            })
-
-            return result
+  } else if (emp) {
+    return res.json({ statusCode: 0, data: [] })
+  }
 }
 
-// ── INTERNAL HELPER FOR ATOMIC SEQUENCES ──────────────────────────────────
+
+async function get_last_Row_Onduty(COMPCODE) {
+  const result = await prisma_Connector.onduty.findFirst({
+    orderBy: {
+      id: 'desc',
+    },
+    select: {
+      id: true,
+    }, where: { compCode: COMPCODE }
+  })
+
+  return result
+}
+
+// Ã¢â€â‚¬Ã¢â€â‚¬ INTERNAL HELPER FOR ATOMIC SEQUENCES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Returns { count: number, docid: string }
 async function getNextAtomicSequence(COMPCODE) {
-    let counter;
-    try {
-        counter = await prisma_Connector.permissionDocID.update({
-            where: { id: 1 },
-            data: { count: { increment: 1 } }
-        });
-    } catch (err) {
-        if (err.code === 'P2025') {
-            counter = await prisma_Connector.permissionDocID.upsert({
-                where: { id: 1 },
-                create: { id: 1, count: 1000 },
-                update: { count: { increment: 1 } }
-            });
-        } else {
-            throw err;
-        }
+  let counter;
+  const docModel = prisma_Connector.permissionDocId || prisma_Connector.permissionDocID;
+  try {
+    counter = await docModel.update({
+      where: { id: 1 },
+      data: { count: { increment: 1 } }
+    });
+  } catch (err) {
+    if (err.code === 'P2025') {
+      counter = await docModel.upsert({
+        where: { id: 1 },
+        create: { id: 1, count: 1000 },
+        update: { count: { increment: 1 } }
+      });
+    } else {
+      throw err;
     }
-    const nextId = counter.count;
-    return {
-        count: nextId,
-        docid: `${COMPCODE}/OND-${String(nextId).padStart(6, '0')}`
-    };
+  }
+  const nextId = counter.count;
+  const docIdFormatted = `${COMPCODE}/OND-${String(nextId).padStart(6, '0')}`;
+  return {
+    count: nextId,
+    docId: docIdFormatted,
+    docid: docIdFormatted
+  };
 }
 
 export async function getDocId(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-  const Idcard   = String(req?.headers?.idcard);
+  const Idcard = String(req?.headers?.idcard);
 
   try {
     // 1. Return existing active session docid if found
     const activeSession = await prisma_Connector.onduty.findFirst({
       where: {
-        compCode:       COMPCODE,
-        idcard:         Idcard,
-        inout:          'IN',
+        compCode: COMPCODE,
+        idCard: Idcard,
+        inOut: 'IN',
         approvalStatus: { in: ['pending', 'approved'] },
       },
       orderBy: { id: 'desc' },
@@ -242,21 +275,22 @@ export async function getDocId(req, res) {
     if (activeSession) {
       return res.json({
         status: 1,
-        data: { count: activeSession.id, docid: activeSession.docid },
+        data: { count: activeSession.id, docId: activeSession.docId, docid: activeSession.docId },
       });
     }
 
-    // 2. ✅ PEEK only — read current counter, do NOT increment
-    const counter = await prisma_Connector.permissionDocID.findUnique({
+    // 2. PEEK only â€” read current counter, do NOT increment
+    const docModel = prisma_Connector.permissionDocId || prisma_Connector.permissionDocID;
+    const counter = await docModel?.findUnique({
       where: { id: 1 },
     });
 
-    const nextCount  = (counter?.count ?? 999) + 1;
+    const nextCount = (counter?.count ?? 999) + 1;
     const previewDocid = `${COMPCODE}/OND-${String(nextCount).padStart(6, '0')}`;
 
     return res.json({
       status: 1,
-      data: { count: nextCount, docid: previewDocid },
+      data: { count: nextCount, docid: previewDocid, docId: previewDocid },
     });
 
   } catch (err) {
@@ -267,133 +301,143 @@ export async function getDocId(req, res) {
 
 
 export async function getIn(req, res) {
-       const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-       const Idcard=String(req?.headers?.idcard)
-      
-        try {
-            const result=await  prisma_Connector.onduty.findFirst({
-                orderBy: {
-                  id: 'desc',
-                },include:{userdata:true},where:{compCode:COMPCODE,idcard:Idcard,inout:"IN",OR:[{approvalStatus:"approved"},{approvalStatus:"pending"}]}
-              });
-          
-            
-            
-            res.json({status:1,data:result}) 
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  const Idcard = String(req?.headers?.idcard);
+
+  try {
+    const result = await prisma_Connector.onduty.findFirst({
+      orderBy: {
+        id: 'desc',
+      },
+      include: { userData: true },
+      where: {
+        compCode: COMPCODE,
+        idCard: Idcard,
+        inOut: "IN",
+        OR: [{ approvalStatus: "approved" }, { approvalStatus: "pending" }]
+      }
+    });
+
+    if (result && (!result.inLocation || result.inLocation === 'Location unavailable' || !result.inLatitude || Number(result.inLatitude) === 0)) {
+      try {
+        const firstTrack = await prisma_Connector.location.findFirst({
+          where: { docId: result.docId },
+          orderBy: { id: 'asc' },
+        });
+        const bestTrack = firstTrack || await prisma_Connector.location.findFirst({
+          where: { userId: Idcard, compCode: COMPCODE },
+          orderBy: { id: 'desc' },
+        });
+        if (bestTrack && bestTrack.latitude && bestTrack.longitude && Number(bestTrack.latitude) !== 0) {
+          result.inLatitude = String(bestTrack.latitude);
+          result.inLongtiude = String(bestTrack.longitude);
+          result.inLocation = bestTrack.address || `Near ${Number(bestTrack.latitude).toFixed(4)}, ${Number(bestTrack.longitude).toFixed(4)}`;
+          await prisma_Connector.onduty.update({
+            where: { id: result.id },
+            data: {
+              inLocation: result.inLocation,
+              inLatitude: result.inLatitude,
+              inLongtiude: result.inLongtiude,
+            }
+          });
         }
-        catch (err) {
-           console.error('getIn Error:', err);
-           return res.status(500).json({
-             status: 0,
-             message: 'Failed to fetch active OnDuty session',
-           });
-        }
-        
+      } catch (healErr) {
+        console.warn('[getIn] Failed to heal departure location:', healErr);
+      }
     }
 
+    res.json({ status: 1, data: mapOnduty(result) });
+  }
+  catch (err) {
+    console.error('getIn Error:', err);
+    return res.status(500).json({
+      status: 0,
+      message: 'Failed to fetch active OnDuty session',
+    });
+  }
+}
 
-
-// ---------------------------------------------------------------------------
-// buildPrismaData
-// ---------------------------------------------------------------------------
-// Instead of spreading ...rest (which passes unknown/relation fields to Prisma),
-// we WHITELIST every scalar column explicitly.
-//
-// Relation fields from req.body that need special handling:
-//   userId   => userdata     { connect: { id } }
-//   category => category_data{ connect: { id } }
-//   hod      => scalar string (idcard of approver) — kept as-is
-//   hr       => scalar string (idcard of hr)       — kept as-is
-//
-// Fields intentionally excluded from Prisma (frontend-only):
-//   create, docCount, Isgo_onduty, docid
-// ---------------------------------------------------------------------------
 function buildPrismaData(body, photoname, in_time) {
   const {
     category,
     userId,
     hod,
     hr,
+    empName,
     empname,
     others,
     vechileno,
+    vehicleNo,
     start_km,
+    startKm,
     bunk,
     Svechilekm,
+    startVehicleKm,
     Evechilekm,
+    endVehicleKm,
     in_location,
+    inLocation,
     in_latitude,
+    inLatitude,
     in_longtiude,
+    inLongtiude,
     docdate,
+    docDate,
     group,
     to_onduty,
+    toOnduty,
   } = body;
 
-  // userId  -> plain scalar string FK, NOT a relation connect.
-  // category -> plain Int scalar FK, NOT a relation connect.
-  // Both relation connects (userdata, category_data) are intentionally
-  // avoided because they require the linked record to exist in MySQL,
-  // but users/categories may live only in Oracle.
   const data = {
-    hod:          hod          ?? null,
-    hr:           hr           ?? null,
-    empname:      empname      ?? null,
-    others:       others       ?? null,
-    vechileno:    vechileno    ?? null,
-    start_km:     start_km     ?? null,
-    bunk:         bunk         ?? null,
-    Svechilekm:   Svechilekm   ?? null,
-    Evechilekm:   Evechilekm   ?? null,
-    in_location:  in_location  ?? null,
-    in_latitude:  in_latitude  ?? null,
-    in_longtiude: in_longtiude ?? null,
-    docdate:      docdate ? new Date(docdate) : null,
-    group:        group        ?? 'onduty',
-    to_onduty:    to_onduty === true || to_onduty === 'true',
-    photo:        String(photoname).trim(),
-    in_time,
-    ...(userId   != null                          ? { userId:   String(userId)   } : {}),
+    hod: hod ?? null,
+    hr: hr ?? null,
+    empName: empName ?? empname ?? null,
+    others: others ?? null,
+    vehicleNo: vehicleNo ?? vechileno ?? null,
+    startKm: startKm ?? (start_km != null ? String(start_km) : null),
+    bunk: bunk ?? null,
+    startVehicleKm: startVehicleKm ?? (Svechilekm != null ? String(Svechilekm) : null),
+    endVehicleKm: endVehicleKm ?? (Evechilekm != null ? String(Evechilekm) : null),
+    inLocation: inLocation ?? in_location ?? null,
+    inLatitude: inLatitude ?? (in_latitude != null ? String(in_latitude) : null),
+    inLongtiude: inLongtiude ?? (in_longtiude != null ? String(in_longtiude) : null),
+    docDate: docDate ? new Date(docDate) : (docdate ? new Date(docdate) : new Date()),
+    group: group ?? 'onduty',
+    toOnduty: toOnduty === true || toOnduty === 'true' || to_onduty === true || to_onduty === 'true',
+    photo: photoname ? String(photoname).trim() : null,
+    inTime: in_time ?? null,
+    ...(userId != null ? { userId: String(userId) } : {}),
     ...(category != null && !isNaN(Number(category)) ? { category: Number(category) } : {}),
   };
 
   return data;
 }
 
-
-// ---------------------------------------------------------------------------
-// reserveDocid
-// Atomically reserves a unique docid via auto-increment PK.
-// Only minimal fields written on the temp row; full data written on update.
-// ---------------------------------------------------------------------------
 async function reserveDocid(COMPCODE, idcard) {
   const next = await getNextAtomicSequence(COMPCODE);
   const tempDocid = `TEMP-${uuidv4()}`;
 
   const tempRow = await prisma_Connector.onduty.create({
     data: {
-      docid:    tempDocid,
-      idcard:   idcard,
+      docId: tempDocid,
+      idCard: idcard,
       compCode: COMPCODE,
-      inout:    '',
-      create:   0,
+      inOut: '',
+      create: 0,
     },
   });
 
   const finalRow = await prisma_Connector.onduty.update({
     where: { id: tempRow.id },
-    data:  { docid: next.docid },
+    data: { docId: next.docId },
   });
 
   return finalRow;
 }
 
-
-// ---------------------------------------------------------------------------
-// stTrack
-// ---------------------------------------------------------------------------
 export async function stTrack(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-  const Idcard   = String(req?.headers?.idcard);
+  const Idcard = String(req?.headers?.idcard);
   const doctrack = req?.body?.docid;
 
   try {
@@ -401,22 +445,22 @@ export async function stTrack(req, res) {
 
     if (finalDocid) {
       const existing = await prisma_Connector.onduty.findUnique({
-        where: { docid: finalDocid },
+        where: { docId: finalDocid },
       });
-      if (!existing || existing.idcard !== Idcard) {
+      if (!existing || existing.idCard !== Idcard) {
         finalDocid = null;
       }
     }
 
     if (!finalDocid) {
       const reserved = await reserveDocid(COMPCODE, Idcard);
-      finalDocid = reserved.docid;
+      finalDocid = reserved.docId;
     }
 
     const result = await prisma_Connector.trackers.upsert({
-      where:  { UserId: Idcard },
-      create: { UserId: Idcard, isLive: true, COMPCODE, docid: finalDocid },
-      update: { isLive: true, COMPCODE, docid: finalDocid },
+      where: { userId: Idcard },
+      create: { userId: Idcard, isLive: true, compCode: COMPCODE, docId: finalDocid },
+      update: { isLive: true, compCode: COMPCODE, docId: finalDocid },
     });
 
     return res.json({ status: 1, data: result });
@@ -426,12 +470,8 @@ export async function stTrack(req, res) {
   }
 }
 
-
-// ---------------------------------------------------------------------------
-// requestOnduty
-// ---------------------------------------------------------------------------
 export async function requestOnduty(req, res) {
-  const COMPCODE  = String(req?.headers?.compcode).toUpperCase();
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
   const photoPath = req?.file?.path;
   const photoname = req?.file?.filename;
 
@@ -439,8 +479,8 @@ export async function requestOnduty(req, res) {
     if (photoPath && fs.existsSync(photoPath)) fs.unlinkSync(photoPath);
   };
 
-  let connection     = null;
-  let prismaRecord   = null;
+  let connection = null;
+  let prismaRecord = null;
   let isNewPrismaRow = false;
 
   try {
@@ -483,29 +523,64 @@ export async function requestOnduty(req, res) {
 
     // 2. Block duplicate active session
     if (!Isgo_onduty) {
-     const activeSession = await prisma_Connector.onduty.findFirst({
+      const activeSession = await prisma_Connector.onduty.findFirst({
         where: {
-          compCode:       COMPCODE,
-          idcard:         req.headers.idcard,
-          inout:          'IN',
+          compCode: COMPCODE,
+          idCard: req.headers.idcard,
+          inOut: 'IN',
           approvalStatus: { in: ['pending', 'approved'] },
-           },
-         });
+        },
+      });
       if (activeSession) {
         cleanupFile();
         return res.status(400).json({
-          status:  0,
+          status: 0,
           message: 'You already have an active on-duty session. Please close it first.',
         });
       }
     }
 
-    const in_time   = formatDateToOracle(new Date()).split(' ')[1];
-    
+    const in_time = formatDateToOracle(new Date()).split(' ')[1];
+
     // Auto-fetch backend location
-    if (req.body.in_latitude && req.body.in_longtiude) {
-      const addr = await getAddressFromCoords(req.body.in_latitude, req.body.in_longtiude);
-      if (addr) req.body.in_location = addr;
+    let numInLat = Number(req.body.in_latitude);
+    let numInLon = Number(req.body.in_longtiude);
+    let hasValidInCoords = Boolean(numInLat && numInLon && !(numInLat === 0 && numInLon === 0));
+
+    // Fallback: check recent tracked location in prisma.location if frontend didn't supply valid coordinates
+    if (!hasValidInCoords) {
+      try {
+        const lastTrack = await prisma_Connector.location.findFirst({
+          where: { userId: String(req.headers.idcard || req.body.idcard), compCode: COMPCODE },
+          orderBy: { id: 'desc' },
+        });
+        if (lastTrack && lastTrack.latitude && lastTrack.longitude && Number(lastTrack.latitude) !== 0) {
+          req.body.in_latitude = String(lastTrack.latitude);
+          req.body.in_longtiude = String(lastTrack.longitude);
+          numInLat = Number(lastTrack.latitude);
+          numInLon = Number(lastTrack.longitude);
+          hasValidInCoords = true;
+          if (lastTrack.address) {
+            req.body.in_location = lastTrack.address;
+          }
+        }
+      } catch (trackErr) {
+        console.warn('[requestOnduty] Fallback tracking lookup error:', trackErr);
+      }
+    }
+
+    if (hasValidInCoords) {
+      if (!req.body.in_location || req.body.in_location.includes('Unknown') || req.body.in_location === 'Location unavailable' || req.body.in_location === 'Location retrieved on submission' || req.body.in_location === 'GPS coordinates ready') {
+        const addr = await getAddressFromCoords(req.body.in_latitude, req.body.in_longtiude);
+        if (addr) req.body.in_location = addr;
+      }
+    } else {
+      req.body.in_latitude = null;
+      req.body.in_longtiude = null;
+    }
+
+    if (!req.body.in_location || req.body.in_location.includes('Unknown') || req.body.in_location === 'Location retrieved on submission' || req.body.in_location === 'GPS coordinates ready' || req.body.in_location === 'Location unavailable') {
+      req.body.in_location = hasValidInCoords ? `Near ${numInLat.toFixed(4)}, ${numInLon.toFixed(4)}` : 'Office / Base Location';
     }
 
     const prismaData = buildPrismaData(req.body, photoname, in_time);
@@ -513,8 +588,8 @@ export async function requestOnduty(req, res) {
     // Defensive FK check: verify userId exists in MySQL User table to prevent P2003
     if (prismaData.userId) {
       const userExists = await prisma_Connector.user.findFirst({
-        where: { Idcard: String(prismaData.userId) },
-        select: { Idcard: true },
+        where: { idCard: String(prismaData.userId) },
+        select: { idCard: true },
       });
       if (!userExists) {
         console.warn(`[requestOnduty] Warning: userId '${prismaData.userId}' not found in MySQL User table. Setting to null for MySQL record.`);
@@ -536,15 +611,15 @@ export async function requestOnduty(req, res) {
 
     // 3. Resolve or create Prisma row
     if (docid) {
-      const existing = await prisma_Connector.onduty.findUnique({ where: { docid } });
+      const existing = await prisma_Connector.onduty.findUnique({ where: { docId: docid } });
       const ownedByUser =
         existing &&
-        (existing.idcard === req.headers.idcard || existing.idcard === req.body.idcard);
+        (existing.idCard === req.headers.idcard || existing.idCard === req.body.idcard);
 
       if (ownedByUser) {
         prismaRecord = await prisma_Connector.onduty.update({
-          where: { docid: existing.docid },
-          data:  { ...prismaData, inout: 'IN', updatedAt: new Date() },
+          where: { docId: existing.docId },
+          data: { ...prismaData, inOut: 'IN', updatedAt: new Date() },
         });
         isNewPrismaRow = false;
       }
@@ -558,11 +633,11 @@ export async function requestOnduty(req, res) {
       // Step B: write all the real data into that reserved row
       prismaRecord = await prisma_Connector.onduty.update({
         where: { id: reserved.id },
-        data:  {
+        data: {
           ...prismaData,
-          inout:     'IN',
-          compCode:  COMPCODE,
-          idcard:    req.headers.idcard,
+          inOut: 'IN',
+          compCode: COMPCODE,
+          idCard: req.headers.idcard,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -571,34 +646,38 @@ export async function requestOnduty(req, res) {
 
     // 4. Oracle INSERT
     connection = await getConnection(res);
+    if (!connection) {
+      cleanupFile();
+      return;
+    }
 
     const oracleData = {
-      ID:             generateUniqueId_Number(),
-      DOCID:          prismaRecord.docid,
-      IDCARD:         prismaRecord.idcard,
-      EMPNAME:        prismaRecord.empname,
-      HOD:            prismaRecord.hod,
-      HR:             prismaRecord.hr,
+      ID: generateUniqueId_Number(),
+      DOCID: prismaRecord.docId,
+      IDCARD: prismaRecord.idCard,
+      EMPNAME: prismaRecord.empName,
+      HOD: prismaRecord.hod,
+      HR: prismaRecord.hr,
       APPROVALSTATUS: String(prismaRecord.approvalStatus ?? 'pending'),
-      USERID:         req.body.userId ?? null,
-      OTHERS:         prismaRecord.others,
-      GROUP_TYPE:     prismaRecord.group ?? 'onduty',
-      INOUT:          prismaRecord.inout,
-      PHOTO:          prismaRecord.photo,
-      COMPCODE:       String(prismaRecord.compCode),
-      IN_LOCATION:    prismaRecord.in_location,
-      IN_TIME:        in_time,
-      IN_LATITUDE:    prismaRecord.in_latitude,
-      IN_LONGTIUDE:   prismaRecord.in_longtiude,
-      VECHILENO:      prismaRecord.vechileno,
-      BUNK:           prismaRecord.bunk,
-      START_KM:       prismaRecord.start_km,
-      SVECHILEKM:     prismaRecord.Svechilekm,
-      CATEGORY:       Number(category) ?? 1,
-      CREATE_FLAG:    Number(create)   ?? 0,
-      TO_ONDUTY:      prismaRecord.to_onduty ? 1 : 0,
-      UPDATEDAT:      formatDateToOracle(prismaRecord.updatedAt),
-      CREATEDAT:      formatDateToOracle(prismaRecord.createdAt),
+      USERID: req.body.userId ?? null,
+      OTHERS: prismaRecord.others,
+      GROUP_TYPE: prismaRecord.group ?? 'onduty',
+      INOUT: prismaRecord.inOut,
+      PHOTO: prismaRecord.photo,
+      COMPCODE: String(prismaRecord.compCode),
+      IN_LOCATION: prismaRecord.inLocation,
+      IN_TIME: in_time,
+      IN_LATITUDE: prismaRecord.inLatitude,
+      IN_LONGTIUDE: prismaRecord.inLongtiude,
+      VECHILENO: prismaRecord.vehicleNo,
+      BUNK: prismaRecord.bunk,
+      START_KM: prismaRecord.startKm,
+      SVECHILEKM: prismaRecord.startVehicleKm,
+      CATEGORY: Number(category) ?? 1,
+      CREATE_FLAG: Number(create) ?? 0,
+      TO_ONDUTY: prismaRecord.toOnduty ? 1 : 0,
+      UPDATEDAT: formatDateToOracle(prismaRecord.updatedAt),
+      CREATEDAT: formatDateToOracle(prismaRecord.createdAt),
     };
 
     const sql = `
@@ -633,39 +712,31 @@ export async function requestOnduty(req, res) {
     await connection.commit();
 
     await prisma_Connector.onduty.update({
-      where: { docid: prismaRecord.docid },
-      data:  { create: 1 },
+      where: { docId: prismaRecord.docId },
+      data: { create: 1 },
     });
 
     await prisma_Connector.trackers.upsert({
-      where:  { UserId: prismaRecord.idcard },
-      create: { UserId: prismaRecord.idcard, isLive: true, COMPCODE, empname: prismaRecord.empname },
-      update: { UserId: prismaRecord.idcard, isLive: true, COMPCODE, empname: prismaRecord.empname },
+      where: { userId: prismaRecord.idCard },
+      create: { userId: prismaRecord.idCard, isLive: true, compCode: COMPCODE, empName: prismaRecord.empName },
+      update: { userId: prismaRecord.idCard, isLive: true, compCode: COMPCODE, empName: prismaRecord.empName },
     });
 
     return res.status(201).json({
-      status:  1,
+      status: 1,
       message: 'Onduty request created successfully',
-      data: {
-        id:        prismaRecord.id,
-        docid:     prismaRecord.docid,
-        category:  prismaRecord.category,
-        createdAt: prismaRecord.createdAt,
-        in_location: prismaRecord.in_location,
-        in_latitude: prismaRecord.in_latitude,
-        in_longtiude: prismaRecord.in_longtiude,
-      },
+      data: mapOnduty(prismaRecord),
     });
 
   } catch (err) {
     console.error('requestOnduty error:', err);
 
-    try { await connection?.rollback(); } catch (_) {}
+    try { await connection?.rollback(); } catch (_) { }
 
     if (isNewPrismaRow && prismaRecord?.id) {
       try {
         await prisma_Connector.onduty.delete({ where: { id: prismaRecord.id } });
-        console.log(`Rolled back Prisma row id=${prismaRecord.id} docid=${prismaRecord.docid}`);
+        console.log(`Rolled back Prisma row id=${prismaRecord.id} docid=${prismaRecord.docId}`);
       } catch (rbErr) {
         console.error('Prisma rollback failed:', rbErr);
       }
@@ -698,59 +769,55 @@ export async function requestOnduty(req, res) {
     }
 
     return res.status(500).json({
-      status:  0,
+      status: 0,
       message: 'Internal server error',
-      error:   process.env.NODE_ENV === 'development' ? err.message : undefined,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
 
   } finally {
-    await connection?.close();
+    try { await connection?.close(); } catch (_) { }
   }
 }
 
 export async function addOnduty_master(req, res) {
-      const  data=req?.body?.data
-       const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-          try {
-           const result=await  prisma_Connector.ondutyMaster.create({data:{...data,COMPCODE}})  
-          // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
-           if(result?.id){
-            return  res.json({status:1,data:result})  
-           }else{
-            return  res.json({status:0,data:{}})  
-           }
-      
-          }catch(err){
-             console.log(err);
-             
-       }
-
-
-      }
+  const data = req?.body?.data || {};
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  try {
+    const result = await prisma_Connector.ondutyMaster.create({ data: { ...data, compCode: COMPCODE } });
+    if (result?.id) {
+      return res.json({ status: 1, data: mapOndutyMaster(result) });
+    } else {
+      return res.json({ status: 0, data: null });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.json({ status: 0, message: err?.message || 'Failed to add onduty master', data: null });
+  }
+}
 
 
 
 export async function send_location(req, res) {
   console.log(req?.body);
-  
-      const  data=req?.body
-       const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-          try {
-           const result=await  prisma_Connector.location.create({data:{...data,COMPCODE}})  
-          // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
-           if(result?.id){
-            return  res.json({status:1,data:result})  
-           }else{
-            return  res.json({status:0,data:{}})  
-           }
-      
-          }catch(err){
-             console.log(err);
-             
-       }
+
+  const data = req?.body
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase()
+  try {
+    const result = await prisma_Connector.location.create({ data: { ...data, compCode: COMPCODE } })
+    // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
+    if (result?.id) {
+      return res.json({ status: 1, data: result })
+    } else {
+      return res.json({ status: 0, data: {} })
+    }
+
+  } catch (err) {
+    console.log(err);
+
+  }
 
 
-      }
+}
 
 
 
@@ -767,11 +834,16 @@ async function getLocationAccess(req) {
 
   const requester = await prisma_Connector.user.findFirst({
     where: {
-      Idcard: requesterId,
+      idCard: requesterId,
       active: true,
-      Companies: { some: { companyCode: COMPCODE } },
     },
-    select: { Idcard: true, level: true, isAdmin: true },
+    select: {
+      idCard: true,
+      level: true,
+      isAdmin: true,
+      isAllParty: true,
+      companies: { select: { companyCode: true } },
+    },
   });
 
   if (!requester) {
@@ -779,46 +851,60 @@ async function getLocationAccess(req) {
   }
 
   const isCompanyAdmin = requester.isAdmin ||
+    requester.isAllParty ||
     requester.level === 'admin' ||
     requester.level === 'top';
+
+  const hasCompanyAccess = isCompanyAdmin ||
+    !requester.companies?.length ||
+    requester.companies.some(
+      c => String(c.companyCode || '').trim().toUpperCase() === COMPCODE
+    );
+
+  if (!hasCompanyAccess) {
+    return { error: 'You are not authorized for this company.', statusCode: 403 };
+  }
+
   const users = await prisma_Connector.user.findMany({
     where: {
       active: true,
-      Companies: { some: { companyCode: COMPCODE } },
       ...(isCompanyAdmin
         ? {}
-        : { OR: [{ Idcard: requesterId }, { hod: requesterId }, { hr: requesterId }] }),
+        : { OR: [{ idCard: requesterId }, { hod: requesterId }, { hr: requesterId }] }),
     },
-    select: { Idcard: true, username: true },
+    select: { idCard: true, userName: true },
   });
 
-  const allowedUsers = users.some(user => user.Idcard === requesterId)
+  const allowedUsers = users.some(user => user.idCard === requesterId)
     ? users
-    : [{ Idcard: requesterId, username: null }, ...users];
+    : [{ idCard: requesterId, userName: null }, ...users];
 
   return {
     COMPCODE,
     requesterId,
     allowedUsers,
-    allowedUserIds: allowedUsers.map(user => user.Idcard).filter(Boolean),
+    allowedUserIds: allowedUsers.map(user => user.idCard).filter(Boolean),
   };
 }
 
 async function getPermittedTrackingUsers(access) {
   const trackers = await prisma_Connector.trackers.findMany({
     where: {
-      COMPCODE: access.COMPCODE,
-      UserId: { in: access.allowedUserIds },
+      compCode: access.COMPCODE,
+      userId: { in: access.allowedUserIds },
     },
   });
-  const trackersByUser = new Map(trackers.map(tracker => [tracker.UserId, tracker]));
+  const trackersByUser = new Map(trackers.map(tracker => [tracker.userId, tracker]));
 
   return access.allowedUsers.map(user => {
-    const tracker = trackersByUser.get(user.Idcard);
+    const tracker = trackersByUser.get(user.idCard);
     return {
       ...(tracker || {}),
-      UserId: user.Idcard,
-      empname: tracker?.empname || user.username || user.Idcard,
+      userId: user.idCard,
+      UserId: user.idCard,
+      idCard: user.idCard,
+      empName: tracker?.empName || user.userName || user.idCard,
+      empname: tracker?.empName || user.userName || user.idCard,
       isLive: Boolean(tracker?.isLive),
       docid: tracker?.isLive ? tracker.docid : null,
     };
@@ -867,12 +953,12 @@ export async function get_live_location(req, res) {
     }
 
     const tracker = await prisma_Connector.trackers.findFirst({
-      where: { COMPCODE: access.COMPCODE, UserId: userId, isLive: true },
+      where: { compCode: access.COMPCODE, userId: userId, isLive: true },
     });
     if (!tracker) return res.json([]);
 
     const latestLocation = await prisma_Connector.location.findFirst({
-      where: { COMPCODE: access.COMPCODE, userId },
+      where: { compCode: access.COMPCODE, userId: userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -888,78 +974,152 @@ export async function get_live_location(req, res) {
 }
 
 export async function requestReachedOut(req, res) {
-        const {docid, VEHICLENO, ...reset} = req?.body
-        const COMPCODE = String(req.headers?.compcode).toUpperCase()
-        const Idcard = String(req?.headers?.idcard)
-        
+  const { docid, VEHICLENO, ...reset } = req?.body;
+  const COMPCODE = String(req.headers?.compcode).toUpperCase();
+  const Idcard = String(req?.headers?.idcard);
+
+  try {
+    const currentOnduty = await prisma_Connector.onduty.findFirst({
+      where: { docId: docid, idCard: Idcard, compCode: COMPCODE }
+    });
+
+    if (!currentOnduty) {
+      return res.json({ status: 0, message: "Onduty record not found" });
+    }
+
+    const endKmVal = reset?.Evechilekm ?? reset?.endVehicleKm ?? reset?.end_km ?? reset?.endKm;
+
+    let rOutLat = reset.out_latitude != null ? String(reset.out_latitude) : (reset.outLatitude != null ? String(reset.outLatitude) : null);
+    let rOutLon = reset.out_longtiude != null ? String(reset.out_longtiude) : (reset.outLongtiude != null ? String(reset.outLongtiude) : null);
+    let rOutLocation = reset.out_location ?? reset.outLocation ?? null;
+
+    const numRLat = Number(rOutLat);
+    const numRLon = Number(rOutLon);
+    const hasValidRCoords = Boolean(numRLat && numRLon && !(numRLat === 0 && numRLon === 0));
+
+    if (!hasValidRCoords) {
+      rOutLat = null;
+      rOutLon = null;
+    }
+
+    if (rOutLocation && (rOutLocation.includes('Unknown') || rOutLocation === 'Location retrieved on submission' || rOutLocation === 'GPS coordinates ready')) {
+      rOutLocation = hasValidRCoords ? `Near ${numRLat.toFixed(4)}, ${numRLon.toFixed(4)}` : null;
+    }
+
+    if (!rOutLat && !currentOnduty.outLatitude && currentOnduty.inLatitude && currentOnduty.inLongtiude) {
+      rOutLat = String(currentOnduty.inLatitude);
+      rOutLon = String(currentOnduty.inLongtiude);
+      rOutLocation = rOutLocation || currentOnduty.inLocation || `Near ${Number(rOutLat).toFixed(4)}, ${Number(rOutLon).toFixed(4)}`;
+    }
+
+    if (!rOutLocation || rOutLocation === 'Location unavailable') {
+      rOutLocation = currentOnduty.inLocation && currentOnduty.inLocation !== 'Location unavailable' 
+        ? currentOnduty.inLocation 
+        : 'Office / Base Location';
+    }
+
+    const result = await prisma_Connector.onduty?.update({
+      where: { docId: docid },
+      data: {
+        ...(reset.end_km != null || reset.endKm != null ? { endKm: String(reset.endKm ?? reset.end_km) } : {}),
+        ...(reset.Evechilekm != null || reset.endVehicleKm != null ? { endVehicleKm: String(reset.endVehicleKm ?? reset.Evechilekm) } : {}),
+        ...(rOutLocation != null ? { outLocation: rOutLocation } : {}),
+        ...(rOutLat != null ? { outLatitude: rOutLat } : {}),
+        ...(rOutLon != null ? { outLongtiude: rOutLon } : {}),
+        inOut: "OUT",
+        updatedAt: new Date()
+      }
+    });
+
+    if (result?.id) {
+      const vNo = VEHICLENO || result.vehicleNo || "" + Idcard;
+      if (endKmVal) {
+        await prisma_Connector?.vechilekm?.upsert({
+          where: { vehicleNo: vNo },
+          create: { km: String(endKmVal), vehicleNo: vNo, compCode: COMPCODE },
+          update: { km: String(endKmVal), compCode: COMPCODE }
+        });
+      }
+      await prisma_Connector?.trackers?.updateMany({ where: { userId: Idcard }, data: { endDocId: "" } });
+      res.json({ status: 1, data: mapOnduty(result) });
+    } else {
+      res.json({ status: 0, data: {} });
+    }
+  } catch (err) {
+    res.json({ status: 0, data: {} });
+    console.error("requestReachedOut error:", err);
+  }
+}
+
+export async function get_reached(req, res) {
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+  const Idcard = String(req?.headers?.idcard);
+  const today = new Date();
+  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+  try {
+    const data = await prisma_Connector?.trackers?.findUnique({ where: { userId: Idcard } });
+    const targetDocId = data?.endDocId || data?.endDocid;
+    if (!targetDocId) {
+      return res.json({ status: 0, data: {} });
+    }
+    const result = await prisma_Connector.onduty.findFirst({
+      where: {
+        compCode: COMPCODE,
+        docId: targetDocId,
+        inOut: "OUT",
+        endVehicleKm: null,
+        create: 1,
+        createdAt: { gte: startOfDay, lte: endOfDay }
+      }
+    });
+    if (result?.endVehicleKm) {
+      res.json({ status: 0, data: {} });
+    } else if (result) {
+      // Heal inLocation/inLatitude if missing or 'Location unavailable'
+      if (!result.inLocation || result.inLocation === 'Location unavailable' || !result.inLatitude || Number(result.inLatitude) === 0) {
         try {
-            // 1. Fetch current record for KM validation
-            const currentOnduty = await prisma_Connector.onduty.findUnique({
-                where: { docid, idcard: Idcard, compCode: COMPCODE }
+          const firstTrack = await prisma_Connector.location.findFirst({
+            where: { docId: targetDocId },
+            orderBy: { id: 'asc' },
+          });
+          const bestTrack = firstTrack || await prisma_Connector.location.findFirst({
+            where: { userId: Idcard, compCode: COMPCODE },
+            orderBy: { id: 'desc' },
+          });
+          if (bestTrack && bestTrack.latitude && bestTrack.longitude && Number(bestTrack.latitude) !== 0) {
+            result.inLatitude = String(bestTrack.latitude);
+            result.inLongtiude = String(bestTrack.longitude);
+            result.inLocation = bestTrack.address || `Near ${Number(bestTrack.latitude).toFixed(4)}, ${Number(bestTrack.longitude).toFixed(4)}`;
+            
+            await prisma_Connector.onduty.update({
+              where: { id: result.id },
+              data: {
+                inLocation: result.inLocation,
+                inLatitude: result.inLatitude,
+                inLongtiude: result.inLongtiude,
+              }
             });
-
-            if (!currentOnduty) {
-                return res.json({ status: 0, message: "Onduty record not found" });
-            }
-
-            // 2. Validate KM: Removed as per request to remove vehicle km entry
-
-
-            const result = await prisma_Connector.onduty?.update({
-                where: { docid, idcard: Idcard, inout: "OUT", compCode: COMPCODE },
-                data: { ...reset }
-            })
-
-            if (result?.id) {
-                await prisma_Connector?.vechilekm?.upsert({
-                    where: { VEHICLENO: VEHICLENO || "" + Idcard },
-                    create: { km: reset?.Evechilekm, VEHICLENO: VEHICLENO || "" + Idcard },
-                    update: { km: reset?.Evechilekm, VEHICLENO: VEHICLENO || "" + Idcard }
-                })
-                await prisma_Connector?.trackers?.update({ where: { UserId: Idcard }, data: { endDocid: "" } })
-                res.json({ status: 1, data: result })
-            } else {
-                res.json({ status: 0, data: {} })
-            }
-        } catch (err) {
-            res.json({ status: 0, data: {} })
-            console.error("requestReachedOut error:", err);
-        } 
-  }
-
-
-  export async function get_reached(req, res) {
-      const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-      const Idcard=String(req?.headers?.idcard)
-        const today=new Date()
-         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-        await prisma_Connector?.trackers?.findUnique({where:{UserId:Idcard}}).then(async (data)=>{
-        try {
-          if (!data?.endDocid) {
-            return res.json({status:0,data:{}});
+          } else if (!result.inLocation || result.inLocation === 'Location unavailable') {
+            result.inLocation = 'Office / Base Location';
           }
-          const result=await  prisma_Connector.onduty.findFirst({where:{compCode:COMPCODE,docid:data?.endDocid,inout:"OUT",Evechilekm:null,create:1,createdAt:{
-             gte: startOfDay, lte: endOfDay 
-           }}})
-            if(result?.Evechilekm){
-                  res.json({status:0,data:{}}) 
-            }else{
-                  res.json({status:1,data:result}) 
-            }
+        } catch (healErr) {
+          console.warn('[get_reached] Failed to heal departure location:', healErr);
+          if (!result.inLocation || result.inLocation === 'Location unavailable') {
+            result.inLocation = 'Office / Base Location';
+          }
         }
-        catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
-        } 
-
-      }).catch(()=>{
-
-        res.json({status:500,data:{}}) 
-      })
-
+      }
+      res.json({ status: 1, data: mapOnduty(result) });
+    } else {
+      res.json({ status: 0, data: {} });
+    }
+  } catch (err) {
+    console.error('get_reached error:', err);
+    res.json({ status: 0, data: {} });
   }
+}
 
 export async function get_history_location(req, res) {
   try {
@@ -1013,7 +1173,7 @@ export async function get_history_location(req, res) {
 
     const dbResults = await prisma_Connector.location.findMany({
       where: {
-        COMPCODE: access.COMPCODE,
+        compCode: access.COMPCODE,
         userId: { in: allowedIds },
         docId: { not: null },
         createdAt: { gte: startOfDay, lte: endOfDay },
@@ -1107,17 +1267,64 @@ export async function get_history_location(req, res) {
 
 export async function requestOndutyOut(req, res) {
   const { docid, ...reset } = req?.body;
-  const COMPCODE  = String(req.headers?.compcode).toUpperCase();
-  const Idcard    = String(req?.headers?.idcard);
-  const out_time  = formatDateToOracle(new Date()).split(' ')[1];
+  const COMPCODE = String(req.headers?.compcode).toUpperCase();
+  const Idcard = String(req?.headers?.idcard);
+  const out_time = formatDateToOracle(new Date()).split(' ')[1];
 
-  // Auto-fetch backend location
-  if (reset.out_latitude && reset.out_longtiude) {
-    const addr = await getAddressFromCoords(reset.out_latitude, reset.out_longtiude);
-    if (addr) reset.out_location = addr;
+  let outLat = reset.out_latitude != null ? String(reset.out_latitude) : (reset.outLatitude != null ? String(reset.outLatitude) : null);
+  let outLon = reset.out_longtiude != null ? String(reset.out_longtiude) : (reset.outLongtiude != null ? String(reset.outLongtiude) : null);
+  let outLocation = reset.out_location ?? reset.outLocation ?? null;
+
+  const numLat = Number(outLat);
+  const numLon = Number(outLon);
+
+  // If frontend passed 0 or empty coordinates, fallback to the latest tracked location from background service
+  if ((!numLat || !numLon || (numLat === 0 && numLon === 0)) && docid) {
+    try {
+      let lastTrack = await prisma_Connector.location.findFirst({
+        where: { docId: docid },
+        orderBy: { id: 'desc' },
+      });
+      if (!lastTrack) {
+        lastTrack = await prisma_Connector.location.findFirst({
+          where: { userId: Idcard, compCode: COMPCODE },
+          orderBy: { id: 'desc' },
+        });
+      }
+      if (lastTrack && lastTrack.latitude && lastTrack.longitude && Number(lastTrack.latitude) !== 0) {
+        outLat = String(lastTrack.latitude);
+        outLon = String(lastTrack.longitude);
+      }
+    } catch (e) {
+      console.warn('[requestOndutyOut] Fallback location tracking lookup error:', e);
+    }
   }
 
-  const connection = await getConnection(res);
+  // Auto-fetch backend location if non-zero coordinates exist
+  const validLat = Number(outLat);
+  const validLon = Number(outLon);
+  const hasValidOutCoords = Boolean(validLat && validLon && !(validLat === 0 && validLon === 0));
+
+  if (hasValidOutCoords) {
+    const addr = await getAddressFromCoords(outLat, outLon);
+    if (addr) {
+      outLocation = addr;
+    }
+  } else {
+    outLat = null;
+    outLon = null;
+  }
+
+  // Clean up placeholders
+  if (!outLocation || outLocation.includes('Unknown') || outLocation === 'Location retrieved on submission' || outLocation === 'GPS coordinates ready' || outLocation === 'Location unavailable') {
+    if (hasValidOutCoords) {
+      outLocation = `Near ${validLat.toFixed(4)}, ${validLon.toFixed(4)}`;
+    } else {
+      outLocation = 'Office / Base Location';
+    }
+  }
+
+  let connection = null;
 
   try {
     // 1. Validate
@@ -1126,33 +1333,47 @@ export async function requestOndutyOut(req, res) {
     }
 
     // 2. Check record exists
-    const existing = await prisma_Connector.onduty.findUnique({ where: { docid } });
+    const existing = await prisma_Connector.onduty.findUnique({ where: { docId: docid } });
 
     if (!existing) {
       return res.status(404).json({ status: 0, message: `No onduty record found for docid: ${docid}` });
     }
 
     // 3. Security: ensure this user owns the record
-    if (existing.idcard !== Idcard) {
+    if (existing.idCard !== Idcard) {
       return res.status(403).json({ status: 0, message: 'Unauthorized: This OnDuty record does not belong to you.' });
     }
 
     // 4. Guard: prevent re-closing an already closed session
-    if (existing.inout === 'OUT') {
+    if (existing.inOut === 'OUT') {
       return res.status(409).json({
-        status:   0,
-        message:  'This OnDuty session is already checked out.',
-        data:     { docid: existing.docid, out_time: existing.out_time },
+        status: 0,
+        message: 'This OnDuty session is already checked out.',
+        data: { docId: existing.docId, outTime: existing.outTime },
       });
+    }
+
+    // 4b. If still no out coordinates, fallback to the trip's start location
+    if (!outLat && existing.inLatitude && existing.inLongtiude && Number(existing.inLatitude) !== 0) {
+      outLat = String(existing.inLatitude);
+      outLon = String(existing.inLongtiude);
+      if (!outLocation || outLocation === 'Location unavailable' || outLocation.includes('Unknown')) {
+        outLocation = existing.inLocation || `Near ${Number(outLat).toFixed(4)}, ${Number(outLon).toFixed(4)}`;
+      }
     }
 
     // 5. Prisma UPDATE
     const result = await prisma_Connector.onduty.update({
-      where: { docid },
+      where: { docId: docid },
       data: {
-        ...reset,
-        out_time,
-        inout:     'OUT',
+        outLocation: outLocation,
+        outLatitude: outLat,
+        outLongtiude: outLon,
+        outTime: out_time,
+        endKm: reset.end_km != null ? String(reset.end_km) : (reset.endKm != null ? String(reset.endKm) : null),
+        endVehicleKm: reset.Evechilekm != null ? String(reset.Evechilekm) : (reset.endVehicleKm != null ? String(reset.endVehicleKm) : null),
+        toOnduty: reset.to_onduty === true || reset.to_onduty === 'true' || reset.toOnduty === true,
+        inOut: 'OUT',
         updatedAt: new Date(),
       },
     });
@@ -1162,6 +1383,9 @@ export async function requestOndutyOut(req, res) {
     }
 
     // 6. Oracle UPDATE
+    connection = await getConnection(res);
+    if (!connection) return;
+
     const sql = `
       UPDATE ONDUTY
       SET
@@ -1179,14 +1403,14 @@ export async function requestOndutyOut(req, res) {
     `;
 
     const oracleBinds = {
-      OUT_LOCATION:  result?.out_location  ?? null,
-      OUT_LATITUDE:  result?.out_latitude  ?? null,
-      OUT_LONGTIUDE: result?.out_longtiude ?? null,
-      OUT_TIME:      result?.out_time      ?? null,
-      END_KM:        result?.end_km        ?? null,
-      TO_ONDUTY:     result?.to_onduty ? 1 : 0,
-      DOCID:         result?.docid,
-      COMPCODE:      COMPCODE,
+      OUT_LOCATION: result?.outLocation ?? null,
+      OUT_LATITUDE: result?.outLatitude ?? null,
+      OUT_LONGTIUDE: result?.outLongtiude ?? null,
+      OUT_TIME: result?.outTime ?? null,
+      END_KM: result?.endKm ?? null,
+      TO_ONDUTY: result?.toOnduty ? 1 : 0,
+      DOCID: result?.docId,
+      COMPCODE: COMPCODE,
     };
 
     const oracleResult = await connection.execute(sql, oracleBinds);
@@ -1195,48 +1419,49 @@ export async function requestOndutyOut(req, res) {
 
       // 7. Mark as synced
       await prisma_Connector.onduty.update({
-        where: { docid: result?.docid },
-        data:  { update: 1 },
+        where: { docId: result?.docId },
+        data: { update: 1 },
       });
 
-      // ✅ 8. FIX: Use null instead of '' for docid to avoid unique constraint clash
+      // 8. Trackers update
       await prisma_Connector.trackers.upsert({
-        where:  { UserId: Idcard },
+        where: { userId: Idcard },
         create: {
-          UserId:   Idcard,
-          isLive:   false,
-          COMPCODE,
-          docid:    null,                            // ✅ FIXED: was ''
-          endDocid: reset?.to_onduty ? null : docid, // ✅ FIXED: null instead of ''
+          userId: Idcard,
+          isLive: false,
+          compCode: COMPCODE,
+          docId: null,
+          endDocId: reset?.to_onduty ? null : docid,
         },
         update: {
-          isLive:   false,
-          COMPCODE,
-          docid:    null,                            // ✅ FIXED: was ''
-          endDocid: reset?.to_onduty ? '' : docid,
+          isLive: false,
+          compCode: COMPCODE,
+          docId: null,
+          endDocId: reset?.to_onduty ? '' : docid,
         },
       });
 
       return res.status(200).json({
-        status:  1,
-        data:    result,
-        isNext:  !!reset?.to_onduty,
+        status: 1,
+        data: mapOnduty(result),
+        isNext: !!reset?.to_onduty,
         message: 'OnDuty OUT submitted successfully.',
       });
 
     } else {
-      // 9. Oracle failed — revert Prisma
+      // 9. Oracle failed â€” revert Prisma
       await prisma_Connector.onduty.update({
-        where: { docid },
+        where: { docId: docid },
         data: {
-          out_location:  existing.out_location,
-          out_latitude:  existing.out_latitude,
-          out_longtiude: existing.out_longtiude,
-          out_time:      existing.out_time,
-          end_km:        existing.end_km,
-          inout:         existing.inout,
-          to_onduty:     existing.to_onduty,
-          updatedAt:     existing.updatedAt,
+          outLocation: existing.outLocation,
+          outLatitude: existing.outLatitude,
+          outLongtiude: existing.outLongtiude,
+          outTime: existing.outTime,
+          endKm: existing.endKm,
+          endVehicleKm: existing.endVehicleKm,
+          inOut: existing.inOut,
+          toOnduty: existing.toOnduty,
+          updatedAt: existing.updatedAt,
         },
       });
 
@@ -1274,97 +1499,87 @@ export async function requestOndutyOut(req, res) {
     }
 
     return res.status(500).json({
-      status:  0,
+      status: 0,
       message: 'Internal server error',
-      error:   process.env.NODE_ENV === 'development' ? err.message : undefined,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
 
   } finally {
-    await connection?.commit();
-    await connection?.close();
+    try {
+      await connection?.commit();
+      await connection?.close();
+    } catch (_) { }
   }
 }
 
-
-
-
-
-
-
- export async function requestonduty_Approval(req, res) {
-  const COMPCODE    = String(req.headers?.compcode).toUpperCase();
-  const docid       = req?.body?.docid;
-  const p_app       = req?.body?.approval;
-  const approvedBy  = req?.body?.approvedBy;
-  const rejectBy    = req?.body?.rejectBy;
+export async function requestonduty_Approval(req, res) {
+  const COMPCODE = String(req.headers?.compcode).toUpperCase();
+  const docid = req?.body?.docid;
+  const p_app = req?.body?.approval;
+  const approvedBy = req?.body?.approvedBy;
+  const rejectBy = req?.body?.rejectBy;
   const reject_reason = req?.body?.reject_reason;
 
-
-    
-
-  const connection = await getConnection(res);
+  let connection = null;
 
   try {
-    // ── 1. Validate ───────────────────────────────────────────────────────────
+    // 1. Validate
     if (!docid || !p_app) {
       return res.status(400).json({
-        status:  0,
+        status: 0,
         message: "docid and approval status are required.",
       });
     }
 
     if (!["approved", "rejected", "pending"].includes(p_app)) {
       return res.status(400).json({
-        status:  0,
+        status: 0,
         message: `Invalid approval status: ${p_app}`,
       });
     }
 
     if (p_app === "rejected" && !reject_reason) {
       return res.status(400).json({
-        status:  0,
+        status: 0,
         message: "reject_reason is required when rejecting.",
       });
     }
 
-    // ── 2. Check record exists ────────────────────────────────────────────────
+    // 2. Check record exists
     const existing = await prisma_Connector.onduty.findUnique({
-      where: { docid },
+      where: { docId: docid },
     });
-
-
-     
 
     if (!existing) {
       return res.status(404).json({
-        status:  0,
+        status: 0,
         message: `No onduty record found for docid: ${docid}`,
       });
     }
 
-    // ── 3. Prisma UPDATE ──────────────────────────────────────────────────────
+    // 3. Prisma UPDATE
     const result = await prisma_Connector.onduty.update({
-      where: { docid },
+      where: { docId: docid },
       data: {
         approvalStatus: p_app,
-        approvedBy:     approvedBy ?? null,
-        rejectBy:       rejectBy   ?? null,
-        reject_reason:  reject_reason ?? null, // ✅ now saved
-        updatedAt:      new Date(),
+        approvedBy: approvedBy ?? null,
+        rejectBy: rejectBy ?? null,
+        rejectReason: reject_reason ?? null,
+        updatedAt: new Date(),
       },
     });
 
-
-     
-
     if (!result?.id) {
       return res.status(500).json({
-        status:  0,
+        status: 0,
         message: "Prisma update failed.",
       });
     }
 
-    // ── 4. Oracle UPDATE ──────────────────────────────────────────────────────
+    // 4. Oracle UPDATE
+    connection = await getConnection(res);
+    if (!connection) return;
+
     const sql = `
       UPDATE ONDUTY
       SET
@@ -1380,47 +1595,44 @@ export async function requestOndutyOut(req, res) {
 
     const oracleBinds = {
       APPROVALSTATUS: p_app,
-      APPROVEDBY:     approvedBy    ?? null,  // ✅ null safe
-      REJECTBY:       rejectBy      ?? null,  // ✅ null safe
-      REJECT_REASON:  reject_reason ?? null,  // ✅ now synced to Oracle
-      DOCID:          docid,                  // ✅ matches :DOCID
-      COMPCODE:       COMPCODE,
+      APPROVEDBY: approvedBy ?? null,
+      REJECTBY: rejectBy ?? null,
+      REJECT_REASON: reject_reason ?? null,
+      DOCID: docid,
+      COMPCODE: COMPCODE,
     };
-
-
-  
 
     const oracleResult = await connection.execute(sql, oracleBinds);
 
     if (oracleResult?.rowsAffected > 0) {
 
-      // ── 5. Mark as synced ───────────────────────────────────────────────────
+      // 5. Mark as synced
       await prisma_Connector.onduty.update({
-        where: { docid: result?.docid },
-        data:  { update: 1 },
+        where: { docId: result?.docId },
+        data: { update: 1 },
       });
 
       return res.status(200).json({
-        status:  1,
-        data:    { ...result },
+        status: 1,
+        data: mapOnduty(result),
         message: `OnDuty ${p_app} successfully.`,
       });
 
     } else {
-      // ── 6. Oracle failed — revert Prisma ────────────────────────────────────
+      // 6. Oracle failed â€” revert Prisma
       await prisma_Connector.onduty.update({
-        where: { docid },
+        where: { docId: docid },
         data: {
           approvalStatus: existing.approvalStatus,
-          approvedBy:     existing.approvedBy,
-          rejectBy:       existing.rejectBy,
-          reject_reason:  existing.reject_reason,
-          updatedAt:      existing.updatedAt,
+          approvedBy: existing.approvedBy,
+          rejectBy: existing.rejectBy,
+          rejectReason: existing.rejectReason,
+          updatedAt: existing.updatedAt,
         },
       });
 
       return res.status(500).json({
-        status:  0,
+        status: 0,
         message: "Oracle update failed. Prisma reverted.",
       });
     }
@@ -1428,89 +1640,58 @@ export async function requestOndutyOut(req, res) {
   } catch (err) {
     console.error("requestonduty_Approval error:", err);
 
-    // Prisma record not found
     if (err.code === "P2025") {
       return res.status(404).json({
-        status:  0,
+        status: 0,
         message: "Onduty record not found in Prisma.",
       });
     }
 
-  
-    
-
-    // Oracle specific error
-    if (err.code === 'P2003') {
-      const field = String(err.meta?.field_name || '');
-      let message = 'Unable to complete request because a related record was not found.';
-      if (field.includes('userId')) {
-        message = 'User profile not found. Please log out, sign in again, or contact your administrator.';
-      } else if (field.includes('category')) {
-        message = 'Selected on-duty category is invalid. Please select a valid category and try again.';
-      } else {
-        message = `Unable to process request due to an invalid reference (${field || 'record'}).`;
-      }
-      return res.status(400).json({
-        status: 0,
-        message,
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
-      });
-    }
-
-    if (err.errorNum) {
-      return res.status(500).json({
-        status:   0,
-        message:  `Oracle error: ${err.message}`,
-        oraError: err.errorNum,
-      });
-    }
-
     return res.status(500).json({
-      status:  0,
+      status: 0,
       message: "Internal server error",
-      error:   process.env.NODE_ENV === "development" ? err.message : undefined,
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
 
   } finally {
-    await connection?.commit(); // ✅ awaited
-    await connection?.close();  // ✅ awaited
+    try {
+      await connection?.commit();
+      await connection?.close();
+    } catch (_) { }
   }
 }
 
+export async function get_all_Onduty_reason(req, res) {
+  const COMPCODE = String(req?.headers?.compcode).toUpperCase();
 
-
-         export async function get_all_Onduty_reason(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-
-        try {
-            const result=await  prisma_Connector.ondutyMaster.findMany({where:{COMPCODE}})
-            res.json({status:1,data:result}) 
-        }
-        catch (err) {
-          res.json({status:0,data:{}}) 
-           console.log(err);
-           
-        }
-}
-
-export async function get_Uploaded_IMAG(req, res){
   try {
-     const filename=req?.query?.image
-     if(filename){
-     const ImagePath=path.join(process.cwd(),".","uploads")
-      res.setHeader('Content-Type', 'image/png');
-         if(fs.existsSync(ImagePath+"/"+filename)){
-       
-         const ImageStream=fs?.createReadStream(ImagePath+"/"+filename)
-         ImageStream.pipe(res)
-           }else{
-        res?.json({error:"No Image Founded"}) 
-         }
-     }
+    const result = await prisma_Connector.ondutyMaster.findMany({ where: { compCode: COMPCODE } });
+    res.json({ status: 1, data: mapOndutyMasterList(result) });
+  }
+  catch (err) {
+    console.log(err);
+    res.json({ status: 0, data: [] });
+  }
+}
 
-       } catch (error) {
-        res?.json({error:"No Image Founded"})
-    
+export async function get_Uploaded_IMAG(req, res) {
+  try {
+    const filename = req?.query?.image
+    if (filename) {
+      const ImagePath = path.join(process.cwd(), ".", "uploads")
+      res.setHeader('Content-Type', 'image/png');
+      if (fs.existsSync(ImagePath + "/" + filename)) {
+
+        const ImageStream = fs?.createReadStream(ImagePath + "/" + filename)
+        ImageStream.pipe(res)
+      } else {
+        res?.json({ error: "No Image Founded" })
+      }
+    }
+
+  } catch (error) {
+    res?.json({ error: "No Image Founded" })
+
   }
 
 }
@@ -1518,114 +1699,5 @@ export async function get_Uploaded_IMAG(req, res){
 
 
 
-
-
-export async function get__Date_Wise_Fuel(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const where=req?.query
-    const connection = await getConnection(res)
-        try {
-
-                const sql = `
-         SELECT ROWNUM SNO,AA.*
-FROM 
-(SELECT AA.VEHICLENO,AA.USEDBY,SUM(AA.TOTKM) TOTKM,AA.ITEMNAME,AA.VEHNAME,
-SUM(TO_NUMBER(AA.LTRSKGS)
-) 
-AMOUNT
-FROM 
-(SELECT A.GTFUELTOKENID,A.FUELID,A.TOKENNO,A.TOKENDATE,A.EMPNAME,D.VEHICLENO,D.VEHICLENAME,
-CC.ITEMNAME,AA.LTRSKGS,A.REMARKS,BB.BUNKNAME,A.USEDBY,A.KILOMETER,A.PREKM,
-CASE WHEN A.PREKM=0 THEN 0 ELSE A.TOTKM END TOTKM,A.BUNKTONO,A.VEHNAME
-FROM GTFUELTOKEN A
-JOIN GTFUELTOKENITEMDET AA ON AA.GTFUELTOKENID=A.GTFUELTOKENID
-JOIN GTGENITEMMAST CC ON CC.GTGENITEMMASTID=AA.ITEMNAME
-JOIN GTFINANCIALYEAR B ON A.FINYEAR=B.GTFINANCIALYEARID
-JOIN GTCOMPMAST C ON C.GTCOMPMASTID=A.COMPCODE
-JOIN GTBUNKMAST BB ON BB.GTBUNKMASTID=A.BUNKNAME
-JOIN HRVEHMAST D ON D.HRVEHMASTID=A.VEHICLENO
-
-WHERE C.COMPCODE=:COMPCODE AND A.TOKENDATE BETWEEN TO_DATE(:FROMDATE,'DD-MM-YYYY') AND  TO_DATE(:TODATE,'DD-MM-YYYY')  AND (D.VEHICLENO=:VEHICLENO1 OR 'ALL' = :VEHICLENO1)
-
-
-ORDER BY A.TOKENNO,D.VEHICLENAME
-
-)
-
-AA
-
-GROUP BY AA.VEHICLENO,AA.USEDBY,AA.ITEMNAME,AA.VEHNAME)AA
-`;
-
-
-
-            const oracleResult = await connection.execute(sql, {COMPCODE,...where});
-
-         const transformedResult = oracleResult?.rows?.map(row => {
-            const keyValuePair = {};
-            // Assuming the first row contains the column names
-            oracleResult.metaData.forEach((col, index) => {
-              keyValuePair[col.name] = row[index];
-            });
-            return keyValuePair;
-           });
-          
-          return res.json({ statusCode: 0, data: transformedResult })
-           
-        }
-        catch (err) {
-           console.log(err);
-        }
-}
-
-
-
-
-export async function get__Date_Wise_Fuel_Individual(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const where=req?.query
-    const connection = await getConnection(res)
-        try {
-
-                const sql = `
-       SELECT ROWNUM SNO,AA.GTFUELTOKENID,AA.FUELID,AA.TOKENNO,AA.TOKENDATE,AA.EMPNAME,AA.VEHICLENO,AA.VEHICLENAME,AA.BUNKNAME,AA.ITEMNAME,
-TO_NUMBER(AA.LTRSKGS) AMOUNT,AA.REMARKS,AA.USEDBY,AA.KILOMETER,AA.PREKM,AA.TOTKM,AA.BUNKTONO
-FROM (
-SELECT A.GTFUELTOKENID,A.FUELID,A.TOKENNO,A.TOKENDATE,A.EMPNAME,D.VEHICLENO,D.VEHICLENAME,
-CC.ITEMNAME,AA.LTRSKGS,A.REMARKS,BB.BUNKNAME,A.USEDBY,A.KILOMETER,A.PREKM,
-CASE WHEN A.PREKM=0 THEN 0 ELSE A.TOTKM END TOTKM,A.BUNKTONO
-FROM GTFUELTOKEN A
-JOIN GTFUELTOKENITEMDET AA ON AA.GTFUELTOKENID=A.GTFUELTOKENID
-JOIN GTGENITEMMAST CC ON CC.GTGENITEMMASTID=AA.ITEMNAME
-JOIN GTFINANCIALYEAR B ON A.FINYEAR=B.GTFINANCIALYEARID
-JOIN GTCOMPMAST C ON C.GTCOMPMASTID=A.COMPCODE
-JOIN GTBUNKMAST BB ON BB.GTBUNKMASTID=A.BUNKNAME
-JOIN HRVEHMAST D ON D.HRVEHMASTID=A.VEHICLENO
-WHERE C.COMPCODE=:COMPCODE And A.TOKENDATE BETWEEN TO_DATE(:FROMDATE,'DD-MM-YYYY') AND  TO_DATE(:TODATE,'DD-MM-YYYY')   AND (D.VEHICLENO=:VEHICLENO1 OR 'ALL' = :VEHICLENO1)
-ORDER BY A.TOKENNO
-)AA
-  `;
-
-
-
-            const oracleResult = await connection.execute(sql, {COMPCODE,...where});
-
-         const transformedResult = oracleResult?.rows?.map(row => {
-            const keyValuePair = {};
-            // Assuming the first row contains the column names
-            oracleResult.metaData.forEach((col, index) => {
-              keyValuePair[col.name] = row[index];
-            });
-            return keyValuePair;
-           });
-          
-          return res.json({ statusCode: 0, data: transformedResult })
-           
-        }
-        catch (err) {
-           console.log(err);
-        }
-}
-   
 
 

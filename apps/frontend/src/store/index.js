@@ -10,7 +10,6 @@ import { commonMastersApi } from './api/CommonMastersApi';
 import { permissionApi } from './api/PermissionApi';
 import AttendanceApi from './api/AttendanceApi';
 import userDetailsReducer from "./slices/UserDetailsSlice";
-import dueDaysReducer from "./slices/DueDaysSlice";
 import ondutyInputReducer from "./slices/OndutyInputSlice";
 
 export const store = configureStore({
@@ -25,7 +24,6 @@ export const store = configureStore({
     [permissionApi.reducerPath]: permissionApi.reducer,
     [AttendanceApi.reducerPath]: AttendanceApi.reducer,
     UserDetails: userDetailsReducer,
-    dueDays: dueDaysReducer,
     ondutyInput: ondutyInputReducer,
   },
   middleware: (getDefaultMiddleware) =>

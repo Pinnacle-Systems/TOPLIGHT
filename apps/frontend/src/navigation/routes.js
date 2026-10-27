@@ -15,6 +15,11 @@ import PermissionApprovalScreen from '../screens/permission/PermissionApprovalSc
 import UserInfoScreen from '../screens/users/UserInfoScreen';
 import UserLogsScreen from '../screens/users/UserLogsScreen';
 import LocationTrackingScreen from '../screens/location/LocationTrackingScreen';
+import PageMaster_leave from '../screens/reports/page/PageMaster_leave';
+import LeaveReport from '../screens/reports/leave/Leave_Report';
+import PermissionReport from '../screens/reports/permissions/Permission_Report';
+import OndutyReport from '../screens/reports/onduty/Onduty_Report';
+import AttendanceReport from '../screens/reports/DailyAttendanceReport';
 
 export const APP_ROUTES = [
     { key: 'HOME', name: 'HOME', component: HomeScreen, isDefault: true },
@@ -31,6 +36,12 @@ export const APP_ROUTES = [
     { key: 'uinfo', name: 'uinfo', component: UserInfoScreen, isDefault: false },
     { key: 'logs', name: 'logs', component: UserLogsScreen, isDefault: false },
     { key: 'map', name: 'map', component: LocationTrackingScreen, isDefault: true },
+    // ── Reports ─────────────────────────────────────────────────────────────
+    { key: 'report', name: 'report', component: PageMaster_leave, isDefault: false },
+    { key: 'leave_report', name: 'leave_report', component: LeaveReport, isDefault: false },
+    { key: 'per_report', name: 'per_report', component: PermissionReport, isDefault: false },
+    { key: 'onduty_report', name: 'onduty_report', component: OndutyReport, isDefault: false },
+    { key: 'ATTENDANCEREPORT', name: 'ATTENDANCEREPORT', component: AttendanceReport, isDefault: false },
     // ── Masters Hub ──────────────────────────────────────────────────────────
     { key: 'masters', name: 'masters', component: MastersScreen, isDefault: false },
     { key: 'onduty_master', name: 'onduty_master', component: OndutyMasterScreen, isDefault: false },

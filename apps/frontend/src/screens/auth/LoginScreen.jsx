@@ -116,9 +116,9 @@ export default function LoginScreen() {
                 if (isSuperAdmin) {
                     await AsyncStorage.setItem('userName', JSON.stringify({
                         userName:  username,
-                        Id:        filterdata?.Idcard   ?? 'ADMIN',
-                        UserId:    filterdata?.Idcard   ?? 'ADMIN',
-                        IDCARD:    filterdata?.Idcard   ?? 'ADMIN',
+                        Id:        filterdata?.idCard   ?? 'ADMIN',
+                        UserId:    filterdata?.idCard   ?? 'ADMIN',
+                        IDCARD:    filterdata?.idCard  ?? 'ADMIN',
                         hod:       filterdata?.hod      ?? null,
                         approval:  filterdata?.approval ?? null,
                         hr:        filterdata?.hr       ?? null,
@@ -135,7 +135,7 @@ export default function LoginScreen() {
                 setUserRecord(filterdata);
                 setrolid(filterdata?.roleId);
                 sethr(filterdata?.hr);
-                setId(filterdata?.Idcard);
+                setId(filterdata?.idCard);
                 setHead(filterdata?.hod);
                 
                 const addComp = [];
@@ -168,15 +168,14 @@ export default function LoginScreen() {
         if (!companyCode) return Alert.alert("Error", "Select Company");
         
         const company = Globaldata?.find((d) => d?.companyCode === companyCode);
-
-        if (company?.companyid) {
+        if (company?.companyId) {
             await AsyncStorage.setItem('userName', JSON.stringify({
                 userName: username, 
                 Id: Id, 
                 UserId: Id,
                 IDCARD: Id,
                 GCOMPCODE: company?.companyCode, 
-                COMPID: company?.companyid,
+                COMPID: company?.companyId,
                 hr, 
                 hod: head, 
                 approval: userRecord?.approval || 'HOD',
@@ -216,7 +215,7 @@ export default function LoginScreen() {
             // On reload, the root component will check AsyncStorage and redirect via RoleOnPage.
             RNRestart.restart();
         } else {
-            Alert.alert("Failed", "Company Selection Failed");
+          //  Alert.alert("Failed", "Company Selection Failed");
         }
     };
 

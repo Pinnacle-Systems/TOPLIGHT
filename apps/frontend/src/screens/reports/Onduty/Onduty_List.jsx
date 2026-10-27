@@ -12,25 +12,47 @@ import {
   Platform, 
   Alert,
   Dimensions,
-  StatusBar
+  StatusBar,
+  Linking
 } from 'react-native';
 import { LinearGradient } from 'react-native-linear-gradient';
-import { Dropdown } from '../../../../ReusableComponents/inputs';
+import { Dropdown } from '../../../components/reusable_components/Inputs';
 import moment from 'moment';
-import { screenWidth } from '../../../Utils/Screens';
-import { useGetEmployeeidsQuery } from '../../../../redux/service/user';
+import { screenWidth } from '../../../components/utils/Screens';
+import { useGetEmployeeidsQuery } from '../../../store/api/UserApi';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useSelector } from 'react-redux';
-import FilterModel from '../../../FilterModal/FilterModel';
-import { useGet__VechileQuery, useGetHod_showable_dataQuery } from '../../../../redux/service/Onduty';
-import OpenGoogleMaps from '../../Location/Gmap/Googlemap';
+import FilterModel from '../../../components/filter_modal/FilterModel';
+import { useGet__VechileQuery, useGetHod_showable_dataQuery } from '../../../store/api/OndutyApi';
 import tailwind from 'twrnc';
-import { getOndutyImageUrl } from '../../../../constants/apiUrl';
+import { API_URL } from '@env';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+const getOndutyImageUrl = () => {
+  const baseUrl = (API_URL || '').replace(/\/+$/, '');
+  return `${baseUrl}/onduty/Onduty_uploaded_image`;
+};
+
+const OpenGoogleMaps = ({ latitude, longitude, style, children }) => {
+  const handleOpen = () => {
+    if (!latitude || !longitude) return;
+    const url = Platform.select({
+      ios: `maps:0,0?q=${latitude},${longitude}`,
+      android: `geo:0,0?q=${latitude},${longitude}`,
+      default: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
+    });
+    Linking.openURL(url).catch(err => console.warn('Could not open map:', err));
+  };
+  return (
+    <TouchableOpacity style={style} onPress={handleOpen}>
+      {children}
+    </TouchableOpacity>
+  );
+};
 
 // Backend stores IST directly — parse as-is, NO UTC→local conversion.
 const parseISTTime = (timeStr) => {

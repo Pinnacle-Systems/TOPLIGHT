@@ -4,8 +4,9 @@ import { PermissionsAndroid, Platform, NativeModules } from 'react-native';
 const { LocationTracker } = NativeModules;
 
 /**
- * Request both FINE and (on Android 10+) BACKGROUND location permissions.
- * Returns true if all required permissions are granted.
+ * Request location permissions.
+ * Checks if permission is already granted before requesting.
+ * Returns true if FINE or COARSE location permission is granted.
  */
 export async function requestLocationPermission() {
     if (Platform.OS === 'ios') {
@@ -19,33 +20,28 @@ export async function requestLocationPermission() {
 
     if (Platform.OS === 'android') {
         try {
-            const fineGranted = await PermissionsAndroid.request(
+            // First check if FINE or COARSE location is already granted
+            const fineGranted = await PermissionsAndroid.check(
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                {
-                    title: 'Location Permission',
-                    message: 'This app needs your location for OnDuty tracking.',
-                    buttonPositive: 'Allow',
-                },
             );
+            if (fineGranted) return true;
 
-            if (fineGranted !== PermissionsAndroid.RESULTS.GRANTED) {
-                return false;
-            }
+            const coarseGranted = await PermissionsAndroid.check(
+                PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+            );
+            if (coarseGranted) return true;
 
-            // Background location required for tracking when app is in background / killed
-            if (Platform.Version >= 29) {
-                const bgGranted = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-                    {
-                        title: 'Background Location Permission',
-                        message: 'Allow background location so OnDuty tracking continues when app is minimised.',
-                        buttonPositive: 'Allow Always',
-                    },
-                );
-                return bgGranted === PermissionsAndroid.RESULTS.GRANTED;
-            }
+            // On Android 12+ (API 31+ / targetSdkVersion 36), requesting ONLY ACCESS_FINE_LOCATION
+            // is rejected by the OS. Must request BOTH fine and coarse simultaneously.
+            const granted = await PermissionsAndroid.requestMultiple([
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+            ]);
 
-            return true;
+            return (
+                granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED ||
+                granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
+            );
         } catch (e) {
             console.warn('[CustomLocation] Permission error:', e);
             return false;
@@ -56,10 +52,10 @@ export async function requestLocationPermission() {
 }
 
 /**
- * Returns a Promise<{ latitude, longitude }>.
- * Prioritizes our native LocationTracker module to avoid third-party library crashes.
+ * Returns a Promise<{ latitude, longitude, address }>.
+ * Prioritizes fast cached OS locations and our native module.
  */
-export function getCurrentLocationAsync(timeout = 15000) {
+export function getCurrentLocationAsync(timeout = 10000) {
     return new Promise(async (resolve) => {
         try {
             const hasPermission = await requestLocationPermission();
@@ -68,42 +64,100 @@ export function getCurrentLocationAsync(timeout = 15000) {
                 return;
             }
 
-            // 1. Native LocationTracker module (direct Play Services - 100% crash free)
+            // Helper to attach address if available (fast 1.2s OSM timeout - ALWAYS returns lat/long even if reverse geocode times out)
+            const finishWithCoords = async (latitude, longitude) => {
+                const numLat = Number(latitude) || 0;
+                const numLon = Number(longitude) || 0;
+                if (numLat !== 0 || numLon !== 0) {
+                    try {
+                        const osmPromise = getAddressFromOSM(numLat, numLon);
+                        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('OSM timeout')), 1200));
+                        const osm = await Promise.race([osmPromise, timeoutPromise]);
+                        if (osm?.formatted) {
+                            resolve({ latitude: numLat, longitude: numLon, address: osm.formatted });
+                            return;
+                        }
+                    } catch {}
+                    // OSM timed out or failed — ALWAYS preserve real GPS coordinates!
+                    resolve({
+                        latitude: numLat,
+                        longitude: numLon,
+                        address: `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`,
+                    });
+                    return;
+                }
+                resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
+            };
+
+            // 1. Instant check: Geolocation.getLastKnownPosition (< 50ms)
+            try {
+                const lastKnown = await new Promise((res) => {
+                    Geolocation.getLastKnownPosition(
+                        (pos) => {
+                            if (pos?.coords?.latitude || pos?.coords?.longitude) {
+                                res(pos.coords);
+                            } else {
+                                res(null);
+                            }
+                        },
+                        () => res(null),
+                        { maxAge: 3600000 }
+                    );
+                });
+                if (lastKnown && (Number(lastKnown.latitude) !== 0 || Number(lastKnown.longitude) !== 0)) {
+                    await finishWithCoords(lastKnown.latitude, lastKnown.longitude);
+                    return;
+                }
+            } catch (lkErr) {
+                console.log('[CustomLocation] getLastKnownPosition fallback:', lkErr);
+            }
+
+            // 2. Native LocationTracker module (direct Play Services - max 3s wait)
             if (LocationTracker?.getCurrentLocation) {
                 try {
-                    const loc = await LocationTracker.getCurrentLocation();
-                    if (loc && (loc.latitude || loc.longitude)) {
-                        resolve({
-                            latitude: loc.latitude,
-                            longitude: loc.longitude,
-                            address: 'GPS coordinates ready',
-                        });
+                    const nativePromise = LocationTracker.getCurrentLocation();
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Native location timeout')), 3000));
+                    const loc = await Promise.race([nativePromise, timeoutPromise]);
+                    if (loc && (Number(loc.latitude) !== 0 || Number(loc.longitude) !== 0)) {
+                        await finishWithCoords(loc.latitude, loc.longitude);
                         return;
                     }
                 } catch (nativeErr) {
-                    console.log('[CustomLocation] Native module getCurrentLocation error, trying fallback:', nativeErr);
+                    console.log('[CustomLocation] Native module getCurrentLocation error/timeout, trying fallback:', nativeErr);
                 }
             }
 
-            // 2. Geolocation library fallback
+            // 3. Geolocation library fallback (high accuracy first)
             Geolocation.getCurrentPosition(
-                (position) => {
-                    resolve({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                        address: 'GPS coordinates ready',
-                    });
+                async (position) => {
+                    await finishWithCoords(position.coords.latitude, position.coords.longitude);
                 },
                 (error) => {
-                    console.warn('[CustomLocation] Geolocation error:', error?.message);
-                    resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
+                    console.warn('[CustomLocation] Geolocation high accuracy failed, trying low accuracy fallback:', error?.message);
+                    // 4. Fallback to network/cell tower location if GPS satellite timed out
+                    Geolocation.getCurrentPosition(
+                        async (lowPos) => {
+                            await finishWithCoords(lowPos.coords.latitude, lowPos.coords.longitude);
+                        },
+                        (lowErr) => {
+                            console.warn('[CustomLocation] Geolocation low accuracy also failed:', lowErr?.message);
+                            resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
+                        },
+                        {
+                            enableHighAccuracy: false,
+                            timeout: 6000,
+                            maximumAge: 60000,
+                            forceRequestLocation: true,
+                            showLocationDialog: true,
+                        }
+                    );
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout,
-                    maximumAge: 10000,
-                    forceRequestLocation: false,
-                    showLocationDialog: false,
+                    timeout: Math.min(timeout, 8000),
+                    maximumAge: 30000,
+                    forceRequestLocation: true,
+                    showLocationDialog: true,
                 },
             );
         } catch (e) {

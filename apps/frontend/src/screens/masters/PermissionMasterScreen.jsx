@@ -189,7 +189,7 @@ export default function PermissionMasterScreen({ navigation }) {
             <Text style={styles.emptySubtitle}>
                 {searchQuery
                     ? `No results for "${searchQuery}".`
-                    : 'Add your first permission, advance, or leave reason category.'}
+                    : 'Add your first permission or leave reason category.'}
             </Text>
         </View>
     );
@@ -207,7 +207,7 @@ export default function PermissionMasterScreen({ navigation }) {
         <View style={styles.container}>
             <MasterTopBar
                 title="Permissions & Reasons"
-                subtitle="Permission, Advance & Leave categories"
+                subtitle="Permission & Leave categories"
                 onBack={() => navigation.goBack()}
                 onAdd={openAddModal}
                 accentColor={ACCENT}

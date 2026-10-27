@@ -20,8 +20,6 @@ export default function MasterItemCard({
         switch (ptype?.toLowerCase()) {
             case 'permission':
                 return { bg: theme.colors.accentSoft, color: theme.colors.accent, label: 'Permission' };
-            case 'advance':
-                return { bg: theme.colors.brandSoft, color: theme.colors.brand, label: 'Advance' };
             case 'leave':
                 return { bg: theme.colors.warningSoft, color: theme.colors.warning, label: 'Leave' };
             default:

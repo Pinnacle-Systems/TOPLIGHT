@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { Add__vechilekm, addOnduty_master, get__Date_Wise_Fuel, get__Date_Wise_Fuel_Individual, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_tracking_users, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/onDuty.service.js';
+import { Add__vechilekm, addOnduty_master, get__Onduty, get__Onduty_edit, get__Vechile, get__vechilekm, get_all_Onduty_reason, get_history_location, get_live_location, get_live_user, get_tracking_users, get_reached, get_Uploaded_IMAG, getDocId, getIn, requestOnduty, requestonduty_Approval, requestOndutyOut, requestReachedOut, send_location, stTrack } from '../services/onDuty.service.js';
 import { upload } from '../utils/multer.js';
 
 
@@ -22,8 +22,6 @@ router.get("/Onduty_uploaded_image",get_Uploaded_IMAG)
 router.get('/getIn', getIn);
 router?.get("/get__Vechile",get__Vechile)
 router?.get("/get_history_location",get_history_location)
-router?.get("/get__Date_Wise_Fuel",get__Date_Wise_Fuel)
-router?.get("/get__Date_Wise_Fuel_Individual",get__Date_Wise_Fuel_Individual)
 router?.post("/send_location",send_location)
 router?.get("/get_live_location",get_live_location)
 router?.get("/get_live_user",get_live_user)

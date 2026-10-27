@@ -7,11 +7,10 @@ import {
     TouchableOpacity,
     Image,
 } from 'react-native';
-import { useSelector } from 'react-redux';
-import CustomText from '../../../Text/CustomText';
+import CustomText from '../../../components/text/CustomText';
 import MaterialCommunityIcons  from 'react-native-vector-icons/MaterialCommunityIcons';
-import { AllowedTabs_Filter } from '../../../Utils/AllowedPagesFiltering';
-import { Common_Context } from '../../../../Context/Common_Context';
+import { AllowedTabs_Filter } from '../../../components/utils/AllowedPagesFiltering';
+import { Common_Context } from '../../../context/CommonContext';
 
 
 const { width } = Dimensions.get('window');
@@ -20,7 +19,6 @@ const CARD_WIDTH = width * 0.45;
 const PageMaster_leave = ({ navigation }) => {
     const [selectedCard, setSelectedCard] = useState(null);
     const {page,admin}= useContext(Common_Context)
-    const countUnder20DueDays = useSelector(state => state.dueDays.countUnder20DueDays);
     
     const cardLabels = [
         {
@@ -37,13 +35,6 @@ const PageMaster_leave = ({ navigation }) => {
             notify: 0,
             color: '#2196F3'
         },
-        {
-            label: 'Advance Report',
-            action: 'advance_report',
-            icon: 'hand-coin',
-            notify: 0,
-            color: '#FF9800'
-        },
          {
             label: 'Onduty Report',
             action: 'onduty_report',
@@ -52,21 +43,19 @@ const PageMaster_leave = ({ navigation }) => {
             color: '#9C27B0'
         },
         {
-            label: 'Approval Logs',
-            action: 'approval_logs',
-            icon: 'clipboard-list-outline',
+            label: 'Attendance Report',
+            action: 'ATTENDANCEREPORT',
+            icon: 'file-chart-outline',
             notify: 0,
-            color: '#9C27B0'
+            color: '#FF9800'
         },
-        ,
         {
-            label: 'Fuel Logs',
-            action: 'fuel',
-            icon: 'fuel',
+            label: 'Approval Logs',
+            action: 'logs',
+            icon: 'history',
             notify: 0,
-            color: '#299e4c'
+            color: '#607D8B'
         },
-        
     ];
 
     const handleClick = (label, action) => {

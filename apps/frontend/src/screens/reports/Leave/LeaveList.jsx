@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { FlatList, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
-import { Dropdown } from '../../../../ReusableComponents/inputs';
+import { Dropdown } from '../../../components/reusable_components/Inputs';
 import moment from 'moment';
-import { screenWidth } from '../../../Utils/Screens';
-import { useGetEmployeeidsQuery } from '../../../../redux/service/user';
+import { screenWidth } from '../../../components/utils/Screens';
+import { useGetEmployeeidsQuery } from '../../../store/api/UserApi';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useSelector } from 'react-redux';
-import { useGet__per_categoryQuery } from '../../../../redux/service/permission';
-import FilterModel from '../../../FilterModal/FilterModel';
-import { useGetHod_showable_dataQuery } from '../../../../redux/service/Leave';
+import { useGet__per_categoryQuery } from '../../../store/api/PermissionApi';
+import FilterModel from '../../../components/filter_modal/FilterModel';
+import { useGetHod_showable_dataQuery } from '../../../store/api/LeaveApi';
 
 const LeaveList = () => {
   const [Idcard_filter, setIdCard_Idcard] = useState([]);
