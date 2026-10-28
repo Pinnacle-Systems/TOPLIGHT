@@ -196,7 +196,7 @@ export default function OndutyEntryForm({
             {/* Photo Capture Section */}
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name="camera-outline" size={theme.controlSizes.iconSm} color={theme.colors.accent} />
+                    <MaterialCommunityIcons name="camera-outline" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
                     <Text style={styles.cardHeaderText}>Location Photo *</Text>
                 </View>
 
@@ -225,7 +225,7 @@ export default function OndutyEntryForm({
                         activeOpacity={0.8}
                     >
                         <View style={styles.cameraCircle}>
-                            <Feather name="camera" size={theme.controlSizes.iconLg} color={theme.colors.accent} />
+                            <Feather name="camera" size={theme.controlSizes.iconLg} color={theme.colors.brand} />
                         </View>
                         <Text style={styles.cameraPromptTitle}>Tap to Capture Photo</Text>
                         <Text style={styles.cameraPromptSubtitle}>A selfie or location photo is required to start</Text>
@@ -580,7 +580,7 @@ const createStyles = theme => StyleSheet.create({
         width: theme.controlSizes.cameraIconContainer,
         height: theme.controlSizes.cameraIconContainer,
         borderRadius: theme.radii.circle,
-        backgroundColor: theme.colors.accentSoft,
+        backgroundColor: theme.colors.brandSoft,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: theme.spacing.sm,
@@ -588,11 +588,11 @@ const createStyles = theme => StyleSheet.create({
     cameraPromptTitle: {
         ...theme.typography.bodySmall,
         fontWeight: theme.fontWeights.bold,
-        color: theme.colors.accent,
+        color: theme.colors.brand,
     },
     cameraPromptSubtitle: {
         ...theme.typography.caption,
-        color: theme.colors.accent,
+        color: theme.colors.brand,
         marginTop: theme.spacing.xxs,
     },
     submitBtn: {

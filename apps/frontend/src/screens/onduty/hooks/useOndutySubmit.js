@@ -44,9 +44,12 @@ export function useOndutySubmit({
 
     const { refetch: refetchDocId } = useGetDocIDQuery();
     const { refetch: refetchIn    } = useGetInQuery();
-    const { refetch: refetchVehicles } = useGet__VechileQuery({
-        params: { where: JSON.stringify({ USEDBY: UserSelect?.EMPNAME }) },
-    });
+    const { refetch: refetchVehicles } = useGet__VechileQuery(
+        {
+            params: { where: JSON.stringify({ USEDBY: UserSelect?.EMPNAME }) },
+        },
+        { skip: !formState?.isKmEntryEnabled }
+    );
 
     const [requestOndutyOut] = useRequestOndutyOutMutation();
     const [requestReachedOut] = useRequestReachedOutMutation();
@@ -96,8 +99,12 @@ export function useOndutySubmit({
     // ── Helper: refetch all and reset form ────────────────────────────────────
     const refreshAndReset = useCallback(async () => {
         dispatch(resetOndutyForm());
-        await Promise.allSettled([refetchIn(), refetchVehicles(), refetchDocId()]);
-    }, [dispatch, refetchIn, refetchVehicles, refetchDocId]);
+        const refetches = [refetchIn(), refetchDocId()];
+        if (formState?.isKmEntryEnabled) {
+            refetches.push(refetchVehicles());
+        }
+        await Promise.allSettled(refetches);
+    }, [dispatch, refetchIn, refetchVehicles, refetchDocId, formState?.isKmEntryEnabled]);
 
     // ── Submit IN ──────────────────────────────────────────────────────────────
     const handleSubmitIN = useCallback(async (compressedPhotoUri) => {
