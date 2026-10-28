@@ -14,16 +14,25 @@ const month = [
   "November",
   "December",
 ];
-const d = new Date();
-const monthName = month[d.getMonth()];
-const yearName = d.getFullYear();
-
-const lastMonthDate = new Date(d.getFullYear(), d.getMonth() - 1, d.getDate());
-const lastMonthName = month[lastMonthDate.getMonth()];
-const lastMonthYear = lastMonthDate.getFullYear();
-
-const currentDt = [monthName, yearName].join(" ");
-const lstMnth = [lastMonthName, lastMonthYear].join(" ");
+export function getPeriods() {
+  const d = new Date();
+  const monthName = month[d.getMonth()];
+  const yearName = d.getFullYear();
+  const lastMonthDate = new Date(d.getFullYear(), d.getMonth() - 1, d.getDate());
+  const lastMonthName = month[lastMonthDate.getMonth()];
+  const lastMonthYear = lastMonthDate.getFullYear();
+  return {
+    currentDt: [monthName, yearName].join(" "),
+    lstMnth: [lastMonthName, lastMonthYear].join(" "),
+  };
+}
+let currentDt = getPeriods().currentDt;
+let lstMnth = getPeriods().lstMnth;
+function refreshDates(lstMnthOverride) {
+  const p = getPeriods();
+  currentDt = p.currentDt;
+  lstMnth = lstMnthOverride || p.lstMnth;
+}
 
 export async function getEmployees(
   connection,
@@ -32,6 +41,7 @@ export async function getEmployees(
   filterBuyer,
   lstMnthOverride
 ) {
+  refreshDates(lstMnthOverride);
   let result = "";
   if (type === "Value") {
     const sql = `SELECT 
@@ -81,6 +91,7 @@ export async function getEmployees1(
   filterBuyer,
   lstMnthOverride
 ) {
+  refreshDates(lstMnthOverride);
   let result = "";
   if (type === "Value") {
     const sql = `SELECT 
@@ -131,6 +142,7 @@ export async function getProfit(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates(lstMnthOverride);
   console.log(filterBuyer, "filterBuyer mis ");
   let result;
   const filterBuyerList = filterBuyer
@@ -174,6 +186,7 @@ export async function getProfit1(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates(lstMnthOverride);
   console.log(filterBuyer, "filterBuyerfr ");
   let result;
   const filterBuyerList = filterBuyer
@@ -217,6 +230,7 @@ export async function getNewCustomers(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `
@@ -279,6 +293,7 @@ export async function getTopCustomers(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `SELECT SUM(MALE) MALE,SUM(FEMALE) FEMALE,SUM(MALE)+SUM(FEMALE) TOTAL,COMPCODE FROM (
@@ -333,6 +348,7 @@ export async function getLoss(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `SELECT SUM(MALE) MALE,SUM(FEMALE) FEMALE,SUM(MALE)+SUM(FEMALE) TOTAL,COMPCODE FROM (
@@ -392,6 +408,7 @@ export async function getLoss01(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `SELECT SUM(MALE) MALE,SUM(FEMALE) FEMALE,SUM(MALE)+SUM(FEMALE) TOTAL,COMPCODE FROM (
@@ -450,6 +467,7 @@ export async function getLoss1(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `SELECT SUM(MALE) MALE,SUM(FEMALE) FEMALE,SUM(MALE)+SUM(FEMALE) TOTAL,COMPCODE FROM (
@@ -500,6 +518,7 @@ export async function getLoss11(
   filterBuyer,
   filterMonth
 ) {
+  refreshDates();
   let result;
   if (type === "YEAR") {
     const sql = `SELECT SUM(MALE) MALE,SUM(FEMALE) FEMALE,SUM(MALE)+SUM(FEMALE) TOTAL,COMPCODE FROM (

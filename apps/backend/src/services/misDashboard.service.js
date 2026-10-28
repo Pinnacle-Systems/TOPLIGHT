@@ -1,5 +1,6 @@
 import { fetchActiveFinYearFromDB, getConnection } from "../constants/dbConnection.js";
-import { IN_HAND } from "../constants/dbConstants.js";
+import formatDateToOracle from "../utils/oracleDateFormat.js";
+import { logServiceError } from "../utils/logger.js";
 import { currentDate, tommorowDate } from "../helpers/helper.js";
 import {
   getTopCustomers,
@@ -139,20 +140,21 @@ export async function get(req, res) {
       },
     });
   } catch (err) {
+      logServiceError('MisDashboardService:get', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
 export async function getTotalStrength(req, res) {
-    const connection = await getConnection(res)
-     const COMPCODE=String(req.headers?.compcode).toUpperCase()
+    const connection = await getConnection(res);
+    const COMPCODE = String(req.headers?.compcode || '').toUpperCase();
     const { date } = req.query;
    
-    const currentDate =moment(formatDateToOracle(date)).format('DD-MM-YYYY')
-    const tommorowDate = moment(formatDateToOracle(date)).add(1, 'days').format('DD-MM-YYYY');
+    const currentDate = date ? moment(formatDateToOracle(date)).format('DD-MM-YYYY') : moment().format('DD-MM-YYYY');
+    const tommorowDate = date ? moment(formatDateToOracle(date)).add(1, 'days').format('DD-MM-YYYY') : moment().add(1, 'days').format('DD-MM-YYYY');
   
     
     try {
@@ -326,11 +328,12 @@ ORDER BY A.BANDID,A.DEPTNAME
         })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getTotalStrength', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -373,10 +376,11 @@ export async function getActualVsBudgetValueMonthWise(req, res) {
       sql,
     });
   } catch (err) {
+      logServiceError('MisDashboardService:getActualVsBudgetValueMonthWise', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 export async function getYearlyComp(req, res) {
@@ -436,10 +440,11 @@ export async function getYearlyComp(req, res) {
 
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getYearlyComp', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 export async function getBuyerWiseRevenue(req, res) {
@@ -485,10 +490,11 @@ ORDER BY 2
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getBuyerWiseRevenue', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -572,11 +578,12 @@ ORDER BY A."label"
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getTotalHeadCount', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -597,11 +604,12 @@ export async function getGenderCount(req, res) {
           return res.json({ statusCode: 0, data:result?.rows })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getGenderCount', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -676,11 +684,12 @@ GROUP BY B.GENDER
               return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getTotalPA', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -698,6 +707,7 @@ export async function getFilterEmployees(req,res) {
                  
             }
             catch (err) {
+                logServiceError('MisDashboardService:getFilterEmployees', err, req);
                 console.error('Error retrieving data:', err);
                 res.status(500).json({ error: 'Internal Server Error' });
             }
@@ -732,11 +742,12 @@ ORDER BY C.DESIGNATION`
           return res.json({ statusCode: 0, data: result?.rows })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getCateogryToTSalary', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -784,11 +795,12 @@ ORDER BY A.DOCDATE`
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getOverTime', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -838,11 +850,12 @@ export async function getEachOverTimeWages(req,res) {
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getEachOverTimeWages', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -871,11 +884,12 @@ export async function getOverTimeWages(req,res) {
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getOverTimeWages', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -905,11 +919,12 @@ export async function getMoreDetails(req,res) {
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getMoreDetails', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -959,11 +974,12 @@ GROUP BY
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getESI', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1010,11 +1026,12 @@ GROUP BY
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getMonthESIPF', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1053,11 +1070,12 @@ ORDER BY A.DOCDATE`
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getInOut', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1092,11 +1110,12 @@ export async function getUserMobData(req,res) {
           return res.json({ statusCode: 0, data: {...transformedResult,...fcm_data} })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getUserMobData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1158,11 +1177,12 @@ GROUP BY B.GENDER
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getDep_wise_Attence_Data', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1200,11 +1220,12 @@ export async function getDepData(req,res) {
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getDepData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1229,11 +1250,12 @@ export async function ToTexpenses(req,res) {
           return res.json({ statusCode: 0, data: result?.rows })
     }
     catch (err) {
+        logServiceError('MisDashboardService:ToTexpenses', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1286,11 +1308,12 @@ export async function getLastMonthSalary(req, res) {
        // return res.json({ statusCode: 0, data:{salary: result?.rows[0][0],gross:result?.rows[0][1],payperiod:result?.rows[0][2],saltype:result?.rows[0][3],wd:result?.rows[0][4],ot:result?.rows[0][5],otamt:result?.rows[0][6],adv:result?.rows[0][7],deb:result?.rows[0][8],loan:result?.rows[0][9],mw:result?.rows[0][10],pf:result?.rows[0][11],esi:result?.rows[0][12],mw:result?.rows[0][10],pwage:0,basic:0} })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getLastMonthSalary', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1380,11 +1403,12 @@ ORDER BY TO_NUMBER(IDCARD),LCODE`
         return res.json({ statusCode: 0, data:FilteredData })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getCurrentMonthLeaves', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1417,11 +1441,12 @@ ORDER BY
         return res.json({ statusCode: 0, data: result.map(u => ({ ...u, Idcard: u.idCard })) })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getYearWiseToTSalary', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-      //  await connection.close()
+      //  await connection?.close()
     }
 }
 
@@ -1481,10 +1506,11 @@ GROUP BY A.COMPCODE`;
 
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getActualVsBudget', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -1533,10 +1559,11 @@ ORDER BY TO_CHAR(A.DOB, 'MM-DD')
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getShortShipmentRatio', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -1600,6 +1627,7 @@ GROUP BY B.GENDER
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getDepWise_gender_attence', err, req);
         console.error('Error retrieving data:', err);
        // res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -1645,11 +1673,12 @@ WHERE A.PCTYPE = 'ACTUAL' AND A.PAYPERIOD = :PAYPERIOD AND A.EMPID = :IdCard`
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getPayslip', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1705,11 +1734,12 @@ AND EE.COMPCODE = :COMPCODE AND CC.IDACTIVE='YES'`
           return res.json({ statusCode: 0, data: filterData })
     }
     catch (err) {
+        logServiceError('MisDashboardService:getAllEmployees_By_GENDER_BY_DEPARTMENT', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
     finally {
-        await connection.close()
+        await connection?.close()
     }
 }
 
@@ -1720,10 +1750,11 @@ export async function executeProcedure(req, res) {
 
     res.json({ success: true, message: "Data refetch executed successfully" });
   } catch (error) {
+      logServiceError('MisDashboardService:executeProcedure', error, req);
     res.status(500).json({ success: false, error: error.message });
   } finally {
     if (connection) {
-      await connection.close();
+      await connection?.close();
     }
   }
 }
@@ -1837,6 +1868,7 @@ export async function getSalaryAgewise(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getSalaryAgewise', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({
       success: false,
@@ -1932,6 +1964,7 @@ export async function getAgewiseESI(req, res) {
     );
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getAgewiseESI', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({
       success: false,
@@ -2035,6 +2068,7 @@ ORDER BY A.EMPID
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getSalarydet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({
       success: false,
@@ -2104,6 +2138,7 @@ A.STDT1, A.STDT
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (error) {
+      logServiceError('MisDashboardService:getLastSalarydet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({
       success: false,
@@ -2181,6 +2216,7 @@ export async function getOTwagesdet(req, res) {
     );
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getOTwagesdet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({
       success: false,
@@ -2252,6 +2288,7 @@ export async function getpfdet(req, res) {
     );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
+      logServiceError('MisDashboardService:getpfdet', err, req);
     console.error("Error in getpfdet:", err);
     res.status(500).json({ success: false, message: err.message });
   }
@@ -2323,6 +2360,7 @@ export async function getesidet(req, res) {
       .status(200)
       .json({ success: true, data: result, payPeriodUsed: lstMnth });
   } catch (error) {
+      logServiceError('MisDashboardService:getesidet', error, req);
     console.error("Error in getesidet:", error);
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2383,6 +2421,7 @@ export async function getattdet(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (err) {
+      logServiceError('MisDashboardService:getattdet', err, req);
     console.error("Error in getattdet:", err);
     res.status(500).json({ success: false, message: err.message });
   }
@@ -2437,6 +2476,7 @@ export async function getnewjoin(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (err) {
+      logServiceError('MisDashboardService:getnewjoin', err, req);
     console.error("Error in getnewjoin:", err);
     res.status(500).json({ success: false, message: err.message });
   }
@@ -2492,6 +2532,7 @@ export async function getattdetTable(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getattdetTable', error, req);
     console.error("Error executing SQL:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2595,6 +2636,7 @@ export async function getretdetTable(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getretdetTable', error, req);
     console.error("Error executing SQL:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2642,6 +2684,7 @@ WHERE ${whereClause}
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getagedet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2695,6 +2738,7 @@ ${whereClause}
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getexpdet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2744,6 +2788,7 @@ WHERE  ${whereClause}
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getbgdet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2791,6 +2836,7 @@ ORDER BY A.EMPID,YEAR,DAY
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getPfDataDet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2838,6 +2884,7 @@ ORDER BY A.EMPID,YEAR,DAY
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getEsiDataDet', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -2899,10 +2946,11 @@ export async function getEmployeesDetail(req, res) {
     let totalCount = countResult.rows[0][0];
     res.status(200).json({ success: true, data: result, totalCount });
   } catch (error) {
+      logServiceError('MisDashboardService:getEmployeesDetail', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   } finally {
-      await connection.close();
+      await connection?.close();
   }
 }
 
@@ -2949,10 +2997,11 @@ export async function getEmployeesDetail1(req, res) {
     });
     res.status(200).json({ success: true, data: result });
   } catch (error) {
+      logServiceError('MisDashboardService:getEmployeesDetail1', error, req);
     console.error("Error executing query:", error);
     res.status(500).json({ success: false, error: error.message });
   } finally {
-      await connection.close();
+      await connection?.close();
   }
 }
 
@@ -2990,6 +3039,7 @@ ORDER BY 1
 
     res.status(200).json({ success: true, data: resultArr });
   } catch (err) {
+      logServiceError('MisDashboardService:getOrdersInHand', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
@@ -2998,9 +3048,13 @@ ORDER BY 1
 }
 
 export async function getOrdersInHandMonthWise(req, res) {
+  // If date parameter is passed without filterYear (e.g. from Daily Attendance report), route to getTotalStrength
+  if (req.query?.date && !req.query?.filterYear) {
+    return getTotalStrength(req, res);
+  }
   const connection = await getConnection(res);
   try {
-    const { filterYear, filterBuyer } = req.query;
+    const { filterYear = '', filterBuyer = '' } = req.query;
     const monthArr = `
         SELECT B.PAYPERIOD,B.STDT,A.COMPCODE,COUNT(*) ATTRITION FROM MISTABLE A
 JOIN MONTHLYPAYFRQ B ON A.COMPCODE = B.COMPCODE 
@@ -3010,7 +3064,7 @@ GROUP BY B.PAYPERIOD,B.STDT,A.COMPCODE
 ORDER BY 2
         `;
 
-    let result = await connection.execute(monthArr, { FINYEAR: filterYear });
+    let result = await connection.execute(monthArr, { FINYEAR: filterYear || '' });
     let mappedResult = result.rows.map((row) => ({
       date: row[0],
       planned: row[3],
@@ -3022,10 +3076,11 @@ ORDER BY 2
       sql: monthArr,
     });
   } catch (err) {
+      logServiceError('MisDashboardService:getOrdersInHandMonthWise', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3094,10 +3149,11 @@ ORDER BY COMPCODE
 
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getregionCount', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3207,10 +3263,11 @@ ORDER BY A.STDT1, A.STDT
 
     res.status(200).json({ success: true, data: resultArr });
   } catch (err) {
+      logServiceError('MisDashboardService:getESIPF', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3310,10 +3367,11 @@ ORDER BY A.STDT1, A.STDT
 
     res.status(200).json({ success: true, data: result });
   } catch (err) {
+      logServiceError('MisDashboardService:getSalarydet1', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3415,10 +3473,11 @@ ORDER BY A.STDT1, A.STDT
 
     res.status(200).json({ success: true, data: resultArr });
   } catch (err) {
+      logServiceError('MisDashboardService:getESIPF1', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3480,10 +3539,11 @@ A.STDT1, A.STDT`;
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getESIlastmonth', err, req);
     console.error("Error fetching ESI last month:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3545,10 +3605,11 @@ A.STDT1, A.STDT`;
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getPFlastmonth', err, req);
     console.error("Error fetching PF last month:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3606,10 +3667,11 @@ ORDER BY TO_NUMBER(IDCARD),LCODE
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getLeaveAvailable', err, req);
     console.error("Error fetching leave availability:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3684,10 +3746,11 @@ ORDER BY 1
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getlongAbsent', err, req);
     console.error("Error fetching long absent:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3719,10 +3782,11 @@ ORDER BY A.EMPID
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getFullPrasent', err, req);
     console.error("Error fetching full present:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3741,10 +3805,11 @@ SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A WHERE A.COMPCODE = 'AGF' AND A.FINYR ='$
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getPayPeriod', err, req);
     console.error("Error fetching pay period:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3760,10 +3825,11 @@ SELECT A.FINYR FROM GTFINANCIALYEAR A ORDER BY 1    `;
     }));
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getFinYear', err, req);
     console.error("Error fetching fin year:", err);
     res.status(500).json({ success: false, error: err.message });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3790,12 +3856,13 @@ export async function getEmployeeHeadCount(req, res) {
 
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getEmployeeHeadCount', err, req);
     console.error("Error fetching employee head count:", err);
     return res
       .status(500)
       .json({ statusCode: 1, message: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3862,12 +3929,13 @@ A.FNAME,
 
     res.status(200).json({ success: true, data: mappedResult });
   } catch (err) {
+      logServiceError('MisDashboardService:getHeadDetail', err, req);
     console.error("Error fetching head detail:", err);
     return res
       .status(500)
       .json({ statusCode: 1, message: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 
@@ -3917,10 +3985,11 @@ export async function getStateWiseHeadCount(req, res) {
 
     return res.json({ statusCode: 0, data: resp });
   } catch (err) {
+      logServiceError('MisDashboardService:getStateWiseHeadCount', err, req);
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    await connection?.close();
   }
 }
 

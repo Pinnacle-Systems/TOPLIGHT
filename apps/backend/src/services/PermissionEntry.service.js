@@ -2,8 +2,9 @@ import { prisma_Connector } from "../../index.js";
 import { getConnection } from "../constants/dbConnection.js";
 import { convert12to24 } from "../utils/timeConverter24h.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
-import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
+import { generateUniqueId_Number } from "../utils/idGenerator.js";
 import { mapPermission, mapPermissionSingle, mapPermissionMaster, mapPermissionMasterList } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 
 
 export async function get__per(req, res) {
@@ -16,6 +17,7 @@ export async function get__per(req, res) {
             res.json({status:1,data:result.map(mapPermission)}) 
         }
         catch (err) {
+        logServiceError('PermissionEntryService:get__per', err, req);
            console.log(err);
         }
 }
@@ -36,6 +38,7 @@ export async function get__per_category(req, res) {
            res.json({status:1,data:filter_data}) 
       }
       catch (err) {
+        logServiceError('PermissionEntryService:get__per_category', err, req);
         console.log(err);
         res.json({ status: 0, data: [] });
     }
@@ -60,6 +63,7 @@ export async function addPermission_master(req, res) {
             return res.json({ status: 0, data: null });
         }
     } catch (err) {
+        logServiceError('PermissionEntryService:addPermission_master', err, req);
         console.log(err);
         return res.json({ status: 0, message: err?.message || 'Failed to add permission master', data: null });
     }
@@ -77,6 +81,7 @@ export async function get_user_Permission(req, res) {
             res.json({status:1,data:result}) 
         }
         catch (err) {
+        logServiceError('PermissionEntryService:get_user_Permission', err, req);
            console.log(err);
            
         }
@@ -100,6 +105,7 @@ export async function getDocId(req, res) {
             res.json({status:1,data:{count:Number(result?.id || 0)+1}}) 
         }
         catch (err) {
+        logServiceError('PermissionEntryService:getDocId', err, req);
            console.log(err);
            
         }
@@ -195,6 +201,7 @@ export async function getDocId(req, res) {
             }
         }
     } catch (checkErr) {
+        logServiceError('PermissionEntryService:requestPermission', checkErr, req);
         console.warn("HOD/HR user auto-ensure warning:", checkErr);
     }
 
@@ -214,6 +221,7 @@ export async function getDocId(req, res) {
             });
         }
     } catch (checkErr) {
+        logServiceError('PermissionEntryService:requestPermission', checkErr, req);
         console.warn("Current user auto-ensure warning:", checkErr);
     }
 
@@ -238,6 +246,7 @@ export async function getDocId(req, res) {
             }
         }
     } catch (checkErr) {
+        logServiceError('PermissionEntryService:requestPermission', checkErr, req);
         console.warn("permission createdBy/modified_By auto-ensure warning:", checkErr);
     }
 
@@ -254,6 +263,7 @@ export async function getDocId(req, res) {
             }
         }
     } catch (catErr) {
+        logServiceError('PermissionEntryService:requestPermission', catErr, req);
         console.warn("permission category auto-ensure warning:", catErr);
     }
 
@@ -261,6 +271,7 @@ export async function getDocId(req, res) {
     try {
         connection = await getConnection(res);
     } catch (connErr) {
+        logServiceError('PermissionEntryService:requestPermission', connErr, req);
         console.error("Database connection failed:", connErr);
         return res.json({
             status: 0,
@@ -339,6 +350,7 @@ export async function getDocId(req, res) {
             }
         }   
     } catch (err) {
+        logServiceError('PermissionEntryService:requestPermission', err, req);
         console.error("requestPermission error:", err);
         let friendlyMsg = "Unable to save permission request. Please try again.";
         const errMsg = String(err?.message || err || '');
@@ -361,6 +373,7 @@ export async function getDocId(req, res) {
                 await connection.close();
             }
         } catch (closeErr) {
+        logServiceError('PermissionEntryService:requestPermission', closeErr, req);
             console.warn("Connection close warning:", closeErr);
         }
     }
@@ -376,6 +389,7 @@ export async function get_all_Permission_reason(req, res) {
         res.json({ status: 1, data: mapPermissionMasterList(result) });
     }
     catch (err) {
+        logServiceError('PermissionEntryService:get_all_Permission_reason', err, req);
         console.log(err);
         res.json({ status: 0, data: [] });
     }
@@ -503,7 +517,7 @@ export async function requestPermission_Approval(req, res) {
     const connection = await getConnection(res)
     if (!connection || res.headersSent) return;
 
-    // âœ… Normalize Oracle TIMESTAMP or any date format â†’ 'DD-MON-YYYY' e.g. '10-APR-2026'
+    // Ã¢Å“â€¦ Normalize Oracle TIMESTAMP or any date format Ã¢â€ â€™ 'DD-MON-YYYY' e.g. '10-APR-2026'
     function toOracleDate(str) {
         if (!str) return null
 
@@ -511,7 +525,7 @@ export async function requestPermission_Approval(req, res) {
         if (/^\d{2}-[A-Z]{3}-\d{2}/i.test(str)) {
             const datePart = str.split(' ')[0]              // '10-APR-26'
             const [day, mon, yr] = datePart.split('-')
-            const fullYear = Number(yr) >= 50 ? `19${yr}` : `20${yr}`  // 26 â†’ 2026
+            const fullYear = Number(yr) >= 50 ? `19${yr}` : `20${yr}`  // 26 Ã¢â€ â€™ 2026
             return `${day}-${mon}-${fullYear}`              // '10-APR-2026'
         }
 
@@ -636,10 +650,12 @@ export async function requestPermission_Approval(req, res) {
         await connection.commit()
         return res.json({ status: 1, data: mapPermission(result) })
     } catch (err) {
+        logServiceError('PermissionEntryService:requestPermission_Approval', err, req);
         console.error('[requestPermission_Approval] Approval failed:', err)
         try {
             await connection.rollback()
         } catch (rollbackError) {
+        logServiceError('PermissionEntryService:requestPermission_Approval', rollbackError, req);
             console.error('[requestPermission_Approval] Oracle rollback failed:', rollbackError)
         }
         if (!res.headersSent) {
@@ -652,10 +668,21 @@ export async function requestPermission_Approval(req, res) {
         try {
             await connection.close()
         } catch (closeError) {
+        logServiceError('PermissionEntryService:requestPermission_Approval', closeError, req);
             console.error('[requestPermission_Approval] Oracle connection close failed:', closeError)
         }
     }
 }
+
+// â”€â”€ Standard Function Aliases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const getPermissionEntries = get__per;
+export const getPermissionDocId = getDocId;
+export const getPermissionCategories = get__per_category;
+export const getAllPermissionReasons = get_all_Permission_reason;
+export const approvePermissionRequest = requestPermission_Approval;
+export const addPermissionMaster = addPermission_master;
+export const getUserPermissions = get_user_Permission;
+
 
 
          

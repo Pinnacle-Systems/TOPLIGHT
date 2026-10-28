@@ -1,4 +1,5 @@
 import { getConnection } from "../constants/dbConnection.js";
+import { logServiceError } from "../utils/logger.js";
 export async function get(req, res) {
     const connection = await getConnection(res)
     try {
@@ -47,6 +48,7 @@ export async function get(req, res) {
 
     }
     catch (err) {
+        logServiceError('OrderManagementService:get', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -102,6 +104,7 @@ export async function getShippedData(req, res) {
 
     }
     catch (err) {
+        logServiceError('OrderManagementService:getShippedData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -152,6 +155,7 @@ export async function getOcrPending(req, res) {
 
     }
     catch (err) {
+        logServiceError('OrderManagementService:getOcrPending', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -200,6 +204,7 @@ export async function getWIPData(req, res) {
 
     }
     catch (err) {
+        logServiceError('OrderManagementService:getWIPData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -248,6 +253,7 @@ export async function getPreBudget(req, res) {
 
     }
     catch (err) {
+        logServiceError('OrderManagementService:getPreBudget', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -283,6 +289,7 @@ export async function getProfitLossData(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('OrderManagementService:getProfitLossData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -368,6 +375,7 @@ export async function getCapPlanData(req, res) {
         }
 
     } catch (err) {
+        logServiceError('OrderManagementService:getCapPlanData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
@@ -381,6 +389,7 @@ export async function getFabStsData(req, res) {
     const connection = await getConnection(res)
     try {
         const { itemWise, modalContent, month } = req.query;
+        const compCode = req.query?.compCode || req.headers?.compcode || 'BVK';
         if (itemWise) {
             const sql = `SELECT * FROM MISFABSTATUS A  WHERE A.PLANDELMON = '${month}' AND A.STATUS = '${modalContent}'
         ORDER BY 1,2,3,4,5,6,7`
@@ -407,26 +416,26 @@ export async function getFabStsData(req, res) {
             SELECT COUNT(A.ORDERNO) NOOFORD,A.PLANDELMON,MAX(A.PLANDT) DELDATE FROM MISFABSTATUS A 
             WHERE A.PLANDELMON IN (
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE TO_DATE(SYSDATE) BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE TO_DATE(SYSDATE) BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             UNION
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE LAST_DAY(TO_DATE(SYSDATE))+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE LAST_DAY(TO_DATE(SYSDATE))+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             UNION
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE LAST_DAY(LAST_DAY(TO_DATE(SYSDATE))+1)+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE LAST_DAY(LAST_DAY(TO_DATE(SYSDATE))+1)+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             )  
             GROUP BY A.PLANDELMON
             ) A 
             LEFT JOIN (SELECT COUNT(A.ORDERNO) NOOFORD,A.PLANDELMON FROM MISFABSTATUS A WHERE A.BALQTY <= 0
             AND A.PLANDELMON IN (
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE TO_DATE(SYSDATE) BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE TO_DATE(SYSDATE) BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             UNION
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE LAST_DAY(TO_DATE(SYSDATE))+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE LAST_DAY(TO_DATE(SYSDATE))+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             UNION
             SELECT A.PAYPERIOD FROM MONTHLYPAYFRQ A
-            WHERE LAST_DAY(LAST_DAY(TO_DATE(SYSDATE))+1)+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = 'BVK'
+            WHERE LAST_DAY(LAST_DAY(TO_DATE(SYSDATE))+1)+1 BETWEEN A.STDT AND A.ENDT AND A.COMPCODE = '${compCode}'
             )  
             GROUP BY A.PLANDELMON
             ) B ON A.PLANDELMON = B.PLANDELMON
@@ -443,6 +452,7 @@ export async function getFabStsData(req, res) {
         }
     }
     catch (err) {
+        logServiceError('OrderManagementService:getFabStsData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -483,6 +493,7 @@ export async function getYFActVsPln(req, res) {
 
         return res.json({ statusCode: 0, data: resp });
     } catch (err) {
+        logServiceError('OrderManagementService:getYFActVsPln', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
@@ -545,6 +556,7 @@ export async function getOrderStatusBuyerWise(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('OrderManagementService:getOrderStatusBuyerWise', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -575,6 +587,7 @@ export async function getPlanedVsActualSalesVal(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('OrderManagementService:getPlanedVsActualSalesVal', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -582,3 +595,17 @@ export async function getPlanedVsActualSalesVal(req, res) {
         await connection.close()
     }
 }
+
+
+// ── Standard Descriptive Aliases ─────────────────────────────────────────────
+export const getOrderManagement = get;
+export const getShippedOrders = getShippedData;
+export const getPendingOcr = getOcrPending;
+export const getWorkInProgressData = getWIPData;
+export const getProfitAndLossData = getProfitLossData;
+export const getCapacityPlanData = getCapPlanData;
+export const getFabricStatusData = getFabStsData;
+export const getYfActualVsPlanned = getYFActVsPln;
+export const getPreBudgetSummary = getPreBudget;
+export const getOrderStatusByBuyer = getOrderStatusBuyerWise;
+export const getPlannedVsActualSalesValue = getPlanedVsActualSalesVal;

@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import path from "path";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { getConnection } from "../constants/dbConnection.js";
-import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
+import { generateUniqueId_Number } from "../utils/idGenerator.js";
 import { compressedFilePaths, jsonFilePaths } from "../utils/paths.js";
-import { __readStream } from "../utils/streams.js";
 import { mapOnduty, mapOndutyeSingle, mapOndutyMaster, mapOndutyMasterList } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 
 import { promises as fsp } from 'fs';
 import fetch from "node-fetch";
@@ -20,7 +20,8 @@ async function getAddressFromCoords(lat, lon) {
   if (isNaN(nLat) || isNaN(nLon) || (nLat === 0 && nLon === 0)) return null;
 
   try {
-    const url = `https://api.tomtom.com/search/2/reverseGeocode/${nLat},${nLon}.json?key=uCLvWhKdNKupgoRI1jEfdpo8Uca7OxMu&radius=50&language=en-US`;
+    const tomtomKey = process.env.TOMTOM_API_KEY;
+    const url = `https://api.tomtom.com/search/2/reverseGeocode/${nLat},${nLon}.json?key=${tomtomKey}&radius=50&language=en-US`;
     const res = await fetch(url);
     const data = await res.json();
     const best = data.addresses?.[0]?.address;
@@ -32,6 +33,7 @@ async function getAddressFromCoords(lat, lon) {
     const clean = String(rawAddr || '').trim().replace(/^,\s*/, '');
     return clean && clean !== 'Unknown' && clean !== ', Unknown' ? clean : null;
   } catch (e) {
+    logServiceError('OnDutyService:OnDutyService', e, req);
     return null;
   }
 }
@@ -54,6 +56,7 @@ export async function get__Onduty(req, res) {
     res.json({ status: 1, data: (result || []).map(mapOnduty) });
   }
   catch (err) {
+    logServiceError('OnDutyService:get__Onduty', err, req);
     console.log(err);
     res.json({ status: 0, data: [] });
   }
@@ -69,6 +72,7 @@ export async function get__Onduty_edit(req, res) {
     res.json({ status: 1, data: (result || []).map(mapOnduty) });
   }
   catch (err) {
+    logServiceError('OnDutyService:get__Onduty_edit', err, req);
     console.log(err);
     res.json({ status: 0, data: [] });
   }
@@ -85,6 +89,7 @@ export async function get__vechilekm(req, res) {
     res.json({ status: 1, data: result })
   }
   catch (err) {
+    logServiceError('OnDutyService:get__vechilekm', err, req);
     console.log(err);
   }
 }
@@ -110,6 +115,7 @@ export async function Add__vechilekm(req, res) {
     }
   }
   catch (err) {
+    logServiceError('OnDutyService:Add__vechilekm', err, req);
     console.log(err);
   }
 }
@@ -153,6 +159,7 @@ export async function get__Vechile(req, res) {
     return res.json({ statusCode: 0, data: transformedResult || [] });
   }
   catch (err) {
+    logServiceError('OnDutyService:get__Vechile', err, req);
     if (err.errorNum === 942 || err.code === 'ORA-00942') {
       console.warn(`[get__Vechile] Vehicle/insurance tables not found in Oracle schema (ORA-00942) for ${COMPCODE}. Returning empty vehicle list.`);
     } else {
@@ -202,6 +209,7 @@ export async function getPermissionRequest(req, res) {
       return res.json({ statusCode: 0, data: [...result, ...result_Leave] })
     }
     catch (err) {
+    logServiceError('OnDutyService:getPermissionRequest', err, req);
       console.error('Error retrieving data:', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -226,7 +234,7 @@ async function get_last_Row_Onduty(COMPCODE) {
   return result
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ INTERNAL HELPER FOR ATOMIC SEQUENCES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ INTERNAL HELPER FOR ATOMIC SEQUENCES ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 // Returns { count: number, docid: string }
 async function getNextAtomicSequence(COMPCODE) {
   let counter;
@@ -237,6 +245,7 @@ async function getNextAtomicSequence(COMPCODE) {
       data: { count: { increment: 1 } }
     });
   } catch (err) {
+    logServiceError('OnDutyService:getPermissionRequest', err, req);
     if (err.code === 'P2025') {
       counter = await docModel.upsert({
         where: { id: 1 },
@@ -279,7 +288,7 @@ export async function getDocId(req, res) {
       });
     }
 
-    // 2. PEEK only â€” read current counter, do NOT increment
+    // 2. PEEK only Ã¢â‚¬â€ read current counter, do NOT increment
     const docModel = prisma_Connector.permissionDocId || prisma_Connector.permissionDocID;
     const counter = await docModel?.findUnique({
       where: { id: 1 },
@@ -294,6 +303,7 @@ export async function getDocId(req, res) {
     });
 
   } catch (err) {
+    logServiceError('OnDutyService:getDocId', err, req);
     console.error('getDocId Error:', err);
     return res.status(500).json({ status: 0, message: 'Error generating DocID preview' });
   }
@@ -342,6 +352,7 @@ export async function getIn(req, res) {
           });
         }
       } catch (healErr) {
+    logServiceError('OnDutyService:getIn', healErr, req);
         console.warn('[getIn] Failed to heal departure location:', healErr);
       }
     }
@@ -349,6 +360,7 @@ export async function getIn(req, res) {
     res.json({ status: 1, data: mapOnduty(result) });
   }
   catch (err) {
+    logServiceError('OnDutyService:getIn', err, req);
     console.error('getIn Error:', err);
     return res.status(500).json({
       status: 0,
@@ -465,6 +477,7 @@ export async function stTrack(req, res) {
 
     return res.json({ status: 1, data: result });
   } catch (err) {
+    logServiceError('OnDutyService:stTrack', err, req);
     console.error('stTrack error:', err);
     return res.json({ status: 0, message: 'Tracking startup failed' });
   }
@@ -565,6 +578,7 @@ export async function requestOnduty(req, res) {
           }
         }
       } catch (trackErr) {
+    logServiceError('OnDutyService:requestOnduty', trackErr, req);
         console.warn('[requestOnduty] Fallback tracking lookup error:', trackErr);
       }
     }
@@ -729,6 +743,7 @@ export async function requestOnduty(req, res) {
     });
 
   } catch (err) {
+    logServiceError('OnDutyService:requestOnduty', err, req);
     console.error('requestOnduty error:', err);
 
     try { await connection?.rollback(); } catch (_) { }
@@ -738,6 +753,7 @@ export async function requestOnduty(req, res) {
         await prisma_Connector.onduty.delete({ where: { id: prismaRecord.id } });
         console.log(`Rolled back Prisma row id=${prismaRecord.id} docid=${prismaRecord.docId}`);
       } catch (rbErr) {
+    logServiceError('OnDutyService:requestOnduty', rbErr, req);
         console.error('Prisma rollback failed:', rbErr);
       }
     }
@@ -790,6 +806,7 @@ export async function addOnduty_master(req, res) {
       return res.json({ status: 0, data: null });
     }
   } catch (err) {
+    logServiceError('OnDutyService:addOnduty_master', err, req);
     console.log(err);
     return res.json({ status: 0, message: err?.message || 'Failed to add onduty master', data: null });
   }
@@ -812,6 +829,7 @@ export async function send_location(req, res) {
     }
 
   } catch (err) {
+    logServiceError('OnDutyService:send_location', err, req);
     console.log(err);
 
   }
@@ -920,6 +938,7 @@ export async function get_tracking_users(req, res) {
 
     return res.json({ status: 1, data: await getPermittedTrackingUsers(access) });
   } catch (error) {
+    logServiceError('OnDutyService:get_tracking_users', error, req);
     console.error('get_tracking_users error:', error);
     return res.status(500).json({ status: 0, message: 'Unable to load permitted employees.' });
   }
@@ -935,6 +954,7 @@ export async function get_live_user(req, res) {
     const users = await getPermittedTrackingUsers(access);
     return res.json({ status: 1, data: users.filter(user => user.isLive) });
   } catch (error) {
+    logServiceError('OnDutyService:get_live_user', error, req);
     console.error('get_live_user error:', error);
     return res.status(500).json({ status: 0, message: 'Unable to load active trackers.' });
   }
@@ -968,6 +988,7 @@ export async function get_live_location(req, res) {
       timestamp: Number(latestLocation.timestamp),
     }]);
   } catch (error) {
+    logServiceError('OnDutyService:get_live_location', error, req);
     console.error('get_live_location error:', error);
     return res.status(500).json({ status: 0, message: 'Unable to load live location.' });
   }
@@ -1046,6 +1067,7 @@ export async function requestReachedOut(req, res) {
       res.json({ status: 0, data: {} });
     }
   } catch (err) {
+    logServiceError('OnDutyService:requestReachedOut', err, req);
     res.json({ status: 0, data: {} });
     console.error("requestReachedOut error:", err);
   }
@@ -1105,6 +1127,7 @@ export async function get_reached(req, res) {
             result.inLocation = 'Office / Base Location';
           }
         } catch (healErr) {
+    logServiceError('OnDutyService:get_reached', healErr, req);
           console.warn('[get_reached] Failed to heal departure location:', healErr);
           if (!result.inLocation || result.inLocation === 'Location unavailable') {
             result.inLocation = 'Office / Base Location';
@@ -1116,6 +1139,7 @@ export async function get_reached(req, res) {
       res.json({ status: 0, data: {} });
     }
   } catch (err) {
+    logServiceError('OnDutyService:get_reached', err, req);
     console.error('get_reached error:', err);
     res.json({ status: 0, data: {} });
   }
@@ -1202,6 +1226,7 @@ export async function get_history_location(req, res) {
         fileContent = Buffer.from(gunzipSync(await fsp.readFile(compressdata))).toString('utf8');
       }
     } catch (readErr) {
+    logServiceError('OnDutyService:get_history_location', readErr, req);
       console.error('Location archive read error:', readErr);
       return res.status(500).json({
         status: 0,
@@ -1222,6 +1247,7 @@ export async function get_history_location(req, res) {
         ? JSON.parse(`[${trimmed.replace(/}\s*{/g, '},{')}]`)
         : JSON.parse(trimmed);
     } catch (parseErr) {
+    logServiceError('OnDutyService:get_history_location', parseErr, req);
       console.error('Location archive JSON parse error:', parseErr);
       return res.status(500).json({
         status: 0,
@@ -1250,6 +1276,7 @@ export async function get_history_location(req, res) {
       source: 'file',
     });
   } catch (err) {
+    logServiceError('OnDutyService:get_history_location', err, req);
     console.error('get_history_location error:', err);
     return res.status(500).json({
       status: 0,
@@ -1296,6 +1323,7 @@ export async function requestOndutyOut(req, res) {
         outLon = String(lastTrack.longitude);
       }
     } catch (e) {
+    logServiceError('OnDutyService:requestOndutyOut', e, req);
       console.warn('[requestOndutyOut] Fallback location tracking lookup error:', e);
     }
   }
@@ -1449,7 +1477,7 @@ export async function requestOndutyOut(req, res) {
       });
 
     } else {
-      // 9. Oracle failed â€” revert Prisma
+      // 9. Oracle failed Ã¢â‚¬â€ revert Prisma
       await prisma_Connector.onduty.update({
         where: { docId: docid },
         data: {
@@ -1469,6 +1497,7 @@ export async function requestOndutyOut(req, res) {
     }
 
   } catch (err) {
+    logServiceError('OnDutyService:requestOndutyOut', err, req);
     console.error('requestOndutyOut error:', err);
 
     if (err.code === 'P2002') {
@@ -1619,7 +1648,7 @@ export async function requestonduty_Approval(req, res) {
       });
 
     } else {
-      // 6. Oracle failed â€” revert Prisma
+      // 6. Oracle failed Ã¢â‚¬â€ revert Prisma
       await prisma_Connector.onduty.update({
         where: { docId: docid },
         data: {
@@ -1638,6 +1667,7 @@ export async function requestonduty_Approval(req, res) {
     }
 
   } catch (err) {
+    logServiceError('OnDutyService:requestonduty_Approval', err, req);
     console.error("requestonduty_Approval error:", err);
 
     if (err.code === "P2025") {
@@ -1669,6 +1699,7 @@ export async function get_all_Onduty_reason(req, res) {
     res.json({ status: 1, data: mapOndutyMasterList(result) });
   }
   catch (err) {
+    logServiceError('OnDutyService:get_all_Onduty_reason', err, req);
     console.log(err);
     res.json({ status: 0, data: [] });
   }
@@ -1690,11 +1721,29 @@ export async function get_Uploaded_IMAG(req, res) {
     }
 
   } catch (error) {
+    logServiceError('OnDutyService:get_Uploaded_IMAG', error, req);
     res?.json({ error: "No Image Founded" })
-
   }
-
 }
+
+// â”€â”€ Standard Function Aliases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const getOndutyEntries = get__Onduty;
+export const getOndutyEdit = get__Onduty_edit;
+export const getOndutyDocId = getDocId;
+export const getVehicles = get__Vechile;
+export const getVehicleKm = get__vechilekm;
+export const addVehicleKm = Add__vechilekm;
+export const getAllOndutyReasons = get_all_Onduty_reason;
+export const getHistoryLocation = get_history_location;
+export const getLiveLocation = get_live_location;
+export const getLiveUser = get_live_user;
+export const getTrackingUsers = get_tracking_users;
+export const getReachedTrips = get_reached;
+export const getUploadedImage = get_Uploaded_IMAG;
+export const approveOndutyRequest = requestonduty_Approval;
+export const saveLocationTracking = send_location;
+export const startLocationTracking = stTrack;
+
 
 
 

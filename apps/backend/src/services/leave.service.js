@@ -2,9 +2,10 @@ import moment from "moment";
 import { prisma_Connector } from "../../index.js";
 import { getConnection, fetchActiveFinYearFromDB } from "../constants/dbConnection.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
-import { generateNumericId } from "../utils/uniqueId.js";
+import { generateNumericId } from "../utils/idGenerator.js";
 import { log } from "node:console";// Function exported through global db configuration now
 import { mapLeave, mapLeaveSingle } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 
 
 export async function get(req, res) {
@@ -21,6 +22,7 @@ export async function get(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('LeaveService:get', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -86,6 +88,7 @@ export async function getLeaves(req, res) {
         return res.json({ statusCode: 0, data:transformedResult })
     }
     catch (err) {
+        logServiceError('LeaveService:getLeaves', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -207,6 +210,7 @@ const transformedResult = result?.rows?.map(row => {
         return res.json({ statusCode: 0, data:transformedResult })
     }
     catch (err) {
+        logServiceError('LeaveService:get_leave_available', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -219,7 +223,7 @@ const transformedResult = result?.rows?.map(row => {
 export async function get_lcode_leave_available(req, res){
     const connection = await getConnection(res)
     const Idcard = req?.query?.Idcard
-    const LCODE = req?.query?.LCODE  // ✅ Added LCODE param
+    const LCODE = req?.query?.LCODE  // âœ… Added LCODE param
     const Year = req?.query?.Year
     const COMPCODE = String(req?.headers?.compcode).toUpperCase()
 
@@ -266,7 +270,7 @@ JOIN GTDEPTDESGMAST F ON F.GTDEPTDESGMASTID = D.DEPTNAME AND ( F.MNAME = B.DEPT 
 JOIN GTCOMPMAST G ON G.GTCOMPMASTID = F.COMPCODE AND B.COMPCODE1 = G.COMPCODE AND DD.COMPCODE = F.COMPCODE  
 WHERE A.FINYEAR = :FINYEAR AND B.COMPCODE1 = :COMPCODE AND B.FRM1 > 0
 ) WHERE IDCARD = :ID
-  ${LCODE ? 'AND LCODE = :LCODE' : ''}   -- ✅ LCODE filter added at outer WHERE
+  ${LCODE ? 'AND LCODE = :LCODE' : ''}   -- âœ… LCODE filter added at outer WHERE
 GROUP BY LCODE,LDESC,IDCARD,FNAME,PAYCAT
 ORDER BY TO_NUMBER(IDCARD),LCODE`
             :
@@ -302,11 +306,11 @@ JOIN GTDEPTDESGMAST F ON F.GTDEPTDESGMASTID = D.DEPTNAME AND ( F.MNAME = B.DEPT 
 JOIN GTCOMPMAST G ON G.GTCOMPMASTID = F.COMPCODE AND B.COMPCODE1 = G.COMPCODE AND DD.COMPCODE = F.COMPCODE  
 WHERE B.COMPCODE1 = :COMPCODE AND B.FRM1 > 0
 ) WHERE 1=1
-  ${LCODE ? 'AND LCODE = :LCODE' : ''}   -- ✅ LCODE filter added at outer WHERE
+  ${LCODE ? 'AND LCODE = :LCODE' : ''}   -- âœ… LCODE filter added at outer WHERE
 GROUP BY LCODE,LDESC,IDCARD,FNAME,PAYCAT
 ORDER BY TO_NUMBER(IDCARD),LCODE`,
 
-            // ✅ Bind params updated to include LCODE conditionally
+            // âœ… Bind params updated to include LCODE conditionally
             Idcard
                 ? { FINYEAR: activeFinYear, COMPCODE, ID: Idcard, ...(LCODE && { LCODE }) }
                 : { COMPCODE, ...(LCODE && { LCODE }) }
@@ -324,6 +328,7 @@ ORDER BY TO_NUMBER(IDCARD),LCODE`,
         return res.json({ statusCode: 0, data: transformedResult });
     }
     catch (err) {
+        logServiceError('LeaveService:get_lcode_leave_available', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -352,6 +357,7 @@ export async function getDocId(req, res) {
             res.json({status:1,data:{count:Number(result?.id || 0)+1}}) 
         }
         catch (err) {
+        logServiceError('LeaveService:getDocId', err, req);
            console.log(err);
            
         }
@@ -375,6 +381,7 @@ ORDER BY A.FINYR
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('LeaveService:get_Current_Fin_Year', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -470,6 +477,7 @@ export async function add_requestLeave(req, res) {
             }
         }
     } catch (checkErr) {
+        logServiceError('LeaveService:add_requestLeave', checkErr, req);
         console.warn("Leave HOD/HR user auto-ensure warning:", checkErr);
     }
 
@@ -489,6 +497,7 @@ export async function add_requestLeave(req, res) {
             });
         }
     } catch (checkErr) {
+        logServiceError('LeaveService:add_requestLeave', checkErr, req);
         console.warn("Leave user auto-ensure warning:", checkErr);
     }
 
@@ -513,6 +522,7 @@ export async function add_requestLeave(req, res) {
             }
         }
     } catch (checkErr) {
+        logServiceError('LeaveService:add_requestLeave', checkErr, req);
         console.warn("leave createdBy/modified_By auto-ensure warning:", checkErr);
     }
 
@@ -529,6 +539,7 @@ export async function add_requestLeave(req, res) {
             }
         }
     } catch (catErr) {
+        logServiceError('LeaveService:add_requestLeave', catErr, req);
         console.warn("leave category auto-ensure warning:", catErr);
     }
 
@@ -536,6 +547,7 @@ export async function add_requestLeave(req, res) {
     try {
         connection = await getConnection(res);
     } catch (connErr) {
+        logServiceError('LeaveService:add_requestLeave', connErr, req);
         console.error("Database connection failed:", connErr);
         return res.json({
             status: 0,
@@ -612,6 +624,7 @@ export async function add_requestLeave(req, res) {
             }
         }   
     } catch (err) {
+        logServiceError('LeaveService:add_requestLeave', err, req);
         console.error("add_requestLeave error:", err);
         let friendlyMsg = "Unable to save leave request. Please try again.";
         const errMsg = String(err?.message || err || '');
@@ -634,6 +647,7 @@ export async function add_requestLeave(req, res) {
                 await connection.close();
             }
         } catch (closeErr) {
+        logServiceError('LeaveService:add_requestLeave', closeErr, req);
             console.warn("Connection close warning:", closeErr);
         }
     }
@@ -651,6 +665,7 @@ export async function get__per(req, res) {
             res.json({status:1,data:result.map(mapLeave)})
         }
         catch (err) {
+        logServiceError('LeaveService:get__per', err, req);
            console.log(err);
         }
 }
@@ -670,6 +685,7 @@ export async function get_Lcode(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('LeaveService:get_Lcode', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -689,6 +705,7 @@ const value=req.query.value
         return res.json({ statusCode: 0, data: JSON?.stringify(result)})
     }
     catch (err) {
+        logServiceError('LeaveService:InsertLeave', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -765,6 +782,7 @@ SELECT DISTINCT A.* FROM LEAVEMOB A WHERE A.DOCID = :DOCID
                 
              }
              catch (err) {
+        logServiceError('LeaveService:requestLeave_Approval', err, req);
                 console.log(err);
                 
              }finally{
@@ -773,6 +791,19 @@ SELECT DISTINCT A.* FROM LEAVEMOB A WHERE A.DOCID = :DOCID
              }
              
          }
+
+// â”€â”€ Standard Function Aliases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const getLeaveEntries = get__per;
+export const getLeaveDocId = getDocId;
+export const getCurrentFinYear = get_Current_Fin_Year;
+export const getLeaveCodes = get_Lcode;
+export const getLeaveAvailability = get_leave_available;
+export const getLcodeLeaveAvailability = get_lcode_leave_available;
+export const submitLeaveRequest = add_requestLeave;
+export const approveLeaveRequest = requestLeave_Approval;
+export const insertLeaveToOracle = InsertLeave;
+export const getLeavesFromOracle = getLeaves;
+
 
 
 

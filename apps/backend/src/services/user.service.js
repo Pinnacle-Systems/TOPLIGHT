@@ -1,4 +1,5 @@
 import { mapRole, mapUser } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
 import OracleDB from "oracledb";
@@ -72,6 +73,7 @@ export async function UserLogs(req,res){
     })
     return res.json({ status: data.length > 0 ? 1 : 0, data })
   } catch (error) {
+    logServiceError('UserService:UserLogs', error, req);
     console.error('Error retrieving login logs:', error)
     return res.status(500).json({
       status: 0,
@@ -160,6 +162,7 @@ export async function create(req, res) {
             data: mapUser(UserCreation) 
         });
     } catch (error) {
+    logServiceError('UserService:create', error, req);
         console.error('Error in create user:', error);
         return res.json({ 
             statusCode: 1, 
@@ -182,6 +185,7 @@ export async function get_hod_token(req, res) {
         return res.json({ statusCode: 0, data:result })
     }
     catch (err) {
+    logServiceError('UserService:get_hod_token', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -199,6 +203,7 @@ export async function get_fcm_token(req, res) {
         return res.json({ statusCode: 0, data:result })
     }
     catch (err) {
+    logServiceError('UserService:get_fcm_token', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -225,6 +230,7 @@ try {
     return res?.json({status:0,data:{token: tokens?.access_token}})
  
 } catch (error) {
+    logServiceError('UserService:get_refresh_token', error, req);
     console.log(error);
     
 }
@@ -260,6 +266,7 @@ JOIN HREMPLOYMAST D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID`;
                 });
             }
         } catch (e) {
+    logServiceError('UserService:get', e, req);
             console.warn('[user.service.js:get] Could not fetch employee names:', e);
         }
 
@@ -282,6 +289,7 @@ JOIN HREMPLOYMAST D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID`;
         return res.json({ statusCode: 0, data:mapdata })
     }
     catch (err) {
+    logServiceError('UserService:get', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -307,6 +315,7 @@ const fcm=req.body?.fcm
        return res.json({ statusCode: 500, data:{},mesage:"Id Not Found" })
     }
     catch (err) {
+    logServiceError('UserService:update_fcm', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -367,6 +376,7 @@ WHERE A.IDCARDNO=:IDCARDNO and CM.COMPCODE=:COMPCODE
         }
     }
     catch (err) {
+    logServiceError('UserService:getUserDetails', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -392,6 +402,7 @@ order by userName`
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+    logServiceError('UserService:getOne', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -417,6 +428,7 @@ WHERE D.BANDNAME='STAFF' AND B.IDACTIVE='YES'`
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+    logServiceError('UserService:getUserDet', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -428,7 +440,7 @@ WHERE D.BANDNAME='STAFF' AND B.IDACTIVE='YES'`
 
 const pipeURIImage=async (res)=>{
 
-     const imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTdmrjoiXGVFEcd1cX9Arb1itXTr2u8EKNpw&s';
+     const imageUrl = process.env.DEFAULT_AVATAR_URL || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTdmrjoiXGVFEcd1cX9Arb1itXTr2u8EKNpw&s';
 
   try {
     const response = await fetch(imageUrl);
@@ -441,6 +453,7 @@ const pipeURIImage=async (res)=>{
 
     response.body.pipe(res);
   } catch (err) {
+    logServiceError('UserService:getUserDet', err, req);
     res.status(500).send('Error fetching image');
   }
 }
@@ -466,6 +479,7 @@ export async function getUserImage(req, res) {
 
   return pipeURIImage(res)
     } catch (error) {
+    logServiceError('UserService:getUserImage', error, req);
         console.log(error);
         
     }
@@ -550,6 +564,7 @@ export async function UploadImage(req, res) {
     //   // Step 5: Close the connection
     //   await connection.close();
     } catch (err) {
+    logServiceError('UserService:UploadImage', err, req);
       console.error(err);
       res.status(500).send({ message: 'Failed to upload image', error: err.message });
     }
@@ -569,6 +584,7 @@ export async function getDesignation(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+    logServiceError('UserService:getDesignation', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -594,6 +610,7 @@ export async function getCreatedRolesOnPage(req, res) {
    
         res.json({ status: 1, data: (result || []).map(mapRole) });
     } catch (error) {
+    logServiceError('UserService:getCreatedRolesOnPage', error, req);
         console.error('Error fetching roles:', error);
         res.json({ 
             status:  500,
@@ -629,6 +646,7 @@ export async function getRolesOnPage(req, res) {
    
         res.json({ status: 1, data: filterResult });
     } catch (error) {
+    logServiceError('UserService:getRolesOnPage', error, req);
         console.error('Error fetching roles:', error);
         res.json({ 
             status:  500,
@@ -672,6 +690,7 @@ export async function getUserRolesOnPage(req, res) {
 
         res.json({ status: 1, data: filterResult });
     } catch (error) {
+    logServiceError('UserService:getUserRolesOnPage', error, req);
         console.error('Error fetching roles:', error);
         res.json({ 
             status: 500,
@@ -736,6 +755,7 @@ export async function createRoleOnPage(req, res) {
             message: 'Role permissions created successfully'
         });
     } catch (error) {
+    logServiceError('UserService:createRoleOnPage', error, req);
         console.error('createRoleOnPage error:', error);
         return res.status(500).json({
             status: 0,
@@ -800,6 +820,7 @@ export async function UpdateRoleOnPage(req, res) {
                     }
 
                 } catch (err) {
+    logServiceError('UserService:UpdateRoleOnPage', err, req);
                     console.error(`Error processing page ${page}:`, err);
                     return null; // Continue processing other pages even if one fails
                 }
@@ -828,6 +849,7 @@ export async function UpdateRoleOnPage(req, res) {
         });
 
     } catch (error) {
+    logServiceError('UserService:UpdateRoleOnPage', error, req);
         console.error('Unexpected error in UpdateRoleOnPage:', error);
         return res.status(500).json({ 
             status: 0, 
@@ -860,6 +882,7 @@ export async function getCompanyCode(req,res) {
                 })),
             });
         } catch (err) {
+    logServiceError('UserService:getCompanyCode', err, req);
             console.error('Error retrieving allocated company codes:', err);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
@@ -884,6 +907,7 @@ WHERE A.PTRANSACTION = 'COMPANY' ORDER BY 1`
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+    logServiceError('UserService:getCompanyCode', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -929,6 +953,7 @@ ORDER BY 3,TO_NUMBER(B.IDCARD)`
           return res.json({ statusCode: 0, data: transformedResult })
     }
     catch (err) {
+    logServiceError('UserService:getEmployeeIds', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -962,7 +987,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
       return res.json({ statusCode: 0, data: [] });
     }
 
-    // Oracle bind-safe IN list  â†’ :0, :1, :2 ...
+    // Oracle bind-safe IN list  ├óΓÇáΓÇÖ :0, :1, :2 ...
     const bindPlaceholders = Ids.map((_, i) => `:id${i}`).join(", ");
     const bindValues       = Object.fromEntries(Ids.map((id, i) => [`id${i}`, id]));
 
@@ -1037,7 +1062,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
         punchIn  : summary.firstInTime,
         punchOut : summary.lastOutTime,
 
-        // last row's INOUT â€” drives the button (0=OUTâ†’show IN, 1=INâ†’show OUT)
+        // last row's INOUT ├óΓé¼ΓÇ¥ drives the button (0=OUT├óΓÇáΓÇÖshow IN, 1=IN├óΓÇáΓÇÖshow OUT)
         lastInout: summary.lastInout,
 
         // summary stats
@@ -1053,6 +1078,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
     return res.json({ status: 1, data });
 
   } catch (err) {
+    logServiceError('UserService:getEmployeeIdsWithAtt', err, req);
     console.error("getEmployeeIdsWithAtt error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
@@ -1061,7 +1087,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
 }
 
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Helpers ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
 
 function computeAttSummary(rows) {
   // rows: [{ inout: 0|1, atttime: "HH:MI:SS" }, ...] ordered ASC
@@ -1101,7 +1127,7 @@ function computeAttSummary(rows) {
     }
   }
 
-  // Unmatched IN â†’ still active
+  // Unmatched IN ├óΓÇáΓÇÖ still active
   if (pendingIn) {
     punches.push({
       inTime           : pendingIn,
@@ -1121,14 +1147,14 @@ function computeAttSummary(rows) {
   };
 }
 
-// "09:30:00" â†’ 570
+// "09:30:00" ├óΓÇáΓÇÖ 570
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(":").map(Number);
   return h * 60 + m;
 }
 
-// 570 â†’ "09:30"
+// 570 ├óΓÇáΓÇÖ "09:30"
 function minutesToFormatted(totalMinutes) {
   if (!totalMinutes || totalMinutes <= 0) return "00:00";
   const h = Math.floor(totalMinutes / 60);
@@ -1167,6 +1193,7 @@ export async function remove(req, res) {
             await prisma_Connector.user.delete({ where: { id: userId } });
             return res.json({ statusCode: 0, status: 1, message: "User deleted successfully" });
         } catch (deleteErr) {
+    logServiceError('UserService:remove', deleteErr, req);
             console.warn('[user.service.js:remove] Hard delete failed, soft deleting:', deleteErr?.message);
             await prisma_Connector.user.update({
                 where: { id: userId },
@@ -1178,6 +1205,7 @@ export async function remove(req, res) {
             return res.json({ statusCode: 0, status: 1, message: "User deleted successfully" });
         }
     } catch (err) {
+    logServiceError('UserService:remove', err, req);
         console.error("Error in user remove:", err);
         return res.status(500).json({ statusCode: 1, status: 0, message: "Internal server error" });
     }
@@ -1227,6 +1255,7 @@ export async function send_Otp(req,res){
         return res.json({status:0,err:"Password is Not Correct!"})
       }
       } catch (error) {
+    logServiceError('UserService:send_Otp', error, req);
         console.log(error);
         res.json({status:500,err:error})
       }
@@ -1263,6 +1292,7 @@ export async function verify_Otp_and_change_pass(req,res){
             return res?.json({status:0})
           }
         }catch(err){
+    logServiceError('UserService:verify_Otp_and_change_pass', err, req);
             console.log(err);
             
 
@@ -1291,6 +1321,7 @@ const data=req.body?.data
     //    return res.json({ statusCode: 500, data:{},mesage:"Id Not Found" })
     }
     catch (err) {
+    logServiceError('UserService:Change_Settings', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -1334,6 +1365,7 @@ const connection = await getConnection(res)
     //    return res.json({ statusCode: 500, data:{},mesage:"Id Not Found" })
     }
     catch (err) {
+    logServiceError('UserService:get_Hod_Details', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -1355,11 +1387,34 @@ const Idcard=req.query?.Idcard
     //    return res.json({ statusCode: 500, data:{},mesage:"Id Not Found" })
     }
     catch (err) {
+    logServiceError('UserService:get_Change_Settings', err, req);
         console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
-    
 }
+
+// ── Standard Function Aliases ────────────────────────────────────────────────
+export const getUsers = get;
+export const getUserInfo = getUserDet;
+export const getUserBasicDetails = getUserDetails;
+export const getCompanyCodes = getCompanyCode;
+export const getEmployeeIdsList = getEmployeeIds;
+export const getEmployeeIdsWithAttendance = getEmployeeIdsWithAtt;
+export const getDesignations = getDesignation;
+export const getRolesOnPageList = getRolesOnPage;
+export const getUserRolesOnPageList = getUserRolesOnPage;
+export const getCreatedRolesOnPageList = getCreatedRolesOnPage;
+export const deleteUser = remove;
+export const sendOtp = send_Otp;
+export const verifyOtpAndChangePassword = verify_Otp_and_change_pass;
+export const updateFcmToken = update_fcm;
+export const getHodToken = get_hod_token;
+export const getFcmToken = get_fcm_token;
+export const getRefreshToken = get_refresh_token;
+export const getChangeSettings = get_Change_Settings;
+export const changeSettings = Change_Settings;
+export const getHodDetails = get_Hod_Details;
+
 
 
 

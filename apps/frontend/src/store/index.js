@@ -27,7 +27,24 @@ export const store = configureStore({
     ondutyInput: ondutyInputReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat([
+    getDefaultMiddleware({
+      serializableCheck: {
+        warnAfter: 128,
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActionPaths: ['meta.arg', 'payload.timestamp', 'meta.baseQueryMeta'],
+        ignoredPaths: [
+          'MisDashboard.queries',
+          'UsersApi.queries',
+          'NotificationApi.queries',
+          'OndutyRTk.queries',
+          'LeaveData.queries',
+          'RoleOnApi.queries',
+          'commonMastersApi.queries',
+          'permissionApi.queries',
+          'AttendanceApi.queries',
+        ],
+      },
+    }).concat([
       UsersApi.middleware,
       DashboardApi.middleware,
       NotificationApi.middleware,

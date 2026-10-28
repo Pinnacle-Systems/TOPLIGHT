@@ -292,6 +292,19 @@ const MisDashboard = createApi({
       },
       providesTags: ["MisDashboard"],
     }),
+    getTotalStrength: builder.query({
+      query: ({ params }) => {
+        return {
+          url: MIS_DASHBOARD + "/getTotalStrength",
+          method: "GET",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+          params,
+        };
+      },
+      providesTags: ["MisDashboard"],
+    }),
     getMisDashboardOrdersInHandMonthWise: builder.query({
       query: ({ params }) => {
         return {
@@ -861,6 +874,7 @@ export const {
   useGetMisDashboardBgDetQuery,
   useGetMisDashboardPfDataDetQuery,
   useGetMisDashboardEsiDataDetQuery,
+  useGetTotalStrengthQuery,
   useGetMisDashboardOrdersInHandMonthWiseQuery,
   useGetMisDashboardActualVsBudgetValueMonthWiseQuery,
   useGetYearlyCompQuery,

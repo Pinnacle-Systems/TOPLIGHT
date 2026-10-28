@@ -4,12 +4,9 @@ import { dirname } from 'path';
 const transporter = createTransport({
   service: 'gmail',
   auth: {
-      user: "pinnacle.systems.ps@gmail.com",
-      // req?.body?.FromAddresss,
-      pass: "cfim ylyo teby zdia"  
-      //  req?.body?.passskey
-
-}
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASSWORD,
+  },
 });
 const MailContents = {
           proforma: `
@@ -28,7 +25,7 @@ const MailContents = {
         your invoice will be kept on hold. if already provided kindly ignore this request.
         </p>
         <p style="color:black">
-        SRG Apparels Limited –Textile Testing Laboratory - <span> GST Prov.ID: </span> 33AADCS8162K1Z4
+        SRG Apparels Limited ΓÇôTextile Testing Laboratory - <span> GST Prov.ID: </span> 33AADCS8162K1Z4
         </p>
         <h3 style="font-bold; color:black">
         Our Bank Details:
@@ -146,16 +143,13 @@ let MAIL_SETTINGS= {
 export async function sendMailWithAttachmentWithMultipleFiles(req) {
 console.log(req?.body,"bodyy")
 
-  MAIL_SETTINGS = {
-        service: 'gmail',
-        auth: {
-            user: "iridescentcosting@gmail.com",
-            // req?.body?.FromAddresss,
-            pass:   "qowiqsbixattwtmw"  
-            //  req?.body?.passskey
-      
-      }
-    }
+  const MAIL_SETTINGS = {
+    service: 'gmail',
+    auth: {
+      user: process.env.IRIDESCENT_MAIL_USER || process.env.MAIL_USER,
+      pass: process.env.IRIDESCENT_MAIL_PASS || process.env.MAIL_PASSWORD,
+    },
+  };
     
 
     
@@ -211,37 +205,6 @@ console.log(req?.body,"bodyy")
         }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export async function sendMailWithAttachmentWithMultipleFiles(req) {
-
-//    MAIL_SETTINGS = {
-//     service: 'gmail',
-//     auth: {
-//         user: "iridescentcosting@gmail.com",
-//         // req?.body?.FromAddresss,
-//         pass:   "qowiqsbixattwtmw"  
-//         //  req?.body?.passskey
-  
-//   }
 // }
 //     console.log(MAIL_SETTINGS,'MAIL_SETTINGS')
 // const transporter = createTransport(MAIL_SETTINGS);
@@ -309,27 +272,24 @@ console.log(req?.body,"bodyy")
 export async function sendMail(params) {
   try {
 
-    MAIL_SETTINGS = {
+    const MAIL_SETTINGS = {
       service: 'gmail',
       auth: {
-          user: "iridescentcosting@gmail.com",
-          // req?.body?.FromAddresss,
-          pass:   "qowiqsbixattwtmw"  
-          //  req?.body?.passskey
-    
-    }
-  }
+        user: process.env.IRIDESCENT_MAIL_USER || process.env.MAIL_USER,
+        pass: process.env.IRIDESCENT_MAIL_PASS || process.env.MAIL_PASSWORD,
+      },
+    };
     let info = await transporter.sendMail({
       from: MAIL_SETTINGS.auth.user,
       to: params.to,
-      subject: 'PASSWORD RESET ✔',
+      subject: 'PASSWORD RESET Γ£ö',
       html: `
         <div
           class="container"
           style="max-width: 90%; margin: auto; padding-top: 20px"
         >
           <h2>Pinnacle Systems</h2>
-          <h4>OTP for Reset Password ✔</h4>
+          <h4>OTP for Reset Password Γ£ö</h4>
           <h1 style="font-size: 40px; letter-spacing: 2px; text-align:center;">${params?.otp}</h1>
      </div>
       `,

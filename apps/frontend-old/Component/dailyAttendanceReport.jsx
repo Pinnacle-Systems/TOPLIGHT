@@ -29,12 +29,16 @@ export default function AttendanceReport() {
     const { width } = useWindowDimensions();
     const isTablet = width >= 768; // Tablet breakpoint
 
+    const serializedDate = date instanceof Date 
+      ? date.toISOString() 
+      : (date ? String(date) : new Date().toISOString());
+
     const { 
       data, 
       isLoading, 
       isFetching, 
       refetch 
-    } = useGetMisDashboardOrdersInHandMonthWiseQuery({ params: { date: date } });
+    } = useGetMisDashboardOrdersInHandMonthWiseQuery({ params: { date: serializedDate } });
     
     const rawTableData = data?.data || [];
     

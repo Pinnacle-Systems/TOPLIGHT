@@ -2,6 +2,7 @@ import { prisma_Connector } from "../../index.js";
 import { getConnection } from "../constants/dbConnection.js";
 import bcrypt from "bcryptjs";
 import { mapUser } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 
 
 export async function get(req, res) {
@@ -18,6 +19,7 @@ export async function get(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('CommonMastersService:get', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -43,6 +45,7 @@ GROUP BY C.COMPCODE
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('CommonMastersService:getBuyer', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -70,6 +73,7 @@ GROUP BY A.PAYPERIOD
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('CommonMastersService:getMonthData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -98,6 +102,7 @@ GROUP BY C.COMPCODE`
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('CommonMastersService:getCompCodeData', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -123,6 +128,7 @@ export async function chat(req, res) {
             res?.json({ status: 0, data: {} })
         }
     } catch (err) {
+        logServiceError('CommonMastersService:chat', err, req);
         console.log(err);
         res?.json({ status: 0, data: {} })
     }
@@ -150,6 +156,7 @@ export async function get_chat(req, res) {
             res?.json({ status: 0, data: {} })
         }
     } catch (err) {
+        logServiceError('CommonMastersService:get_chat', err, req);
         console.log(err);
         res?.json({ status: 0, data: {} })
     }
@@ -232,6 +239,7 @@ export async function delete_Common_Data(req, res) {
                 const result = await prisma_Connector.user.delete({ where: { id: userId } });
                 return res.json({ status: 1, data: result, message: "User deleted successfully" });
             } catch (deleteErr) {
+        logServiceError('CommonMastersService:delete_Common_Data', deleteErr, req);
                 console.warn('[delete_Common_Data] User hard delete failed, executing soft-delete:', deleteErr?.message);
                 const result = await prisma_Connector.user.update({
                     where: { id: userId },
@@ -250,6 +258,7 @@ export async function delete_Common_Data(req, res) {
         res.json({ status: 1, data: result });
     }
     catch (err) {
+        logServiceError('CommonMastersService:delete_Common_Data', err, req);
         console.log(err);
         res.json({ status: 0, data: {}, error: err?.message });
     }
@@ -307,6 +316,7 @@ export async function Update_Common_Data_prisma(req, res) {
                 res.json({ status: 1, data: mapUser(result) });
             }
             catch (err) {
+        logServiceError('CommonMastersService:Update_Common_Data_prisma', err, req);
                 console.log(err);
                 res.json({ status: 0, data: {} });
             }
@@ -326,8 +336,19 @@ export async function Update_Common_Data_prisma(req, res) {
             res.json({ status: 1, data: responseData });
         }
         catch (err) {
+        logServiceError('CommonMastersService:Update_Common_Data_prisma', err, req);
             console.log(err);
             res.json({ status: 0, data: {} });
         }
     }
 }
+
+// ── Standard Descriptive Aliases ─────────────────────────────────────────────
+export const getFinancialYears = get;
+export const getBuyers = getBuyer;
+export const getMonths = getMonthData;
+export const getCompanyCodesData = getCompCodeData;
+export const getChatMessages = get_chat;
+export const sendChatMessage = chat;
+export const deleteCommonData = delete_Common_Data;
+export const updateCommonData = Update_Common_Data_prisma;

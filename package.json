@@ -22,6 +22,5 @@
         "patchedDependencies": {
             "react-native-screens@4.28.0": "patches/react-native-screens.patch"
         }
-    },
-    "dependencies": {}
+    }
 }

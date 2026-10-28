@@ -1,4 +1,5 @@
 import { getConnection } from "../constants/dbConnection.js";
+import { logServiceError } from "../utils/logger.js";
 import { getSupplierWiseMonthlyReceivables, monthWiseDataSupplierReceivables } from "../queries/poData.js";
 
 
@@ -77,6 +78,7 @@ export async function get(req, res) {
         return res.json({ statusCode: 0, data: resp });
     }
     catch (err) {
+        logServiceError('PoDataService:get', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -100,6 +102,7 @@ export async function getFinYr(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('PoDataService:getFinYr', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -123,6 +126,7 @@ export async function getSupplier(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('PoDataService:getSupplier', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -144,6 +148,7 @@ export async function getArticleId(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('PoDataService:getArticleId', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -175,6 +180,7 @@ export async function getSuppEfficency(req, res) {
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('PoDataService:getSuppEfficency', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -210,6 +216,7 @@ ORDER BY 2 DESC,1
         return res.json({ statusCode: 0, data: resp })
     }
     catch (err) {
+        logServiceError('PoDataService:getTopItems', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -230,6 +237,7 @@ export async function getMonthlyReceivables(req, res) {
         return res.json({ statusCode: 0, data })
     }
     catch (err) {
+        logServiceError('PoDataService:getMonthlyReceivables', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -266,6 +274,7 @@ export async function getTopFiveSuppTurnOvr(req, res) {
 
     }
     catch (err) {
+        logServiceError('PoDataService:getTopFiveSuppTurnOvr', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -311,6 +320,7 @@ ORDER BY 1
 
     }
     catch (err) {
+        logServiceError('PoDataService:getOverAllSupplierContribution', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -365,6 +375,7 @@ export async function getMostPaidTaxVal(req, res) {
 
     }
     catch (err) {
+        logServiceError('PoDataService:getMostPaidTaxVal', err, req);
         console.error('Error retrieving data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -372,3 +383,16 @@ export async function getMostPaidTaxVal(req, res) {
         await connection.close()
     }
 }
+
+
+// ── Standard Descriptive Aliases ─────────────────────────────────────────────
+export const getPoSummary = get;
+export const getPoFinancialYears = getFinYr;
+export const getPoSuppliers = getSupplier;
+export const getPoArticles = getArticleId;
+export const getSupplierEfficiency = getSuppEfficency;
+export const getTopPoItems = getTopItems;
+export const getPoMonthlyReceivables = getMonthlyReceivables;
+export const getTopFiveSupplierTurnover = getTopFiveSuppTurnOvr;
+export const getSupplierContribution = getOverAllSupplierContribution;
+export const getMostPaidTaxValue = getMostPaidTaxVal;

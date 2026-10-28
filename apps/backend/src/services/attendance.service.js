@@ -1,7 +1,8 @@
-﻿import { getConnection } from "../constants/dbConnection.js";
+import { getConnection } from "../constants/dbConnection.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
-import { generateUniqueId_Number } from "../utils/uniqueNumber.js";
+import { generateUniqueId_Number } from "../utils/idGenerator.js";
 import { prisma_Connector } from "../../index.js";
+import { logServiceError } from "../utils/logger.js";
 
 async function resolvePunchTarget(req, res) {
   const requesterIdcard = String(req?.headers?.idcard || "").trim();
@@ -201,7 +202,7 @@ export async function punchIn(req, res) {
     });
 
   } catch (err) {
-    console.error("punchIn error:", err);
+    logServiceError("AttendanceService:punchIn", err, req);
     try { await connection?.rollback(); } catch (_) {}
     return res.status(500).json({
       status : 0,
@@ -281,7 +282,7 @@ export async function punchOut(req, res) {
     });
 
   } catch (err) {
-    console.error("punchOut error:", err);
+    logServiceError("AttendanceService:punchOut", err, req);
     try { await connection?.rollback(); } catch (_) {}
     return res.status(500).json({
       status : 0,
@@ -349,7 +350,7 @@ export async function getAttendanceStatus(req, res) {
     });
 
   } catch (err) {
-    console.error("getAttendanceStatus error:", err);
+    logServiceError("AttendanceService:getAttendanceStatus", err, req);
     return res.status(500).json({ status: 0, message: err.message });
   } finally {
     await connection?.close();
@@ -461,7 +462,7 @@ export async function getPunchSummary(req, res) {
     });
 
   } catch (err) {
-    console.error("getPunchSummary error:", err);
+    logServiceError("AttendanceService:getPunchSummary", err, req);
     return res.status(500).json({ status: 0, message: err.message });
   } finally {
     await connection?.close();

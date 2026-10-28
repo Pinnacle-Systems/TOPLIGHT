@@ -1,5 +1,6 @@
 import { prisma_Connector } from "../../index.js";
 import { mapPermission, mapLeave, mapOnduty } from "../utils/responseMapper.js";
+import { logServiceError } from "../utils/logger.js";
 
 
 
@@ -41,6 +42,7 @@ export async function getPermissionRequest(req, res) {
 
             return res.json({ statusCode: 0, data: [...mappedPermission, ...mappedLeave, ...mappedOnduty] });
         } catch (err) {
+            logServiceError('NotificationService:getPermissionRequest', err, req);
             console.error('Error retrieving data:', err);
             res.status(500).json({ error: 'Internal Server Error' });
         }
@@ -52,31 +54,39 @@ export async function getPermissionRequest(req, res) {
 
 export async function getDocId(req, res) {
     console.log(req);
-    
-        try {
-            const result=await  (prisma_Connector.permissionDocId || prisma_Connector.permissionDocID).findFirst({})
-            res.json({status:1,data:result}) 
-        }
-        catch (err) {
-           console.log(err);
-        }
-        
+
+    try {
+        const result = await (prisma_Connector.permissionDocId || prisma_Connector.permissionDocID).findFirst({})
+        res.json({ status: 1, data: result })
+    }
+    catch (err) {
+        logServiceError('NotificationService:getDocId', err, req);
+        console.log(err);
     }
 
+}
 
 
-    export async function requestPermission(req, res) {
-       const  data=req?.body?.data
-            try {
-                const result=await  prisma_Connector.permissionEntry.create({data:data})
-                res.json({status:1,data:result}) 
-            }
-            catch (err) {
-               console.log(err);
-               
-            }
-            
-        }
+
+export async function requestPermission(req, res) {
+    const data = req?.body?.data
+    try {
+        const result = await prisma_Connector.permissionEntry.create({ data: data })
+        res.json({ status: 1, data: result })
+    }
+    catch (err) {
+        logServiceError('NotificationService:requestPermission', err, req);
+        console.log(err);
+
+    }
+
+}
+
+// ── Standard Descriptive Aliases ─────────────────────────────────────────────
+export const getPendingApprovalRequests = getPermissionRequest;
+export const getPermissionDocId = getDocId;
+export const submitPermissionRequest = requestPermission;
+
 
 
 
