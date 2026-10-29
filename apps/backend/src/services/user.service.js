@@ -1,4 +1,4 @@
-import { mapRole, mapUser } from "../utils/responseMapper.js";
+﻿import { mapRole, mapUser } from "../utils/responseMapper.js";
 import { logServiceError } from "../utils/logger.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
@@ -216,7 +216,7 @@ try {
 
     const scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
     const key =  JSON.parse(
-        await readFile(new URL('./../../Fcm/serves-firebase.json', import.meta.url))
+        await readFile(new URL('./../../fcm/serves-firebase.json', import.meta.url))
       );
     
     const jwtClient = new google.auth.JWT(

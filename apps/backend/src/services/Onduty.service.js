@@ -1,4 +1,4 @@
-import { prisma_Connector } from "../../index.js";
+﻿import { prisma_Connector } from "../../index.js";
 import fs from "fs"
 import { v4 as uuidv4 } from 'uuid';
 import path from "path";
@@ -1348,7 +1348,7 @@ export async function requestOndutyOut(req, res) {
     if (hasValidOutCoords) {
       outLocation = `Near ${validLat.toFixed(4)}, ${validLon.toFixed(4)}`;
     } else {
-      outLocation = 'Office / Base Location';
+      outLocation = 'Location Unavailable';
     }
   }
 

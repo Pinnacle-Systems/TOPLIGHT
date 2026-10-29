@@ -230,11 +230,11 @@ export default function OndutyScreen() {
         } finally {
             setLoadingLocation(false);
         }
-    }, [dispatch]);
+    }, [dispatch,isSubmitting]);
 
     useEffect(() => {
         fetchLocation();
-    }, [fetchLocation]);
+    }, [fetchLocation,isSubmitting]);
 
     // ── Socket Approval Notification ───────────────────────────────────────────
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { fetchActiveFinYearFromDB, getConnection } from "../constants/dbConnection.js";
+﻿import { fetchActiveFinYearFromDB, getConnection } from "../constants/dbConnection.js";
 import formatDateToOracle from "../utils/oracleDateFormat.js";
 import { logServiceError } from "../utils/logger.js";
 import { currentDate, tommorowDate } from "../helpers/helper.js";
@@ -1436,9 +1436,18 @@ ORDER BY
        
 
         const result = await connection.execute(sql)
+
+           const transformedResult = result?.rows?.map(row => {
+            const keyValuePair = {};
+            // Assuming the first row contains the column names
+            result.metaData.forEach((col, index) => {
+              keyValuePair[col.name] = row[index];
+            });
+            return keyValuePair;
+           });
        
         
-        return res.json({ statusCode: 0, data: result.map(u => ({ ...u, Idcard: u.idCard })) })
+        return res.json({ statusCode: 0, data: transformedResult.map(u => ({ ...u, Idcard: u.idCard })) })
     }
     catch (err) {
         logServiceError('MisDashboardService:getYearWiseToTSalary', err, req);

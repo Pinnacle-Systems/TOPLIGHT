@@ -87,7 +87,7 @@ export function useOndutySubmit({
                 longitude: 0,
                 address: (formState.address && formState.address !== 'Location unavailable' && !formState.address.includes('Unknown'))
                     ? formState.address
-                    : 'Office / Base Location',
+                    : 'Location Unavailable',
             };
         } catch {
             const formLat = Number(formState.latitude) || 0;
@@ -98,7 +98,7 @@ export function useOndutySubmit({
                 longitude: formLon,
                 address: isFormResolved
                     ? formState.address
-                    : (formLat !== 0 || formLon !== 0 ? `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}` : 'Office / Base Location'),
+                    : (formLat !== 0 || formLon !== 0 ? `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}` : 'Location Unavailable'),
             };
         }
     }, [formState.latitude, formState.longitude, formState.address]);
@@ -234,7 +234,7 @@ export function useOndutySubmit({
             formData.append('empname',      UserSelect?.EMPNAME || 'Employee');
             formData.append('category',     String(formState.category || '0'));
             const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
-            formData.append('in_location',  coords.address || (hasValidCoords ? `Near ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : 'Office / Base Location'));
+            formData.append('in_location',  coords.address || (hasValidCoords ? `Near ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : 'Location Unavailable'));
             formData.append('in_latitude',  hasValidCoords ? String(coords.latitude) : '');
             formData.append('in_longtiude', hasValidCoords ? String(coords.longitude) : '');
             formData.append('docCount',     String(latestCount));

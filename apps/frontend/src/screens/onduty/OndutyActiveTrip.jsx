@@ -79,7 +79,7 @@ export default function OndutyActiveTrip({
                 </View>
 
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>OFFICE / BASE LOCATION</Text>
+                    <Text style={styles.infoLabel}>DEPARTURE LOCATION</Text>
                     <Text style={styles.infoValue}>
                         {(!tripData?.in_location || tripData.in_location === 'Location unavailable') && tripData?.in_latitude && Number(tripData.in_latitude) !== 0
                             ? `Near ${Number(tripData.in_latitude).toFixed(4)}, ${Number(tripData.in_longtiude).toFixed(4)}`
@@ -87,7 +87,7 @@ export default function OndutyActiveTrip({
                                 ? tripData.in_location
                                 : (tripData?.in_latitude && Number(tripData.in_latitude) !== 0
                                     ? `Near ${Number(tripData.in_latitude).toFixed(4)}, ${Number(tripData.in_longtiude).toFixed(4)}`
-                                    : 'Office / Base Location'))}
+                                    : 'Location Unavailable'))}
                     </Text>
                 </View>
 

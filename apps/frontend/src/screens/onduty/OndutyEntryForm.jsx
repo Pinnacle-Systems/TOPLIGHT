@@ -59,7 +59,7 @@ export default function OndutyEntryForm({
         locationAddress !== 'Location unavailable' && 
         !locationAddress.includes('Unknown') &&
         !locationAddress.startsWith('Near ') &&
-        locationAddress !== 'Office / Base Location'
+        locationAddress !== 'Location Unavailable'
     );
 
     const displayLocation = useMemo(() => {
@@ -72,7 +72,7 @@ export default function OndutyEntryForm({
         if (hasCoords) {
             return `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`;
         }
-        return 'Office / Base Location';
+        return 'Location Unavailable';
     }, [locationAddress, isAddressResolved, hasCoords, numLat, numLon]);
 
     // Map categories for DropDownPicker
@@ -127,7 +127,7 @@ export default function OndutyEntryForm({
             <View style={styles.formCard}>
                 <View style={styles.cardHeader}>
                     <MaterialCommunityIcons name="office-building-marker-outline" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
-                    <Text style={styles.cardHeaderText}>Office / Base Location</Text>
+                    <Text style={styles.cardHeaderText}>Current Location</Text>
                     {loadingLocation ? (
                         <ActivityIndicator size="small" color={theme.colors.brand} style={{ marginLeft: 'auto' }} />
                     ) : onRefreshLocation ? (
@@ -168,7 +168,7 @@ export default function OndutyEntryForm({
                                         ? styles.locationBadgeTextSuccess 
                                         : (hasCoords ? styles.locationBadgeTextWarning : styles.locationBadgeTextNeutral)
                                 ]}>
-                                    {isAddressResolved ? 'GPS RESOLVED' : (hasCoords ? 'COORDINATES ONLY' : 'OFFICE BASE')}
+                                    {isAddressResolved ? 'GPS RESOLVED' : (hasCoords ? 'COORDINATES ONLY' : 'Location Not Found')}
                                 </Text>
                             </View>
                         </View>

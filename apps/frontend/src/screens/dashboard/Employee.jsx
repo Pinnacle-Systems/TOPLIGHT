@@ -26,7 +26,6 @@ import { Common_Context } from '../../context/CommonContext';
 import EmptyEmployeeCard from './card/Top_Card_Emp_empty';
 import LeaveSummaryCard from './card/LeaveSummeryCard';
 import LeaveReport from './individual/card/LeaveReport';
-import RecentActivityCard from './card/RecentActivityCard';
 import ImageResizer from 'react-native-image-resizer';
 import { showMessage } from 'react-native-flash-message';
 import { BASE_URL, USERS_API } from '@env';
@@ -471,13 +470,6 @@ const {data:CurrentMonthLeaves}=useGetCurrentMonthLeavesQuery({Idcard:filteredEm
             leavesTaken={Array.isArray(CurrentMonthLeaves?.data) ? CurrentMonthLeaves.data[0]?.LT : CurrentMonthLeaves?.data?.LT}
           /> */}
 
-          {/* Recent Activity Timeline */}
-          <RecentActivityCard 
-            data={recentInOut?.data} 
-            onDetailPress={() => setyearWiseModal(true)} 
-          />
-       
-       
       
         {/* Main Dashboard Cards */}
         <View style={ChartStyle.ChartContainer}>

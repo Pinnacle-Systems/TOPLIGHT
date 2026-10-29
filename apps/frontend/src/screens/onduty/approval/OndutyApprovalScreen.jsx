@@ -163,7 +163,7 @@ function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onAppr
         item?.inLocation ||
         (hasCoordinates ? `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : null) ||
         (item?.others && item.others !== 'ONDUTY' ? item.others : null) ||
-        'Office / Base Location';
+        'Location Unavailable';
 
     const phone = item?.userdata?.phone || item?.userdata?.mobile || item?.mobile;
 
