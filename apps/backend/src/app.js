@@ -6,11 +6,7 @@ import path, { dirname } from 'path';
 
 import {
   commonMast,
-  poRegister,
-  supplier,
-  poData,
   misDashboard,
-  ordManagement,
   user,
   Leave,
   Permission,
@@ -67,13 +63,8 @@ export function createApp() {
   app.use('/onduty', Onduty);
   app.use('/attendance', attendance);
   app.use('/commonMast', commonMast);
-  app.use('/supplier', supplier);
-  app.use('/poData', poData);
-  app.use('/poRegister', poRegister);
-  app.use('/att', poRegister); // Legacy alias
   app.use('/role', Role);
   app.use('/misDashboard', misDashboard);
-  app.use('/ordManagement', ordManagement);
   app.use('/Notifi', Notification);
   app.use('/notifi', Notification); // Case-insensitive alias
 

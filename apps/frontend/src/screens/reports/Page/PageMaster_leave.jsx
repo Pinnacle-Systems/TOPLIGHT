@@ -48,14 +48,7 @@ const PageMaster_leave = ({ navigation }) => {
             icon: 'file-chart-outline',
             notify: 0,
             color: '#FF9800'
-        },
-        {
-            label: 'Approval Logs',
-            action: 'logs',
-            icon: 'history',
-            notify: 0,
-            color: '#607D8B'
-        },
+        }
     ];
 
     const handleClick = (label, action) => {

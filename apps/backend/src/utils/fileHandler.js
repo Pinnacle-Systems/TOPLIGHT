@@ -7,7 +7,7 @@ import path from 'path';
  * @returns {Promise<any>}
  */
 export default async function FileHandlerAndWrite(callback) {
-  const locDir = path.join(process.cwd(), 'Locations');
+  const locDir = path.join(process.cwd(), 'locations');
   if (!fs.existsSync(locDir)) {
     fs.mkdirSync(locDir, { recursive: true });
   }
