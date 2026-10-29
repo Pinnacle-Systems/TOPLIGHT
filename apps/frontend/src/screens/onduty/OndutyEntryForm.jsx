@@ -6,7 +6,8 @@ import {
     TouchableOpacity, 
     TextInput, 
     Image, 
-    ActivityIndicator 
+    ActivityIndicator,
+    Platform 
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -25,6 +26,12 @@ export default function OndutyEntryForm({
     setCategoryDropdownOpen,
     othersText,
     onChangeOthers,
+    // Location Props
+    locationAddress,
+    latitude,
+    longitude,
+    loadingLocation,
+    onRefreshLocation,
     // KM Entry Props (Conditional)
     isKmEntryEnabled,
     vehicleOptions,
@@ -42,6 +49,31 @@ export default function OndutyEntryForm({
 }) {
     const { theme } = useAppTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
+
+    const numLat = Number(latitude) || 0;
+    const numLon = Number(longitude) || 0;
+    const hasCoords = numLat !== 0 || numLon !== 0;
+
+    const isAddressResolved = Boolean(
+        locationAddress && 
+        locationAddress !== 'Location unavailable' && 
+        !locationAddress.includes('Unknown') &&
+        !locationAddress.startsWith('Near ') &&
+        locationAddress !== 'Office / Base Location'
+    );
+
+    const displayLocation = useMemo(() => {
+        if (isAddressResolved) {
+            return locationAddress;
+        }
+        if (locationAddress && locationAddress.startsWith('Near ')) {
+            return locationAddress;
+        }
+        if (hasCoords) {
+            return `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`;
+        }
+        return 'Office / Base Location';
+    }, [locationAddress, isAddressResolved, hasCoords, numLat, numLon]);
 
     // Map categories for DropDownPicker
     const categoryItems = (categoryOptions || []).map(item => ({
@@ -90,6 +122,67 @@ export default function OndutyEntryForm({
                     </View>
                 </View>
             ) : null}
+
+            {/* ── Office / Base Location Card ── */}
+            <View style={styles.formCard}>
+                <View style={styles.cardHeader}>
+                    <MaterialCommunityIcons name="office-building-marker-outline" size={theme.controlSizes.iconSm} color={theme.colors.brand} />
+                    <Text style={styles.cardHeaderText}>Office / Base Location</Text>
+                    {loadingLocation ? (
+                        <ActivityIndicator size="small" color={theme.colors.brand} style={{ marginLeft: 'auto' }} />
+                    ) : onRefreshLocation ? (
+                        <TouchableOpacity
+                            onPress={onRefreshLocation}
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            style={styles.refreshLocBtn}
+                            activeOpacity={0.7}
+                        >
+                            <MaterialCommunityIcons name="crosshairs-gps" size={16} color={theme.colors.brand} />
+                            <Text style={styles.refreshLocText}>Locate</Text>
+                        </TouchableOpacity>
+                    ) : null}
+                </View>
+
+                <View style={styles.locationBox}>
+                    <View style={styles.locationIconCircle}>
+                        <MaterialCommunityIcons
+                            name={isAddressResolved ? "map-marker-radius" : (hasCoords ? "crosshairs-gps" : "office-building")}
+                            size={22}
+                            color={theme.colors.brand}
+                        />
+                    </View>
+                    <View style={styles.locationContent}>
+                        <View style={styles.locationStatusRow}>
+                            <Text style={styles.locationTypeLabel}>
+                                {isAddressResolved ? 'RESOLVED ADDRESS' : (hasCoords ? 'GPS COORDINATES' : 'DEFAULT BASE')}
+                            </Text>
+                            <View style={[
+                                styles.locationBadge, 
+                                isAddressResolved 
+                                    ? styles.locationBadgeSuccess 
+                                    : (hasCoords ? styles.locationBadgeWarning : styles.locationBadgeNeutral)
+                            ]}>
+                                <Text style={[
+                                    styles.locationBadgeText, 
+                                    isAddressResolved 
+                                        ? styles.locationBadgeTextSuccess 
+                                        : (hasCoords ? styles.locationBadgeTextWarning : styles.locationBadgeTextNeutral)
+                                ]}>
+                                    {isAddressResolved ? 'GPS RESOLVED' : (hasCoords ? 'COORDINATES ONLY' : 'OFFICE BASE')}
+                                </Text>
+                            </View>
+                        </View>
+                        <Text style={styles.locationMainText} selectable>
+                            {displayLocation}
+                        </Text>
+                        {isAddressResolved && hasCoords ? (
+                            <Text style={styles.locationCoordsSubtext}>
+                                Lat: {numLat.toFixed(5)}, Lon: {numLon.toFixed(5)}
+                            </Text>
+                        ) : null}
+                    </View>
+                </View>
+            </View>
 
             {/* Trip Details Card */}
             <View style={styles.formCard}>
@@ -344,6 +437,94 @@ const createStyles = theme => StyleSheet.create({
         ...theme.typography.bodySmall,
         fontWeight: theme.fontWeights.bold,
         color: theme.colors.text,
+    },
+    refreshLocBtn: {
+        marginLeft: 'auto',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 2,
+        paddingHorizontal: theme.spacing.xs,
+        gap: 4,
+    },
+    refreshLocText: {
+        ...theme.typography.caption,
+        color: theme.colors.brand,
+        fontWeight: theme.fontWeights.semiBold,
+    },
+    locationBox: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.surfaceSunken,
+        borderRadius: theme.radii.md,
+        padding: theme.spacing.md,
+        borderWidth: theme.layout.dividerWidth,
+        borderColor: theme.colors.borderSubtle,
+        gap: theme.spacing.md,
+    },
+    locationIconCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: theme.colors.brandSoft,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 2,
+    },
+    locationContent: {
+        flex: 1,
+    },
+    locationStatusRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    locationTypeLabel: {
+        ...theme.typography.caption,
+        fontSize: 10,
+        fontWeight: theme.fontWeights.bold,
+        color: theme.colors.textMuted,
+        letterSpacing: 0.5,
+    },
+    locationBadge: {
+        paddingHorizontal: theme.spacing.xs + 2,
+        paddingVertical: 2,
+        borderRadius: theme.radii.xs,
+    },
+    locationBadgeSuccess: {
+        backgroundColor: theme.colors.successSoft,
+    },
+    locationBadgeWarning: {
+        backgroundColor: theme.colors.warningSoft,
+    },
+    locationBadgeNeutral: {
+        backgroundColor: theme.colors.borderSubtle,
+    },
+    locationBadgeText: {
+        ...theme.typography.caption,
+        fontSize: 9,
+        fontWeight: theme.fontWeights.bold,
+    },
+    locationBadgeTextSuccess: {
+        color: theme.colors.success,
+    },
+    locationBadgeTextWarning: {
+        color: theme.colors.warning,
+    },
+    locationBadgeTextNeutral: {
+        color: theme.colors.textMuted,
+    },
+    locationMainText: {
+        ...theme.typography.bodySmall,
+        fontWeight: theme.fontWeights.semiBold,
+        color: theme.colors.text,
+        lineHeight: 20,
+    },
+    locationCoordsSubtext: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: 3,
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     },
     inputGroup: {
         marginBottom: theme.spacing.md + theme.spacing.xxs,

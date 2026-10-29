@@ -79,7 +79,7 @@ export default function OndutyReachedTrip({
                 </View>
 
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>DEPARTURE POINT</Text>
+                    <Text style={styles.infoLabel}>OFFICE / BASE LOCATION</Text>
                     <Text style={styles.infoValue}>
                         {(!reachedData?.in_location || reachedData.in_location === 'Location unavailable') && reachedData?.in_latitude && Number(reachedData.in_latitude) !== 0
                             ? `Near ${Number(reachedData.in_latitude).toFixed(4)}, ${Number(reachedData.in_longtiude).toFixed(4)}`

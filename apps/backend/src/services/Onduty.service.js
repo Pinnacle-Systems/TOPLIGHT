@@ -209,7 +209,7 @@ export async function getPermissionRequest(req, res) {
       return res.json({ statusCode: 0, data: [...result, ...result_Leave] })
     }
     catch (err) {
-    logServiceError('OnDutyService:getPermissionRequest', err, req);
+      logServiceError('OnDutyService:getPermissionRequest', err, req);
       console.error('Error retrieving data:', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -352,7 +352,7 @@ export async function getIn(req, res) {
           });
         }
       } catch (healErr) {
-    logServiceError('OnDutyService:getIn', healErr, req);
+        logServiceError('OnDutyService:getIn', healErr, req);
         console.warn('[getIn] Failed to heal departure location:', healErr);
       }
     }
@@ -578,7 +578,7 @@ export async function requestOnduty(req, res) {
           }
         }
       } catch (trackErr) {
-    logServiceError('OnDutyService:requestOnduty', trackErr, req);
+        logServiceError('OnDutyService:requestOnduty', trackErr, req);
         console.warn('[requestOnduty] Fallback tracking lookup error:', trackErr);
       }
     }
@@ -594,7 +594,7 @@ export async function requestOnduty(req, res) {
     }
 
     if (!req.body.in_location || req.body.in_location.includes('Unknown') || req.body.in_location === 'Location retrieved on submission' || req.body.in_location === 'GPS coordinates ready' || req.body.in_location === 'Location unavailable') {
-      req.body.in_location = hasValidInCoords ? `Near ${numInLat.toFixed(4)}, ${numInLon.toFixed(4)}` : 'Office / Base Location';
+      req.body.in_location = hasValidInCoords ? `Near ${numInLat.toFixed(4)}, ${numInLon.toFixed(4)}` : 'Location unavailable';
     }
 
     const prismaData = buildPrismaData(req.body, photoname, in_time);
@@ -753,7 +753,7 @@ export async function requestOnduty(req, res) {
         await prisma_Connector.onduty.delete({ where: { id: prismaRecord.id } });
         console.log(`Rolled back Prisma row id=${prismaRecord.id} docid=${prismaRecord.docId}`);
       } catch (rbErr) {
-    logServiceError('OnDutyService:requestOnduty', rbErr, req);
+        logServiceError('OnDutyService:requestOnduty', rbErr, req);
         console.error('Prisma rollback failed:', rbErr);
       }
     }
@@ -1034,9 +1034,9 @@ export async function requestReachedOut(req, res) {
     }
 
     if (!rOutLocation || rOutLocation === 'Location unavailable') {
-      rOutLocation = currentOnduty.inLocation && currentOnduty.inLocation !== 'Location unavailable' 
-        ? currentOnduty.inLocation 
-        : 'Office / Base Location';
+      rOutLocation = currentOnduty.inLocation && currentOnduty.inLocation !== 'Location unavailable'
+        ? currentOnduty.inLocation
+        : 'Location unavailable';
     }
 
     const result = await prisma_Connector.onduty?.update({
@@ -1114,7 +1114,7 @@ export async function get_reached(req, res) {
             result.inLatitude = String(bestTrack.latitude);
             result.inLongtiude = String(bestTrack.longitude);
             result.inLocation = bestTrack.address || `Near ${Number(bestTrack.latitude).toFixed(4)}, ${Number(bestTrack.longitude).toFixed(4)}`;
-            
+
             await prisma_Connector.onduty.update({
               where: { id: result.id },
               data: {
@@ -1124,13 +1124,13 @@ export async function get_reached(req, res) {
               }
             });
           } else if (!result.inLocation || result.inLocation === 'Location unavailable') {
-            result.inLocation = 'Office / Base Location';
+            result.inLocation = 'Location unavailable';
           }
         } catch (healErr) {
-    logServiceError('OnDutyService:get_reached', healErr, req);
+          logServiceError('OnDutyService:get_reached', healErr, req);
           console.warn('[get_reached] Failed to heal departure location:', healErr);
           if (!result.inLocation || result.inLocation === 'Location unavailable') {
-            result.inLocation = 'Office / Base Location';
+            result.inLocation = 'Location unavailable';
           }
         }
       }
@@ -1226,7 +1226,7 @@ export async function get_history_location(req, res) {
         fileContent = Buffer.from(gunzipSync(await fsp.readFile(compressdata))).toString('utf8');
       }
     } catch (readErr) {
-    logServiceError('OnDutyService:get_history_location', readErr, req);
+      logServiceError('OnDutyService:get_history_location', readErr, req);
       console.error('Location archive read error:', readErr);
       return res.status(500).json({
         status: 0,
@@ -1247,7 +1247,7 @@ export async function get_history_location(req, res) {
         ? JSON.parse(`[${trimmed.replace(/}\s*{/g, '},{')}]`)
         : JSON.parse(trimmed);
     } catch (parseErr) {
-    logServiceError('OnDutyService:get_history_location', parseErr, req);
+      logServiceError('OnDutyService:get_history_location', parseErr, req);
       console.error('Location archive JSON parse error:', parseErr);
       return res.status(500).json({
         status: 0,
@@ -1323,7 +1323,7 @@ export async function requestOndutyOut(req, res) {
         outLon = String(lastTrack.longitude);
       }
     } catch (e) {
-    logServiceError('OnDutyService:requestOndutyOut', e, req);
+      logServiceError('OnDutyService:requestOndutyOut', e, req);
       console.warn('[requestOndutyOut] Fallback location tracking lookup error:', e);
     }
   }

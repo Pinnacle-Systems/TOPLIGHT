@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-    View, 
-    Text, 
-    StyleSheet, 
-    ScrollView, 
-    ActivityIndicator, 
-    TouchableOpacity, 
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    ActivityIndicator,
+    TouchableOpacity,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -15,18 +15,18 @@ import RNBlobUtil from 'react-native-blob-util';
 import { showMessage } from 'react-native-flash-message';
 
 // Redux & APIs
-import { 
-    useGetDocIDQuery, 
-    useGetInQuery, 
-    useGet_reachedQuery, 
-    useGet_all_Onduty_reasonQuery, 
+import {
+    useGetDocIDQuery,
+    useGetInQuery,
+    useGet_reachedQuery,
+    useGet_all_Onduty_reasonQuery,
     useGet__VechileQuery,
     useGet__vechilekmQuery,
 } from '../../store/api/OndutyApi';
 import { useGet_refresh_tokenQuery, useGet_hod_tokenQuery } from '../../store/api/UserApi';
-import { 
-    setOndutyField, 
-    setOndutyLocation, 
+import {
+    setOndutyField,
+    setOndutyLocation,
     setOndutyDocId,
     setKmEntryEnabled,
 } from '../../store/slices/OndutyInputSlice';
@@ -205,30 +205,36 @@ export default function OndutyScreen() {
     }, [allVehicles, dispatch]);
 
     // ── Initial GPS Location Fetch ──────────────────────────────────────────────
-    useEffect(() => {
-        let isMounted = true;
-        const fetchLocation = async () => {
-            try {
-                setLoadingLocation(true);
-                const coords = await getCurrentLocationAsync(10000);
-                if (isMounted && coords && (Number(coords.latitude) !== 0 || Number(coords.longitude) !== 0)) {
-                    dispatch(setOndutyLocation({
-                        latitude: Number(coords.latitude),
-                        longitude: Number(coords.longitude),
-                        address: coords.address && coords.address !== 'Location unavailable'
-                            ? coords.address
-                            : `Near ${Number(coords.latitude).toFixed(4)}, ${Number(coords.longitude).toFixed(4)}`,
-                    }));
-                }
-            } catch (err) {
-                console.log('[OndutyScreen] Location fetch:', err?.message);
-            } finally {
-                if (isMounted) setLoadingLocation(false);
+    const fetchLocation = useCallback(async () => {
+        try {
+            setLoadingLocation(true);
+            const coords = await getCurrentLocationAsync(10000);
+            const lat = Number(coords?.latitude) || 0;
+            const lon = Number(coords?.longitude) || 0;
+            const hasCoords = lat !== 0 || lon !== 0;
+
+            let resolvedAddress = 'Location unavailable';
+            if (coords?.address && coords.address !== 'Location unavailable' && !coords.address.includes('Unknown')) {
+                resolvedAddress = coords.address;
+            } else if (hasCoords) {
+                resolvedAddress = `Near ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
             }
-        };
-        fetchLocation();
-        return () => { isMounted = false; };
+
+            dispatch(setOndutyLocation({
+                latitude: lat,
+                longitude: lon,
+                address: resolvedAddress,
+            }));
+        } catch (err) {
+            console.log('[OndutyScreen] Location fetch:', err?.message);
+        } finally {
+            setLoadingLocation(false);
+        }
     }, [dispatch]);
+
+    useEffect(() => {
+        fetchLocation();
+    }, [fetchLocation]);
 
     // ── Socket Approval Notification ───────────────────────────────────────────
     useEffect(() => {
@@ -375,7 +381,7 @@ export default function OndutyScreen() {
 
     return (
         <View style={styles.container}>
-            <ScrollView 
+            <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
@@ -412,29 +418,35 @@ export default function OndutyScreen() {
                             </View>
                         )}
                         <OndutyEntryForm
-                        docId={formState.docid}
-                        categoryOptions={formState.category_options}
-                        selectedCategory={formState.category}
-                        onSelectCategory={onSelectCategory}
-                        categoryDropdownOpen={categoryDropdownOpen}
-                        setCategoryDropdownOpen={setCategoryDropdownOpen}
-                        othersText={formState.others}
-                        onChangeOthers={onChangeOthers}
-                        // KM Entry Props (Conditional)
-                        isKmEntryEnabled={formState.isKmEntryEnabled}
-                        vehicleOptions={formState.category_vechileno}
-                        selectedVehicle={formState.vechileno}
-                        startKm={formState.start_km}
-                        lastRecordedKm={lastRecordedKm}
-                        onOpenKmModal={() => setIsStartKmModalOpen(true)}
-                        // Photo & Submit
-                        photoUri={compressedPhoto}
-                        onOpenCamera={() => setIsCameraModal(true)}
-                        onSubmitIN={handleStartOnduty}
-                        isSubmitting={isSubmitting}
-                        isAdmin={UserSelect?.isAdmin === 1 || UserSelect?.isAdmin === true}
-                        onOpenBrowseModal={() => setIsBrowseModalOpen(true)}
-                    />
+                            docId={formState.docid}
+                            categoryOptions={formState.category_options}
+                            selectedCategory={formState.category}
+                            onSelectCategory={onSelectCategory}
+                            categoryDropdownOpen={categoryDropdownOpen}
+                            setCategoryDropdownOpen={setCategoryDropdownOpen}
+                            othersText={formState.others}
+                            onChangeOthers={onChangeOthers}
+                            // Location Props
+                            locationAddress={formState.address}
+                            latitude={formState.latitude}
+                            longitude={formState.longitude}
+                            loadingLocation={loadingLocation}
+                            onRefreshLocation={fetchLocation}
+                            // KM Entry Props (Conditional)
+                            isKmEntryEnabled={formState.isKmEntryEnabled}
+                            vehicleOptions={formState.category_vechileno}
+                            selectedVehicle={formState.vechileno}
+                            startKm={formState.start_km}
+                            lastRecordedKm={lastRecordedKm}
+                            onOpenKmModal={() => setIsStartKmModalOpen(true)}
+                            // Photo & Submit
+                            photoUri={compressedPhoto}
+                            onOpenCamera={() => setIsCameraModal(true)}
+                            onSubmitIN={handleStartOnduty}
+                            isSubmitting={isSubmitting}
+                            isAdmin={UserSelect?.isAdmin === 1 || UserSelect?.isAdmin === true}
+                            onOpenBrowseModal={() => setIsBrowseModalOpen(true)}
+                        />
                     </>
                 )}
             </ScrollView>
