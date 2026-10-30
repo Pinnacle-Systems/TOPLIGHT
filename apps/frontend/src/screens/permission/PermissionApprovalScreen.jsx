@@ -98,7 +98,13 @@ function PermissionRequestCard({ item, categoryMap, isBusy, isProcessing, onAppr
         item?.IDCARD;
     const docid = item?.docid || item?.docId;
     const docdate = item?.docDate || item?.docdate || item?.createdAt;
-    const phone = item?.userdata?.phone || item?.userdata?.mobile || item?.mobile;
+    const phone =
+        item?.userdata?.phone ||
+        item?.userdata?.mobile ||
+        item?.userData?.phone ||
+        item?.userData?.mobile ||
+        item?.mobile ||
+        item?.phone;
 
     const rawCategory = item?.categoryName || item?.categoryData?.name || item?.category;
     const categoryDisplay =
@@ -304,21 +310,30 @@ export default function PermissionApprovalScreen({ route }) {
     }, [fetchEmployeeToken, params, refetch, refreshTokenData, updateStatus, user]);
 
     const callEmployee = useCallback(async item => {
-        const number = String(
-            item?.userdata?.phone || item?.userdata?.mobile || item?.mobile || '',
-        ).replace(/[^\d+]/g, '');
-        if (!number) return;
+        const rawPhone =
+            item?.userdata?.phone ||
+            item?.userdata?.mobile ||
+            item?.userData?.phone ||
+            item?.userData?.mobile ||
+            item?.mobile ||
+            item?.phone ||
+            '';
+        const number = String(rawPhone).replace(/[^\d+]/g, '');
+        if (!number) {
+            showMessage({
+                message: 'Cannot start call',
+                description: 'No phone number available for this employee.',
+                type: 'warning',
+            });
+            return;
+        }
         try {
             const url = `tel:${number}`;
-            if (await Linking.canOpenURL(url)) {
-                await Linking.openURL(url);
-            } else {
-                throw new Error('Phone calls are not supported on this device.');
-            }
+            await Linking.openURL(url);
         } catch (error) {
             showMessage({
                 message: 'Unable to start a call',
-                description: error?.message || 'Please try again.',
+                description: error?.message || 'Could not open phone dialer on this device.',
                 type: 'danger',
             });
         }
@@ -345,7 +360,7 @@ export default function PermissionApprovalScreen({ route }) {
         <View style={styles.screen}>
             <View style={styles.header}>
                 <View style={styles.headerIcon}>
-                    <MaterialCommunityIcons name="account-check-outline" size={23} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="account-check-outline" size={23} color={theme.colors.brand} />
                 </View>
                 <View style={styles.headerText}>
                     <Text style={styles.title}>Permission Approval</Text>

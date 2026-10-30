@@ -18,6 +18,7 @@ function mapUserSnippet(user) {
   const username = user.username ?? user.userName ?? user.empName ?? user.empname ?? user.Employee ?? '';
   const Idcard = user.Idcard ?? user.idCard ?? user.idcard ?? '';
   const Employee = user.Employee ?? user.empName ?? user.empname ?? user.pic ?? null;
+  const mobile = user.mobile ?? user.phone ?? user.Mobile ?? '';
   return {
     ...user,
     Employee,
@@ -26,6 +27,8 @@ function mapUserSnippet(user) {
     Idcard,
     idCard: Idcard,
     idcard: Idcard,
+    mobile,
+    phone: mobile,
   };
 }
 

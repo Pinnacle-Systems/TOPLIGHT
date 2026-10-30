@@ -424,13 +424,21 @@ export async function getPunchSummary(req, res) {
       }
     }
 
-    // If there's an unmatched IN (still inside), add it as active
+    // If there's an unmatched IN (still inside), add it as active with duration
     if (pendingIn) {
+      const inSecs        = timeToSeconds(pendingIn);
+      const nowParts      = new Date();
+      const nowSecs       = (nowParts.getHours() * 3600) + (nowParts.getMinutes() * 60) + nowParts.getSeconds();
+      const activeSeconds = Math.max(0, nowSecs - inSecs);
+
+      totalSeconds += activeSeconds;
+
       punches.push({
         inTime           : pendingIn,
         outTime          : null,        // still inside
-        durationMinutes  : null,
-        durationFormatted: "Active",
+        durationSeconds  : activeSeconds,
+        durationMinutes  : Math.floor(activeSeconds / 60),
+        durationFormatted: activeSeconds > 0 ? `Active (${formatDuration(activeSeconds)})` : "Active",
       });
     }
 
@@ -454,8 +462,8 @@ export async function getPunchSummary(req, res) {
       data  : {
         punches,
         totalPunches       : punches.length,
-        totalMinutesWorked : Math.floor(totalSeconds / 60),
-        totalTimeFormatted : formatDuration(totalSeconds),
+        totalMinutesWorked : Math.floor(totalSpanSeconds / 60),
+        totalTimeFormatted : formatDuration(totalSpanSeconds),
         totalSpanSeconds,
         totalSpanFormatted : formatDuration(totalSpanSeconds),
       },

@@ -163,9 +163,15 @@ function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onAppr
         item?.inLocation ||
         (hasCoordinates ? `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : null) ||
         (item?.others && item.others !== 'ONDUTY' ? item.others : null) ||
-        'Location Unavailable';
+        'Location unavailable';
 
-    const phone = item?.userdata?.phone || item?.userdata?.mobile || item?.mobile;
+    const phone =
+        item?.userdata?.phone ||
+        item?.userdata?.mobile ||
+        item?.userData?.phone ||
+        item?.userData?.mobile ||
+        item?.mobile ||
+        item?.phone;
 
     const openMap = async () => {
         const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
@@ -182,13 +188,20 @@ function RequestCard({ item, rejectionReason, setRejectionReason, isBusy, onAppr
 
     const callEmployee = async () => {
         const number = String(phone || '').replace(/[^\d+]/g, '');
-        if (!number) return;
+        if (!number) {
+            showMessage({
+                message: 'Cannot start call',
+                description: 'No phone number available for this employee.',
+                type: 'warning',
+            });
+            return;
+        }
         try {
             await Linking.openURL(`tel:${number}`);
         } catch (error) {
             showMessage({
                 message: 'Unable to start a call',
-                description: error?.message || 'Please try again.',
+                description: error?.message || 'Could not open phone dialer on this device.',
                 type: 'danger',
             });
         }

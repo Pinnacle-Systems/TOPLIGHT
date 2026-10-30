@@ -165,7 +165,14 @@ function LeaveRequestCard({ item, isBusy, isProcessing, onApprove, onReject, onC
                     <Text style={styles.actionText}>Reject</Text>
                 </TouchableOpacity>
             </View>
-            {!!(item?.userdata?.phone || item?.userdata?.mobile || item?.mobile) && (
+            {!!(
+                item?.userdata?.phone ||
+                item?.userdata?.mobile ||
+                item?.userData?.phone ||
+                item?.userData?.mobile ||
+                item?.mobile ||
+                item?.phone
+            ) && (
                 <TouchableOpacity
                     style={styles.callButton}
                     onPress={onCall}
@@ -285,21 +292,30 @@ export default function LeaveApprovalScreen({ route }) {
     }, [fetchEmployeeToken, params, refetch, refreshTokenData, updateStatus, user]);
 
     const callEmployee = useCallback(async item => {
-        const number = String(
-            item?.userdata?.phone || item?.userdata?.mobile || item?.mobile || '',
-        ).replace(/[^\d+]/g, '');
-        if (!number) return;
+        const rawPhone =
+            item?.userdata?.phone ||
+            item?.userdata?.mobile ||
+            item?.userData?.phone ||
+            item?.userData?.mobile ||
+            item?.mobile ||
+            item?.phone ||
+            '';
+        const number = String(rawPhone).replace(/[^\d+]/g, '');
+        if (!number) {
+            showMessage({
+                message: 'Cannot start call',
+                description: 'No phone number available for this employee.',
+                type: 'warning',
+            });
+            return;
+        }
         try {
             const url = `tel:${number}`;
-            if (await Linking.canOpenURL(url)) {
-                await Linking.openURL(url);
-            } else {
-                throw new Error('Phone calls are not supported on this device.');
-            }
+            await Linking.openURL(url);
         } catch (error) {
             showMessage({
                 message: 'Unable to start a call',
-                description: error?.message || 'Please try again.',
+                description: error?.message || 'Could not open phone dialer on this device.',
                 type: 'danger',
             });
         }

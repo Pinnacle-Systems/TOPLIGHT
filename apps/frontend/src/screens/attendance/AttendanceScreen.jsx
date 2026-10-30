@@ -46,6 +46,10 @@ export default function AttendanceScreen() {
         String(user?.level || '').toUpperCase() === 'HOD' ||
         (normalizedUserId && normalizedUserId === String(user?.hod || '').trim().toUpperCase()) ||
         isAdmin;
+    const isHR =
+        String(user?.level || '').toUpperCase() === 'HR' ||
+        (normalizedUserId && normalizedUserId === String(user?.hr || '').trim().toUpperCase());
+    const canManageEmployees = isHOD || isHR || isAdmin;
 
     const [activeTab, setActiveTab] = useState('SELF');
     const [isPunching, setIsPunching] = useState(false);
@@ -61,8 +65,8 @@ export default function AttendanceScreen() {
         isLoading: employeesLoading,
         refetch: refetchEmployees,
     } = useGetEmployeeIdsWithAttQuery(
-        { hod: userIdcard },
-        { skip: activeTab !== 'EMPLOYEE' || !isHOD || !userIdcard },
+        { hod: userIdcard, hr: userIdcard },
+        { skip: activeTab !== 'EMPLOYEE' || !canManageEmployees || !userIdcard },
     );
     const [punchIn] = usePunchInMutation();
     const [punchOut] = usePunchOutMutation();
@@ -195,8 +199,8 @@ export default function AttendanceScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* ── Tab Bar (HOD / Admin only) ─────────────────────────────── */}
-            {isHOD && (
+            {/* ── Tab Bar (HOD / HR / Admin) ─────────────────────────────── */}
+            {canManageEmployees && (
                 <View style={styles.tabBar}>
                     {['SELF', 'EMPLOYEE'].map((tab) => (
                         <TouchableOpacity

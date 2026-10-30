@@ -966,81 +966,175 @@ ORDER BY 3,TO_NUMBER(B.IDCARD)`
 
 
 export async function getEmployeeIdsWithAtt(req, res) {
-
-  const connection = await getConnection(res);
+  let connection = null;
 
   try {
-    const HodId = req?.query?.hod;
+    const rawHod = req?.query?.hod;
+    const rawHr  = req?.query?.hr;
+    const rawId  = req?.query?.idCard || req?.query?.Idcard;
+    const supervisorId = (rawHod || rawHr || rawId) ? String(rawHod || rawHr || rawId).trim() : null;
 
-    // 1. Get employee idcards under this HOD from Prisma
-    const prismaIdget = await prisma_Connector?.user?.findMany({
-      where: { hod: HodId },
+    if (!supervisorId) {
+      return res.json({ status: 1, statusCode: 0, data: [] });
+    }
+
+    // Resolve supervisor identifier (could be idCard, userName, or id)
+    let supervisorCard = supervisorId;
+    let supervisorName = supervisorId;
+    let supervisorLevel = '';
+
+    const supervisorUser = await prisma_Connector?.user?.findFirst({
+      where: {
+        OR: [
+          { idCard: supervisorId },
+          { userName: supervisorId },
+        ],
+      },
+      include: {
+        companies: true,
+      },
     });
+
+    if (supervisorUser) {
+      if (supervisorUser.idCard) supervisorCard = String(supervisorUser.idCard).trim();
+      if (supervisorUser.userName) supervisorName = String(supervisorUser.userName).trim();
+      supervisorLevel = String(supervisorUser.level || '').toLowerCase();
+    }
+
+    // 1. Get employee records under this HOD or HR from Prisma
+    let prismaIdget = await prisma_Connector?.user?.findMany({
+      where: {
+        OR: [
+          { hod: supervisorCard },
+          { hod: supervisorName },
+          { hod: supervisorId },
+          { hr: supervisorCard },
+          { hr: supervisorName },
+          { hr: supervisorId },
+        ],
+      },
+      include: {
+        companies: true,
+      },
+    });
+
+    // If supervisor is HR and no direct hr/hod mapping was set, include all company employees for HR
+    if ((!prismaIdget || prismaIdget.length === 0) && (supervisorLevel === 'hr' || rawHr)) {
+      const compCodes = (supervisorUser?.companies || []).map(c => c.companyCode).filter(Boolean);
+      prismaIdget = await prisma_Connector?.user?.findMany({
+        where: compCodes.length > 0 ? {
+          companies: {
+            some: {
+              companyCode: { in: compCodes },
+            },
+          },
+        } : {},
+        include: {
+          companies: true,
+        },
+      });
+    }
 
     if (!prismaIdget?.length) {
-      return res.json({ statusCode: 0, data: [] });
+      return res.json({ status: 1, statusCode: 0, data: [] });
     }
 
-    const Ids = prismaIdget.map((u) => u?.Idcard).filter(Boolean);
+    // Correctly extract idCard from Prisma User objects (supporting idCard, Idcard, IDCARD)
+    const Ids = prismaIdget
+      .map((u) => String(u?.idCard || u?.Idcard || u?.IDCARD || '').trim())
+      .filter(Boolean);
 
     if (!Ids.length) {
-      return res.json({ statusCode: 0, data: [] });
+      return res.json({ status: 1, statusCode: 0, data: [] });
     }
 
-    // Oracle bind-safe IN list  ├óΓÇáΓÇÖ :0, :1, :2 ...
-    const bindPlaceholders = Ids.map((_, i) => `:id${i}`).join(", ");
-    const bindValues       = Object.fromEntries(Ids.map((id, i) => [`id${i}`, id]));
+    // Try to get Oracle connection for master details & PSSATT records
+    let employees = [];
+    let attMap = {};
 
-    // 2. Employee master info
-    const empSql = `
-      SELECT
-        C.COMPCODE,
-        C.COMPNAME,
-        B.IDCARD,
-        B.DEPTNAME,
-        D.FNAME AS EMPNAME
-      FROM HREMPLOYMAST A
-      JOIN HREMPLOYDETAILS B ON A.HREMPLOYMASTID = B.HREMPLOYMASTID
-      JOIN GTCOMPMAST      C ON C.GTCOMPMASTID   = A.COMPCODE
-      JOIN HREMPLOYMAST    D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID
-      WHERE B.IDCARD IN (${bindPlaceholders})
-      ORDER BY C.COMPCODE, TO_NUMBER(B.IDCARD)
-    `;
+    try {
+      connection = await getConnection(res);
+    } catch (connErr) {
+      console.warn("Oracle connection failed in getEmployeeIdsWithAtt, using Prisma fallback:", connErr?.message);
+    }
 
-    const empResult = await connection.execute(empSql, bindValues);
+    if (connection) {
+      try {
+        // Oracle bind-safe IN list
+        const bindPlaceholders = Ids.map((_, i) => `:id${i}`).join(", ");
+        const bindValues       = Object.fromEntries(Ids.map((id, i) => [`id${i}`, id]));
 
-    const employees = empResult.rows.map((row) => {
-      const obj = {};
-      empResult.metaData.forEach((col, i) => { obj[col.name] = row[i]; });
-      return obj;
-    });
+        // 2. Employee master info from Oracle
+        const empSql = `
+          SELECT
+            C.COMPCODE,
+            C.COMPNAME,
+            B.IDCARD,
+            B.DEPTNAME,
+            D.FNAME AS EMPNAME
+          FROM HREMPLOYMAST A
+          JOIN HREMPLOYDETAILS B ON A.HREMPLOYMASTID = B.HREMPLOYMASTID
+          JOIN GTCOMPMAST      C ON C.GTCOMPMASTID   = A.COMPCODE
+          JOIN HREMPLOYMAST    D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID
+          WHERE B.IDCARD IN (${bindPlaceholders})
+          ORDER BY C.COMPCODE, TO_NUMBER(B.IDCARD)
+        `;
+
+        const empResult = await connection.execute(empSql, bindValues);
+
+        if (empResult?.rows && empResult?.metaData) {
+          employees = empResult.rows.map((row) => {
+            const obj = {};
+            empResult.metaData.forEach((col, i) => { obj[col.name] = row[i]; });
+            return obj;
+          });
+        }
+
+        // 3. Today's attendance from PSSATT for all these IDCARDs at once
+        const attSql = `
+          SELECT
+            IDCARD,
+            INOUT,
+            ATTTIME,
+            ATTDATE
+          FROM PSSATT
+          WHERE IDCARD IN (${bindPlaceholders})
+            AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
+          ORDER BY IDCARD, ATTDATE ASC
+        `;
+
+        const attResult = await connection.execute(attSql, bindValues);
+
+        if (attResult?.rows) {
+          for (const [idcard, inout, atttime] of attResult.rows) {
+            const key = String(idcard);
+            if (!attMap[key]) attMap[key] = [];
+            attMap[key].push({ inout: Number(inout), atttime });
+          }
+        }
+      } catch (oracleErr) {
+        console.warn("Oracle query error in getEmployeeIdsWithAtt:", oracleErr?.message);
+      }
+    }
+
+    // Merge any Prisma users that were not found in Oracle HREMPLOYMAST
+    const foundIdCards = new Set(employees.map((e) => String(e.IDCARD)));
+    for (const u of prismaIdget) {
+      const card = String(u.idCard || u.Idcard || u.IDCARD || '').trim();
+      if (card && !foundIdCards.has(card)) {
+        const comp = u.companies?.[0]?.companyCode || 'TLT';
+        employees.push({
+          COMPCODE: comp,
+          COMPNAME: u.companies?.[0]?.companyName || 'TOP LIGHT',
+          IDCARD: card,
+          DEPTNAME: 'General',
+          EMPNAME: u.userName || card,
+        });
+      }
+    }
 
     if (!employees.length) {
-      return res.json({ statusCode: 0, data: [] });
-    }
-
-    // 3. Today's attendance from PSSATT for all these IDCARDs at once
-    const attSql = `
-      SELECT
-        IDCARD,
-        INOUT,
-        ATTTIME,
-        ATTDATE
-      FROM PSSATT
-      WHERE IDCARD IN (${bindPlaceholders})
-        AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
-      ORDER BY IDCARD, ATTDATE ASC
-    `;
-
-    const attResult = await connection.execute(attSql, bindValues);
-
-    // 4. Group attendance rows by IDCARD
-    const attMap = {};
-
-    for (const [idcard, inout, atttime] of attResult.rows) {
-      const key = String(idcard);
-      if (!attMap[key]) attMap[key] = [];
-      attMap[key].push({ inout: Number(inout), atttime });
+      return res.json({ status: 1, statusCode: 0, data: [] });
     }
 
     // 5. Compute summary per employee
@@ -1062,13 +1156,13 @@ export async function getEmployeeIdsWithAtt(req, res) {
         punchIn  : summary.firstInTime,
         punchOut : summary.lastOutTime,
 
-        // last row's INOUT ├óΓé¼ΓÇ¥ drives the button (0=OUT├óΓÇáΓÇÖshow IN, 1=IN├óΓÇáΓÇÖshow OUT)
+        // last row's INOUT ── drives the button (0=OUT→show IN, 1=IN→show OUT)
         lastInout: summary.lastInout,
 
         // summary stats
         totalPunches      : summary.totalPunches,
         totalMinutesWorked: summary.totalMinutes,
-        totalTimeFormatted: minutesToFormatted(summary.totalMinutes),
+        totalTimeFormatted: summary.totalTimeFormatted,
 
         // full punch log for expanded view
         punches: summary.punches,
@@ -1082,18 +1176,45 @@ export async function getEmployeeIdsWithAtt(req, res) {
     console.error("getEmployeeIdsWithAtt error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    await connection.close();
+    if (connection && typeof connection.close === 'function') {
+      try {
+        await connection.close();
+      } catch (_) {}
+    }
   }
 }
 
 
 // ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Helpers ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
 
+function timeToSeconds(timeStr) {
+  if (!timeStr) return 0;
+  const parts = String(timeStr).split(':').map(Number);
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
+  const s = parts[2] || 0;
+  return (h * 3600) + (m * 60) + s;
+}
+
+function formatDuration(totalSeconds) {
+  if (!totalSeconds || totalSeconds <= 0) return '00:00:00';
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function getCurrentTimeStr() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
 function computeAttSummary(rows) {
   // rows: [{ inout: 0|1, atttime: "HH:MI:SS" }, ...] ordered ASC
-
-  const punches     = [];
-  let   totalMinutes = 0;
+  const punches      = [];
   let   pendingIn    = null;
   let   firstInTime  = null;
   let   lastOutTime  = null;
@@ -1111,15 +1232,16 @@ function computeAttSummary(rows) {
       lastOutTime = atttime;
 
       if (pendingIn) {
-        const duration = timeToMinutes(atttime) - timeToMinutes(pendingIn);
-        const mins     = duration > 0 ? duration : 0;
-        totalMinutes  += mins;
+        const inSecs   = timeToSeconds(pendingIn);
+        const outSecs  = timeToSeconds(atttime);
+        const duration = Math.max(0, outSecs - inSecs);
 
         punches.push({
           inTime           : pendingIn,
           outTime          : atttime,
-          durationMinutes  : mins,
-          durationFormatted: minutesToFormatted(mins),
+          durationSeconds  : duration,
+          durationMinutes  : Math.floor(duration / 60),
+          durationFormatted: formatDuration(duration),
         });
 
         pendingIn = null;
@@ -1127,41 +1249,45 @@ function computeAttSummary(rows) {
     }
   }
 
-  // Unmatched IN ├óΓÇáΓÇÖ still active
+  // Unmatched IN (currently working active shift)
   if (pendingIn) {
+    const inSecs        = timeToSeconds(pendingIn);
+    const nowSecs       = timeToSeconds(getCurrentTimeStr());
+    const activeSeconds = Math.max(0, nowSecs - inSecs);
+
     punches.push({
       inTime           : pendingIn,
       outTime          : null,
-      durationMinutes  : null,
-      durationFormatted: "Active",
+      durationSeconds  : activeSeconds,
+      durationMinutes  : Math.floor(activeSeconds / 60),
+      durationFormatted: activeSeconds > 0 ? `Active (${formatDuration(activeSeconds)})` : 'Active',
     });
   }
 
+  // Option B: Gross span from First IN to Last OUT (or current time if active)
+  let totalSpanSeconds = 0;
+  if (firstInTime) {
+    let spanEnd = lastOutTime;
+    if (lastInout === 1 || !spanEnd) {
+      spanEnd = getCurrentTimeStr();
+    }
+    const spanSecs = timeToSeconds(spanEnd) - timeToSeconds(firstInTime);
+    totalSpanSeconds = spanSecs > 0 ? spanSecs : 0;
+  }
+
+  const totalMinutes = Math.floor(totalSpanSeconds / 60);
+
   return {
     punches,
+    totalSeconds: totalSpanSeconds,
     totalMinutes,
+    totalTimeFormatted: formatDuration(totalSpanSeconds),
     firstInTime,
     lastOutTime,
-    lastInout,                    // null=no punch, 1=IN, 0=OUT
+    lastInout,
     totalPunches: punches.length,
   };
 }
-
-// "09:30:00" ├óΓÇáΓÇÖ 570
-function timeToMinutes(timeStr) {
-  if (!timeStr) return 0;
-  const [h, m] = timeStr.split(":").map(Number);
-  return h * 60 + m;
-}
-
-// 570 ├óΓÇáΓÇÖ "09:30"
-function minutesToFormatted(totalMinutes) {
-  if (!totalMinutes || totalMinutes <= 0) return "00:00";
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
 
 
 
