@@ -7,7 +7,7 @@ import {
   addPermission_master,
   get__per_category,
   get_all_Permission_reason,
-} from '../services/permissionEntry.service.js';
+} from '../services/permissionEntryService.js';
 
 const router = Router();
 

@@ -64,7 +64,7 @@ import {
     getSalarydet1,
     getnewjoin,
     getStateWiseHeadCount
-} from '../services/misDashboard.service.js';
+} from '../services/misDashboardService.js';
 
 const router = Router();
 

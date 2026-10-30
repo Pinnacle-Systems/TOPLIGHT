@@ -10,7 +10,7 @@ import {
   getLeaves,
   InsertLeave,
   requestLeave_Approval,
-} from '../services/leave.service.js';
+} from '../services/leaveService.js';
 
 const router = Router();
 

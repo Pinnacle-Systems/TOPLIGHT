@@ -23,7 +23,7 @@ import ExpandableSearch from './FloatSearchView';
 import SalarySummaryCard from './card/SalarySummaryCard';
 import EsiPfOtCard from './card/EsiPfOtCard';
 import { Common_Context } from '../../context/CommonContext';
-import EmptyEmployeeCard from './card/Top_Card_Emp_empty';
+import EmptyEmployeeCard from './card/TopCardEmpempty';
 import LeaveSummaryCard from './card/LeaveSummeryCard';
 import LeaveReport from './individual/card/LeaveReport';
 import ImageResizer from 'react-native-image-resizer';

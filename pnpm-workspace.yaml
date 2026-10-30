@@ -2,11 +2,13 @@ packages:
   - 'apps/*'
 allowBuilds:
   '@firebase/util': true
-  '@parcel/watcher': set this to true or false
+  '@parcel/watcher': false
   '@prisma/client': true
   '@prisma/engines': true
-  '@sentry/cli': set this to true or false
-  bcrypt: set this to true or false
+  '@sentry/cli': false
+  bcrypt: false
+  edgedriver: false
+  geckodriver: false
   oracledb: true
   prisma: true
   protobufjs: true

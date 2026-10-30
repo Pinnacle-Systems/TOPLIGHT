@@ -366,7 +366,7 @@ export default function PermissionEntryScreen() {
             />
             <View style={styles.header}>
                 <View style={styles.headerIcon}>
-                    <MaterialCommunityIcons name="account-clock-outline" size={theme.controlSizes.iconMd} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="account-clock-outline" size={theme.controlSizes.iconMd} color={theme.colors.brand} />
                 </View>
                 <View style={styles.headerText}>
                     <Text style={styles.title}>Permission Request</Text>

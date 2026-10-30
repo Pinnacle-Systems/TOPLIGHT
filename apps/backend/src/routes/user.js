@@ -28,7 +28,7 @@ import {
   get_Hod_Details,
   UserLogs,
   getEmployeeIdsWithAtt,
-} from '../services/user.service.js';
+} from '../services/userService.js';
 import { upload_profile } from '../utils/multer.js';
 
 const router = Router();

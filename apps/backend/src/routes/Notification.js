@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   getPermissionRequest,
   getPendingApprovalRequests,
-} from '../services/notification.service.js';
+} from '../services/notificationService.js';
 
 const router = Router();
 

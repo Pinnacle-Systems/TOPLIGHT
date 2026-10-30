@@ -268,6 +268,9 @@ export default function LoginScreen() {
                                 {Globaldata.map(comp => (
                                     <TouchableOpacity 
                                         key={comp.companyid || comp.companyCode}
+                                        testID={`company-${comp.companyCode}`}
+                                        accessibilityLabel={comp.companyCode}
+                                        accessibilityRole="button"
                                         style={styles.companyItem} 
                                         onPress={() => OnSelectCompany(comp.companyCode)}
                                         activeOpacity={0.7}
@@ -302,6 +305,8 @@ export default function LoginScreen() {
                                     <Icon name="person" size={20} color={isFocusedName ? theme.colors.brand : theme.colors.textMuted} />
                                 </View>
                                 <TextInput
+                                    testID="usernameInput"
+                                    accessibilityLabel="Username"
                                     ref={usernameRef}
                                     style={styles.input}
                                     placeholder="Enter your username"
@@ -325,6 +330,8 @@ export default function LoginScreen() {
                                     <Icon name="lock" size={20} color={isFocusedPass ? theme.colors.brand : theme.colors.textMuted} />
                                 </View>
                                 <TextInput
+                                    testID="passwordInput"
+                                    accessibilityLabel="Password"
                                     ref={passwordRef}
                                     style={styles.input}
                                     placeholder="Enter your password"
@@ -354,6 +361,9 @@ export default function LoginScreen() {
                                 onPress={handleLogin}
                                 disabled={isLoading}
                                 activeOpacity={0.85}
+                                testID="signInButton"
+                                accessibilityLabel="Sign In"
+                                accessibilityRole="button"
                                 style={styles.loginButtonWrapper}
                             >
                                 <LinearGradient

@@ -12,7 +12,7 @@ import { useGetPermissionRequestQuery } from '../../store/api/NotificationApi';
 import { setUserDetails } from '../../store/slices/UserDetailsSlice';
 import socket from '../../utils/Socket';
 import { showMessage } from 'react-native-flash-message';
-import { Notofication_Approval_handler } from '../../utils/Notification_Approval_Handler';
+import { Notofication_Approval_handler } from '../../utils/NotificationApprovalHandler';
 import NotificationModal from '../modal/NotificationModal';
 import { useGetUserMobDataQuery } from '../../store/api/DashboardApi';
 import { useAppTheme } from '../../theme';

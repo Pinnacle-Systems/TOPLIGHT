@@ -2,12 +2,16 @@
     "name": "toplight-workspace",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "start:backend": "pnpm --filter hindiformat start",
         "start:frontend": "pnpm --filter frontend start",
         "dev:all": "start pnpm --filter frontend android && pnpm --filter hindiformat start",
         "android:frontend": "pnpm --filter frontend android",
-        "ios:frontend": "pnpm --filter frontend ios"
+        "ios:frontend": "pnpm --filter frontend ios",
+        "test:e2e": "node e2e/runner.js all",
+        "test:e2e:backend": "node e2e/runner.js backend",
+        "test:e2e:mobile": "node e2e/runner.js mobile"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
@@ -19,8 +23,15 @@
             "prisma",
             "protobufjs"
         ],
+        "ignoredBuiltDependencies": [
+            "edgedriver",
+            "geckodriver"
+        ],
         "patchedDependencies": {
             "react-native-screens@4.28.0": "patches/react-native-screens.patch"
         }
+    },
+    "devDependencies": {
+        "webdriverio": "^10.1.0"
     }
 }

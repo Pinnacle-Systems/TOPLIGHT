@@ -880,14 +880,14 @@ export default function UserCreationForm({ onClose, userDet }) {
                     </View>
                 </ScrollView>
 
-                <FloatingButton
+                {/* <FloatingButton
                     type="user"
                     save={isEditing ? handleUpdate : handleSubmit}
                     edit={editData}
                     Update={handleUpdate}
                     editable={isEditing}
                     New={handleClearForm}
-                />
+                /> */}
             </View>
         </>
     );

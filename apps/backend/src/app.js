@@ -16,11 +16,8 @@ import {
   attendance,
 } from './routes/index.js';
 
-import { getCommonData, getRootInfo, getHealthStatus } from './controllers/common.controller.js';
+import { getCommonData, getRootInfo, getHealthStatus } from './controllers/commonController.js';
 import { logServiceError } from './utils/logger.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // BigInt JSON serialization patch
 BigInt.prototype['toJSON'] = function () {
@@ -29,6 +26,7 @@ BigInt.prototype['toJSON'] = function () {
 
 export function createApp() {
   const app = express();
+  const currentDir = dirname(fileURLToPath(import.meta.url));
 
   // ── Core Middleware ────────────────────────────────────────────────────────
   app.use(express.json());
@@ -45,8 +43,8 @@ export function createApp() {
   );
 
   // ── Static Assets ──────────────────────────────────────────────────────────
-  const webBuildPath = path.join(__dirname, '..', 'web-build');
-  const uploadsPath = path.join(__dirname, '..', 'uploads');
+  const webBuildPath = path.join(currentDir, '..', 'web-build');
+  const uploadsPath = path.join(currentDir, '..', 'uploads');
   app.use(express.static(webBuildPath));
   app.use('/uploads', express.static(uploadsPath));
 
@@ -89,4 +87,3 @@ export function createApp() {
 }
 
 export default createApp;
-

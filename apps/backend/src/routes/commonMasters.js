@@ -16,7 +16,7 @@ import {
   sendChatMessage,
   deleteCommonData,
   updateCommonData,
-} from '../services/commonMasters.service.js';
+} from '../services/commonMastersService.js';
 
 const router = Router();
 

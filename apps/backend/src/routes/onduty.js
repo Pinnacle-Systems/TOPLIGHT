@@ -21,7 +21,7 @@ import {
   requestReachedOut,
   send_location,
   stTrack,
-} from '../services/onDuty.service.js';
+} from '../services/onDutyService.js';
 import { upload } from '../utils/multer.js';
 
 const router = Router();

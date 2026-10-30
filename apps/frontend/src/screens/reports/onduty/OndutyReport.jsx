@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import OndutyList from './Onduty_List';
+import OndutyList from './OndutyList';
 // import Feather from 'react-native-vector-icons/Feather';
 
 

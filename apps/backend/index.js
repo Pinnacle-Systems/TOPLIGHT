@@ -3,7 +3,7 @@ import http from 'http';
 import { initializeDns } from './src/config/dns.config.js';
 import { prisma_Connector } from './src/config/prisma.config.js';
 import { createApp } from './src/app.js';
-import { initializeSocket } from './src/sockets/socket.handler.js';
+import { initializeSocket } from './src/sockets/socketHandler.js';
 import { scheduleLocationArchiveCron } from './src/jobs/locationArchive.cron.js';
 import { logServiceError } from './src/utils/logger.js';
 
@@ -38,6 +38,6 @@ server.listen(PORT, () => {
 
 // ── Backward-Compatibility Exports ───────────────────────────────────────────
 export { prisma_Connector };
-export { getCommonData } from './src/controllers/common.controller.js';
+export { getCommonData } from './src/controllers/commonController.js';
 export { app, server, io };
 export default server;

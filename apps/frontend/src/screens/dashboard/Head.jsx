@@ -20,7 +20,7 @@ import { CustomDropdownList } from '../../components/reusable_components/CustomD
 import GenderHeadLineChart from './chart/hod/HeadCountChart';
 import CommonModal from '../../components/modal/CommonModal';
 import EmployeeHeadReport from './chart/hod/HeadCountRepot';
-import Department_Gender_Attense_chart from './chart/hod/Department_Gender_Attense_chart';
+import Department_Gender_Attense_chart from './chart/hod/DepartmentGenderAttenseChart';
 import ScreenRotationWrapper from '../../components/utils/ScreenRotateHandler';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAppTheme } from '../../theme';

@@ -184,14 +184,14 @@ export default function AttendanceScreen() {
             {/* ── Header ────────────────────────────────────────────────────── */}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <MaterialCommunityIcons name="arrow-left" size={22} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="arrow-left" size={22} color={theme.colors.brand} />
                 </TouchableOpacity>
                 <View style={styles.headerText}>
                     <Text style={styles.headerTitle}>Attendance</Text>
                     <Text style={styles.headerSub}>Track your daily in / out time</Text>
                 </View>
                 <TouchableOpacity style={styles.refreshBtn} onPress={refreshActiveTab} activeOpacity={0.7}>
-                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brand} />
                 </TouchableOpacity>
             </View>
 

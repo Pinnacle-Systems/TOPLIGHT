@@ -14,6 +14,7 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import SplashScreen from './src/screens/auth/SplashScreen';
 import MainNavigator from './src/navigation/MainNavigator';
 import { NavRef } from './src/components/utils/NavigationRef';
+import { NetworkErrorView } from './src/components/utils/NoIntertNetPage';
 
 
 const Stack = createNativeStackNavigator();
@@ -106,6 +107,7 @@ export default function App() {
         <SafeAreaProvider>
             <Provider store={store}>
                 <FlashMessage position="top" />
+                <NetworkErrorView />
                 <AppThemeProvider>
                     <MainApp />
                 </AppThemeProvider>

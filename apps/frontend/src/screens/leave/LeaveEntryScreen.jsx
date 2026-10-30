@@ -508,7 +508,7 @@ export default function LeaveEntryScreen() {
             />
             <View style={styles.header}>
                 <View style={styles.headerIcon}>
-                    <MaterialCommunityIcons name="calendar-account-outline" size={23} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="calendar-account-outline" size={23} color={theme.colors.brand} />
                 </View>
                 <View style={styles.headerText}>
                     <Text style={styles.title}>Leave Request</Text>

@@ -15,10 +15,10 @@ import PermissionApprovalScreen from '../screens/permission/PermissionApprovalSc
 import UserInfoScreen from '../screens/users/UserInfoScreen';
 import UserLogsScreen from '../screens/users/UserLogsScreen';
 import LocationTrackingScreen from '../screens/location/LocationTrackingScreen';
-import PageMaster_leave from '../screens/reports/page/PageMaster_leave';
-import LeaveReport from '../screens/reports/leave/Leave_Report';
-import PermissionReport from '../screens/reports/permissions/Permission_Report';
-import OndutyReport from '../screens/reports/onduty/Onduty_Report';
+import PageMaster_leave from '../screens/reports/page/PageMasterleave';
+import LeaveReport from '../screens/reports/leave/LeaveReport';
+import PermissionReport from '../screens/reports/permissions/PermissionReport';
+import OndutyReport from '../screens/reports/onduty/OndutyReport';
 import AttendanceReport from '../screens/reports/DailyAttendanceReport';
 
 export const APP_ROUTES = [

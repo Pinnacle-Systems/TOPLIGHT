@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { punchIn, punchOut, getAttendanceStatus, getPunchSummary } from '../services/attendance.service.js';
+import { punchIn, punchOut, getAttendanceStatus, getPunchSummary } from '../services/attendanceService.js';
 
 const router = Router();
 

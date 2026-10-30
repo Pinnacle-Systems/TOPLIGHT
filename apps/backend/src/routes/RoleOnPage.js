@@ -4,7 +4,7 @@ import {
   get_all_Role_name,
   createRoleMaster,
   getAllRoleNames,
-} from '../services/roleOnPage.service.js';
+} from '../services/roleOnPageService.js';
 
 const router = Router();
 
