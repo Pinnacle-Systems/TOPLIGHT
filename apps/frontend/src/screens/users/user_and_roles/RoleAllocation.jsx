@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Alert, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, Text, Alert, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -29,15 +29,18 @@ export default function RoleAllocation() {
     const [currentEditingId, setCurrentEditingId] = useState();
     const [disabled, setDisabled] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(20)).current;
 
     const { data: get_created_roles, refetch: userRefetch } = useGetCreatedRolesOnPageQuery();
     const { data: all_Role_names, refetch: refetchCreatedRoles } = useGet_all_roleQuery();
-    const [createUserOnRole] = useCreateRoleOnPageMutation();
-    const [updateUserOnRole] = useUpdateRoleOnPageMutation();
+    const [createUserOnRole, { isLoading: isCreating }] = useCreateRoleOnPageMutation();
+    const [updateUserOnRole, { isLoading: isUpdating }] = useUpdateRoleOnPageMutation();
     const [delete_row] = useDelete_CommonMutation();
+
+    const isBusy = isSubmitting || isCreating || isUpdating;
 
     const handleRefresh = async () => {
         setRefreshing(true);
@@ -206,6 +209,7 @@ export default function RoleAllocation() {
             };
         }
 
+        setIsSubmitting(true);
         try {
             const formData = {
                 roleName: targetRole,
@@ -236,6 +240,8 @@ export default function RoleAllocation() {
                 type: 'error',
                 text1: `Error: ${errorMsg}`,
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -433,24 +439,32 @@ export default function RoleAllocation() {
 
                 <View style={styles.actionButtonBar}>
                     <TouchableOpacity
-                        style={styles.primaryActionButton}
+                        style={[styles.primaryActionButton, isBusy && styles.disabledButton]}
                         onPress={edit ? handleUpdate : handleSubmit}
                         activeOpacity={0.8}
+                        disabled={isBusy}
                     >
-                        <MaterialIcons 
-                            name={edit ? "check" : "save"} 
-                            size={20} 
-                            color={theme.colors.brandContrast} 
-                        />
+                        {isBusy ? (
+                            <ActivityIndicator size="small" color={theme.colors.brandContrast} />
+                        ) : (
+                            <MaterialIcons 
+                                name={edit ? "check" : "save"} 
+                                size={20} 
+                                color={theme.colors.brandContrast} 
+                            />
+                        )}
                         <Text style={styles.primaryActionText}>
-                            {edit ? "Update Role" : "Save Role"}
+                            {isBusy 
+                                ? (edit ? "Updating..." : "Saving...") 
+                                : (edit ? "Update Role" : "Save Role")}
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={styles.secondaryActionButton}
+                        style={[styles.secondaryActionButton, isBusy && styles.disabledButton]}
                         onPress={onNew}
                         activeOpacity={0.7}
+                        disabled={isBusy}
                     >
                         <MaterialIcons name={edit ? "close" : "add"} size={18} color={theme.colors.textSecondary} />
                         <Text style={styles.secondaryActionText}>
@@ -474,13 +488,13 @@ export default function RoleAllocation() {
                 </View>
             </ScrollView>
 
-            <FloatingButton
+            {/* <FloatingButton
                 save={handleSubmit}
                 edit={editData}
                 editable={edit}
                 New={onNew}
                 Update={handleUpdate}
-            />
+            /> */}
         </Animated.View>
     );
 }
@@ -651,5 +665,8 @@ const createStyles = theme => StyleSheet.create({
         fontWeight: theme.fontWeights.semiBold,
         fontSize: 13,
         marginLeft: 6,
+    },
+    disabledButton: {
+        opacity: 0.65,
     },
 });

@@ -1,4 +1,4 @@
-﻿import { prisma_Connector } from "../../index.js";
+import { prisma_Connector } from "../../index.js";
 import fs from "fs"
 import { v4 as uuidv4 } from 'uuid';
 import path from "path";
@@ -57,7 +57,8 @@ export async function get__Onduty(req, res) {
   }
   catch (err) {
     logServiceError('OnDutyService:get__Onduty', err, req);
-    console.log(err);
+    console.error(err);
+
     res.json({ status: 0, data: [] });
   }
 }
@@ -73,7 +74,8 @@ export async function get__Onduty_edit(req, res) {
   }
   catch (err) {
     logServiceError('OnDutyService:get__Onduty_edit', err, req);
-    console.log(err);
+    console.error(err);
+
     res.json({ status: 0, data: [] });
   }
 }
@@ -90,7 +92,8 @@ export async function get__vechilekm(req, res) {
   }
   catch (err) {
     logServiceError('OnDutyService:get__vechilekm', err, req);
-    console.log(err);
+    console.error(err);
+
   }
 }
 
@@ -116,7 +119,8 @@ export async function Add__vechilekm(req, res) {
   }
   catch (err) {
     logServiceError('OnDutyService:Add__vechilekm', err, req);
-    console.log(err);
+    console.error(err);
+
   }
 }
 
@@ -807,7 +811,8 @@ export async function addOnduty_master(req, res) {
     }
   } catch (err) {
     logServiceError('OnDutyService:addOnduty_master', err, req);
-    console.log(err);
+    console.error(err);
+
     return res.json({ status: 0, message: err?.message || 'Failed to add onduty master', data: null });
   }
 }
@@ -820,17 +825,43 @@ export async function send_location(req, res) {
   const data = req?.body
   const COMPCODE = String(req?.headers?.compcode).toUpperCase()
   try {
-    const result = await prisma_Connector.location.create({ data: { ...data, compCode: COMPCODE } })
+    const numLat = Number(data.latitude);
+    const numLon = Number(data.longitude);
+    if (isNaN(numLat) || isNaN(numLon)) {
+      return res.status(400).json({ status: 0, message: 'Invalid latitude or longitude' });
+    }
+
+    const rawTime = data.timeStamp || data.timestamp || Date.now();
+    const timeStampVal = typeof rawTime === 'bigint' ? rawTime : BigInt(Math.floor(Number(rawTime) || Date.now()));
+
+    const locationPayload = {
+      latitude: numLat,
+      longitude: numLon,
+      timeStamp: timeStampVal,
+      accuracy: data.accuracy != null && !isNaN(Number(data.accuracy)) ? Number(data.accuracy) : null,
+      speed: data.speed != null && !isNaN(Number(data.speed)) ? Number(data.speed) : null,
+      bearing: data.bearing != null && !isNaN(Number(data.bearing)) ? Number(data.bearing) : null,
+      altitude: data.altitude != null && !isNaN(Number(data.altitude)) ? Number(data.altitude) : null,
+      provider: data.provider != null ? String(data.provider) : null,
+      compCode: COMPCODE || (data.compCode ? String(data.compCode).trim().toUpperCase() : null),
+      userId: data.userId != null ? String(data.userId).trim() : null,
+      docId: data.docId != null ? String(data.docId).trim() : null,
+    };
+
+    const result = await prisma_Connector.location.create({ data: locationPayload });
     // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
     if (result?.id) {
-      return res.json({ status: 1, data: result })
+      const safeResult = { ...result, timeStamp: Number(result.timeStamp), timestamp: Number(result.timeStamp) };
+      return res.json({ status: 1, data: safeResult });
     } else {
       return res.json({ status: 0, data: {} })
     }
 
   } catch (err) {
     logServiceError('OnDutyService:send_location', err, req);
-    console.log(err);
+    return res.status(500).json({ status: 0, message: 'Failed to record location', error: err?.message });
+    console.error(err);
+
 
   }
 
@@ -985,7 +1016,8 @@ export async function get_live_location(req, res) {
     if (!latestLocation) return res.json([]);
     return res.json([{
       ...latestLocation,
-      timestamp: Number(latestLocation.timestamp),
+      timestamp: latestLocation.timeStamp != null ? Number(latestLocation.timeStamp) : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime()),
+      timeStamp: latestLocation.timeStamp != null ? Number(latestLocation.timeStamp) : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime()),
     }]);
   } catch (error) {
     logServiceError('OnDutyService:get_live_location', error, req);
@@ -1188,7 +1220,8 @@ export async function get_history_location(req, res) {
         acc.groupedData[docId] = acc.groupedData[docId] || [];
         acc.groupedData[docId].push({
           ...item,
-          timestamp: item.timestamp == null ? null : Number(item.timestamp),
+          timestamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
+          timeStamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
         });
         return acc;
       },
@@ -1547,7 +1580,7 @@ export async function requestonduty_Approval(req, res) {
   const p_app = req?.body?.approval;
   const approvedBy = req?.body?.approvedBy;
   const rejectBy = req?.body?.rejectBy;
-  const reject_reason = req?.body?.reject_reason;
+  const reject_reason = req?.body?.reject_reason || req?.body?.rejectRemark || req?.body?.rejectReason || req?.body?.reason || '';
 
   let connection = null;
 
@@ -1700,7 +1733,8 @@ export async function get_all_Onduty_reason(req, res) {
   }
   catch (err) {
     logServiceError('OnDutyService:get_all_Onduty_reason', err, req);
-    console.log(err);
+    console.error(err);
+
     res.json({ status: 0, data: [] });
   }
 }

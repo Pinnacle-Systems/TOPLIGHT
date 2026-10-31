@@ -1547,7 +1547,7 @@ export async function requestonduty_Approval(req, res) {
   const p_app = req?.body?.approval;
   const approvedBy = req?.body?.approvedBy;
   const rejectBy = req?.body?.rejectBy;
-  const reject_reason = req?.body?.reject_reason;
+  const reject_reason = req?.body?.reject_reason || req?.body?.rejectRemark || req?.body?.rejectReason || req?.body?.reason || '';
 
   let connection = null;
 

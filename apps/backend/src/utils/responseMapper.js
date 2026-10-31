@@ -40,6 +40,7 @@ export function mapLeave(row) {
   const empname = row.empName !== undefined ? row.empName : row.empname;
   const finyear = row.finYear !== undefined ? row.finYear : row.finyear;
   const categoryName = row.categoryData?.name || row.categoryName || (isNaN(Number(row.category)) ? row.category : null);
+  const rejectReason = row.rejectReason !== undefined ? row.rejectReason : (row.reject_reason || row.rejectRemark || null);
   const userdata = mapUserSnippet(row.userData || row.userdata) || {
     username: empname || idcard || '',
     userName: empname || idcard || '',
@@ -60,6 +61,9 @@ export function mapLeave(row) {
     empName: empname,
     finyear,
     finYear: finyear,
+    rejectReason,
+    reject_reason: rejectReason,
+    rejectRemark: rejectReason,
     categoryName: categoryName || null,
     category_name: categoryName || null,
     categoryData: row.categoryData || (categoryName ? { name: categoryName } : null),
@@ -78,6 +82,7 @@ export function mapPermission(row) {
   const username = row.userName !== undefined ? row.userName : (row.username || row.empName || row.empname);
   const totalHours = row.totalHrs !== undefined ? row.totalHrs : (row.thrs || row.totalHours);
   const categoryName = row.categoryData?.name || row.categoryName || (isNaN(Number(row.category)) ? row.category : null);
+  const rejectReason = row.rejectReason !== undefined ? row.rejectReason : (row.reject_reason || row.rejectRemark || null);
   const userdata = mapUserSnippet(row.userData || row.userdata) || {
     username: username || idcard || '',
     userName: username || idcard || '',
@@ -100,6 +105,9 @@ export function mapPermission(row) {
     empName: username,
     thrs: totalHours,
     totalHrs: totalHours,
+    rejectReason,
+    reject_reason: rejectReason,
+    rejectRemark: rejectReason,
     categoryName: categoryName || null,
     category_name: categoryName || null,
     categoryData: row.categoryData || (categoryName ? { name: categoryName } : null),
@@ -170,6 +178,7 @@ export function mapOnduty(row) {
     toOnduty: row.toOnduty !== undefined ? row.toOnduty : row.to_onduty,
     reject_reason: row.rejectReason !== undefined ? row.rejectReason : row.reject_reason,
     rejectReason: row.rejectReason !== undefined ? row.rejectReason : row.reject_reason,
+    rejectRemark: row.rejectReason !== undefined ? row.rejectReason : row.reject_reason,
     docdate: row.docDate !== undefined ? row.docDate : row.docdate,
     docDate: row.docDate !== undefined ? row.docDate : row.docdate,
     userdata,

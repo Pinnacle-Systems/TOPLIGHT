@@ -253,6 +253,7 @@ class BackgroundService : Service() {
             put("latitude", location.latitude)
             put("longitude", location.longitude)
             put("timestamp", System.currentTimeMillis())
+            put("timeStamp", System.currentTimeMillis())
             put("accuracy", location.accuracy)
             put("speed", location.speed)
             put("bearing", location.bearing)

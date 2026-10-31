@@ -34,12 +34,13 @@ const serializeDate = date => (
 );
 
 const getDuration = (fromTime, toTime) => {
+    if (!fromTime || !toTime) return null;
     const fromMinutes = fromTime.getHours() * 60 + fromTime.getMinutes();
     const toMinutes = toTime.getHours() * 60 + toTime.getMinutes();
-    const duration = (toMinutes - fromMinutes + 1440) % 1440;
-    if (!duration) return null;
-    const hours = Math.floor(duration / 60);
-    const minutes = duration % 60;
+    const diffMinutes = toMinutes - fromMinutes;
+    if (diffMinutes <= 0) return null;
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
     return { label: `${hours}h ${minutes}m`, minutes };
 };
 
@@ -79,7 +80,13 @@ export default function PermissionEntryScreen() {
     const approvalType = String(user?.approval || 'HOD').toUpperCase();
     const employeeName = String(user?.EMPNAME || user?.userName || '').trim();
 
-    const [docDate, setDocDate] = useState(new Date());
+    const today = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return now;
+    }, []);
+
+    const [docDate, setDocDate] = useState(() => new Date());
     const [fromTime, setFromTime] = useState(() => {
         const date = new Date();
         date.setHours(9, 0, 0, 0);
@@ -171,9 +178,59 @@ export default function PermissionEntryScreen() {
         setActivePicker(null);
         if (event?.type !== 'set' || !selectedValue || !picker) return;
 
-        if (picker === 'date') setDocDate(selectedValue);
-        if (picker === 'from') setFromTime(selectedValue);
-        if (picker === 'to') setToTime(selectedValue);
+        if (picker === 'date') {
+            const pickedDate = new Date(selectedValue);
+            pickedDate.setHours(0, 0, 0, 0);
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+
+            if (pickedDate.getTime() < startOfToday.getTime()) {
+                showMessage({
+                    message: 'Past Date Not Allowed',
+                    description: 'Please select today or a future date for your permission request.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
+            setDocDate(selectedValue);
+            return;
+        }
+
+        if (picker === 'from') {
+            const newFromMinutes = selectedValue.getHours() * 60 + selectedValue.getMinutes();
+            const currentToMinutes = toTime.getHours() * 60 + toTime.getMinutes();
+
+            setFromTime(selectedValue);
+
+            // If the current toTime is less than or equal to the new fromTime, automatically advance toTime to 1 hour after fromTime
+            if (currentToMinutes <= newFromMinutes) {
+                const updatedTo = new Date(selectedValue);
+                if (newFromMinutes + 60 < 1440) {
+                    updatedTo.setHours(selectedValue.getHours() + 1, selectedValue.getMinutes(), 0, 0);
+                } else {
+                    updatedTo.setHours(23, 59, 0, 0);
+                }
+                setToTime(updatedTo);
+            }
+            return;
+        }
+
+        if (picker === 'to') {
+            const newToMinutes = selectedValue.getHours() * 60 + selectedValue.getMinutes();
+            const fromMinutes = fromTime.getHours() * 60 + fromTime.getMinutes();
+
+            if (newToMinutes <= fromMinutes) {
+                showMessage({
+                    message: 'Invalid To Time',
+                    description: 'To time must be later than From time.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
+            setToTime(selectedValue);
+        }
     };
 
     const handleSubmit = async () => {
@@ -206,6 +263,21 @@ export default function PermissionEntryScreen() {
                 description: authorityWarning.desc,
                 type: 'danger',
                 duration: 5000,
+            });
+            return;
+        }
+
+        // Validate Document Date is not in the past
+        const pickedDate = new Date(docDate);
+        pickedDate.setHours(0, 0, 0, 0);
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        if (pickedDate.getTime() < startOfToday.getTime()) {
+            showMessage({
+                message: 'Invalid Document Date',
+                description: 'Permission cannot be requested for a past date. Please select today or a future date.',
+                type: 'warning',
+                duration: 4000,
             });
             return;
         }
@@ -431,15 +503,30 @@ export default function PermissionEntryScreen() {
                             value={activePicker === 'date' ? docDate : activePicker === 'from' ? fromTime : toTime}
                             mode={activePicker === 'date' ? 'date' : 'time'}
                             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                            minimumDate={
+                                activePicker === 'date'
+                                    ? today
+                                    : activePicker === 'to'
+                                        ? fromTime
+                                        : undefined
+                            }
                             style={{backgroundColor: theme.colors.brand}}
                             onChange={handlePickerChange}
                         />
                     )}
 
-                    <View style={styles.durationCard}>
-                        <MaterialCommunityIcons name="timer-outline" size={theme.controlSizes.iconMd} color={theme.colors.brand} />
-                        <Text style={styles.durationLabel}>Total duration</Text>
-                        <Text style={styles.durationValue}>{duration?.label || 'Choose a valid time range'}</Text>
+                    <View style={[styles.durationCard, !duration && styles.durationCardInvalid]}>
+                        <MaterialCommunityIcons
+                            name={duration ? 'timer-outline' : 'alert-circle-outline'}
+                            size={theme.controlSizes.iconMd}
+                            color={duration ? theme.colors.brand : theme.colors.danger}
+                        />
+                        <Text style={[styles.durationLabel, !duration && styles.durationLabelInvalid]}>
+                            Total duration
+                        </Text>
+                        <Text style={[styles.durationValue, !duration && styles.durationValueInvalid]}>
+                            {duration?.label || 'To time must be later than From time'}
+                        </Text>
                     </View>
 
                     <View style={styles.field}>
@@ -574,8 +661,15 @@ const createStyles = theme => StyleSheet.create({
         marginTop: theme.spacing.lg,
         gap: theme.spacing.sm,
     },
+    durationCardInvalid: {
+        backgroundColor: theme.colors.dangerSoft,
+        borderColor: theme.colors.danger,
+        borderWidth: theme.layout.dividerWidth,
+    },
     durationLabel: { flex: 1, ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.semiBold },
+    durationLabelInvalid: { color: theme.colors.danger },
     durationValue: { ...theme.typography.caption, color: theme.colors.brand, fontWeight: theme.fontWeights.bold },
+    durationValueInvalid: { color: theme.colors.danger },
     reasonInput: {
         minHeight: theme.controlSizes.inputHeightMultiline,
         borderWidth: theme.layout.dividerWidth,

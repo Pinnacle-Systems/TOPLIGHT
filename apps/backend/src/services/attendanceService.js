@@ -99,17 +99,17 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
 // ---------------------------------------------------------------------------
 async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, atttime, empname, location }) {
   const UNQID = String(generateUniqueId_Number());
- const now      = new Date();
-  const dd       = String(now.getDate()).padStart(2, "0");
-  const mm       = String(now.getMonth() + 1).padStart(2, "0");
-  const yyyy     = now.getFullYear();
-  const dateStr  = `${dd}-${mm}-${yyyy}`;   
-   const CHK      = String(Idcard).substring(0, 10)
-                 + dateStr
-                 + String(atttime).substring(0, 8); 
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  const dateStr = `${dd}-${mm}-${yyyy}`;
+  const CHK = String(Idcard).substring(0, 10)
+    + dateStr
+    + String(atttime).substring(0, 8);
 
 
-                
+
 
   const sql = `
     INSERT INTO PSSATT (
@@ -122,16 +122,16 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
   `;
 
   const binds = {
-    ATTTIME  : atttime,
+    ATTTIME: atttime,
     COMPCODE,
-    IDCARD   : Idcard,
-    USERNAME : empname  ?? null,
-    IPADD    : location ?? null,
-    INOUT    : inout,               // 1 = IN, 0 = OUT
-    PMNO     : pmno,
+    IDCARD: Idcard,
+    USERNAME: empname ?? null,
+    IPADD: location ?? null,
+    INOUT: inout,               // 1 = IN, 0 = OUT
+    PMNO: pmno,
     UNQID,
     CHK,                                                        // âœ… max 28 chars
-    DTYPE    : "MOB-BULK",    
+    DTYPE: "MOB-ACTUAL",
   };
 
   const result = await connection.execute(sql, binds);
@@ -159,27 +159,27 @@ export async function punchIn(req, res) {
     // 1. Check last punch â€” must be INOUT=0 (OUT) or no row at all to allow IN
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
 
-    
+
     if (lastPunch && lastPunch.inout === 1) {
       // Last punch was IN â†’ already punched in, block duplicate
       return res.status(400).json({
-        status : 0,
+        status: 0,
         message: "Already punched in. Please punch out first.",
-        data   : { inTime: lastPunch.atttime },
+        data: { inTime: lastPunch.atttime },
       });
     }
 
     // 2. lastPunch is null (no punch today) OR lastPunch.inout === 0 (last was OUT)
     //    Both cases allow a new PUNCH IN
-    const now    = new Date();
+    const now = new Date();
     const inTime = formatDateToOracle(now).split(" ")[1]; // "HH24:MI:SS"
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
       Idcard,
-      inout   : 1,           // IN
-      pmno    : 1,           // MOBATTLOG_TRG maps PMNO=2 to OUT; other values map to IN
-      atttime : inTime,
+      inout: 1,           // IN
+      pmno: 1,           // MOBATTLOG_TRG maps PMNO=2 to OUT; other values map to IN
+      atttime: inTime,
       empname,
       location,
     });
@@ -191,11 +191,11 @@ export async function punchIn(req, res) {
     await connection.commit();
 
     return res.status(201).json({
-      status : 1,
+      status: 1,
       message: "Punch In successful.",
-      data   : {
-        unqid    : UNQID,
-        idcard   : Idcard,
+      data: {
+        unqid: UNQID,
+        idcard: Idcard,
         inTime,
         punchDate: formatDateToOracle(now),
       },
@@ -203,11 +203,11 @@ export async function punchIn(req, res) {
 
   } catch (err) {
     logServiceError("AttendanceService:punchIn", err, req);
-    try { await connection?.rollback(); } catch (_) {}
+    try { await connection?.rollback(); } catch (_) { }
     return res.status(500).json({
-      status : 0,
+      status: 0,
       message: err.errorNum ? `Oracle error: ${err.message}` : "Internal server error",
-      error  : process.env.NODE_ENV === "development" ? err.message : undefined,
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   } finally {
     await connection?.close();
@@ -235,7 +235,7 @@ export async function punchOut(req, res) {
 
     if (!lastPunch) {
       return res.status(404).json({
-        status : 0,
+        status: 0,
         message: "No punch-in found for today. Please punch in first.",
       });
     }
@@ -243,23 +243,23 @@ export async function punchOut(req, res) {
     if (lastPunch.inout === 0) {
       // Last punch was OUT â†’ already punched out
       return res.status(400).json({
-        status : 0,
+        status: 0,
         message: "Already punched out. Please punch in first.",
-        data   : { outTime: lastPunch.atttime },
+        data: { outTime: lastPunch.atttime },
       });
     }
 
     // 2. lastPunch.inout === 1 â†’ valid, insert OUT row
-    const now     = new Date();
+    const now = new Date();
     const outTime = formatDateToOracle(now).split(" ")[1]; // "HH24:MI:SS"
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
       Idcard,
-      inout   : 0,           // OUT
-      pmno    : 2,           // MOBATTLOG_TRG uses PMNO=2 to mark an OUT punch
-      atttime : outTime,
-      empname : null,
+      inout: 0,           // OUT
+      pmno: 2,           // MOBATTLOG_TRG uses PMNO=2 to mark an OUT punch
+      atttime: outTime,
+      empname: null,
       location,
     });
 
@@ -270,12 +270,12 @@ export async function punchOut(req, res) {
     await connection.commit();
 
     return res.status(200).json({
-      status : 1,
+      status: 1,
       message: "Punch Out successful.",
-      data   : {
-        unqid    : UNQID,
-        idcard   : Idcard,
-        inTime   : lastPunch.atttime,   // from the IN row
+      data: {
+        unqid: UNQID,
+        idcard: Idcard,
+        inTime: lastPunch.atttime,   // from the IN row
         outTime,
         punchDate: formatDateToOracle(now),
       },
@@ -283,11 +283,11 @@ export async function punchOut(req, res) {
 
   } catch (err) {
     logServiceError("AttendanceService:punchOut", err, req);
-    try { await connection?.rollback(); } catch (_) {}
+    try { await connection?.rollback(); } catch (_) { }
     return res.status(500).json({
-      status : 0,
+      status: 0,
       message: err.errorNum ? `Oracle error: ${err.message}` : "Internal server error",
-      error  : process.env.NODE_ENV === "development" ? err.message : undefined,
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   } finally {
     await connection?.close();
@@ -302,7 +302,7 @@ export async function punchOut(req, res) {
 // ---------------------------------------------------------------------------
 export async function getAttendanceStatus(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-  const Idcard   = String(req?.headers?.idcard);
+  const Idcard = String(req?.headers?.idcard);
 
   const connection = await getConnection(res);
 
@@ -321,26 +321,26 @@ export async function getAttendanceStatus(req, res) {
     if (!result.rows?.length) {
       return res.status(200).json({
         status: 1,
-        data  : { punchIn: null, punchOut: null, status: "NONE" },
+        data: { punchIn: null, punchOut: null, status: "NONE" },
       });
     }
 
     // Find first IN row and last OUT row
-    let punchIn  = null;
+    let punchIn = null;
     let punchOut = null;
 
     for (const [inout, atttime] of result.rows) {
-      if (inout === 1 && !punchIn)  punchIn  = atttime;  // first IN
-      if (inout === 0)               punchOut = atttime;  // last OUT
+      if (inout === 1 && !punchIn) punchIn = atttime;  // first IN
+      if (inout === 0) punchOut = atttime;  // last OUT
     }
 
     // Status = last row's INOUT
-    const lastRow   = result.rows[result.rows.length - 1];
+    const lastRow = result.rows[result.rows.length - 1];
     const lastInout = Number(lastRow[0]);
 
     return res.status(200).json({
       status: 1,
-      data  : {
+      data: {
         punchIn,
         punchOut,
         // "IN"  â†’ last punch was IN  â†’ show PUNCH OUT button
@@ -366,7 +366,7 @@ export async function getAttendanceStatus(req, res) {
 // ---------------------------------------------------------------------------
 export async function getPunchSummary(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
-  const Idcard   = String(req?.headers?.idcard);
+  const Idcard = String(req?.headers?.idcard);
 
   const connection = await getConnection(res);
 
@@ -384,11 +384,11 @@ export async function getPunchSummary(req, res) {
     if (!result.rows?.length) {
       return res.status(200).json({
         status: 1,
-        data  : {
-          punches            : [],
-          totalPunches       : 0,
-          totalMinutesWorked : 0,
-          totalTimeFormatted : "00:00",
+        data: {
+          punches: [],
+          totalPunches: 0,
+          totalMinutesWorked: 0,
+          totalTimeFormatted: "00:00",
         },
       });
     }
@@ -396,9 +396,9 @@ export async function getPunchSummary(req, res) {
     const rows = result.rows; // [[INOUT, ATTTIME, ATTDATE], ...]
 
     // â”€â”€ Build punch pairs (INâ†’OUT) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const punches       = [];
-    let   totalSeconds  = 0;
-    let   pendingIn     = null;   // holds the unmatched IN row
+    const punches = [];
+    let totalSeconds = 0;
+    let pendingIn = null;   // holds the unmatched IN row
 
     for (const [inout, atttime] of rows) {
       const statusDigit = Number(inout);
@@ -407,65 +407,65 @@ export async function getPunchSummary(req, res) {
         pendingIn = atttime;
       } else if (statusDigit === 0 && pendingIn) {
         // OUT punch paired with previous IN
-        const inSecs  = timeToSeconds(pendingIn);
+        const inSecs = timeToSeconds(pendingIn);
         const outSecs = timeToSeconds(atttime);
         const durationSeconds = outSecs - inSecs;
-        const validDuration   = durationSeconds > 0 ? durationSeconds : 0;
+        const validDuration = durationSeconds > 0 ? durationSeconds : 0;
 
         punches.push({
-          inTime           : pendingIn,
-          outTime          : atttime,
-          durationSeconds  : validDuration,
+          inTime: pendingIn,
+          outTime: atttime,
+          durationSeconds: validDuration,
           durationFormatted: formatDuration(validDuration),
         });
 
         totalSeconds += validDuration;
-        pendingIn     = null;
+        pendingIn = null;
       }
     }
 
     // If there's an unmatched IN (still inside), add it as active with duration
     if (pendingIn) {
-      const inSecs        = timeToSeconds(pendingIn);
-      const nowParts      = new Date();
-      const nowSecs       = (nowParts.getHours() * 3600) + (nowParts.getMinutes() * 60) + nowParts.getSeconds();
+      const inSecs = timeToSeconds(pendingIn);
+      const nowParts = new Date();
+      const nowSecs = (nowParts.getHours() * 3600) + (nowParts.getMinutes() * 60) + nowParts.getSeconds();
       const activeSeconds = Math.max(0, nowSecs - inSecs);
 
       totalSeconds += activeSeconds;
 
       punches.push({
-        inTime           : pendingIn,
-        outTime          : null,        // still inside
-        durationSeconds  : activeSeconds,
-        durationMinutes  : Math.floor(activeSeconds / 60),
+        inTime: pendingIn,
+        outTime: null,        // still inside
+        durationSeconds: activeSeconds,
+        durationMinutes: Math.floor(activeSeconds / 60),
         durationFormatted: activeSeconds > 0 ? `Active (${formatDuration(activeSeconds)})` : "Active",
       });
     }
 
     // â”€â”€ Calculate total span (first punch to last punch/now) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const firstRow  = rows[0];
-    const lastRow   = rows[rows.length - 1];
-    
+    const firstRow = rows[0];
+    const lastRow = rows[rows.length - 1];
+
     const spanStart = firstRow[1]; // atttime of first punch
-    let   spanEnd   = lastRow[1];  // atttime of last punch
-    
+    let spanEnd = lastRow[1];  // atttime of last punch
+
     // If last punch is IN (1), span ends at current time
     if (Number(lastRow[0]) === 1) {
       spanEnd = formatDateToOracle(new Date()).split(" ")[1];
     }
-    
+
     const spanSecs = timeToSeconds(spanEnd) - timeToSeconds(spanStart);
     const totalSpanSeconds = spanSecs > 0 ? spanSecs : 0;
 
     return res.status(200).json({
       status: 1,
-      data  : {
+      data: {
         punches,
-        totalPunches       : punches.length,
-        totalMinutesWorked : Math.floor(totalSpanSeconds / 60),
-        totalTimeFormatted : formatDuration(totalSpanSeconds),
+        totalPunches: punches.length,
+        totalMinutesWorked: Math.floor(totalSpanSeconds / 60),
+        totalTimeFormatted: formatDuration(totalSpanSeconds),
         totalSpanSeconds,
-        totalSpanFormatted : formatDuration(totalSpanSeconds),
+        totalSpanFormatted: formatDuration(totalSpanSeconds),
       },
     });
 
@@ -489,7 +489,7 @@ function timeToSeconds(timeStr) {
 // Format seconds into "HH:mm:ss" for both summary and log rows
 function formatDuration(totalSeconds) {
   if (!totalSeconds || totalSeconds <= 0) return "00:00:00";
-  
+
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;

@@ -320,7 +320,8 @@ exports.Prisma.PermissionEntryScalarFieldEnum = {
   approvalStatus: 'approvalStatus',
   hod: 'hod',
   hr: 'hr',
-  category: 'category'
+  category: 'category',
+  rejectReason: 'rejectReason'
 };
 
 exports.Prisma.TrackersScalarFieldEnum = {

@@ -13,35 +13,43 @@ import { useAppTheme } from '../../../theme';
  */
 
 const ROLE_LEVELS = [
-  { 
-    id: 'top',   
-    label: 'Top Management',   
+  {
+    id: 'top',
+    label: 'Top Management',
     desc: 'Full organizational executive access',
-    icon: 'chess-queen',  
+    icon: 'chess-queen',
     colorKey: 'warning',
     bgKey: 'warningSoft'
   },
-  { 
-    id: 'admin', 
-    label: 'Admin',            
+  {
+    id: 'admin',
+    label: 'Admin',
     desc: 'Administrative controls and user management',
-    icon: 'shield-account', 
+    icon: 'shield-account',
     colorKey: 'brand',
     bgKey: 'brandSoft'
   },
-  { 
-    id: 'hod',   
-    label: 'Department HOD',   
+  {
+    id: 'hod',
+    label: 'Department HOD',
     desc: 'Department head approvals & oversight',
-    icon: 'account-tie',  
+    icon: 'account-tie',
     colorKey: 'secondary',
     bgKey: 'secondarySoft'
   },
-  { 
-    id: 'user',  
-    label: 'User',             
+  {
+    id: 'hr',
+    label: 'HR',
+    desc: 'HR approvals & oversight',
+    icon: 'account-tie',
+    colorKey: 'secondary',
+    bgKey: 'secondarySoft'
+  },
+  {
+    id: 'user',
+    label: 'User',
     desc: 'Standard operational permissions',
-    icon: 'account',      
+    icon: 'account',
     colorKey: 'info',
     bgKey: 'infoSoft'
   },

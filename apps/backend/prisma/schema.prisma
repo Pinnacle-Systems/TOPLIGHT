@@ -281,6 +281,7 @@ model PermissionEntry {
   hodId          User             @relation("PermissionHod", fields: [hod], references: [idCard], onDelete: Cascade)
   userData       User             @relation("User", fields: [userId], references: [idCard], onDelete: Cascade)
   user           User[]
+  rejectReason    String?
 }
 
 model Trackers {

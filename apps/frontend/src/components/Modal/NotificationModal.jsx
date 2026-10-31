@@ -1,571 +1,688 @@
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import Entypo from 'react-native-vector-icons/Entypo';
 import React, { useEffect, useMemo, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  Modal, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  FlatList, 
-  Dimensions,
-  useWindowDimensions,
-  Animated,
-  LayoutAnimation 
+import {
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+    useWindowDimensions,
 } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import moment from 'moment';
 import { CustomNavigation } from '../utils/NavigationRef';
 import { useAppTheme } from '../../theme';
 
-export default function NotificationModal({refresh, close_modal, livedata={}, data, modalVisible, setModalVisible }) {
-  const { theme } = useAppTheme();
-  const { width, height } = useWindowDimensions();
-  const isLandscape = width > height;
-  const [livedata_man, setlivedata_man] = useState([]);
-  const [expandedGroups, setExpandedGroups] = useState({});
-  
-  useEffect(() => {
-    const liveDocId = livedata?.data?.docid || livedata?.data?.docId;
-    if (liveDocId) {
-      setlivedata_man(prev => {
-        const exists = prev.some(item => (item.docid || item.docId) === liveDocId);
-        if (!exists) return [...prev, livedata.data];
-        return prev;
-      });
-    }
-  }, [livedata?.data?.docid, livedata?.data?.docId]);
+const formatTimeAgo = (dateValue) => {
+    if (!dateValue) return 'Just now';
+    const parsed = moment(dateValue);
+    if (!parsed.isValid()) return 'Just now';
 
-  const mergedData = useMemo(() => {
-    return [...(data?.data || []), ...livedata_man];
-  }, [data?.data, livedata_man]);
+    const diffMinutes = moment().diff(parsed, 'minutes');
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (moment().isSame(parsed, 'day')) return parsed.format('hh:mm A');
+    if (moment().subtract(1, 'day').isSame(parsed, 'day')) return `Yesterday, ${parsed.format('hh:mm A')}`;
+    return parsed.format('DD MMM, hh:mm A');
+};
 
-  // Group notifications by type and date
-  const groupedNotifications = useMemo(() => {
-    const groups = {};
-    
-    mergedData.forEach(notification => {
-      const date = new Date(notification.createdAt || Date.now());
-      const dateKey = date.toLocaleDateString();
-      const rawGroup = notification.group || 'Other';
-      const normalizedGroup = rawGroup.toLowerCase();
-      const groupTitle = normalizedGroup === 'onduty' ? 'ONDUTY'
-        : normalizedGroup === 'leave' ? 'LEAVE'
-        : normalizedGroup === 'permission' ? 'PERMISSION'
-        : rawGroup;
-      const key = `${normalizedGroup}-${dateKey}`;
-      
-      if (!groups[key]) {
-        groups[key] = {
-          title: groupTitle,
-          groupType: normalizedGroup,
-          date: dateKey,
-          data: [],
-          isExpanded: expandedGroups[key] || false
-        };
-      }
-      groups[key].data.push(notification);
-    });
-    
-    return Object.values(groups).sort((a, b) => {
-      // Sort by date (newest first)
-      return new Date(b.date) - new Date(a.date);
-    });
-  }, [mergedData, expandedGroups]);
+export default function NotificationModal({
+    refresh,
+    close_modal,
+    livedata = {},
+    data,
+    modalVisible,
+    setModalVisible,
+}) {
+    const { theme } = useAppTheme();
+    const { width, height } = useWindowDimensions();
+    const isLandscape = width > height;
+    const [livedata_man, setlivedata_man] = useState([]);
+    const [selectedTab, setSelectedTab] = useState('all'); // 'all' | 'onduty' | 'leave' | 'permission'
 
-  const toggleGroup = (key) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedGroups(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+    useEffect(() => {
+        const liveDocId = livedata?.data?.docid || livedata?.data?.docId;
+        if (liveDocId) {
+            setlivedata_man(prev => {
+                const exists = prev.some(item => (item.docid || item.docId) === liveDocId);
+                if (!exists) return [...prev, livedata.data];
+                return prev;
+            });
+        }
+    }, [livedata?.data?.docid, livedata?.data?.docId]);
 
-  const hideModal = () => {
-    setModalVisible(false);
-  };
+    // Deduplicated merged notifications list
+    const mergedData = useMemo(() => {
+        const all = [...(data?.data || []), ...livedata_man];
+        const seen = new Set();
+        return all
+            .filter(item => {
+                const docid = String(item?.docid || item?.docId || item?.id || '').trim();
+                if (!docid) return true;
+                if (seen.has(docid)) return false;
+                seen.add(docid);
+                return true;
+            })
+            .sort((a, b) => {
+                const dateA = moment(a.createdAt || a.docdate || a.docDate || 0);
+                const dateB = moment(b.createdAt || b.docdate || b.docDate || 0);
+                return dateB.valueOf() - dateA.valueOf();
+            });
+    }, [data?.data, livedata_man]);
 
-  const onPress = (data) => {
-    const grp = String(data?.group || '').toLowerCase();
-    switch(grp) {
-      case "leave":
-        CustomNavigation("l_approval", {...data, refresh, all: mergedData});
-        break;
-      case "permission":
-        CustomNavigation("p_approval", {...data, refresh, all: mergedData});
-        break;
-      case "onduty":
-        CustomNavigation("onduty_approval", {...data, refresh, all: mergedData});
-        break;
-      default:
-        break;
-    }
-    close_modal?.(false);
-  };
+    // Counts per type for filter tabs
+    const counts = useMemo(() => {
+        const c = { all: mergedData.length, onduty: 0, leave: 0, permission: 0 };
+        mergedData.forEach(item => {
+            const grp = String(item?.group || '').toLowerCase();
+            if (c[grp] != null) c[grp] += 1;
+        });
+        return c;
+    }, [mergedData]);
 
-  const NotificationItem = ({ sendBy, description, group, onPress, loanamt, data }) => {
-    const isLeave = String(group || '').toLowerCase() === 'leave';
-    const isPermission = String(group || '').toLowerCase() === 'permission';
-    const isOnduty = String(group || '').toLowerCase() === 'onduty';
+    const filteredData = useMemo(() => {
+        if (selectedTab === 'all') return mergedData;
+        return mergedData.filter(item => String(item?.group || '').toLowerCase() === selectedTab);
+    }, [mergedData, selectedTab]);
 
-    return (
-      <TouchableOpacity 
-        onPress={() => onPress(data)} 
-        style={[
-          styles.notificationContainer,
-          isLeave && styles.leaveContainer,
-          isPermission && styles.permissionContainer,
-          isOnduty && styles.ondutyContainer
-        ]}
-        activeOpacity={0.7}
-      >
-        <View style={styles.notificationHeader}>
-          <View style={styles.timeBadge}>
-            <Text style={styles.notificationTime}>Now</Text>
-          </View>
-        </View>
-        
-        <View style={styles.senderRow}>
-          <AntDesign name="user" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
-          <Text style={styles.notificationSender}>{sendBy || "Unknown"}</Text>
-        </View>
-        
-        <View style={styles.statusRow}>
-          <View style={styles.reasonRow}>
-            {isOnduty ? 
-              <Entypo name="location-pin" size={isLandscape ? 26 : 24} color={theme.colors.brand} /> :
-              <AntDesign name="infocirlceo" size={isLandscape ? 16 : 14} color={theme.colors.textSecondary} />
-            }  
-            <Text style={styles.notificationDescription} numberOfLines={isLandscape ? 1 : 2}>
-              {description}
-            </Text>
-          </View>
-          
-          <View style={styles.unseenBadge}>
-            <Text style={styles.unseenText}>New</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+    const hideModal = () => {
+        setModalVisible(false);
+    };
+
+    const handlePress = (item) => {
+        const grp = String(item?.group || '').toLowerCase();
+        switch (grp) {
+            case 'leave':
+                CustomNavigation('l_approval', { ...item, refresh, all: mergedData });
+                break;
+            case 'permission':
+                CustomNavigation('p_approval', { ...item, refresh, all: mergedData });
+                break;
+            case 'onduty':
+                CustomNavigation('onduty_approval', { ...item, refresh, all: mergedData });
+                break;
+            default:
+                break;
+        }
+        close_modal?.(false);
+    };
+
+    const styles = useMemo(
+        () => createStyles(isLandscape, width, height, theme),
+        [isLandscape, width, height, theme],
     );
-  };
 
-  const NotificationGroup = ({ title, groupType, date, data, isExpanded, onToggle }) => {
-    const count = data.length;
-    const rotation = new Animated.Value(isExpanded ? 1 : 0);
-    const grp = String(groupType || title || '').toLowerCase();
-    const isLeave = grp === 'leave';
-    const isPermission = grp === 'permission';
-    const isOnduty = grp === 'onduty';
-    
-    Animated.timing(rotation, {
-      toValue: isExpanded ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    const renderNotificationItem = ({ item }) => {
+        const grp = String(item?.group || '').toLowerCase();
+        const isOnduty = grp === 'onduty';
+        const isLeave = grp === 'leave';
+        const isPermission = grp === 'permission';
 
-    const rotate = rotation.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '90deg']
-    });
+        const employeeName =
+            item?.userdata?.username ||
+            item?.userdata?.userName ||
+            item?.userData?.userName ||
+            item?.userData?.username ||
+            item?.empName ||
+            item?.empname ||
+            item?.userName ||
+            item?.username ||
+            item?.userdata?.Employee ||
+            item?.Employee ||
+            'Employee';
 
-    return (
-      <View style={styles.groupContainer}>
-        <TouchableOpacity 
-          onPress={onToggle} 
-          style={styles.groupHeader}
-          activeOpacity={0.8}
-        >
-          <View style={styles.groupHeaderContent}>
-            <View style={[
-              styles.groupBadge,
-              isLeave && styles.leaveBadge,
-              isPermission && styles.permissionBadge,
-              isOnduty && styles.ondutyBadge
-            ]}>
-              <Text style={[
-                styles.groupText,
-                isLeave && styles.leaveText,
-                isPermission && styles.permissionText,
-                isOnduty && styles.ondutyText
-              ]}>{title}</Text>
-            </View>
-            <Text style={styles.groupDate}>{date}</Text>
-          </View>
-          
-          <View style={styles.groupHeaderRight}>
-            <View style={styles.groupCount}>
-              <Text style={styles.groupCountText}>{count}</Text>
-            </View>
-            <Animated.View style={{ transform: [{ rotate }] }}>
-              <AntDesign name="right" size={isLandscape ? 18 : 16} color={theme.colors.textMuted} />
-            </Animated.View>
-          </View>
-        </TouchableOpacity>
-        
-        {isExpanded && (
-          <View style={styles.groupItems}>
-            {data.map((item, index) => {
-              const sendBy =
-                item?.userdata?.username ||
-                item?.userdata?.userName ||
-                item?.userData?.userName ||
-                item?.userData?.username ||
-                item?.empName ||
-                item?.empname ||
-                item?.userName ||
-                item?.username ||
-                item?.userdata?.Employee ||
-                item?.Employee ||
-                item?.idCard ||
-                item?.idcard ||
-                'Employee';
+        const employeeId =
+            item?.userdata?.Idcard ||
+            item?.userdata?.idCard ||
+            item?.userData?.idCard ||
+            item?.idCard ||
+            item?.idcard ||
+            item?.userId ||
+            item?.IDCARD ||
+            '';
 
-              const ondutyLocation =
-                item?.in_location ||
-                item?.inLocation ||
-                (item?.inLatitude || item?.in_latitude
-                  ? `Near ${Number(item?.inLatitude || item?.in_latitude).toFixed(4)}, ${Number(item?.inLongtiude || item?.in_longtiude).toFixed(4)}`
-                  : null) ||
-                item?.others ||
-                'OnDuty Trip';
+        const docid = item?.docid || item?.docId;
+        const timeAgo = formatTimeAgo(item?.createdAt || item?.docdate || item?.docDate);
 
-              const itemGroup = String(item?.group || '').toLowerCase();
-              const description =
-                itemGroup === 'onduty'
-                  ? ondutyLocation
-                  : (item?.reason || item?.description || item?.others || (itemGroup === 'leave' ? 'Leave Application' : 'Permission Request'));
+        // Type-specific icon and theme colors
+        let typeIcon = 'bell-outline';
+        let typeBadgeLabel = 'REQUEST';
+        let typeBgColor = theme.colors.brandSoft;
+        let typeTextColor = theme.colors.brand;
+        let detailText = item?.reason || item?.description || 'Pending approval request';
+        let detailIcon = 'information-outline';
 
-              return (
-                <NotificationItem
-                  key={(item?.docid || item?.docId || index).toString()}
-                  sendBy={sendBy}
-                  group={item?.group}
-                  loanamt={item?.total}
-                  description={description}
-                  data={item}
-                  onPress={(data) => onPress(data)}
-                />
-              );
-            })}
-          </View>
-        )}
-      </View>
-    );
-  };
+        if (isOnduty) {
+            typeIcon = 'briefcase-outline';
+            typeBadgeLabel = 'ON-DUTY';
+            typeBgColor = theme.colors.warningSoft;
+            typeTextColor = theme.colors.warning;
+            const rawLat = item?.in_latitude ?? item?.inLatitude;
+            const rawLng = item?.in_longtiude ?? item?.inLongtiude ?? item?.in_longitude ?? item?.inLongitude;
+            const locName = item?.in_location || item?.inLocation;
+            if (locName) {
+                detailText = locName;
+            } else if (rawLat && rawLng) {
+                detailText = `Near ${Number(rawLat).toFixed(4)}, ${Number(rawLng).toFixed(4)}`;
+            } else if (item?.others && item.others !== 'ONDUTY') {
+                detailText = item.others;
+            } else {
+                detailText = 'Location submitted for review';
+            }
+            detailIcon = 'map-marker-outline';
+        } else if (isLeave) {
+            typeIcon = 'calendar-remove-outline';
+            typeBadgeLabel = 'LEAVE';
+            typeBgColor = theme.colors.dangerSoft;
+            typeTextColor = theme.colors.danger;
+            const leaveType = item?.ltype || item?.lType || item?.leaveType || item?.leavetype;
+            const totalDays = item?.totalDays ?? item?.totaldays;
+            const daysText = totalDays != null ? `${totalDays} ${totalDays == 1 ? 'day' : 'days'}` : '';
+            detailText = [leaveType, daysText, item?.reason].filter(Boolean).join(' • ') || 'Leave request';
+            detailIcon = 'calendar-outline';
+        } else if (isPermission) {
+            typeIcon = 'clock-time-four-outline';
+            typeBadgeLabel = 'PERMISSION';
+            typeBgColor = theme.colors.infoSoft;
+            typeTextColor = theme.colors.info;
+            const fTime = item?.fTime || item?.ftime;
+            const tTime = item?.tTime || item?.ttime;
+            const duration = item?.thrs || item?.totalHours || item?.totalHrs;
+            const timeWindow = fTime && tTime ? `${fTime} - ${tTime}` : '';
+            detailText = [timeWindow, duration ? `(${duration})` : '', item?.reason].filter(Boolean).join(' ') || 'Permission request';
+            detailIcon = 'clock-outline';
+        }
 
-  const renderItem = ({ item }) => (
-    <NotificationGroup
-      title={item.title}
-      groupType={item.groupType}
-      date={item.date}
-      data={item.data}
-      isExpanded={item.isExpanded}
-      onToggle={() => toggleGroup(`${item.groupType || item.title}-${item.date}`)}
-    />
-  );
-
-  const styles = useMemo(
-    () => createStyles(isLandscape, width, height, theme),
-    [isLandscape, width, height, theme],
-  );
-
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={hideModal}
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Image 
-                source={require("../../assets/notification.png")} 
-                style={styles.icon} 
-              />
-              <Text style={styles.headerTitle}>Notifications</Text>
-              <Text style={styles.notificationCount}>{mergedData.length}</Text>
-            </View>
-            <TouchableOpacity 
-              onPress={hideModal} 
-              style={styles.closeButton}
-              hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}
+        return (
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => handlePress(item)}
+                activeOpacity={0.7}
             >
-              <AntDesign name="close" size={isLandscape ? 24 : 20} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
-          </View>
+                {/* Left Type Icon Circle */}
+                <View style={[styles.avatarCircle, { backgroundColor: typeBgColor }]}>
+                    <MaterialCommunityIcons name={typeIcon} size={theme.controlSizes?.iconSm || 18} color={typeTextColor} />
+                </View>
 
-          {groupedNotifications.length > 0 ? (
-            <FlatList
-              data={groupedNotifications}
-              renderItem={renderItem}
-              keyExtractor={(item) => `${item.title}-${item.date}`}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Image 
-                source={require("../../assets/no-notification.jpg")} 
-                style={styles.emptyImage} 
-              />
-              <Text style={styles.emptyTitle}>No notifications yet</Text>
-              <Text style={styles.emptySubtitle}>You'll see important updates here</Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </Modal>
-  );
+                {/* Center Content */}
+                <View style={styles.cardContent}>
+                    {/* Top Row: Type Pill + Doc ID + Time */}
+                    <View style={styles.cardHeaderRow}>
+                        <View style={[styles.typePill, { backgroundColor: typeBgColor }]}>
+                            <Text style={[styles.typePillText, { color: typeTextColor }]}>
+                                {typeBadgeLabel}
+                            </Text>
+                        </View>
+                        {!!docid && (
+                            <Text style={styles.docIdText} numberOfLines={1}>
+                                {docid}
+                            </Text>
+                        )}
+                        <Text style={styles.timeText}>{timeAgo}</Text>
+                    </View>
+
+                    {/* Middle Row: Employee Name & ID */}
+                    <View style={styles.employeeRow}>
+                        <Text style={styles.employeeName} numberOfLines={1}>
+                            {employeeName}
+                        </Text>
+                        {!!employeeId && (
+                            <Text style={styles.employeeId}>({employeeId})</Text>
+                        )}
+                    </View>
+
+                    {/* Bottom Row: Detail Snippet */}
+                    <View style={styles.detailRow}>
+                        <MaterialCommunityIcons
+                            name={detailIcon}
+                            size={theme.controlSizes?.iconXs || 14}
+                            color={theme.colors.textMuted}
+                            style={{ marginRight: theme.spacing.xxs }}
+                        />
+                        <Text style={styles.detailText} numberOfLines={1}>
+                            {detailText}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Right Chevron */}
+                <View style={styles.chevronWrapper}>
+                    <View style={styles.newDot} />
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={theme.controlSizes?.iconMd || 20}
+                        color={theme.colors.textMuted}
+                    />
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    return (
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={hideModal}
+        >
+            <TouchableWithoutFeedback onPress={hideModal}>
+                <View style={styles.modalBackdrop}>
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalCard}>
+                            {/* 1. Header Bar */}
+                            <View style={styles.header}>
+                                <View style={styles.headerTitleRow}>
+                                    <View style={styles.headerIconCircle}>
+                                        <MaterialCommunityIcons
+                                            name="bell-ring-outline"
+                                            size={theme.controlSizes?.iconSm || 18}
+                                            color={theme.colors.brand}
+                                        />
+                                    </View>
+                                    <Text style={styles.headerTitle}>Notifications</Text>
+                                    {mergedData.length > 0 && (
+                                        <View style={styles.totalBadge}>
+                                            <Text style={styles.totalBadgeText}>
+                                                {mergedData.length}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <TouchableOpacity
+                                    onPress={hideModal}
+                                    style={styles.closeBtn}
+                                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                                    accessibilityLabel="Close notifications"
+                                >
+                                    <MaterialCommunityIcons
+                                        name="close"
+                                        size={theme.controlSizes?.iconSm || 18}
+                                        color={theme.colors.textSecondary}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* 2. Filter Tabs (Only show if notifications exist) */}
+                            {mergedData.length > 0 && (
+                                <View style={styles.tabsRow}>
+                                    <TouchableOpacity
+                                        style={[styles.tab, selectedTab === 'all' && styles.tabActive]}
+                                        onPress={() => setSelectedTab('all')}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={[styles.tabText, selectedTab === 'all' && styles.tabTextActive]}>
+                                            All ({counts.all})
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {counts.onduty > 0 && (
+                                        <TouchableOpacity
+                                            style={[styles.tab, selectedTab === 'onduty' && styles.tabActive]}
+                                            onPress={() => setSelectedTab('onduty')}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={[styles.tabText, selectedTab === 'onduty' && styles.tabTextActive]}>
+                                                On-Duty ({counts.onduty})
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {counts.leave > 0 && (
+                                        <TouchableOpacity
+                                            style={[styles.tab, selectedTab === 'leave' && styles.tabActive]}
+                                            onPress={() => setSelectedTab('leave')}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={[styles.tabText, selectedTab === 'leave' && styles.tabTextActive]}>
+                                                Leave ({counts.leave})
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {counts.permission > 0 && (
+                                        <TouchableOpacity
+                                            style={[styles.tab, selectedTab === 'permission' && styles.tabActive]}
+                                            onPress={() => setSelectedTab('permission')}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={[styles.tabText, selectedTab === 'permission' && styles.tabTextActive]}>
+                                                Permission ({counts.permission})
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            )}
+
+                            {/* 3. Notification List or Empty State */}
+                            {filteredData.length > 0 ? (
+                                <FlatList
+                                    data={filteredData}
+                                    renderItem={renderNotificationItem}
+                                    keyExtractor={(item, index) =>
+                                        String(item?.docid || item?.docId || item?.id || index)
+                                    }
+                                    contentContainerStyle={styles.listContent}
+                                    showsVerticalScrollIndicator={false}
+                                />
+                            ) : (
+                                <View style={styles.emptyContainer}>
+                                    <View style={styles.emptyIconCircle}>
+                                        <MaterialCommunityIcons
+                                            name={counts.all === 0 ? 'bell-check-outline' : 'filter-variant'}
+                                            size={theme.controlSizes?.iconXl || 36}
+                                            color={theme.colors.brand}
+                                        />
+                                    </View>
+                                    <Text style={styles.emptyTitle}>
+                                        {counts.all === 0 ? 'All caught up!' : 'No matching notifications'}
+                                    </Text>
+                                    <Text style={styles.emptySubtitle}>
+                                        {counts.all === 0
+                                            ? 'You have no pending approval requests at this time.'
+                                            : 'No requests found under this category filter.'}
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* 4. Footer Hint */}
+                            {filteredData.length > 0 && (
+                                <View style={styles.footerHint}>
+                                    <MaterialCommunityIcons
+                                        name="gesture-tap"
+                                        size={theme.controlSizes?.iconXs || 14}
+                                        color={theme.colors.textMuted}
+                                        style={{ marginRight: theme.spacing.xs }}
+                                    />
+                                    <Text style={styles.footerHintText}>
+                                        Tap request to view details & approve
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </TouchableWithoutFeedback>
+                </View>
+            </TouchableWithoutFeedback>
+        </Modal>
+    );
 }
 
-const createStyles = (isLandscape, width, height, theme) => StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    backgroundColor: theme.colors.scrim,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: isLandscape ? 20 : 60,
-    paddingHorizontal: 12,
-  },
-  modalContainer: {
-    width: isLandscape ? Math.min(width * 0.7, 620) : width - 24,
-    maxHeight: isLandscape ? height * 0.9 : '80%',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    padding: isLandscape ? 15 : 20,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: isLandscape ? 15 : 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
-    paddingBottom: isLandscape ? 10 : 15,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    width: isLandscape ? 28 : 24,
-    height: isLandscape ? 28 : 24,
-    marginRight: isLandscape ? 15 : 12,
-    tintColor: theme.colors.brand,
-  },
-  headerTitle: {
-    fontSize: isLandscape ? 22 : 20,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  notificationCount: {
-    backgroundColor: theme.colors.brand,
-    color: theme.colors.brandContrast,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    fontSize: isLandscape ? 14 : 12,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  closeButton: {
-    padding: 5,
-  },
-  list: {
-    paddingBottom: 10,
-  },
-  groupContainer: {
-    marginBottom: isLandscape ? 12 : 15,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.surfaceSunken,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: isLandscape ? 12 : 15,
-    backgroundColor: theme.colors.surface,
-  },
-  groupHeaderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupBadge: {
-    backgroundColor: theme.colors.brandSoft,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    marginRight: 10,
-  },
-  leaveBadge: {
-    backgroundColor: theme.colors.dangerSoft,
-  },
-  permissionBadge: {
-    backgroundColor: theme.colors.infoSoft,
-  },
-  ondutyBadge: {
-    backgroundColor: theme.colors.warningSoft,
-  },
-  groupText: {
-    fontSize: isLandscape ? 15 : 13,
-    fontWeight: '600',
-    color: theme.colors.brand,
-    textTransform: 'uppercase',
-  },
-  leaveText: {
-    color: theme.colors.danger,
-  },
-  permissionText: {
-    color: theme.colors.info,
-  },
-  ondutyText: {
-    color: theme.colors.warning,
-  },
-  groupDate: {
-    fontSize: isLandscape ? 14 : 12,
-    color: theme.colors.textSecondary,
-  },
-  groupCount: {
-    backgroundColor: theme.colors.brand,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 10,
-  },
-  groupCountText: {
-    color: theme.colors.brandContrast,
-    fontSize: isLandscape ? 13 : 11,
-    fontWeight: '600',
-  },
-  groupItems: {
-    paddingHorizontal: isLandscape ? 10 : 8,
-    paddingBottom: isLandscape ? 8 : 6,
-  },
-  notificationContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 8,
-    padding: isLandscape ? 12 : 14,
-    marginBottom: isLandscape ? 8 : 10,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.brand,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-    shadowColor: theme.colors.shadow,
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  leaveContainer: {
-    borderLeftColor: theme.colors.danger,
-  },
-  permissionContainer: {
-    borderLeftColor: theme.colors.info,
-  },
-  ondutyContainer: {
-    borderLeftColor: theme.colors.warning,
-  },
-  notificationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: isLandscape ? 6 : 8,
-  },
-  timeBadge: {
-    backgroundColor: theme.colors.surfaceSunken,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  notificationTime: {
-    fontSize: isLandscape ? 13 : 11,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-  senderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: isLandscape ? 6 : 8,
-  },
-  notificationSender: {
-    fontSize: isLandscape ? 16 : 14,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginLeft: 6,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  loanRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reasonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  loanDescription: {
-    color: theme.colors.success,
-    fontWeight: '600',
-    fontSize: isLandscape ? 16 : 14,
-    marginLeft: 6,
-  },
-  notificationDescription: {
-    fontSize: isLandscape ? 14 : 13,
-    color: theme.colors.textSecondary,
-    marginLeft: 6,
-    flex: 1,
-  },
-  unseenBadge: {
-    backgroundColor: theme.colors.dangerSoft,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  unseenText: {
-    fontSize: isLandscape ? 13 : 11,
-    color: theme.colors.danger,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: isLandscape ? 30 : 40,
-  },
-  emptyImage: {
-    width: isLandscape ? 140 : 120,
-    height: isLandscape ? 140 : 120,
-    marginBottom: isLandscape ? 25 : 20,
-    opacity: 0.7,
-  },
-  emptyTitle: {
-    fontSize: isLandscape ? 20 : 18,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 5,
-  },
-  emptySubtitle: {
-    fontSize: isLandscape ? 16 : 14,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    maxWidth: '80%',
-  },
-});
+const createStyles = (isLandscape, width, height, theme) =>
+    StyleSheet.create({
+        modalBackdrop: {
+            flex: 1,
+            backgroundColor: theme.colors.scrim || 'rgba(15, 23, 42, 0.55)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: theme.layout?.screenGutter || 16,
+            paddingVertical: isLandscape ? theme.spacing.md : theme.spacing.xl,
+        },
+        modalCard: {
+            width: isLandscape ? Math.min(width * 0.72, 540) : Math.min(width - 32, 440),
+            maxHeight: isLandscape ? height * 0.88 : height * 0.76,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radii.xl,
+            overflow: 'hidden',
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+            shadowColor: theme.colors.shadow,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: theme.isDark ? 0.35 : 0.16,
+            shadowRadius: 20,
+            elevation: theme.elevation.xl,
+        },
+        header: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: theme.spacing.lg,
+            paddingVertical: theme.spacing.md,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.borderSubtle,
+            backgroundColor: theme.colors.surface,
+        },
+        headerTitleRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: theme.spacing.sm,
+        },
+        headerIconCircle: {
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: theme.colors.brandSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        headerTitle: {
+            ...theme.typography.title,
+            fontSize: theme.fontSizes.lg,
+            lineHeight: theme.lineHeights.lg,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.bold,
+            color: theme.colors.text,
+        },
+        totalBadge: {
+            backgroundColor: theme.colors.brand,
+            borderRadius: theme.radii.pill,
+            paddingHorizontal: theme.spacing.sm,
+            paddingVertical: theme.spacing.xxs,
+        },
+        totalBadgeText: {
+            ...theme.typography.caption,
+            color: theme.colors.brandContrast,
+            fontSize: theme.fontSizes.micro,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.bold,
+        },
+        closeBtn: {
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: theme.colors.surfaceSunken,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+
+        // Filter Tabs
+        tabsRow: {
+            flexDirection: 'row',
+            paddingHorizontal: theme.spacing.md,
+            paddingVertical: theme.spacing.sm,
+            backgroundColor: theme.colors.surfaceSunken,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.borderSubtle,
+            gap: theme.spacing.xs + 2,
+            flexWrap: 'wrap',
+        },
+        tab: {
+            paddingHorizontal: theme.spacing.md - 2,
+            paddingVertical: theme.spacing.xs,
+            borderRadius: theme.radii.pill,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+        },
+        tabActive: {
+            backgroundColor: theme.colors.brand,
+            borderColor: theme.colors.brand,
+        },
+        tabText: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.xs,
+            fontFamily: theme.fontFamilies.medium,
+            fontWeight: theme.fontWeights.medium,
+            color: theme.colors.textSecondary,
+        },
+        tabTextActive: {
+            color: theme.colors.brandContrast,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.bold,
+        },
+
+        // List
+        listContent: {
+            padding: theme.spacing.md,
+            gap: theme.spacing.sm,
+        },
+        card: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radii.md,
+            padding: theme.spacing.md,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+            shadowColor: theme.colors.shadow,
+            shadowOffset: { width: 0, height: 1.5 },
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+            elevation: theme.elevation.xs,
+        },
+        avatarCircle: {
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: theme.spacing.sm,
+        },
+        cardContent: {
+            flex: 1,
+            justifyContent: 'center',
+        },
+        cardHeaderRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: theme.spacing.xxs,
+        },
+        typePill: {
+            paddingHorizontal: theme.spacing.xs + 2,
+            paddingVertical: 1.5,
+            borderRadius: theme.radii.xs,
+            marginRight: theme.spacing.xs + 2,
+        },
+        typePillText: {
+            ...theme.typography.overline,
+            fontSize: theme.fontSizes.micro,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.extraBold,
+            letterSpacing: theme.letterSpacing.wider,
+        },
+        docIdText: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.xs,
+            fontFamily: theme.fontFamilies.medium,
+            fontWeight: theme.fontWeights.medium,
+            color: theme.colors.textMuted,
+            flex: 1,
+        },
+        timeText: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.micro,
+            fontFamily: theme.fontFamilies.medium,
+            fontWeight: theme.fontWeights.medium,
+            color: theme.colors.textMuted,
+        },
+        employeeRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: theme.spacing.xs,
+            marginBottom: theme.spacing.xxs,
+        },
+        employeeName: {
+            ...theme.typography.subtitle,
+            fontSize: theme.fontSizes.sm,
+            lineHeight: theme.lineHeights.sm,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.bold,
+            color: theme.colors.text,
+        },
+        employeeId: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.xs,
+            fontFamily: theme.fontFamilies.regular,
+            fontWeight: theme.fontWeights.regular,
+            color: theme.colors.textMuted,
+        },
+        detailRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        detailText: {
+            ...theme.typography.bodySmall,
+            fontSize: theme.fontSizes.xs,
+            lineHeight: theme.lineHeights.xs,
+            fontFamily: theme.fontFamilies.regular,
+            fontWeight: theme.fontWeights.regular,
+            color: theme.colors.textSecondary,
+            flex: 1,
+        },
+        chevronWrapper: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: theme.spacing.xs,
+            flexDirection: 'row',
+            gap: theme.spacing.xs,
+        },
+        newDot: {
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: theme.colors.brand,
+        },
+
+        // Empty state
+        emptyContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: theme.spacing.xxxl,
+            paddingHorizontal: theme.spacing.xxl,
+        },
+        emptyIconCircle: {
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: theme.colors.brandSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        emptyTitle: {
+            ...theme.typography.title,
+            fontSize: theme.fontSizes.md,
+            lineHeight: theme.lineHeights.md,
+            fontFamily: theme.fontFamilies.bold,
+            fontWeight: theme.fontWeights.bold,
+            color: theme.colors.text,
+            marginBottom: theme.spacing.xs,
+        },
+        emptySubtitle: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.xs,
+            lineHeight: theme.lineHeights.sm,
+            fontFamily: theme.fontFamilies.regular,
+            fontWeight: theme.fontWeights.regular,
+            color: theme.colors.textMuted,
+            textAlign: 'center',
+            maxWidth: 240,
+        },
+
+        // Footer hint
+        footerHint: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: theme.spacing.sm,
+            borderTopWidth: 1,
+            borderTopColor: theme.colors.borderSubtle,
+            backgroundColor: theme.colors.surfaceSunken,
+        },
+        footerHintText: {
+            ...theme.typography.caption,
+            fontSize: theme.fontSizes.micro,
+            fontFamily: theme.fontFamilies.medium,
+            fontWeight: theme.fontWeights.medium,
+            color: theme.colors.textMuted,
+        },
+    });

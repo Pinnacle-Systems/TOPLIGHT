@@ -1,4 +1,4 @@
-﻿import { mapRole, mapUser } from "../utils/responseMapper.js";
+import { mapRole, mapUser } from "../utils/responseMapper.js";
 import { logServiceError } from "../utils/logger.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
@@ -57,7 +57,17 @@ export async function login(req, res) {
     //    });
   
     // await connection.close()
-    await prisma_Connector?.userLog.create({data:{mobileName:deviceName,mobileIp:MobileIP,user:sql.userName,compCode:COMPCODE,idCard:sql?.idCard,type:"Login"}})
+    const finalUserName = sql.userName || sql.username || username;
+    await prisma_Connector?.userLog.create({
+      data: {
+        mobileName: deviceName || 'Mobile App',
+        mobileIp: MobileIP || '',
+        user: finalUserName,
+        compCode: COMPCODE || (sql.companies?.[0]?.companyCode || ''),
+        idCard: sql?.idCard || '',
+        type: "Login"
+      }
+    });
     return res.json({ statusCode: 0, message: "Login Successfull" ,data:mapUser(sql)})
 
 }
@@ -68,10 +78,58 @@ export async function login(req, res) {
 
 export async function UserLogs(req,res){
   try {
-    const data = await prisma_Connector.userLog.findMany({
+    const rawData = await prisma_Connector.userLog.findMany({
       orderBy: { date: 'desc' },
     })
-    return res.json({ status: data.length > 0 ? 1 : 0, data })
+    // Resolve any logs missing user name from User table via idCard
+    const missingCards = [
+      ...new Set(
+        rawData
+          .filter(log => (!log.user || !String(log.user).trim()) && log.idCard)
+          .map(log => String(log.idCard).trim())
+      ),
+    ];
+
+    let userMap = {};
+    if (missingCards.length > 0) {
+      try {
+        const users = await prisma_Connector.user.findMany({
+          where: { idCard: { in: missingCards } },
+          select: { idCard: true, userName: true },
+        });
+        users.forEach(u => {
+          if (u.idCard) userMap[String(u.idCard).trim()] = u.userName;
+        });
+      } catch (lookupErr) {
+        console.warn('[UserLogs] Error resolving user names:', lookupErr?.message);
+      }
+    }
+
+    const data = rawData.map(log => {
+      const trimmedCard = log.idCard ? String(log.idCard).trim() : '';
+      const resolvedUser =
+        (log.user && String(log.user).trim()) ||
+        (trimmedCard ? userMap[trimmedCard] : null) ||
+        (trimmedCard ? `User ${trimmedCard}` : 'Unknown user');
+
+      const mobileName = log.mobileName || '';
+      const mobileIp = log.mobileIp || '';
+
+      return {
+        ...log,
+        user: resolvedUser,
+        User: resolvedUser,
+        userName: resolvedUser,
+        username: resolvedUser,
+        mobileName: mobileName,
+        MobileName: mobileName,
+        mobileIp: mobileIp,
+        MobileIP: mobileIp,
+        status: log.type === 'Login' ? 'Success' : 'Recorded',
+      };
+    });
+
+    return res.json({ status: data.length > 0 ? 1 : 0, data });
   } catch (error) {
     logServiceError('UserService:UserLogs', error, req);
     console.error('Error retrieving login logs:', error)

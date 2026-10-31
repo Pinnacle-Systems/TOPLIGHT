@@ -14656,6 +14656,7 @@ export namespace Prisma {
     hod: string | null
     hr: string | null
     category: number | null
+    rejectReason: string | null
   }
 
   export type PermissionEntryMaxAggregateOutputType = {
@@ -14685,6 +14686,7 @@ export namespace Prisma {
     hod: string | null
     hr: string | null
     category: number | null
+    rejectReason: string | null
   }
 
   export type PermissionEntryCountAggregateOutputType = {
@@ -14714,6 +14716,7 @@ export namespace Prisma {
     hod: number
     hr: number
     category: number
+    rejectReason: number
     _all: number
   }
 
@@ -14759,6 +14762,7 @@ export namespace Prisma {
     hod?: true
     hr?: true
     category?: true
+    rejectReason?: true
   }
 
   export type PermissionEntryMaxAggregateInputType = {
@@ -14788,6 +14792,7 @@ export namespace Prisma {
     hod?: true
     hr?: true
     category?: true
+    rejectReason?: true
   }
 
   export type PermissionEntryCountAggregateInputType = {
@@ -14817,6 +14822,7 @@ export namespace Prisma {
     hod?: true
     hr?: true
     category?: true
+    rejectReason?: true
     _all?: true
   }
 
@@ -14933,6 +14939,7 @@ export namespace Prisma {
     hod: string
     hr: string | null
     category: number
+    rejectReason: string | null
     _count: PermissionEntryCountAggregateOutputType | null
     _avg: PermissionEntryAvgAggregateOutputType | null
     _sum: PermissionEntrySumAggregateOutputType | null
@@ -14981,6 +14988,7 @@ export namespace Prisma {
     hod?: boolean
     hr?: boolean
     category?: boolean
+    rejectReason?: boolean
     createdByUser?: boolean | UserDefaultArgs<ExtArgs>
     modifiedByUser?: boolean | UserDefaultArgs<ExtArgs>
     categoryData?: boolean | PermissionMasterDefaultArgs<ExtArgs>
@@ -15017,6 +15025,7 @@ export namespace Prisma {
     hod?: boolean
     hr?: boolean
     category?: boolean
+    rejectReason?: boolean
   }
 
 
@@ -15068,6 +15077,7 @@ export namespace Prisma {
       hod: string
       hr: string | null
       category: number
+      rejectReason: string | null
     }, ExtArgs["result"]["permissionEntry"]>
     composites: {}
   }
@@ -15499,6 +15509,7 @@ export namespace Prisma {
     readonly hod: FieldRef<"PermissionEntry", 'String'>
     readonly hr: FieldRef<"PermissionEntry", 'String'>
     readonly category: FieldRef<"PermissionEntry", 'Int'>
+    readonly rejectReason: FieldRef<"PermissionEntry", 'String'>
   }
     
 
@@ -22089,7 +22100,8 @@ export namespace Prisma {
     approvalStatus: 'approvalStatus',
     hod: 'hod',
     hr: 'hr',
-    category: 'category'
+    category: 'category',
+    rejectReason: 'rejectReason'
   };
 
   export type PermissionEntryScalarFieldEnum = (typeof PermissionEntryScalarFieldEnum)[keyof typeof PermissionEntryScalarFieldEnum]
@@ -23426,6 +23438,7 @@ export namespace Prisma {
     hod?: StringFilter<"PermissionEntry"> | string
     hr?: StringNullableFilter<"PermissionEntry"> | string | null
     category?: IntFilter<"PermissionEntry"> | number
+    rejectReason?: StringNullableFilter<"PermissionEntry"> | string | null
     createdByUser?: XOR<UserRelationFilter, UserWhereInput>
     modifiedByUser?: XOR<UserRelationFilter, UserWhereInput>
     categoryData?: XOR<PermissionMasterRelationFilter, PermissionMasterWhereInput>
@@ -23461,6 +23474,7 @@ export namespace Prisma {
     hod?: SortOrder
     hr?: SortOrderInput | SortOrder
     category?: SortOrder
+    rejectReason?: SortOrderInput | SortOrder
     createdByUser?: UserOrderByWithRelationInput
     modifiedByUser?: UserOrderByWithRelationInput
     categoryData?: PermissionMasterOrderByWithRelationInput
@@ -23499,6 +23513,7 @@ export namespace Prisma {
     hod?: StringFilter<"PermissionEntry"> | string
     hr?: StringNullableFilter<"PermissionEntry"> | string | null
     category?: IntFilter<"PermissionEntry"> | number
+    rejectReason?: StringNullableFilter<"PermissionEntry"> | string | null
     createdByUser?: XOR<UserRelationFilter, UserWhereInput>
     modifiedByUser?: XOR<UserRelationFilter, UserWhereInput>
     categoryData?: XOR<PermissionMasterRelationFilter, PermissionMasterWhereInput>
@@ -23534,6 +23549,7 @@ export namespace Prisma {
     hod?: SortOrder
     hr?: SortOrderInput | SortOrder
     category?: SortOrder
+    rejectReason?: SortOrderInput | SortOrder
     _count?: PermissionEntryCountOrderByAggregateInput
     _avg?: PermissionEntryAvgOrderByAggregateInput
     _max?: PermissionEntryMaxOrderByAggregateInput
@@ -23571,6 +23587,7 @@ export namespace Prisma {
     hod?: StringWithAggregatesFilter<"PermissionEntry"> | string
     hr?: StringNullableWithAggregatesFilter<"PermissionEntry"> | string | null
     category?: IntWithAggregatesFilter<"PermissionEntry"> | number
+    rejectReason?: StringNullableWithAggregatesFilter<"PermissionEntry"> | string | null
   }
 
   export type TrackersWhereInput = {
@@ -25389,6 +25406,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
@@ -25424,6 +25442,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -25448,6 +25467,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -25483,6 +25503,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -25513,6 +25534,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type PermissionEntryUpdateManyMutationInput = {
@@ -25536,6 +25558,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionEntryUncheckedUpdateManyInput = {
@@ -25565,6 +25588,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TrackersCreateInput = {
@@ -27186,6 +27210,7 @@ export namespace Prisma {
     hod?: SortOrder
     hr?: SortOrder
     category?: SortOrder
+    rejectReason?: SortOrder
   }
 
   export type PermissionEntryAvgOrderByAggregateInput = {
@@ -27222,6 +27247,7 @@ export namespace Prisma {
     hod?: SortOrder
     hr?: SortOrder
     category?: SortOrder
+    rejectReason?: SortOrder
   }
 
   export type PermissionEntryMinOrderByAggregateInput = {
@@ -27251,6 +27277,7 @@ export namespace Prisma {
     hod?: SortOrder
     hr?: SortOrder
     category?: SortOrder
+    rejectReason?: SortOrder
   }
 
   export type PermissionEntrySumOrderByAggregateInput = {
@@ -29802,6 +29829,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
@@ -29836,6 +29864,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type PermissionEntryCreateOrConnectWithoutUserInput = {
@@ -29941,6 +29970,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
@@ -29974,6 +30004,7 @@ export namespace Prisma {
     approvalStatus?: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -30008,6 +30039,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
     hodId: UserCreateNestedOneWithoutPermissionEntryInput
@@ -30041,6 +30073,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -30075,6 +30108,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
     hodId: UserCreateNestedOneWithoutPermissionEntryInput
@@ -30108,6 +30142,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -30142,6 +30177,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     categoryData?: PermissionMasterCreateNestedOneWithoutPermissionEntryInput
@@ -30175,6 +30211,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -31136,6 +31173,7 @@ export namespace Prisma {
     hod?: StringFilter<"PermissionEntry"> | string
     hr?: StringNullableFilter<"PermissionEntry"> | string | null
     category?: IntFilter<"PermissionEntry"> | number
+    rejectReason?: StringNullableFilter<"PermissionEntry"> | string | null
   }
 
   export type CompanyCodeUpsertWithWhereUniqueWithoutUserInput = {
@@ -33004,6 +33042,7 @@ export namespace Prisma {
     reason?: string | null
     approvalStatus?: string
     hr?: string | null
+    rejectReason?: string | null
     createdByUser: UserCreateNestedOneWithoutPermissionEntryCreateUserInput
     modifiedByUser: UserCreateNestedOneWithoutPermissionEntryModifiedUserInput
     hodId: UserCreateNestedOneWithoutPermissionEntryInput
@@ -33037,6 +33076,7 @@ export namespace Prisma {
     approvalStatus?: string
     hod: string
     hr?: string | null
+    rejectReason?: string | null
     user?: UserUncheckedCreateNestedManyWithoutPermissionInput
   }
 
@@ -35822,6 +35862,7 @@ export namespace Prisma {
     approvalStatus?: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type PermissionEntryCreateManyCreatedByUserInput = {
@@ -35850,6 +35891,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type PermissionEntryCreateManyModifiedByUserInput = {
@@ -35878,6 +35920,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type PermissionEntryCreateManyUserDataInput = {
@@ -35906,6 +35949,7 @@ export namespace Prisma {
     hod: string
     hr?: string | null
     category?: number
+    rejectReason?: string | null
   }
 
   export type LeaveEntryCreateManyCreatedByUserInput = {
@@ -36321,6 +36365,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -36355,6 +36400,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionEntryUncheckedUpdateManyWithoutUserInput = {
@@ -36384,6 +36430,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CompanyCodeUpdateWithoutUserInput = {
@@ -36479,6 +36526,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -36512,6 +36560,7 @@ export namespace Prisma {
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -36541,6 +36590,7 @@ export namespace Prisma {
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionEntryUpdateWithoutCreatedByUserInput = {
@@ -36564,6 +36614,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
     hodId?: UserUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -36597,6 +36648,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -36626,6 +36678,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionEntryUpdateWithoutModifiedByUserInput = {
@@ -36649,6 +36702,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
     hodId?: UserUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -36682,6 +36736,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -36711,6 +36766,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionEntryUpdateWithoutUserDataInput = {
@@ -36734,6 +36790,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     categoryData?: PermissionMasterUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -36767,6 +36824,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -36796,6 +36854,7 @@ export namespace Prisma {
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
     category?: IntFieldUpdateOperationsInput | number
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LeaveEntryUpdateWithoutCreatedByUserInput = {
@@ -37938,6 +37997,7 @@ export namespace Prisma {
     approvalStatus?: string
     hod: string
     hr?: string | null
+    rejectReason?: string | null
   }
 
   export type LeaveEntryCreateManyCategoryDataInput = {
@@ -38031,6 +38091,7 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdByUser?: UserUpdateOneRequiredWithoutPermissionEntryCreateUserNestedInput
     modifiedByUser?: UserUpdateOneRequiredWithoutPermissionEntryModifiedUserNestedInput
     hodId?: UserUpdateOneRequiredWithoutPermissionEntryNestedInput
@@ -38064,6 +38125,7 @@ export namespace Prisma {
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
@@ -38093,6 +38155,7 @@ export namespace Prisma {
     approvalStatus?: StringFieldUpdateOperationsInput | string
     hod?: StringFieldUpdateOperationsInput | string
     hr?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LeaveEntryUpdateWithoutCategoryDataInput = {

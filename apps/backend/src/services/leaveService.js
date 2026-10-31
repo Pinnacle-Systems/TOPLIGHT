@@ -557,9 +557,43 @@ export async function add_requestLeave(req, res) {
     }
 
     try {
+        let finYearVal = String(data?.finYear || data?.finyear || '').trim();
+        if (!finYearVal) {
+            finYearVal = (await fetchActiveFinYearFromDB()) || String(new Date().getFullYear());
+        }
+        const lTypeVal = data?.lType || data?.ltype || null;
+        const flTypeVal = data?.flType || data?.fltype || null;
+        const tlTypeVal = data?.tlType || data?.tltype || null;
+        const empNameVal = data?.empName || data?.empname || '';
+        const modifiedByVal = String(data?.modifiedBy || data?.modified_By || data?.createdBy || data?.userId || '').trim();
+        const createdByVal = String(data?.createdBy || data?.userId || '').trim();
+        const totalDaysVal = Number(data?.totalDays || 0);
+
         const tempDocid = `TEMP-${Date.now()}-${Math.random()}`;
         const initialResult = await prisma_Connector.leaveEntry.create({
-            data: { ...data, docId: tempDocid }
+            data: {
+                docId: tempDocid,
+                docDate: new Date(data.docDate),
+                fromDate: new Date(data.fromDate),
+                toDate: new Date(data.toDate),
+                userId: String(data.userId).trim(),
+                compCode: String(data.compCode).trim(),
+                finYear: finYearVal,
+                totalDays: totalDaysVal,
+                reason: data.reason || '',
+                createdBy: createdByVal,
+                modifiedBy: modifiedByVal,
+                hod: String(data.hod).trim(),
+                hr: data.hr ? String(data.hr).trim() : null,
+                mobile: data.mobile ? String(data.mobile) : null,
+                lType: lTypeVal,
+                flType: flTypeVal,
+                tlType: tlTypeVal,
+                empName: empNameVal,
+                category: Number(data.category) || 1,
+                approvalStatus: data.approvalStatus || 'pending',
+                group: 'Leave',
+            }
         });
         const paddedId = initialResult.id.toString().padStart(6, '0');
         const finalDocid = `${data.compCode}/LEV-${paddedId}`;
@@ -567,32 +601,32 @@ export async function add_requestLeave(req, res) {
             where: { id: initialResult.id },
             data: { docId: finalDocid }
         });
-        var to = data?.toDate?.split("T")[0];
-        var from = data?.fromDate?.split("T")[0];
+        var to = formatDateToOracle(data?.toDate || result?.toDate) || (data?.toDate ? moment(data.toDate).format('YYYY-MM-DD HH:mm:ss') : null);
+        var from = formatDateToOracle(data?.fromDate || result?.fromDate) || (data?.fromDate ? moment(data.fromDate).format('YYYY-MM-DD HH:mm:ss') : null);
         var createOn = formatDateToOracle(result?.createdOn);
         var Modified = formatDateToOracle(result?.modifiedOn);
 
         var auvit_data = {
             CATNAME: PAYCAT || '',
-            TLTYPE: data?.tltype,
-            FLTYPE: data?.fltype,
+            TLTYPE: tlTypeVal,
+            FLTYPE: flTypeVal,
             TODATE: to,
             DOCID: result?.docId,
             APPROVALSTATUS: data?.approvalStatus || "pending",
-            REASON: data?.reason,
-            LEAVETYPE: data?.ltype,    
+            REASON: data?.reason || '',
+            LEAVETYPE: lTypeVal,    
             FROMDATE: from,
-            EMPNAME: data?.empname,
+            EMPNAME: empNameVal,
             IDCARD: data?.userId,
             COMPCODE: data?.compCode,
-            FINYEAR: data?.finyear,
+            FINYEAR: finYearVal,
             USERID: data?.userId,
-            MODIFIED_BY: data?.modified_By,
+            MODIFIED_BY: modifiedByVal,
             MODIFIED_ON: Modified,
-            CREATED_BY: data?.createdBy,
+            CREATED_BY: createdByVal,
             CREATED_ON: createOn,
             UNIQUE_ID_FIELD: result?.leaveId,
-            IS_CANCELLED: data?.isCancelled,
+            IS_CANCELLED: (data?.isCancelled === true || data?.isCancelled === 'true' || data?.isCancelled === 1 || data?.isCancelled === '1') ? 1 : 0,
             HRLEAVEENTRYID: generateNumericId(),
         };
 
@@ -720,47 +754,72 @@ const value=req.query.value
         const  p_app=req?.body?.approval
         const approvedBy=req?.body?.approvedBy
         const rejectBy=req?.body?.rejectBy
+        const rejectRemark=req?.body?.rejectRemark || req?.body?.reject_reason || req?.body?.rejectReason || req?.body?.reason || ''
         const connection = await getConnection(res)
              try {
-             const result=await  prisma_Connector.leaveEntry.update({where:{docId:docid},data:{approvalStatus:p_app,approvedBy,rejectBy}})
+             let result;
+             const baseData = { approvalStatus: p_app, approvedBy: approvedBy || '', rejectBy: rejectBy || '' };
+             try {
+                 if (p_app === 'rejected' && rejectRemark) {
+                     result = await prisma_Connector.leaveEntry.update({
+                         where: { docId: docid },
+                         data: { ...baseData, rejectReason: rejectRemark }
+                     });
+                 } else {
+                     result = await prisma_Connector.leaveEntry.update({
+                         where: { docId: docid },
+                         data: baseData
+                     });
+                 }
+             } catch (prismaErr) {
+                 result = await prisma_Connector.leaveEntry.update({
+                     where: { docId: docid },
+                     data: baseData
+                 });
+             }
                  if(result?.id){
                     //APPROVED_BY=:approvedBy,REJECTED_BY=:rejectBy
                     
-          const sql = `update  HRLEAVEENTRY set  APPROVALSTATUS=:approvalStatus where DOCID=:docid  `     
-            const result_auvit = await connection.execute(sql,{approvalStatus:p_app,docid}) 
-          if(result_auvit?.rowsAffected > 0){
+                               let result_auvit;
+                     try {
+                         const sql = `update HRLEAVEENTRY set APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy, REJECT_REASON=:rejectRemark where DOCID=:docid`;
+                         result_auvit = await connection.execute(sql, {
+                             approvalStatus: p_app,
+                             docid,
+                             approvedBy: approvedBy || null,
+                             rejectBy: rejectBy || null,
+                             rejectRemark: rejectRemark || null,
+                         });
+                     } catch (err1) {
+                         try {
+                             const sql2 = `update HRLEAVEENTRY set APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy, REMARKS=:rejectRemark where DOCID=:docid`;
+                             result_auvit = await connection.execute(sql2, {
+                                 approvalStatus: p_app,
+                                 docid,
+                                 approvedBy: approvedBy || null,
+                                 rejectBy: rejectBy || null,
+                                 rejectRemark: rejectRemark || null,
+                             });
+                         } catch (err2) {
+                             const fallbackSql = `update HRLEAVEENTRY set APPROVALSTATUS=:approvalStatus where DOCID=:docid`;
+                             result_auvit = await connection.execute(fallbackSql, { approvalStatus: p_app, docid });
+                         }
+                     }     
 
-
-             let sql = `INSERT INTO MOBLEAVEAPPROVAL AA
-(AA.HRLEAVEREGMASTID, AA.COMPCODE, AA.CREATED_BY, AA.CREATED_ON, AA.FINYEAR, AA.FNAME,AA.IDCARD, AA.IDNOCHK, AA.IPADD, AA.IS_CANCELLED, 
-AA.LEAVETYPE, AA.LRDATE, AA.LTYPE, AA.LYEAR, AA.MODIFIED_BY, AA.MODIFIED_ON, AA.OPBAL, 
-AA.PAYCAT, AA.PLUSORMINUS, AA.POST_TX_TITLE, AA.PROJECTID, AA.ROLEID, AA.STATUS, AA.STKOPBAL, AA.UNIQUE_ID_FIELD, 
-AA.UPSTREAM_TXVIEW_REF_ID, AA.USERID, AA.VERSIONID,AA.DOCID)
-(
-SELECT HRLEAVE_SEQ.NEXTVAL,A.COMPCODE, A.CREATED_BY, A.CREATED_ON, A.FINYEAR, A.EMPNAME FNAME, A.HREMPLOYMASTID IDCARD, 
-A.IDCARD IDNOCHK,A.IPADD,NULL IS_CANCELLED, 
-A.LEAVETYPE, A.DOCDATE LRDATE, A.LTYPE,NULL LYEAR, A.MODIFIED_BY, A.MODIFIED_ON,A.LCNT OPBAL, 
-A.PAYCAT, A.PLUSORMINUS,NULL POST_TX_TITLE,'' PROJECTID, A.ROLEID,NULL STATUS,(0-A.LCNT)STKOPBAL,
-NULL UNIQUE_ID_FIELD, 
-NULL UPSTREAM_TXVIEW_REF_ID, NULL USERID, NULL VERSIONID,A.DOCID FROM (
-SELECT DISTINCT A.* FROM LEAVEMOB A WHERE A.DOCID = :DOCID
-) A 
-)`     
- await connection.execute(sql,{DOCID:docid}) 
-
-  var levaeaupdate=  await prisma_Connector?.leaveEntry?.update({where:{docId:result?.docId}, data:{update:1}})
+          if (result_auvit?.rowsAffected > 0) {
+              var levaeaupdate = await prisma_Connector?.leaveEntry?.update({ where: { docId: result?.docId }, data: { update: 1 } });
 
     
 
            if(levaeaupdate?.id)
-                return  res.json({status:1,data:{...result}}) 
+                return  res.json({status:1,data:{...result, rejectReason: rejectRemark, reject_reason: rejectRemark, rejectRemark}}) 
             else
                  return  res.json({status:0,data:{}})
                
               
             }else{
 
-             await  prisma_Connector?.permissionEntry?.delete({where:{docId:docid}})
+
             
                 res.json({status:0,message:"Failed to Request !"})   
             }

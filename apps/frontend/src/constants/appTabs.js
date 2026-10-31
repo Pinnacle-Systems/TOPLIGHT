@@ -1,13 +1,13 @@
 const appTabs = [
     { key: "LOGIN", name: "LOGIN", list: false, list_name: "Role On Page", default: true },
     { key: 'USERANDROLES', name: "USERANDROLES", list: true, list_name: "Role On Page" },
-    { key: "HOME", name: "HOME", list: true, default: true, list_name: "Home Page" },
+    { key: "HOME", name: "HOME", list: true, default: false, list_name: "Home Page" },
     { key: "pentry", name: "pentry", list: true, default: false, list_name: "Permission Entry" },
     { key: "l_approval", name: "l_approval", list: true, default: false, list_name: "Leave Approval" },
     { key: "p_approval", name: "p_approval", list: true, default: false, list_name: "Permission Approval" },
     { key: "onduty_approval", name: "onduty_approval", list: true, default: false, list_name: "Onduty Approval" },
-    { key: "DashBoard", name: "DashBoard", list: true, default: true, list_name: "DashBoard" },
-    { key: "map", name: "map", list: true, default: true, list_name: "Location Tracking" },
+    { key: "DashBoard", name: "DashBoard", list: true, default:false, list_name: "DashBoard" },
+    { key: "map", name: "map", list: true, default: false, list_name: "Location Tracking" },
     { key: "uinfo", name: "uinfo", list: true, default: false, list_name: "User Info" },
     { key: "logs", name: "logs", list: true, default: false, list_name: "Login Logs" },
     // ── Reports ─────────────────────────────────────────────────────────────

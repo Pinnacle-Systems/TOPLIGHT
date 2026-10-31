@@ -79,8 +79,8 @@ if (envFile.exists()) {
         envProperties.load(reader)
     }
 }
-def defaultApiUrl = envProperties.getProperty("API_URL") ?: "http://10.0.2.2:8025"
-def locationApiUrl = envProperties.getProperty("LOCATION_API_URL") ?: "${defaultApiUrl}/onduty/send_location"
+def defaultApiUrl = envProperties.getProperty("API_URL")
+def locationApiUrl = envProperties.getProperty("LOCATION_API_URL") 
 def locationInterval = envProperties.getProperty("LOCATION_INTERVAL") ?: "5000"
 def locationFastestInterval = envProperties.getProperty("LOCATION_FASTEST_INTERVAL") ?: "3000"
 def locationNotifTitle = envProperties.getProperty("LOCATION_NOTIFICATION_TITLE") ?: "OnDuty Active"
@@ -119,6 +119,7 @@ android {
         debug {
             manifestPlaceholders = [usesCleartextTraffic: "true"]
             signingConfig signingConfigs.debug
+             ndk { abiFilters "x86_64" }
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -127,6 +128,7 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            ndk { abiFilters "arm64-v8a" }
         }
     }
 }

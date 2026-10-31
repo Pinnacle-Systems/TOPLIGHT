@@ -156,7 +156,7 @@ export const Dropdown = ({
   );
 };
 
-export const DateInput = ({ date, setDate }) => {
+export const DateInput = ({ date, setDate, minimumDate, maximumDate, ...props }) => {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createInputStyles(theme), [theme]);
   const [show, setShow] = useState(false);
@@ -203,6 +203,9 @@ export const DateInput = ({ date, setDate }) => {
           mode="date"
           is24Hour={false}
           display={isPortrait ? 'default' : 'spinner'}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
+          {...props}
           onChange={onChange}
         />
       )}

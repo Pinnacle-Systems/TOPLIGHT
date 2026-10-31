@@ -71,8 +71,8 @@ const calculateRequestedDays = (fromDate, toDate, firstDayType, lastDayType) => 
     return Math.max(
         0,
         difference + 1
-            - (firstDayType === 'Full Day' ? 0 : 0.5)
-            - (lastDayType === 'Full Day' ? 0 : 0.5),
+        - (firstDayType === 'Full Day' ? 0 : 0.5)
+        - (lastDayType === 'Full Day' ? 0 : 0.5),
     );
 };
 
@@ -125,6 +125,12 @@ export default function LeaveEntryScreen() {
     const hr = String(user?.hr || '').trim();
     const approvalType = String(user?.approval || 'HOD').toUpperCase();
     const employeeName = String(user?.EMPNAME || user?.userName || '').trim();
+
+    const today = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return now;
+    }, []);
 
     const [category, setCategory] = useState('');
     const [docDate, setDocDate] = useState(new Date());
@@ -265,15 +271,61 @@ export default function LeaveEntryScreen() {
         setDatePicker(null);
         if (event?.type !== 'set' || !selectedDate || !target) return;
 
+        const pickedKey = toDateKey(selectedDate);
+        const todayKey = toDateKey(today);
+
+        if (target === 'doc') {
+            if (pickedKey < todayKey) {
+                showMessage({
+                    message: 'Past Date Not Allowed',
+                    description: 'Document date cannot be in the past. Please select today or a future date.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
+            setDocDate(selectedDate);
+            return;
+        }
+
         if (target === 'from') {
+            if (pickedKey < todayKey) {
+                showMessage({
+                    message: 'Past Date Not Allowed',
+                    description: 'From date cannot be in the past. Please select today or a future date.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
             setFromDate(selectedDate);
-            if (toDate && toDateKey(toDate) < toDateKey(selectedDate)) {
+            if (toDate && toDateKey(toDate) < pickedKey) {
                 setToDate(selectedDate);
             }
-        } else if (target === 'doc') {
-            setDocDate(selectedDate);
-        } else {
+            return;
+        }
+
+        if (target === 'to') {
+            if (fromDate && pickedKey < toDateKey(fromDate)) {
+                showMessage({
+                    message: 'Invalid To Date',
+                    description: 'To date must be the same as or later than From date.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
+            if (pickedKey < todayKey) {
+                showMessage({
+                    message: 'Past Date Not Allowed',
+                    description: 'To date cannot be in the past. Please select today or a future date.',
+                    type: 'warning',
+                    duration: 3500,
+                });
+                return;
+            }
             setToDate(selectedDate);
+            return;
         }
     };
 
@@ -311,6 +363,17 @@ export default function LeaveEntryScreen() {
             return;
         }
 
+        // Validate Document Date is not in the past
+        if (toDateKey(docDate) < toDateKey(today)) {
+            showMessage({
+                message: 'Invalid Document Date',
+                description: 'Document date cannot be in the past. Please select today or a future date.',
+                type: 'warning',
+                duration: 4000,
+            });
+            return;
+        }
+
         if (!category) {
             showMessage({
                 message: 'Select Leave Category',
@@ -341,45 +404,56 @@ export default function LeaveEntryScreen() {
             return;
         }
 
-        if (!dateRangeValid) {
+        // Validate From Date is not in the past
+        if (toDateKey(fromDate) < toDateKey(today)) {
             showMessage({
-                message: 'Invalid Date Range',
-                description: 'The To Date must be the same as or later than the From Date.',
-                type: 'danger',
-                duration: 3500,
-            });
-            return;
-        }
-
-        if (balanceLoading) {
-            showMessage({
-                message: 'Leave Balance Loading',
-                description: 'Your leave balance is currently loading. Please wait a moment.',
-                type: 'warning',
-                duration: 3500,
-            });
-            return;
-        }
-
-        if (!balanceResolved) {
-            showMessage({
-                message: 'Leave Balance Unavailable',
-                description: 'Could not load your leave balance for the selected leave code. Please retry or pick another leave code.',
+                message: 'Past Leave Date Not Allowed',
+                description: 'From date cannot be in the past. Please select today or a future date.',
                 type: 'warning',
                 duration: 4000,
             });
             return;
         }
 
-        if (requestedDays > balance) {
-            showMessage({
-                message: 'Insufficient Leave Balance',
-                description: `You requested ${requestedDays} days, but your available balance for ${leaveCode} is ${balance} days.`,
-                type: 'danger',
-                duration: 4500,
-            });
-            return;
-        }
+        // if (!dateRangeValid) {
+        //     showMessage({
+        //         message: 'Invalid Date Range',
+        //         description: 'The To Date must be the same as or later than the From Date.',
+        //         type: 'danger',
+        //         duration: 3500,
+        //     });
+        //     return;
+        // }
+
+        // if (balanceLoading) {
+        //     showMessage({
+        //         message: 'Leave Balance Loading',
+        //         description: 'Your leave balance is currently loading. Please wait a moment.',
+        //         type: 'warning',
+        //         duration: 3500,
+        //     });
+        //     return;
+        // }
+
+        // if (!balanceResolved) {
+        //     showMessage({
+        //         message: 'Leave Balance Unavailable',
+        //         description: 'Could not load your leave balance for the selected leave code. Please retry or pick another leave code.',
+        //         type: 'warning',
+        //         duration: 4000,
+        //     });
+        //     return;
+        // }
+
+        // if (requestedDays > balance) {
+        //     showMessage({
+        //         message: 'Insufficient Leave Balance',
+        //         description: `You requested ${requestedDays} days, but your available balance for ${leaveCode} is ${balance} days.`,
+        //         type: 'danger',
+        //         duration: 4500,
+        //     });
+        //     return;
+        // }
 
         if (!reason.trim()) {
             showMessage({
@@ -412,15 +486,21 @@ export default function LeaveEntryScreen() {
                     compCode,
                     createdBy: idcard,
                     modified_By: idcard,
+                    modifiedBy: idcard,
                     hod: effectiveHod,
                     hr: hr || null,
                     approval: approvalType,
                     mobile: user?.MOBNO == null ? null : String(user.MOBNO),
                     fltype: firstDayType,
+                    flType: firstDayType,
                     tltype: lastDayType,
+                    tlType: lastDayType,
                     ltype: leaveCode,
+                    lType: leaveCode,
                     finyear: financialYear,
+                    finYear: financialYear,
                     empname: employeeName,
+                    empName: employeeName,
                     category: Number(category),
                 },
                 params: {
@@ -499,7 +579,7 @@ export default function LeaveEntryScreen() {
         }
     };
 
-   
+
     return (
         <View style={styles.screen}>
             <StatusBar
@@ -623,11 +703,17 @@ export default function LeaveEntryScreen() {
                             value={datePicker === 'doc'
                                 ? docDate
                                 : datePicker === 'from'
-                                    ? fromDate || new Date()
-                                    : toDate || fromDate || new Date()}
+                                    ? fromDate || today
+                                    : toDate || fromDate || today}
                             mode="date"
                             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                            minimumDate={datePicker === 'to' ? fromDate || undefined : undefined}
+                            minimumDate={
+                                datePicker === 'doc'
+                                    ? today
+                                    : datePicker === 'from'
+                                        ? today
+                                        : (fromDate && toDateKey(fromDate) >= toDateKey(today) ? fromDate : today)
+                            }
                             onChange={onDateSelected}
                         />
                     )}

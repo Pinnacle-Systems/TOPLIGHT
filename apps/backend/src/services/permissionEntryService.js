@@ -8,36 +8,43 @@ import { logServiceError } from "../utils/logger.js";
 
 
 export async function get__per(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const hod=req.query?.hod
-    const id=req.query?.id
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    const hod = req.query?.hod;
+    const id = req.query?.id;
 
-        try {
-            const result=await  prisma_Connector.permissionEntry.findMany({where:hod ? {compCode:COMPCODE,OR:[{hod:hod},{hr:hod}]} : {compCode:COMPCODE,userId:id},include:{createdByUser:{select:{userName:true,idCard:true}},modifiedByUser:{select:{userName:true,idCard:true}}}});
-            res.json({status:1,data:result.map(mapPermission)}) 
-        }
-        catch (err) {
+    try {
+        const result = await prisma_Connector.permissionEntry.findMany({
+            where: hod
+                ? { compCode: COMPCODE, OR: [{ hod: hod }, { hr: hod }] }
+                : { compCode: COMPCODE, userId: id },
+            include: {
+                createdByUser: { select: { userName: true, idCard: true } },
+                modifiedByUser: { select: { userName: true, idCard: true } }
+            }
+        });
+        res.json({ status: 1, data: result.map(mapPermission) });
+    } catch (err) {
         logServiceError('PermissionEntryService:get__per', err, req);
-           console.log(err);
-        }
+        console.log(err);
+    }
 }
 
 
 
 
 export async function get__per_category(req, res) {
-  const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-  const Qtype=req?.query?.type
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    const Qtype = req?.query?.type;
 
-  
-      try {
-          const result=await  prisma_Connector.permissionMaster.findMany({where: {AND:[ {compCode:COMPCODE},{pType:Qtype}]}})
-          console.log(result);
-          
-          var filter_data=result?.map((data)=>{return {label:data.name,value:data.id}})
-           res.json({status:1,data:filter_data}) 
-      }
-      catch (err) {
+    try {
+        const result = await prisma_Connector.permissionMaster.findMany({
+            where: { AND: [{ compCode: COMPCODE }, { pType: Qtype }] }
+        });
+        console.log(result);
+
+        var filter_data = result?.map((data) => { return { label: data.name, value: data.id } });
+        res.json({ status: 1, data: filter_data });
+    } catch (err) {
         logServiceError('PermissionEntryService:get__per_category', err, req);
         console.log(err);
         res.json({ status: 0, data: [] });
@@ -73,48 +80,45 @@ export async function addPermission_master(req, res) {
 
 
 export async function get_user_Permission(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    const IdCard=req.query?.IdCard
-    
-        try {
-            const result=await  prisma_Connector.permissionEntry.findFirst({where:{userId:IdCard,compCode:COMPCODE}})
-            res.json({status:1,data:result}) 
-        }
-        catch (err) {
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    const IdCard = req.query?.IdCard;
+
+    try {
+        const result = await prisma_Connector.permissionEntry.findFirst({
+            where: { userId: IdCard, compCode: COMPCODE }
+        });
+        res.json({ status: 1, data: result });
+    } catch (err) {
         logServiceError('PermissionEntryService:get_user_Permission', err, req);
-           console.log(err);
-           
-        }
+        console.log(err);
+    }
 }
 
 
 export async function getDocId(req, res) {
-    const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-    
-        try {
-            const result=await  prisma_Connector.permissionEntry.findFirst({
-                orderBy: {
-                  id: 'desc',
-                },
-                select: {
-                  id: true,
-                },where:{compCode:COMPCODE}
-              });
-            
-            
-            res.json({status:1,data:{count:Number(result?.id || 0)+1}}) 
-        }
-        catch (err) {
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+
+    try {
+        const result = await prisma_Connector.permissionEntry.findFirst({
+            orderBy: {
+                id: 'desc',
+            },
+            select: {
+                id: true,
+            },
+            where: { compCode: COMPCODE }
+        });
+
+        res.json({ status: 1, data: { count: Number(result?.id || 0) + 1 } });
+    } catch (err) {
         logServiceError('PermissionEntryService:getDocId', err, req);
-           console.log(err);
-           
-        }
-        
+        console.log(err);
     }
+}
 
 
 
-    export async function requestPermission(req, res) {
+export async function requestPermission(req, res) {
     const data = req?.body?.data;
     const approvalType = String(data?.approval || req?.body?.approval || 'HOD').toUpperCase();
     if (data && 'approval' in data) {
@@ -126,43 +130,43 @@ export async function getDocId(req, res) {
 
     if (approvalType === 'BOTH') {
         if (!hodVal && !hrVal) {
-            return res.json({ 
-                status: 0, 
-                message: "Neither HOD nor HR is assigned to your profile in User Control. Dual approval requires both HOD and HR." 
+            return res.json({
+                status: 0,
+                message: "Neither HOD nor HR is assigned to your profile in User Control. Dual approval requires both HOD and HR."
             });
         }
         if (!hodVal) {
-            return res.json({ 
-                status: 0, 
-                message: "Reporting HOD is not assigned to your profile in User Control. Dual approval requires an HOD." 
+            return res.json({
+                status: 0,
+                message: "Reporting HOD is not assigned to your profile in User Control. Dual approval requires an HOD."
             });
         }
         if (!hrVal) {
-            return res.json({ 
-                status: 0, 
-                message: "Reporting HR is not assigned to your profile in User Control. Dual approval requires an HR." 
+            return res.json({
+                status: 0,
+                message: "Reporting HR is not assigned to your profile in User Control. Dual approval requires an HR."
             });
         }
     } else if (approvalType === 'HR') {
         if (!hrVal && !hodVal) {
-            return res.json({ 
-                status: 0, 
-                message: "Reporting HR is not assigned to your profile. Please contact your administrator to assign an HR in User Control before submitting." 
+            return res.json({
+                status: 0,
+                message: "Reporting HR is not assigned to your profile. Please contact your administrator to assign an HR in User Control before submitting."
             });
         }
     } else {
         if (!hodVal) {
-            return res.json({ 
-                status: 0, 
-                message: "Reporting HOD is not assigned to your profile. Please contact your administrator to assign an HOD in User Control before submitting." 
+            return res.json({
+                status: 0,
+                message: "Reporting HOD is not assigned to your profile. Please contact your administrator to assign an HOD in User Control before submitting."
             });
         }
     }
 
     if (!data?.userId || String(data.userId).trim() === '' || data.userId === 'null') {
-        return res.json({ 
-            status: 0, 
-            message: "Employee ID is missing from your profile. Please log out and sign in again, or contact your administrator." 
+        return res.json({
+            status: 0,
+            message: "Employee ID is missing from your profile. Please log out and sign in again, or contact your administrator."
         });
     }
 
@@ -299,9 +303,9 @@ export async function getDocId(req, res) {
             where: { id: initialResult.id },
             data: { docId: finalDocid }
         });
-        
+
         const Ttime_24 = convert12to24(result?.tTime);
-        const FTime_24 = convert12to24(result?.fTime);      
+        const FTime_24 = convert12to24(result?.fTime);
 
         var auvit_data = {
             PERMISSIONID: result?.permissionId,
@@ -339,16 +343,16 @@ export async function getDocId(req, res) {
                     TO_DATE(:MODIFIED_ON, 'YYYY-MM-DD HH24:MI:SS'),
                     :IDCARD, TO_DATE(:DOCDATE, 'YYYY-MM-DD HH24:MI:SS'), :IS_CANCELLED, :USERID
                 )
-            `;     
-            const result_auvit = await connection.execute(sql, auvit_data); 
+            `;
+            const result_auvit = await connection.execute(sql, auvit_data);
             if (result_auvit?.rowsAffected > 0) {
                 await prisma_Connector?.permissionEntry?.update({ where: { docId: result?.docId }, data: { create: 1 } });
                 return res.json({ status: 1, data: mapPermission({ ...result, count: result?.id }) });
             } else {
                 await prisma_Connector?.permissionEntry?.delete({ where: { id: result?.id } });
-                return res.json({ status: 0, message: "Could not save permission record to ERP database. Please try again." });   
+                return res.json({ status: 0, message: "Could not save permission record to ERP database. Please try again." });
             }
-        }   
+        }
     } catch (err) {
         logServiceError('PermissionEntryService:requestPermission', err, req);
         console.error("requestPermission error:", err);
@@ -373,7 +377,7 @@ export async function getDocId(req, res) {
                 await connection.close();
             }
         } catch (closeErr) {
-        logServiceError('PermissionEntryService:requestPermission', closeErr, req);
+            logServiceError('PermissionEntryService:requestPermission', closeErr, req);
             console.warn("Connection close warning:", closeErr);
         }
     }
@@ -387,294 +391,97 @@ export async function get_all_Permission_reason(req, res) {
             where: { compCode: COMPCODE }
         });
         res.json({ status: 1, data: mapPermissionMasterList(result) });
-    }
-    catch (err) {
+    } catch (err) {
         logServiceError('PermissionEntryService:get_all_Permission_reason', err, req);
         console.log(err);
         res.json({ status: 0, data: [] });
     }
 }
 
-//     export async function requestPermission_Approval(req, res) {
-//       const COMPCODE=String(req?.headers?.compcode).toUpperCase()
-//         const  docid=req?.body?.docid
-//         const  p_app=req?.body?.approval
-//         const approvedBy=req?.body?.approvedBy
-//         const rejectBy=req?.body?.rejectBy
-//         const connection = await getConnection(res)
-//              try {
-                
-//                  const result=await  prisma_Connector.permissionEntry.update({where:{docid},data:{approvalStatus:p_app,approvedBy,rejectBy}})
-              
-//                  if(result?.id){
-//                 // const up_result=await  prisma_Connector.permissionDocID.updateMany({data:{count:Number(count)+1}})
-//                //  if(up_result?.count){
-
-//              const sql = ` update permission set  APPROVALSTATUS=:approvalStatus,APPROVED_BY=:approvedBy,REJECTED_BY=:rejectBy where DOCID=:docid  `     
-//             const result_auvit = await connection.execute(sql,{approvalStatus:p_app,approvedBy,rejectBy,docid}) 
-            
-//             if(result_auvit?.rowsAffected >0){
-                   
-//                      if(p_app=="approved"){
-//                          let sql = `INSERT INTO PSSATT AA
-//     (HRMATTIMPORTID,HREMPLOYMASTID,IDCARD,ATTDATE,ATTTIME,INOUT,CHK,DTYPE,USERNAME,COMPCODE,PMNO,UNQID) 
-// (
-
-// SELECT * FROM (
-// SELECT  B.PERMISSIONID HRMATTIMPORTID,D.HREMPLOYMASTID,B.IDCARD,B.DOCDATE ATTDATE,B.FTIME ATTTIME,0 INOUT,
-// B.IDCARD||TO_CHAR(B.DOCDATE,'DD/MM/YYYY')||B.FTIME CHK,'PMIS - MOB' DTYPE,
-// B.USERID USERNAME,C.COMPCODE,
-// (SELECT MIN(MACNO) FROM (
-// SELECT B.MACNO,MAX(B.MDATE) MDATE,MAX(B.HRMACIPENTRYDETROW) SNO FROM HRMACIPENTRY A
-// JOIN HRMACIPENTRYDET B ON A.HRMACIPENTRYID = B.HRMACIPENTRYID
-// JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE 
-// WHERE C.COMPCODE = :COMPCODE AND B.MTYPE IN ('IN','IN/OUT') AND B.DEFAULTYN = 'YES' 
-// GROUP BY B.MACNO 
-// )
-// WHERE MDATE <= B.DOCDATE) PMNO,
-// CASE 
-// WHEN LENGTH(B.IDCARD) = 1 THEN '00000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 2 THEN '0000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 3 THEN '000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 4 THEN '00000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 5 THEN '0000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 6 THEN '000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 7 THEN '00'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 8 THEN '0'||B.IDCARD ELSE B.IDCARD END
-// ||' '||TO_CHAR(DOCDATE,'DD-MM-YYYY')||' '||B.FTIME  UNQID  
-// FROM PERMISSION B,GTCOMPMAST C,HREMPLOYDETAILS D
-// WHERE B.COMPCODE = C.COMPCODE AND D.IDCARD = B.IDCARD
-// AND C.COMPCODE = :COMPCODE AND B.DOCID = :DOCID
-// UNION
-// SELECT  B.PERMISSIONID HRMATTIMPORTID,D.HREMPLOYMASTID,B.IDCARD,B.DOCDATE ATTDATE,B.TTIME ATTTIME,0 INOUT,
-// B.IDCARD||TO_CHAR(B.DOCDATE,'DD/MM/YYYY')||B.TTIME CHK,'PMIS - MOB' DTYPE,B.USERID USERNAME,C.COMPCODE,
-// (SELECT MIN(MACNO) FROM (
-// SELECT B.MACNO,MAX(B.MDATE) MDATE,MAX(B.HRMACIPENTRYDETROW) SNO FROM HRMACIPENTRY A
-// JOIN HRMACIPENTRYDET B ON A.HRMACIPENTRYID = B.HRMACIPENTRYID
-// JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE 
-// WHERE C.COMPCODE = :COMPCODE 
-// AND B.MTYPE IN ('OUT','IN/OUT') AND B.DEFAULTYN = 'YES' 
-// GROUP BY B.MACNO )
-// WHERE MDATE <= B.DOCDATE) PMNO,
-// CASE 
-// WHEN LENGTH(B.IDCARD) = 1 THEN '00000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 2 THEN '0000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 3 THEN '000000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 4 THEN '00000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 5 THEN '0000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 6 THEN '000'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 7 THEN '00'||B.IDCARD 
-// WHEN LENGTH(B.IDCARD) = 8 THEN '0'||B.IDCARD ELSE B.IDCARD END
-// ||' '||TO_CHAR(DOCDATE,'DD-MM-YYYY')||' '||B.TTIME  UNQID  
-// FROM PERMISSION B,GTCOMPMAST C,HREMPLOYDETAILS D
-// WHERE B.COMPCODE = C.COMPCODE AND D.IDCARD = B.IDCARD
-// AND C.COMPCODE = :COMPCODE AND B.DOCID = :DOCID
-// ) 
-// )`     
-//  await connection.execute(sql,{COMPCODE:COMPCODE,DOCID:docid}) 
-                            
-//            }
-
-//              await prisma_Connector?.permissionEntry?.update({where:{docid:result?.docId}, data:{update:1}}).then(()=>{
-//                 return  res.json({status:1,data:{...result}}) 
-               
-//                }).catch(()=>{
-//                 return  res.json({status:0,data:{}})
-//                })
-              
-//             }else{
-
-//              await  prisma_Connector?.permissionEntry?.delete({where:{docid:docid}})
-            
-//                 res.json({status:0,message:"Failed to Request !"})   
-//             }
-                     
-//               //   }else{
-//                  //    prisma_Connector?.permissionEntry?.delete({where:{userId:result?.userId}}) 
-//                  //    res.json({status:0,data:{}}) 
-//                  }
- 
-                
-                 
-                
-//              }
-//              catch (err) {
-//                 console.log(err);
-                
-//              }finally{
-//                 connection?.commit()
-//                 connection?.close()
-//              }
-             
-//          }
-
 export async function requestPermission_Approval(req, res) {
-    const COMPCODE = String(req?.headers?.compcode).toUpperCase()
-    const docid = req?.body?.docid
-    const p_app = req?.body?.approval
-    const approvedBy = req?.body?.approvedBy
-    const rejectBy = req?.body?.rejectBy
-    const connection = await getConnection(res)
+    const COMPCODE = String(req?.headers?.compcode).toUpperCase();
+    const docid = req?.body?.docid;
+    const p_app = req?.body?.approval;
+    const approvedBy = req?.body?.approvedBy;
+    const rejectBy = req?.body?.rejectBy;
+    const rejectRemark = req?.body?.rejectRemark || req?.body?.reject_reason || req?.body?.rejectReason || req?.body?.reason || '';
+    const connection = await getConnection(res);
     if (!connection || res.headersSent) return;
 
-    // Ã¢Å“â€¦ Normalize Oracle TIMESTAMP or any date format Ã¢â€ â€™ 'DD-MON-YYYY' e.g. '10-APR-2026'
-    function toOracleDate(str) {
-        if (!str) return null
-
-        // Oracle TIMESTAMP: '10-APR-26 02.54.16.000000000 PM'
-        if (/^\d{2}-[A-Z]{3}-\d{2}/i.test(str)) {
-            const datePart = str.split(' ')[0]              // '10-APR-26'
-            const [day, mon, yr] = datePart.split('-')
-            const fullYear = Number(yr) >= 50 ? `19${yr}` : `20${yr}`  // 26 Ã¢â€ â€™ 2026
-            return `${day}-${mon}-${fullYear}`              // '10-APR-2026'
-        }
-
-        // YYYY-MM-DD
-        if (/^\d{4}-\d{1,2}-\d{1,2}/.test(str)) {
-            const [year, month, day] = str.split(/[-T ]/)
-            return `${String(day).padStart(2,'0')}-${String(month).padStart(2,'0')}-${year}`
-        }
-
-        // DD-MM-YYYY or DD/MM/YYYY or D-M-YYYY
-        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(str)) {
-            const parts = str.split(/[\/\-]/)
-            return `${String(parts[0]).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}-${parts[2]}`
-        }
-
-        return str
-    }
-
     try {
-        const sql = `UPDATE PERMISSION SET APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy WHERE DOCID=:docid`
-        const result_auvit = await connection.execute(sql, { approvalStatus: p_app, approvedBy, rejectBy, docid })
-
-        if (!(result_auvit?.rowsAffected > 0)) {
-            await connection.rollback()
-            return res.status(404).json({ status: 0, message: "Permission request not found." })
+        // 1. Update Oracle PERMISSION table
+        let oracleUpdated = false;
+        try {
+            const sql = `UPDATE PERMISSION SET APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy, REJECT_REASON=:rejectRemark WHERE DOCID=:docid`;
+            const result_auvit = await connection.execute(sql, {
+                approvalStatus: p_app,
+                approvedBy: approvedBy || null,
+                rejectBy: rejectBy || null,
+                rejectRemark: rejectRemark || null,
+                docid
+            });
+            oracleUpdated = (result_auvit?.rowsAffected > 0);
+        } catch (oracleErr) {
+            // Graceful fallback if Oracle PERMISSION table doesn't have REJECT_REASON column
+            if (String(oracleErr?.message || '').includes('ORA-00904')) {
+                const fallbackSql = `UPDATE PERMISSION SET APPROVALSTATUS=:approvalStatus, APPROVED_BY=:approvedBy, REJECTED_BY=:rejectBy WHERE DOCID=:docid`;
+                const result_auvit = await connection.execute(fallbackSql, {
+                    approvalStatus: p_app,
+                    approvedBy: approvedBy || null,
+                    rejectBy: rejectBy || null,
+                    docid
+                });
+                oracleUpdated = (result_auvit?.rowsAffected > 0);
+            } else {
+                throw oracleErr;
+            }
         }
 
-        if (p_app === "approved") {
-            const fmtCheck = await connection.execute(
-                `SELECT DOCDATE FROM PERMISSION WHERE DOCID=:docid AND ROWNUM=1`,
-                { docid }
-            )
-
-            const rawDate = fmtCheck?.rows?.[0]?.[0] ?? ''
-            const normalizedDate = toOracleDate(String(rawDate))
-
-            const attSql = `
-                        INSERT INTO PSSATT
-                            (HRMATTIMPORTID, HREMPLOYMASTID, IDCARD, ATTDATE, ATTTIME, INOUT, CHK, DTYPE, USERNAME, COMPCODE, PMNO, UNQID)
-                        SELECT * FROM (
-                            -- IN punch (FTIME)
-                            SELECT
-                                B.PERMISSIONID                                                         AS HRMATTIMPORTID,
-                                D.HREMPLOYMASTID,
-                                B.IDCARD                                                               AS IDCARD,
-                                TO_DATE(:DOCDATE, 'DD-MON-YYYY')                                       AS ATTDATE,
-                                B.FTIME                                                                AS ATTTIME,
-                                0                                                                      AS INOUT,
-                                SUBSTR(B.IDCARD, 1, 10)
-                                    || SUBSTR(:DOCDATE, 1, 10)
-                                    || SUBSTR(B.FTIME, 1, 8)                                           AS CHK,
-                                'PMIS - MOB'                                                           AS DTYPE,
-                                B.USERID                                                               AS USERNAME,
-                                C.COMPCODE,
-                                (
-                                    SELECT MIN(DET.MACNO)
-                                    FROM HRMACIPENTRY    ENT
-                                    JOIN HRMACIPENTRYDET DET ON DET.HRMACIPENTRYID = ENT.HRMACIPENTRYID
-                                    JOIN GTCOMPMAST      CM  ON CM.GTCOMPMASTID    = ENT.COMPCODE
-                                    WHERE CM.COMPCODE      = :COMPCODE
-                                      AND DET.MTYPE        IN ('IN', 'IN/OUT')
-                                      AND DET.DEFAULTYN    = 'YES'
-                                      AND TRUNC(DET.MDATE) <= TO_DATE(:DOCDATE, 'DD-MON-YYYY')
-                                )                                                                      AS PMNO,
-                                LPAD(B.IDCARD, 9, '0')
-                                    || ' ' || :DOCDATE
-                                    || ' ' || SUBSTR(B.FTIME, 1, 8)                                    AS UNQID
-                            FROM PERMISSION      B
-                            JOIN GTCOMPMAST      C ON C.COMPCODE = B.COMPCODE
-                            JOIN HREMPLOYDETAILS D ON D.IDCARD   = B.IDCARD
-                            WHERE C.COMPCODE = :COMPCODE
-                              AND B.DOCID    = :DOCID
-
-                            UNION ALL
-
-                            -- OUT punch (TTIME)
-                            SELECT
-                                B.PERMISSIONID                                                         AS HRMATTIMPORTID,
-                                D.HREMPLOYMASTID,
-                                B.IDCARD                                                               AS IDCARD,
-                                TO_DATE(:DOCDATE, 'DD-MON-YYYY')                                       AS ATTDATE,
-                                B.TTIME                                                                AS ATTTIME,
-                                0                                                                      AS INOUT,
-                                SUBSTR(B.IDCARD, 1, 10)
-                                    || SUBSTR(:DOCDATE, 1, 10)
-                                    || SUBSTR(B.TTIME, 1, 8)                                           AS CHK,
-                                'PMIS - MOB'                                                           AS DTYPE,
-                                B.USERID                                                               AS USERNAME,
-                                C.COMPCODE,
-                                (
-                                    SELECT MIN(DET.MACNO)
-                                    FROM HRMACIPENTRY    ENT
-                                    JOIN HRMACIPENTRYDET DET ON DET.HRMACIPENTRYID = ENT.HRMACIPENTRYID
-                                    JOIN GTCOMPMAST      CM  ON CM.GTCOMPMASTID    = ENT.COMPCODE
-                                    WHERE CM.COMPCODE      = :COMPCODE
-                                      AND DET.MTYPE        IN ('OUT', 'IN/OUT')
-                                      AND DET.DEFAULTYN    = 'YES'
-                                      AND TRUNC(DET.MDATE) <= TO_DATE(:DOCDATE, 'DD-MON-YYYY')
-                                )                                                                      AS PMNO,
-                                LPAD(B.IDCARD, 9, '0')
-                                    || ' ' || :DOCDATE
-                                    || ' ' || SUBSTR(B.TTIME, 1, 8)                                    AS UNQID
-                            FROM PERMISSION      B
-                            JOIN GTCOMPMAST      C ON C.COMPCODE = B.COMPCODE
-                            JOIN HREMPLOYDETAILS D ON D.IDCARD   = B.IDCARD
-                            WHERE C.COMPCODE = :COMPCODE
-                              AND B.DOCID    = :DOCID
-                        )`
-
-            await connection.execute(attSql, {
-                COMPCODE,
-                DOCID: docid,
-                DOCDATE: normalizedDate
-            })
+        if (!oracleUpdated) {
+            await connection.rollback();
+            return res.status(404).json({ status: 0, message: "Permission request not found." });
         }
 
+        // 2. Update Prisma database
         const result = await prisma_Connector.permissionEntry.update({
             where: { docId: docid },
-            data: { approvalStatus: p_app, approvedBy, rejectBy, update: 1 }
-        })
+            data: {
+                approvalStatus: p_app,
+                approvedBy: approvedBy || null,
+                rejectBy: rejectBy || null,
+                rejectReason: rejectRemark || null,
+                update: 1
+            }
+        });
 
-        await connection.commit()
-        return res.json({ status: 1, data: mapPermission(result) })
+        await connection.commit();
+        return res.json({ status: 1, data: mapPermission(result) });
     } catch (err) {
         logServiceError('PermissionEntryService:requestPermission_Approval', err, req);
-        console.error('[requestPermission_Approval] Approval failed:', err)
+        console.error('[requestPermission_Approval] Approval failed:', err);
         try {
-            await connection.rollback()
+            await connection.rollback();
         } catch (rollbackError) {
-        logServiceError('PermissionEntryService:requestPermission_Approval', rollbackError, req);
-            console.error('[requestPermission_Approval] Oracle rollback failed:', rollbackError)
+            logServiceError('PermissionEntryService:requestPermission_Approval', rollbackError, req);
+            console.error('[requestPermission_Approval] Oracle rollback failed:', rollbackError);
         }
         if (!res.headersSent) {
             return res.status(500).json({
                 status: 0,
                 message: 'Could not update this permission request. Please try again or contact support.'
-            })
+            });
         }
     } finally {
         try {
-            await connection.close()
+            await connection.close();
         } catch (closeError) {
-        logServiceError('PermissionEntryService:requestPermission_Approval', closeError, req);
-            console.error('[requestPermission_Approval] Oracle connection close failed:', closeError)
+            logServiceError('PermissionEntryService:requestPermission_Approval', closeError, req);
+            console.error('[requestPermission_Approval] Oracle connection close failed:', closeError);
         }
     }
 }
 
-// â”€â”€ Standard Function Aliases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Standard Function Aliases ────────────────────────────────────────────────
 export const getPermissionEntries = get__per;
 export const getPermissionDocId = getDocId;
 export const getPermissionCategories = get__per_category;
@@ -682,7 +489,3 @@ export const getAllPermissionReasons = get_all_Permission_reason;
 export const approvePermissionRequest = requestPermission_Approval;
 export const addPermissionMaster = addPermission_master;
 export const getUserPermissions = get_user_Permission;
-
-
-
-         
