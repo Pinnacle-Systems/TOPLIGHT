@@ -127,12 +127,6 @@ exports.Prisma.SettingsScalarFieldEnum = {
   compCode: 'compCode'
 };
 
-exports.Prisma.NotifyApprovalGroupScalarFieldEnum = {
-  id: 'id',
-  idCard: 'idCard',
-  compCode: 'compCode'
-};
-
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   userName: 'userName',
@@ -198,45 +192,6 @@ exports.Prisma.OndutyScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   category: 'category'
-};
-
-exports.Prisma.AdvanceRequestScalarFieldEnum = {
-  id: 'id',
-  docId: 'docId',
-  docDate: 'docDate',
-  idCard: 'idCard',
-  fromDate: 'fromDate',
-  toDate: 'toDate',
-  empName: 'empName',
-  finYear: 'finYear',
-  advType: 'advType',
-  total: 'total',
-  payType: 'payType',
-  hod: 'hod',
-  hr: 'hr',
-  group: 'group',
-  isCancelled: 'isCancelled',
-  userId: 'userId',
-  preLoan: 'preLoan',
-  totalLoan: 'totalLoan',
-  preDue: 'preDue',
-  ins: 'ins',
-  due: 'due',
-  remark: 'remark',
-  approvalStatus: 'approvalStatus',
-  compCode: 'compCode',
-  createdOn: 'createdOn',
-  updatedOn: 'updatedOn',
-  createdBy: 'createdBy',
-  mobile: 'mobile',
-  create: 'create',
-  update: 'update',
-  modifiedBy: 'modifiedBy',
-  rejectBy: 'rejectBy',
-  approvedBy: 'approvedBy',
-  category: 'category',
-  finCode: 'finCode',
-  payCode: 'payCode'
 };
 
 exports.Prisma.CompanyCodeScalarFieldEnum = {
@@ -394,16 +349,6 @@ exports.Prisma.RoleOnPageScalarFieldEnum = {
   isDefault: 'isDefault'
 };
 
-exports.Prisma.NotificationScalarFieldEnum = {
-  id: 'id',
-  costingId: 'costingId',
-  senderId: 'senderId',
-  receiverId: 'receiverId',
-  type: 'type',
-  message: 'message',
-  isRead: 'isRead'
-};
-
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -417,10 +362,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   Settings: 'Settings',
-  NotifyApprovalGroup: 'NotifyApprovalGroup',
   User: 'User',
   Onduty: 'Onduty',
-  AdvanceRequest: 'AdvanceRequest',
   CompanyCode: 'CompanyCode',
   UserLog: 'UserLog',
   PermissionDocId: 'PermissionDocId',
@@ -432,8 +375,7 @@ exports.Prisma.ModelName = {
   Vechilekm: 'Vechilekm',
   LeaveEntry: 'LeaveEntry',
   Role: 'Role',
-  RoleOnPage: 'RoleOnPage',
-  Notification: 'Notification'
+  RoleOnPage: 'RoleOnPage'
 };
 
 /**

@@ -1,6 +1,8 @@
-import { prisma_Connector } from "../../index.js";
+﻿import { prisma_Connector } from "../../index.js";
 import { mapPermission, mapLeave, mapOnduty } from "../utils/responseMapper.js";
 import { logServiceError } from "../utils/logger.js";
+import { getConnection } from "../constants/dbConnection.js";
+import { fetchAttendanceApprovalItems } from "./attendanceService.js";
 
 
 
@@ -36,11 +38,55 @@ export async function getPermissionRequest(req, res) {
                 },
             });
 
+            // 4. Attendance requests from PSSATT
+            let mappedAttendance = [];
+            try {
+                const supervisorId = String(hod || hr || '').trim();
+                const supervisorUser = await prisma_Connector?.user?.findFirst({
+                    where: { OR: [{ idCard: supervisorId }, { userName: supervisorId }] },
+                    select: { idCard: true, userName: true, level: true, companies: { select: { companyCode: true } } },
+                });
+                const sCard = supervisorUser?.idCard || supervisorId;
+                const sName = supervisorUser?.userName || supervisorId;
+                const sLevel = String(supervisorUser?.level || '').toLowerCase();
+
+                let employees = await prisma_Connector?.user?.findMany({
+                    where: {
+                        OR: [
+                            { hod: sCard }, { hod: sName }, { hod: supervisorId },
+                            { hr: sCard }, { hr: sName }, { hr: supervisorId },
+                        ],
+                    },
+                    select: { idCard: true, userName: true, email: true },
+                });
+
+                let conn = null;
+                try {
+                    conn = await getConnection();
+                    if (conn) {
+                        const allAttItems = await fetchAttendanceApprovalItems(conn);
+                        if (sLevel === 'hr' || sLevel === 'admin' || !employees || employees.length === 0) {
+                            mappedAttendance = allAttItems;
+                        } else {
+                            const empCardSet = new Set(employees.map(e => String(e.idCard || '').trim()));
+                            const filtered = allAttItems.filter(item => empCardSet.has(String(item.idcard || '').trim()));
+                            mappedAttendance = filtered.length > 0 ? filtered : allAttItems;
+                        }
+                    }
+                } catch (connErr) {
+                    console.warn('[NotificationService] Attendance query warning:', connErr?.message);
+                } finally {
+                    await conn?.close();
+                }
+            } catch (attErr) {
+                console.warn('[NotificationService] Error fetching attendance notifications:', attErr?.message);
+            }
+
             const mappedPermission = (result || []).map(mapPermission);
             const mappedLeave = (result_Leave || []).map(mapLeave);
             const mappedOnduty = (onduty_request || []).map(mapOnduty);
 
-            return res.json({ statusCode: 0, data: [...mappedPermission, ...mappedLeave, ...mappedOnduty] });
+            return res.json({ statusCode: 0, data: [...mappedPermission, ...mappedLeave, ...mappedOnduty, ...mappedAttendance] });
         } catch (err) {
             logServiceError('NotificationService:getPermissionRequest', err, req);
             console.error('Error retrieving data:', err);

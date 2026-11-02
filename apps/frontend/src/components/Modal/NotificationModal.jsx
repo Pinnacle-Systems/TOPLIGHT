@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
     FlatList,
     Modal,
@@ -13,6 +13,59 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import moment from 'moment';
 import { CustomNavigation } from '../utils/NavigationRef';
 import { useAppTheme } from '../../theme';
+import { Common_Context } from '../../context/CommonContext';
+
+const formatTimeIST = (val) => {
+    if (!val || val === '--:--' || val === '-' || val === 'null' || val === 'undefined') return '--:--';
+    const str = String(val).trim();
+    if (/am|pm/i.test(str)) return str.toUpperCase();
+    const parts = str.split(':');
+    if (parts.length >= 2) {
+        let h = parseInt(parts[0], 10);
+        const m = String(parts[1]).padStart(2, '0');
+        if (isNaN(h)) return str;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+    }
+    const parsed = moment(str, [
+        'HH:mm:ss',
+        'HH:mm',
+        'H:m:s',
+        'H:m',
+        'YYYY-MM-DD HH:mm:ss',
+        'YYYY-MM-DDTHH:mm:ss',
+        moment.ISO_8601,
+    ]);
+    if (parsed.isValid()) return parsed.format('hh:mm A');
+    return str;
+};
+
+const formatHumanDuration = (val) => {
+    if (!val || val === '--:--' || val === '-' || val === 'null' || val === 'undefined') return '0m';
+    let totalSec = 0;
+    if (typeof val === 'number') totalSec = val;
+    else if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (/[hm]/i.test(trimmed) && !trimmed.includes(':')) return trimmed;
+        const parts = trimmed.split(':').map(Number);
+        if (parts.length === 3) totalSec = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+        else if (parts.length === 2) totalSec = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60;
+        else {
+            const num = Number(trimmed);
+            if (!isNaN(num)) totalSec = num;
+        }
+    }
+    if (totalSec <= 0) return '0m';
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0 && m > 0) return `${h}h ${m}m`;
+    if (h > 0 && m === 0) return `${h}h 0m`;
+    if (m > 0) return `${m}m`;
+    return `${s}s`;
+};
 
 const formatTimeAgo = (dateValue) => {
     if (!dateValue) return 'Just now';
@@ -41,18 +94,55 @@ export default function NotificationModal({
     const [livedata_man, setlivedata_man] = useState([]);
     const [selectedTab, setSelectedTab] = useState('all'); // 'all' | 'onduty' | 'leave' | 'permission'
 
+    // Derive allowed notification groups from user's RoleOnPage permissions
+    const { page: rolesOnPage, admin: isAdmin, level } = useContext(Common_Context) || {};
+    const allowedGroups = useMemo(() => {
+        // Admins see all notifications
+        if (isAdmin === 1 || isAdmin === true || String(level || '').toLowerCase() === 'hr') return ['leave', 'permission', 'onduty', 'attendance'];
+        if (!rolesOnPage || !Array.isArray(rolesOnPage) || rolesOnPage.length === 0) return [];
+        const links = rolesOnPage
+            .filter(r => (
+                r?.isdefault === 1 || r?.isdefault === true || r?.isdefault === '1' || r?.isdefault === 'true' ||
+                r?.read === 1 || r?.read === true || r?.read === '1' || r?.read === 'true' ||
+                r?.create === 1 || r?.create === true || r?.create === '1' || r?.create === 'true'
+            ))
+            .map(r => String(r?.link || '').toLowerCase());
+        const groups = [];
+        if (links.some(l => l === 'l_approval' || l === 'leave_approval' || l === 'lentry' || l === 'leave')) {
+            groups.push('leave');
+        }
+        if (links.some(l => l === 'p_approval' || l === 'permission_approval' || l === 'pentry' || l === 'permission')) {
+            groups.push('permission');
+        }
+        if (links.some(l => l === 'onduty_approval' || l === 'onduty' || l === 'on_duty')) {
+            groups.push('onduty');
+        }
+        if (links.some(l => l === 'attendance_approval' || l === 'att_approval' || l === 'att' || l === 'attendance')) {
+            groups.push('attendance');
+        }
+        return groups;
+    }, [rolesOnPage, isAdmin, level]);
+
+    useEffect(() => {
+        if (selectedTab !== 'all' && !allowedGroups.includes(selectedTab)) {
+            setSelectedTab('all');
+        }
+    }, [allowedGroups, selectedTab]);
+
     useEffect(() => {
         const liveDocId = livedata?.data?.docid || livedata?.data?.docId;
-        if (liveDocId) {
+        const liveGroup = String(livedata?.data?.group || '').toLowerCase();
+        const normalizedLiveGroup = liveGroup === 'att' ? 'attendance' : liveGroup;
+        if (liveDocId && (allowedGroups.length === 0 || allowedGroups.includes(normalizedLiveGroup))) {
             setlivedata_man(prev => {
                 const exists = prev.some(item => (item.docid || item.docId) === liveDocId);
                 if (!exists) return [...prev, livedata.data];
                 return prev;
             });
         }
-    }, [livedata?.data?.docid, livedata?.data?.docId]);
+    }, [livedata?.data?.docid, livedata?.data?.docId, livedata?.data?.group, allowedGroups]);
 
-    // Deduplicated merged notifications list
+    // Deduplicated merged notifications list — filtered by user's allowed approval pages
     const mergedData = useMemo(() => {
         const all = [...(data?.data || []), ...livedata_man];
         const seen = new Set();
@@ -64,18 +154,24 @@ export default function NotificationModal({
                 seen.add(docid);
                 return true;
             })
+            .filter(item => {
+                let grp = String(item?.group || '').toLowerCase();
+                if (grp === 'att') grp = 'attendance';
+                return allowedGroups.includes(grp);
+            })
             .sort((a, b) => {
                 const dateA = moment(a.createdAt || a.docdate || a.docDate || 0);
                 const dateB = moment(b.createdAt || b.docdate || b.docDate || 0);
                 return dateB.valueOf() - dateA.valueOf();
             });
-    }, [data?.data, livedata_man]);
+    }, [data?.data, livedata_man, allowedGroups]);
 
     // Counts per type for filter tabs
     const counts = useMemo(() => {
-        const c = { all: mergedData.length, onduty: 0, leave: 0, permission: 0 };
+        const c = { all: mergedData.length, onduty: 0, leave: 0, permission: 0, attendance: 0 };
         mergedData.forEach(item => {
-            const grp = String(item?.group || '').toLowerCase();
+            let grp = String(item?.group || '').toLowerCase();
+            if (grp === 'att') grp = 'attendance';
             if (c[grp] != null) c[grp] += 1;
         });
         return c;
@@ -83,7 +179,11 @@ export default function NotificationModal({
 
     const filteredData = useMemo(() => {
         if (selectedTab === 'all') return mergedData;
-        return mergedData.filter(item => String(item?.group || '').toLowerCase() === selectedTab);
+        return mergedData.filter(item => {
+            let grp = String(item?.group || '').toLowerCase();
+            if (grp === 'att') grp = 'attendance';
+            return grp === selectedTab;
+        });
     }, [mergedData, selectedTab]);
 
     const hideModal = () => {
@@ -94,13 +194,17 @@ export default function NotificationModal({
         const grp = String(item?.group || '').toLowerCase();
         switch (grp) {
             case 'leave':
-                CustomNavigation('l_approval', { ...item, refresh, all: mergedData });
+                CustomNavigation('l_approval', { ...item, refresh, all: mergedData.filter(i => String(i?.group || '').toLowerCase() === 'leave') });
                 break;
             case 'permission':
-                CustomNavigation('p_approval', { ...item, refresh, all: mergedData });
+                CustomNavigation('p_approval', { ...item, refresh, all: mergedData.filter(i => String(i?.group || '').toLowerCase() === 'permission') });
                 break;
             case 'onduty':
-                CustomNavigation('onduty_approval', { ...item, refresh, all: mergedData });
+                CustomNavigation('onduty_approval', { ...item, refresh, all: mergedData.filter(i => String(i?.group || '').toLowerCase() === 'onduty') });
+                break;
+            case 'attendance':
+            case 'att':
+                CustomNavigation('attendance_approval', { ...item, refresh, all: mergedData.filter(i => ['attendance', 'att'].includes(String(i?.group || '').toLowerCase())) });
                 break;
             default:
                 break;
@@ -118,6 +222,7 @@ export default function NotificationModal({
         const isOnduty = grp === 'onduty';
         const isLeave = grp === 'leave';
         const isPermission = grp === 'permission';
+        const isAttendance = grp === 'attendance' || grp === 'att';
 
         const employeeName =
             item?.userdata?.username ||
@@ -192,6 +297,21 @@ export default function NotificationModal({
             const timeWindow = fTime && tTime ? `${fTime} - ${tTime}` : '';
             detailText = [timeWindow, duration ? `(${duration})` : '', item?.reason].filter(Boolean).join(' ') || 'Permission request';
             detailIcon = 'clock-outline';
+        } else if (isAttendance) {
+            typeIcon = 'fingerprint';
+            typeBadgeLabel = 'ATTENDANCE';
+            typeBgColor = theme.colors.successSoft;
+            typeTextColor = theme.colors.success;
+            const pIn = item?.punchIn || item?.inTime;
+            const pOut = item?.punchOut || item?.outTime;
+            const duration = item?.humanWorked || item?.totalTimeFormatted;
+            const formattedIn = formatTimeIST(pIn);
+            const formattedOut = formatTimeIST(pOut);
+            const formattedDur = formatHumanDuration(duration);
+            detailText = formattedIn && formattedIn !== '--:--'
+                ? `In: ${formattedIn}${formattedOut && formattedOut !== '--:--' ? ` • Out: ${formattedOut}` : ''}${formattedDur && formattedDur !== '0m' ? ` (${formattedDur})` : ''}`
+                : (item?.reason || 'Attendance record review');
+            detailIcon = 'clock-check-outline';
         }
 
         return (
@@ -348,6 +468,18 @@ export default function NotificationModal({
                                         >
                                             <Text style={[styles.tabText, selectedTab === 'permission' && styles.tabTextActive]}>
                                                 Permission ({counts.permission})
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {counts.attendance > 0 && (
+                                        <TouchableOpacity
+                                            style={[styles.tab, selectedTab === 'attendance' && styles.tabActive]}
+                                            onPress={() => setSelectedTab('attendance')}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={[styles.tabText, selectedTab === 'attendance' && styles.tabTextActive]}>
+                                                Attendance ({counts.attendance})
                                             </Text>
                                         </TouchableOpacity>
                                     )}

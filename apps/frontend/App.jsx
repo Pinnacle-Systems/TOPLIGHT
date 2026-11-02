@@ -49,7 +49,7 @@ const MainApp = () => {
     }, [isAuthenticated]);
     
     // UserDetails are populated inside SplashScreen from AsyncStorage
-    const { isAdmin, GCOMPCODE, roleId } = useSelector(state => state.UserDetails);
+    const { isAdmin, GCOMPCODE, roleId, level } = useSelector(state => state.UserDetails);
 
     // Derived role ID matching old app logic
     const userRoleId = useMemo(
@@ -84,6 +84,7 @@ const MainApp = () => {
                 page: rolesOnPage?.data || [],
                 loading: isRolesLoading,
                 admin: isAdmin,
+                level: level,
                 logout: handleLogout,
             }}
         >

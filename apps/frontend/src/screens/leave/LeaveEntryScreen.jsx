@@ -76,13 +76,14 @@ const calculateRequestedDays = (fromDate, toDate, firstDayType, lastDayType) => 
     );
 };
 
-function DateField({ label, value, onPress, error, styles, theme }) {
+function DateField({ label, value, onPress, error, styles, theme,disabled }) {
     return (
         <View style={styles.field}>
             <Text style={styles.label}>{label}<Text style={styles.required}> *</Text></Text>
             <TouchableOpacity
                 style={[styles.dateControl, error && styles.invalidControl]}
                 onPress={onPress}
+                disabled={disabled}
                 accessibilityRole="button"
                 accessibilityLabel={`${label}${value ? `, ${displayDate(value)}` : ''}`}
             >
@@ -677,6 +678,7 @@ export default function LeaveEntryScreen() {
                         styles={styles}
                         theme={theme}
                         label="Document date"
+                        disabled={true}
                         value={docDate}
                         onPress={() => setDatePicker('doc')}
                     />

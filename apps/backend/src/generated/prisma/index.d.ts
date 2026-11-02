@@ -19,11 +19,6 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Settings = $Result.DefaultSelection<Prisma.$SettingsPayload>
 /**
- * Model NotifyApprovalGroup
- * 
- */
-export type NotifyApprovalGroup = $Result.DefaultSelection<Prisma.$NotifyApprovalGroupPayload>
-/**
  * Model User
  * 
  */
@@ -33,11 +28,6 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  * 
  */
 export type Onduty = $Result.DefaultSelection<Prisma.$OndutyPayload>
-/**
- * Model AdvanceRequest
- * 
- */
-export type AdvanceRequest = $Result.DefaultSelection<Prisma.$AdvanceRequestPayload>
 /**
  * Model CompanyCode
  * 
@@ -98,11 +88,6 @@ export type Role = $Result.DefaultSelection<Prisma.$RolePayload>
  * 
  */
 export type RoleOnPage = $Result.DefaultSelection<Prisma.$RoleOnPagePayload>
-/**
- * Model Notification
- * 
- */
-export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -237,16 +222,6 @@ export class PrismaClient<
   get settings(): Prisma.SettingsDelegate<ExtArgs>;
 
   /**
-   * `prisma.notifyApprovalGroup`: Exposes CRUD operations for the **NotifyApprovalGroup** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more NotifyApprovalGroups
-    * const notifyApprovalGroups = await prisma.notifyApprovalGroup.findMany()
-    * ```
-    */
-  get notifyApprovalGroup(): Prisma.NotifyApprovalGroupDelegate<ExtArgs>;
-
-  /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
     * Example usage:
     * ```ts
@@ -265,16 +240,6 @@ export class PrismaClient<
     * ```
     */
   get onduty(): Prisma.OndutyDelegate<ExtArgs>;
-
-  /**
-   * `prisma.advanceRequest`: Exposes CRUD operations for the **AdvanceRequest** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more AdvanceRequests
-    * const advanceRequests = await prisma.advanceRequest.findMany()
-    * ```
-    */
-  get advanceRequest(): Prisma.AdvanceRequestDelegate<ExtArgs>;
 
   /**
    * `prisma.companyCode`: Exposes CRUD operations for the **CompanyCode** model.
@@ -395,16 +360,6 @@ export class PrismaClient<
     * ```
     */
   get roleOnPage(): Prisma.RoleOnPageDelegate<ExtArgs>;
-
-  /**
-   * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Notifications
-    * const notifications = await prisma.notification.findMany()
-    * ```
-    */
-  get notification(): Prisma.NotificationDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -883,10 +838,8 @@ export namespace Prisma {
 
   export const ModelName: {
     Settings: 'Settings',
-    NotifyApprovalGroup: 'NotifyApprovalGroup',
     User: 'User',
     Onduty: 'Onduty',
-    AdvanceRequest: 'AdvanceRequest',
     CompanyCode: 'CompanyCode',
     UserLog: 'UserLog',
     PermissionDocId: 'PermissionDocId',
@@ -898,8 +851,7 @@ export namespace Prisma {
     Vechilekm: 'Vechilekm',
     LeaveEntry: 'LeaveEntry',
     Role: 'Role',
-    RoleOnPage: 'RoleOnPage',
-    Notification: 'Notification'
+    RoleOnPage: 'RoleOnPage'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -916,7 +868,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     meta: {
-      modelProps: 'settings' | 'notifyApprovalGroup' | 'user' | 'onduty' | 'advanceRequest' | 'companyCode' | 'userLog' | 'permissionDocId' | 'permissionMaster' | 'ondutyMaster' | 'location' | 'permissionEntry' | 'trackers' | 'vechilekm' | 'leaveEntry' | 'role' | 'roleOnPage' | 'notification'
+      modelProps: 'settings' | 'user' | 'onduty' | 'companyCode' | 'userLog' | 'permissionDocId' | 'permissionMaster' | 'ondutyMaster' | 'location' | 'permissionEntry' | 'trackers' | 'vechilekm' | 'leaveEntry' | 'role' | 'roleOnPage'
       txIsolationLevel: Prisma.TransactionIsolationLevel
     },
     model: {
@@ -983,72 +935,6 @@ export namespace Prisma {
           count: {
             args: Prisma.SettingsCountArgs<ExtArgs>,
             result: $Utils.Optional<SettingsCountAggregateOutputType> | number
-          }
-        }
-      }
-      NotifyApprovalGroup: {
-        payload: Prisma.$NotifyApprovalGroupPayload<ExtArgs>
-        fields: Prisma.NotifyApprovalGroupFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.NotifyApprovalGroupFindUniqueArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.NotifyApprovalGroupFindUniqueOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          findFirst: {
-            args: Prisma.NotifyApprovalGroupFindFirstArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.NotifyApprovalGroupFindFirstOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          findMany: {
-            args: Prisma.NotifyApprovalGroupFindManyArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>[]
-          }
-          create: {
-            args: Prisma.NotifyApprovalGroupCreateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          createMany: {
-            args: Prisma.NotifyApprovalGroupCreateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          delete: {
-            args: Prisma.NotifyApprovalGroupDeleteArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          update: {
-            args: Prisma.NotifyApprovalGroupUpdateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          deleteMany: {
-            args: Prisma.NotifyApprovalGroupDeleteManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          updateMany: {
-            args: Prisma.NotifyApprovalGroupUpdateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          upsert: {
-            args: Prisma.NotifyApprovalGroupUpsertArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotifyApprovalGroupPayload>
-          }
-          aggregate: {
-            args: Prisma.NotifyApprovalGroupAggregateArgs<ExtArgs>,
-            result: $Utils.Optional<AggregateNotifyApprovalGroup>
-          }
-          groupBy: {
-            args: Prisma.NotifyApprovalGroupGroupByArgs<ExtArgs>,
-            result: $Utils.Optional<NotifyApprovalGroupGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.NotifyApprovalGroupCountArgs<ExtArgs>,
-            result: $Utils.Optional<NotifyApprovalGroupCountAggregateOutputType> | number
           }
         }
       }
@@ -1181,72 +1067,6 @@ export namespace Prisma {
           count: {
             args: Prisma.OndutyCountArgs<ExtArgs>,
             result: $Utils.Optional<OndutyCountAggregateOutputType> | number
-          }
-        }
-      }
-      AdvanceRequest: {
-        payload: Prisma.$AdvanceRequestPayload<ExtArgs>
-        fields: Prisma.AdvanceRequestFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AdvanceRequestFindUniqueArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AdvanceRequestFindUniqueOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          findFirst: {
-            args: Prisma.AdvanceRequestFindFirstArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AdvanceRequestFindFirstOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          findMany: {
-            args: Prisma.AdvanceRequestFindManyArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>[]
-          }
-          create: {
-            args: Prisma.AdvanceRequestCreateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          createMany: {
-            args: Prisma.AdvanceRequestCreateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          delete: {
-            args: Prisma.AdvanceRequestDeleteArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          update: {
-            args: Prisma.AdvanceRequestUpdateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          deleteMany: {
-            args: Prisma.AdvanceRequestDeleteManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AdvanceRequestUpdateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          upsert: {
-            args: Prisma.AdvanceRequestUpsertArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$AdvanceRequestPayload>
-          }
-          aggregate: {
-            args: Prisma.AdvanceRequestAggregateArgs<ExtArgs>,
-            result: $Utils.Optional<AggregateAdvanceRequest>
-          }
-          groupBy: {
-            args: Prisma.AdvanceRequestGroupByArgs<ExtArgs>,
-            result: $Utils.Optional<AdvanceRequestGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AdvanceRequestCountArgs<ExtArgs>,
-            result: $Utils.Optional<AdvanceRequestCountAggregateOutputType> | number
           }
         }
       }
@@ -2042,72 +1862,6 @@ export namespace Prisma {
           }
         }
       }
-      Notification: {
-        payload: Prisma.$NotificationPayload<ExtArgs>
-        fields: Prisma.NotificationFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.NotificationFindUniqueArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          findFirst: {
-            args: Prisma.NotificationFindFirstArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          findMany: {
-            args: Prisma.NotificationFindManyArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
-          }
-          create: {
-            args: Prisma.NotificationCreateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          createMany: {
-            args: Prisma.NotificationCreateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          delete: {
-            args: Prisma.NotificationDeleteArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          update: {
-            args: Prisma.NotificationUpdateArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          deleteMany: {
-            args: Prisma.NotificationDeleteManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          updateMany: {
-            args: Prisma.NotificationUpdateManyArgs<ExtArgs>,
-            result: Prisma.BatchPayload
-          }
-          upsert: {
-            args: Prisma.NotificationUpsertArgs<ExtArgs>,
-            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
-          }
-          aggregate: {
-            args: Prisma.NotificationAggregateArgs<ExtArgs>,
-            result: $Utils.Optional<AggregateNotification>
-          }
-          groupBy: {
-            args: Prisma.NotificationGroupByArgs<ExtArgs>,
-            result: $Utils.Optional<NotificationGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.NotificationCountArgs<ExtArgs>,
-            result: $Utils.Optional<NotificationCountAggregateOutputType> | number
-          }
-        }
-      }
     }
   } & {
     other: {
@@ -2263,46 +2017,12 @@ export namespace Prisma {
 
 
   /**
-   * Count Type NotifyApprovalGroupCountOutputType
-   */
-
-  export type NotifyApprovalGroupCountOutputType = {
-    user: number
-  }
-
-  export type NotifyApprovalGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | NotifyApprovalGroupCountOutputTypeCountUserArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * NotifyApprovalGroupCountOutputType without action
-   */
-  export type NotifyApprovalGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroupCountOutputType
-     */
-    select?: NotifyApprovalGroupCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * NotifyApprovalGroupCountOutputType without action
-   */
-  export type NotifyApprovalGroupCountOutputTypeCountUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UserWhereInput
-  }
-
-
-  /**
    * Count Type UserCountOutputType
    */
 
   export type UserCountOutputType = {
-    optionalNotify: number
     permission: number
     companies: number
-    notificationSender: number
-    notificationReceiver: number
     permissionEntry: number
     permissionEntryCreateUser: number
     permissionEntryModifiedUser: number
@@ -2311,9 +2031,6 @@ export namespace Prisma {
     leaveEntryModified: number
     leaveEntryHod: number
     leaveEntryUser: number
-    advanceRequestCreate: number
-    advanceRequestModified: number
-    advanceRequest: number
     onDuty: number
     ondutyCreate: number
     ondutyModify: number
@@ -2321,11 +2038,8 @@ export namespace Prisma {
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    optionalNotify?: boolean | UserCountOutputTypeCountOptionalNotifyArgs
     permission?: boolean | UserCountOutputTypeCountPermissionArgs
     companies?: boolean | UserCountOutputTypeCountCompaniesArgs
-    notificationSender?: boolean | UserCountOutputTypeCountNotificationSenderArgs
-    notificationReceiver?: boolean | UserCountOutputTypeCountNotificationReceiverArgs
     permissionEntry?: boolean | UserCountOutputTypeCountPermissionEntryArgs
     permissionEntryCreateUser?: boolean | UserCountOutputTypeCountPermissionEntryCreateUserArgs
     permissionEntryModifiedUser?: boolean | UserCountOutputTypeCountPermissionEntryModifiedUserArgs
@@ -2334,9 +2048,6 @@ export namespace Prisma {
     leaveEntryModified?: boolean | UserCountOutputTypeCountLeaveEntryModifiedArgs
     leaveEntryHod?: boolean | UserCountOutputTypeCountLeaveEntryHodArgs
     leaveEntryUser?: boolean | UserCountOutputTypeCountLeaveEntryUserArgs
-    advanceRequestCreate?: boolean | UserCountOutputTypeCountAdvanceRequestCreateArgs
-    advanceRequestModified?: boolean | UserCountOutputTypeCountAdvanceRequestModifiedArgs
-    advanceRequest?: boolean | UserCountOutputTypeCountAdvanceRequestArgs
     onDuty?: boolean | UserCountOutputTypeCountOnDutyArgs
     ondutyCreate?: boolean | UserCountOutputTypeCountOndutyCreateArgs
     ondutyModify?: boolean | UserCountOutputTypeCountOndutyModifyArgs
@@ -2357,13 +2068,6 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountOptionalNotifyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotifyApprovalGroupWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
   export type UserCountOutputTypeCountPermissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PermissionEntryWhereInput
   }
@@ -2373,20 +2077,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CompanyCodeWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountNotificationSenderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotificationWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountNotificationReceiverArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotificationWhereInput
   }
 
   /**
@@ -2448,27 +2138,6 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountAdvanceRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AdvanceRequestWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountAdvanceRequestModifiedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AdvanceRequestWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountAdvanceRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AdvanceRequestWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
   export type UserCountOutputTypeCountOnDutyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OndutyWhereInput
   }
@@ -2502,13 +2171,11 @@ export namespace Prisma {
   export type PermissionMasterCountOutputType = {
     permissionEntry: number
     leaveEntry: number
-    advanceRequest: number
   }
 
   export type PermissionMasterCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     permissionEntry?: boolean | PermissionMasterCountOutputTypeCountPermissionEntryArgs
     leaveEntry?: boolean | PermissionMasterCountOutputTypeCountLeaveEntryArgs
-    advanceRequest?: boolean | PermissionMasterCountOutputTypeCountAdvanceRequestArgs
   }
 
   // Custom InputTypes
@@ -2534,13 +2201,6 @@ export namespace Prisma {
    */
   export type PermissionMasterCountOutputTypeCountLeaveEntryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeaveEntryWhereInput
-  }
-
-  /**
-   * PermissionMasterCountOutputType without action
-   */
-  export type PermissionMasterCountOutputTypeCountAdvanceRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AdvanceRequestWhereInput
   }
 
 
@@ -3590,945 +3250,6 @@ export namespace Prisma {
 
 
   /**
-   * Model NotifyApprovalGroup
-   */
-
-  export type AggregateNotifyApprovalGroup = {
-    _count: NotifyApprovalGroupCountAggregateOutputType | null
-    _avg: NotifyApprovalGroupAvgAggregateOutputType | null
-    _sum: NotifyApprovalGroupSumAggregateOutputType | null
-    _min: NotifyApprovalGroupMinAggregateOutputType | null
-    _max: NotifyApprovalGroupMaxAggregateOutputType | null
-  }
-
-  export type NotifyApprovalGroupAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type NotifyApprovalGroupSumAggregateOutputType = {
-    id: number | null
-  }
-
-  export type NotifyApprovalGroupMinAggregateOutputType = {
-    id: number | null
-    idCard: string | null
-    compCode: string | null
-  }
-
-  export type NotifyApprovalGroupMaxAggregateOutputType = {
-    id: number | null
-    idCard: string | null
-    compCode: string | null
-  }
-
-  export type NotifyApprovalGroupCountAggregateOutputType = {
-    id: number
-    idCard: number
-    compCode: number
-    _all: number
-  }
-
-
-  export type NotifyApprovalGroupAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type NotifyApprovalGroupSumAggregateInputType = {
-    id?: true
-  }
-
-  export type NotifyApprovalGroupMinAggregateInputType = {
-    id?: true
-    idCard?: true
-    compCode?: true
-  }
-
-  export type NotifyApprovalGroupMaxAggregateInputType = {
-    id?: true
-    idCard?: true
-    compCode?: true
-  }
-
-  export type NotifyApprovalGroupCountAggregateInputType = {
-    id?: true
-    idCard?: true
-    compCode?: true
-    _all?: true
-  }
-
-  export type NotifyApprovalGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which NotifyApprovalGroup to aggregate.
-     */
-    where?: NotifyApprovalGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of NotifyApprovalGroups to fetch.
-     */
-    orderBy?: NotifyApprovalGroupOrderByWithRelationInput | NotifyApprovalGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: NotifyApprovalGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` NotifyApprovalGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` NotifyApprovalGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned NotifyApprovalGroups
-    **/
-    _count?: true | NotifyApprovalGroupCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: NotifyApprovalGroupAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: NotifyApprovalGroupSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: NotifyApprovalGroupMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: NotifyApprovalGroupMaxAggregateInputType
-  }
-
-  export type GetNotifyApprovalGroupAggregateType<T extends NotifyApprovalGroupAggregateArgs> = {
-        [P in keyof T & keyof AggregateNotifyApprovalGroup]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateNotifyApprovalGroup[P]>
-      : GetScalarType<T[P], AggregateNotifyApprovalGroup[P]>
-  }
-
-
-
-
-  export type NotifyApprovalGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotifyApprovalGroupWhereInput
-    orderBy?: NotifyApprovalGroupOrderByWithAggregationInput | NotifyApprovalGroupOrderByWithAggregationInput[]
-    by: NotifyApprovalGroupScalarFieldEnum[] | NotifyApprovalGroupScalarFieldEnum
-    having?: NotifyApprovalGroupScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: NotifyApprovalGroupCountAggregateInputType | true
-    _avg?: NotifyApprovalGroupAvgAggregateInputType
-    _sum?: NotifyApprovalGroupSumAggregateInputType
-    _min?: NotifyApprovalGroupMinAggregateInputType
-    _max?: NotifyApprovalGroupMaxAggregateInputType
-  }
-
-  export type NotifyApprovalGroupGroupByOutputType = {
-    id: number
-    idCard: string | null
-    compCode: string | null
-    _count: NotifyApprovalGroupCountAggregateOutputType | null
-    _avg: NotifyApprovalGroupAvgAggregateOutputType | null
-    _sum: NotifyApprovalGroupSumAggregateOutputType | null
-    _min: NotifyApprovalGroupMinAggregateOutputType | null
-    _max: NotifyApprovalGroupMaxAggregateOutputType | null
-  }
-
-  type GetNotifyApprovalGroupGroupByPayload<T extends NotifyApprovalGroupGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<NotifyApprovalGroupGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof NotifyApprovalGroupGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], NotifyApprovalGroupGroupByOutputType[P]>
-            : GetScalarType<T[P], NotifyApprovalGroupGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type NotifyApprovalGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    idCard?: boolean
-    compCode?: boolean
-    user?: boolean | NotifyApprovalGroup$userArgs<ExtArgs>
-    _count?: boolean | NotifyApprovalGroupCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["notifyApprovalGroup"]>
-
-  export type NotifyApprovalGroupSelectScalar = {
-    id?: boolean
-    idCard?: boolean
-    compCode?: boolean
-  }
-
-
-  export type NotifyApprovalGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | NotifyApprovalGroup$userArgs<ExtArgs>
-    _count?: boolean | NotifyApprovalGroupCountOutputTypeDefaultArgs<ExtArgs>
-  }
-
-
-  export type $NotifyApprovalGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "NotifyApprovalGroup"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      idCard: string | null
-      compCode: string | null
-    }, ExtArgs["result"]["notifyApprovalGroup"]>
-    composites: {}
-  }
-
-
-  type NotifyApprovalGroupGetPayload<S extends boolean | null | undefined | NotifyApprovalGroupDefaultArgs> = $Result.GetResult<Prisma.$NotifyApprovalGroupPayload, S>
-
-  type NotifyApprovalGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<NotifyApprovalGroupFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: NotifyApprovalGroupCountAggregateInputType | true
-    }
-
-  export interface NotifyApprovalGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NotifyApprovalGroup'], meta: { name: 'NotifyApprovalGroup' } }
-    /**
-     * Find zero or one NotifyApprovalGroup that matches the filter.
-     * @param {NotifyApprovalGroupFindUniqueArgs} args - Arguments to find a NotifyApprovalGroup
-     * @example
-     * // Get one NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUnique<T extends NotifyApprovalGroupFindUniqueArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupFindUniqueArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
-
-    /**
-     * Find one NotifyApprovalGroup that matches the filter or throw an error  with `error.code='P2025'` 
-     *     if no matches were found.
-     * @param {NotifyApprovalGroupFindUniqueOrThrowArgs} args - Arguments to find a NotifyApprovalGroup
-     * @example
-     * // Get one NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUniqueOrThrow<T extends NotifyApprovalGroupFindUniqueOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find the first NotifyApprovalGroup that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupFindFirstArgs} args - Arguments to find a NotifyApprovalGroup
-     * @example
-     * // Get one NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirst<T extends NotifyApprovalGroupFindFirstArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupFindFirstArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
-
-    /**
-     * Find the first NotifyApprovalGroup that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupFindFirstOrThrowArgs} args - Arguments to find a NotifyApprovalGroup
-     * @example
-     * // Get one NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirstOrThrow<T extends NotifyApprovalGroupFindFirstOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find zero or more NotifyApprovalGroups that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupFindManyArgs=} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all NotifyApprovalGroups
-     * const notifyApprovalGroups = await prisma.notifyApprovalGroup.findMany()
-     * 
-     * // Get first 10 NotifyApprovalGroups
-     * const notifyApprovalGroups = await prisma.notifyApprovalGroup.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const notifyApprovalGroupWithIdOnly = await prisma.notifyApprovalGroup.findMany({ select: { id: true } })
-     * 
-    **/
-    findMany<T extends NotifyApprovalGroupFindManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findMany'>>
-
-    /**
-     * Create a NotifyApprovalGroup.
-     * @param {NotifyApprovalGroupCreateArgs} args - Arguments to create a NotifyApprovalGroup.
-     * @example
-     * // Create one NotifyApprovalGroup
-     * const NotifyApprovalGroup = await prisma.notifyApprovalGroup.create({
-     *   data: {
-     *     // ... data to create a NotifyApprovalGroup
-     *   }
-     * })
-     * 
-    **/
-    create<T extends NotifyApprovalGroupCreateArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupCreateArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'create'>, never, ExtArgs>
-
-    /**
-     * Create many NotifyApprovalGroups.
-     *     @param {NotifyApprovalGroupCreateManyArgs} args - Arguments to create many NotifyApprovalGroups.
-     *     @example
-     *     // Create many NotifyApprovalGroups
-     *     const notifyApprovalGroup = await prisma.notifyApprovalGroup.createMany({
-     *       data: {
-     *         // ... provide data here
-     *       }
-     *     })
-     *     
-    **/
-    createMany<T extends NotifyApprovalGroupCreateManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a NotifyApprovalGroup.
-     * @param {NotifyApprovalGroupDeleteArgs} args - Arguments to delete one NotifyApprovalGroup.
-     * @example
-     * // Delete one NotifyApprovalGroup
-     * const NotifyApprovalGroup = await prisma.notifyApprovalGroup.delete({
-     *   where: {
-     *     // ... filter to delete one NotifyApprovalGroup
-     *   }
-     * })
-     * 
-    **/
-    delete<T extends NotifyApprovalGroupDeleteArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupDeleteArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
-
-    /**
-     * Update one NotifyApprovalGroup.
-     * @param {NotifyApprovalGroupUpdateArgs} args - Arguments to update one NotifyApprovalGroup.
-     * @example
-     * // Update one NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    update<T extends NotifyApprovalGroupUpdateArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupUpdateArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'update'>, never, ExtArgs>
-
-    /**
-     * Delete zero or more NotifyApprovalGroups.
-     * @param {NotifyApprovalGroupDeleteManyArgs} args - Arguments to filter NotifyApprovalGroups to delete.
-     * @example
-     * // Delete a few NotifyApprovalGroups
-     * const { count } = await prisma.notifyApprovalGroup.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-    **/
-    deleteMany<T extends NotifyApprovalGroupDeleteManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotifyApprovalGroupDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more NotifyApprovalGroups.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many NotifyApprovalGroups
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    updateMany<T extends NotifyApprovalGroupUpdateManyArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one NotifyApprovalGroup.
-     * @param {NotifyApprovalGroupUpsertArgs} args - Arguments to update or create a NotifyApprovalGroup.
-     * @example
-     * // Update or create a NotifyApprovalGroup
-     * const notifyApprovalGroup = await prisma.notifyApprovalGroup.upsert({
-     *   create: {
-     *     // ... data to create a NotifyApprovalGroup
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the NotifyApprovalGroup we want to update
-     *   }
-     * })
-    **/
-    upsert<T extends NotifyApprovalGroupUpsertArgs<ExtArgs>>(
-      args: SelectSubset<T, NotifyApprovalGroupUpsertArgs<ExtArgs>>
-    ): Prisma__NotifyApprovalGroupClient<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
-
-    /**
-     * Count the number of NotifyApprovalGroups.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupCountArgs} args - Arguments to filter NotifyApprovalGroups to count.
-     * @example
-     * // Count the number of NotifyApprovalGroups
-     * const count = await prisma.notifyApprovalGroup.count({
-     *   where: {
-     *     // ... the filter for the NotifyApprovalGroups we want to count
-     *   }
-     * })
-    **/
-    count<T extends NotifyApprovalGroupCountArgs>(
-      args?: Subset<T, NotifyApprovalGroupCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], NotifyApprovalGroupCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a NotifyApprovalGroup.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends NotifyApprovalGroupAggregateArgs>(args: Subset<T, NotifyApprovalGroupAggregateArgs>): Prisma.PrismaPromise<GetNotifyApprovalGroupAggregateType<T>>
-
-    /**
-     * Group by NotifyApprovalGroup.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotifyApprovalGroupGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends NotifyApprovalGroupGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: NotifyApprovalGroupGroupByArgs['orderBy'] }
-        : { orderBy?: NotifyApprovalGroupGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, NotifyApprovalGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotifyApprovalGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the NotifyApprovalGroup model
-   */
-  readonly fields: NotifyApprovalGroupFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for NotifyApprovalGroup.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__NotifyApprovalGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise';
-
-    user<T extends NotifyApprovalGroup$userArgs<ExtArgs> = {}>(args?: Subset<T, NotifyApprovalGroup$userArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
-  }
-
-
-
-  /**
-   * Fields of the NotifyApprovalGroup model
-   */ 
-  interface NotifyApprovalGroupFieldRefs {
-    readonly id: FieldRef<"NotifyApprovalGroup", 'Int'>
-    readonly idCard: FieldRef<"NotifyApprovalGroup", 'String'>
-    readonly compCode: FieldRef<"NotifyApprovalGroup", 'String'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * NotifyApprovalGroup findUnique
-   */
-  export type NotifyApprovalGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which NotifyApprovalGroup to fetch.
-     */
-    where: NotifyApprovalGroupWhereUniqueInput
-  }
-
-  /**
-   * NotifyApprovalGroup findUniqueOrThrow
-   */
-  export type NotifyApprovalGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which NotifyApprovalGroup to fetch.
-     */
-    where: NotifyApprovalGroupWhereUniqueInput
-  }
-
-  /**
-   * NotifyApprovalGroup findFirst
-   */
-  export type NotifyApprovalGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which NotifyApprovalGroup to fetch.
-     */
-    where?: NotifyApprovalGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of NotifyApprovalGroups to fetch.
-     */
-    orderBy?: NotifyApprovalGroupOrderByWithRelationInput | NotifyApprovalGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for NotifyApprovalGroups.
-     */
-    cursor?: NotifyApprovalGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` NotifyApprovalGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` NotifyApprovalGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of NotifyApprovalGroups.
-     */
-    distinct?: NotifyApprovalGroupScalarFieldEnum | NotifyApprovalGroupScalarFieldEnum[]
-  }
-
-  /**
-   * NotifyApprovalGroup findFirstOrThrow
-   */
-  export type NotifyApprovalGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which NotifyApprovalGroup to fetch.
-     */
-    where?: NotifyApprovalGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of NotifyApprovalGroups to fetch.
-     */
-    orderBy?: NotifyApprovalGroupOrderByWithRelationInput | NotifyApprovalGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for NotifyApprovalGroups.
-     */
-    cursor?: NotifyApprovalGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` NotifyApprovalGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` NotifyApprovalGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of NotifyApprovalGroups.
-     */
-    distinct?: NotifyApprovalGroupScalarFieldEnum | NotifyApprovalGroupScalarFieldEnum[]
-  }
-
-  /**
-   * NotifyApprovalGroup findMany
-   */
-  export type NotifyApprovalGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which NotifyApprovalGroups to fetch.
-     */
-    where?: NotifyApprovalGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of NotifyApprovalGroups to fetch.
-     */
-    orderBy?: NotifyApprovalGroupOrderByWithRelationInput | NotifyApprovalGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing NotifyApprovalGroups.
-     */
-    cursor?: NotifyApprovalGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` NotifyApprovalGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` NotifyApprovalGroups.
-     */
-    skip?: number
-    distinct?: NotifyApprovalGroupScalarFieldEnum | NotifyApprovalGroupScalarFieldEnum[]
-  }
-
-  /**
-   * NotifyApprovalGroup create
-   */
-  export type NotifyApprovalGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * The data needed to create a NotifyApprovalGroup.
-     */
-    data?: XOR<NotifyApprovalGroupCreateInput, NotifyApprovalGroupUncheckedCreateInput>
-  }
-
-  /**
-   * NotifyApprovalGroup createMany
-   */
-  export type NotifyApprovalGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many NotifyApprovalGroups.
-     */
-    data: NotifyApprovalGroupCreateManyInput | NotifyApprovalGroupCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * NotifyApprovalGroup update
-   */
-  export type NotifyApprovalGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * The data needed to update a NotifyApprovalGroup.
-     */
-    data: XOR<NotifyApprovalGroupUpdateInput, NotifyApprovalGroupUncheckedUpdateInput>
-    /**
-     * Choose, which NotifyApprovalGroup to update.
-     */
-    where: NotifyApprovalGroupWhereUniqueInput
-  }
-
-  /**
-   * NotifyApprovalGroup updateMany
-   */
-  export type NotifyApprovalGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update NotifyApprovalGroups.
-     */
-    data: XOR<NotifyApprovalGroupUpdateManyMutationInput, NotifyApprovalGroupUncheckedUpdateManyInput>
-    /**
-     * Filter which NotifyApprovalGroups to update
-     */
-    where?: NotifyApprovalGroupWhereInput
-  }
-
-  /**
-   * NotifyApprovalGroup upsert
-   */
-  export type NotifyApprovalGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * The filter to search for the NotifyApprovalGroup to update in case it exists.
-     */
-    where: NotifyApprovalGroupWhereUniqueInput
-    /**
-     * In case the NotifyApprovalGroup found by the `where` argument doesn't exist, create a new NotifyApprovalGroup with this data.
-     */
-    create: XOR<NotifyApprovalGroupCreateInput, NotifyApprovalGroupUncheckedCreateInput>
-    /**
-     * In case the NotifyApprovalGroup was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<NotifyApprovalGroupUpdateInput, NotifyApprovalGroupUncheckedUpdateInput>
-  }
-
-  /**
-   * NotifyApprovalGroup delete
-   */
-  export type NotifyApprovalGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    /**
-     * Filter which NotifyApprovalGroup to delete.
-     */
-    where: NotifyApprovalGroupWhereUniqueInput
-  }
-
-  /**
-   * NotifyApprovalGroup deleteMany
-   */
-  export type NotifyApprovalGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which NotifyApprovalGroups to delete
-     */
-    where?: NotifyApprovalGroupWhereInput
-  }
-
-  /**
-   * NotifyApprovalGroup.user
-   */
-  export type NotifyApprovalGroup$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
-    cursor?: UserWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
-  }
-
-  /**
-   * NotifyApprovalGroup without action
-   */
-  export type NotifyApprovalGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model User
    */
 
@@ -4859,11 +3580,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: boolean
     role?: boolean | User$roleArgs<ExtArgs>
-    optionalNotify?: boolean | User$optionalNotifyArgs<ExtArgs>
     permission?: boolean | User$permissionArgs<ExtArgs>
     companies?: boolean | User$companiesArgs<ExtArgs>
-    notificationSender?: boolean | User$notificationSenderArgs<ExtArgs>
-    notificationReceiver?: boolean | User$notificationReceiverArgs<ExtArgs>
     permissionEntry?: boolean | User$permissionEntryArgs<ExtArgs>
     permissionEntryCreateUser?: boolean | User$permissionEntryCreateUserArgs<ExtArgs>
     permissionEntryModifiedUser?: boolean | User$permissionEntryModifiedUserArgs<ExtArgs>
@@ -4872,9 +3590,6 @@ export namespace Prisma {
     leaveEntryModified?: boolean | User$leaveEntryModifiedArgs<ExtArgs>
     leaveEntryHod?: boolean | User$leaveEntryHodArgs<ExtArgs>
     leaveEntryUser?: boolean | User$leaveEntryUserArgs<ExtArgs>
-    advanceRequestCreate?: boolean | User$advanceRequestCreateArgs<ExtArgs>
-    advanceRequestModified?: boolean | User$advanceRequestModifiedArgs<ExtArgs>
-    advanceRequest?: boolean | User$advanceRequestArgs<ExtArgs>
     onDuty?: boolean | User$onDutyArgs<ExtArgs>
     ondutyCreate?: boolean | User$ondutyCreateArgs<ExtArgs>
     ondutyModify?: boolean | User$ondutyModifyArgs<ExtArgs>
@@ -4909,11 +3624,8 @@ export namespace Prisma {
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     role?: boolean | User$roleArgs<ExtArgs>
-    optionalNotify?: boolean | User$optionalNotifyArgs<ExtArgs>
     permission?: boolean | User$permissionArgs<ExtArgs>
     companies?: boolean | User$companiesArgs<ExtArgs>
-    notificationSender?: boolean | User$notificationSenderArgs<ExtArgs>
-    notificationReceiver?: boolean | User$notificationReceiverArgs<ExtArgs>
     permissionEntry?: boolean | User$permissionEntryArgs<ExtArgs>
     permissionEntryCreateUser?: boolean | User$permissionEntryCreateUserArgs<ExtArgs>
     permissionEntryModifiedUser?: boolean | User$permissionEntryModifiedUserArgs<ExtArgs>
@@ -4922,9 +3634,6 @@ export namespace Prisma {
     leaveEntryModified?: boolean | User$leaveEntryModifiedArgs<ExtArgs>
     leaveEntryHod?: boolean | User$leaveEntryHodArgs<ExtArgs>
     leaveEntryUser?: boolean | User$leaveEntryUserArgs<ExtArgs>
-    advanceRequestCreate?: boolean | User$advanceRequestCreateArgs<ExtArgs>
-    advanceRequestModified?: boolean | User$advanceRequestModifiedArgs<ExtArgs>
-    advanceRequest?: boolean | User$advanceRequestArgs<ExtArgs>
     onDuty?: boolean | User$onDutyArgs<ExtArgs>
     ondutyCreate?: boolean | User$ondutyCreateArgs<ExtArgs>
     ondutyModify?: boolean | User$ondutyModifyArgs<ExtArgs>
@@ -4937,11 +3646,8 @@ export namespace Prisma {
     name: "User"
     objects: {
       role: Prisma.$RolePayload<ExtArgs> | null
-      optionalNotify: Prisma.$NotifyApprovalGroupPayload<ExtArgs>[]
       permission: Prisma.$PermissionEntryPayload<ExtArgs>[]
       companies: Prisma.$CompanyCodePayload<ExtArgs>[]
-      notificationSender: Prisma.$NotificationPayload<ExtArgs>[]
-      notificationReceiver: Prisma.$NotificationPayload<ExtArgs>[]
       permissionEntry: Prisma.$PermissionEntryPayload<ExtArgs>[]
       permissionEntryCreateUser: Prisma.$PermissionEntryPayload<ExtArgs>[]
       permissionEntryModifiedUser: Prisma.$PermissionEntryPayload<ExtArgs>[]
@@ -4950,9 +3656,6 @@ export namespace Prisma {
       leaveEntryModified: Prisma.$LeaveEntryPayload<ExtArgs>[]
       leaveEntryHod: Prisma.$LeaveEntryPayload<ExtArgs>[]
       leaveEntryUser: Prisma.$LeaveEntryPayload<ExtArgs>[]
-      advanceRequestCreate: Prisma.$AdvanceRequestPayload<ExtArgs>[]
-      advanceRequestModified: Prisma.$AdvanceRequestPayload<ExtArgs>[]
-      advanceRequest: Prisma.$AdvanceRequestPayload<ExtArgs>[]
       onDuty: Prisma.$OndutyPayload<ExtArgs>[]
       ondutyCreate: Prisma.$OndutyPayload<ExtArgs>[]
       ondutyModify: Prisma.$OndutyPayload<ExtArgs>[]
@@ -5347,15 +4050,9 @@ export namespace Prisma {
 
     role<T extends User$roleArgs<ExtArgs> = {}>(args?: Subset<T, User$roleArgs<ExtArgs>>): Prisma__RoleClient<$Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, 'findUniqueOrThrow'> | null, null, ExtArgs>;
 
-    optionalNotify<T extends User$optionalNotifyArgs<ExtArgs> = {}>(args?: Subset<T, User$optionalNotifyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotifyApprovalGroupPayload<ExtArgs>, T, 'findMany'> | Null>;
-
     permission<T extends User$permissionArgs<ExtArgs> = {}>(args?: Subset<T, User$permissionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionEntryPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     companies<T extends User$companiesArgs<ExtArgs> = {}>(args?: Subset<T, User$companiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CompanyCodePayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    notificationSender<T extends User$notificationSenderArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationSenderArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    notificationReceiver<T extends User$notificationReceiverArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationReceiverArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     permissionEntry<T extends User$permissionEntryArgs<ExtArgs> = {}>(args?: Subset<T, User$permissionEntryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionEntryPayload<ExtArgs>, T, 'findMany'> | Null>;
 
@@ -5372,12 +4069,6 @@ export namespace Prisma {
     leaveEntryHod<T extends User$leaveEntryHodArgs<ExtArgs> = {}>(args?: Subset<T, User$leaveEntryHodArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaveEntryPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     leaveEntryUser<T extends User$leaveEntryUserArgs<ExtArgs> = {}>(args?: Subset<T, User$leaveEntryUserArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaveEntryPayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    advanceRequestCreate<T extends User$advanceRequestCreateArgs<ExtArgs> = {}>(args?: Subset<T, User$advanceRequestCreateArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    advanceRequestModified<T extends User$advanceRequestModifiedArgs<ExtArgs> = {}>(args?: Subset<T, User$advanceRequestModifiedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findMany'> | Null>;
-
-    advanceRequest<T extends User$advanceRequestArgs<ExtArgs> = {}>(args?: Subset<T, User$advanceRequestArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     onDuty<T extends User$onDutyArgs<ExtArgs> = {}>(args?: Subset<T, User$onDutyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OndutyPayload<ExtArgs>, T, 'findMany'> | Null>;
 
@@ -5750,26 +4441,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.optionalNotify
-   */
-  export type User$optionalNotifyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the NotifyApprovalGroup
-     */
-    select?: NotifyApprovalGroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotifyApprovalGroupInclude<ExtArgs> | null
-    where?: NotifyApprovalGroupWhereInput
-    orderBy?: NotifyApprovalGroupOrderByWithRelationInput | NotifyApprovalGroupOrderByWithRelationInput[]
-    cursor?: NotifyApprovalGroupWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: NotifyApprovalGroupScalarFieldEnum | NotifyApprovalGroupScalarFieldEnum[]
-  }
-
-  /**
    * User.permission
    */
   export type User$permissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5807,46 +4478,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CompanyCodeScalarFieldEnum | CompanyCodeScalarFieldEnum[]
-  }
-
-  /**
-   * User.notificationSender
-   */
-  export type User$notificationSenderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    where?: NotificationWhereInput
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    cursor?: NotificationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
-  }
-
-  /**
-   * User.notificationReceiver
-   */
-  export type User$notificationReceiverArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    where?: NotificationWhereInput
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    cursor?: NotificationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -6007,66 +4638,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeaveEntryScalarFieldEnum | LeaveEntryScalarFieldEnum[]
-  }
-
-  /**
-   * User.advanceRequestCreate
-   */
-  export type User$advanceRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    where?: AdvanceRequestWhereInput
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    cursor?: AdvanceRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
-  }
-
-  /**
-   * User.advanceRequestModified
-   */
-  export type User$advanceRequestModifiedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    where?: AdvanceRequestWhereInput
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    cursor?: AdvanceRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
-  }
-
-  /**
-   * User.advanceRequest
-   */
-  export type User$advanceRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    where?: AdvanceRequestWhereInput
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    cursor?: AdvanceRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
   }
 
   /**
@@ -7572,1341 +6143,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: OndutyInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model AdvanceRequest
-   */
-
-  export type AggregateAdvanceRequest = {
-    _count: AdvanceRequestCountAggregateOutputType | null
-    _avg: AdvanceRequestAvgAggregateOutputType | null
-    _sum: AdvanceRequestSumAggregateOutputType | null
-    _min: AdvanceRequestMinAggregateOutputType | null
-    _max: AdvanceRequestMaxAggregateOutputType | null
-  }
-
-  export type AdvanceRequestAvgAggregateOutputType = {
-    id: number | null
-    total: number | null
-    preLoan: number | null
-    totalLoan: number | null
-    ins: number | null
-    due: number | null
-    create: number | null
-    update: number | null
-    category: number | null
-    finCode: number | null
-    payCode: number | null
-  }
-
-  export type AdvanceRequestSumAggregateOutputType = {
-    id: number | null
-    total: number | null
-    preLoan: number | null
-    totalLoan: number | null
-    ins: number | null
-    due: number | null
-    create: number | null
-    update: number | null
-    category: number | null
-    finCode: bigint | null
-    payCode: bigint | null
-  }
-
-  export type AdvanceRequestMinAggregateOutputType = {
-    id: number | null
-    docId: string | null
-    docDate: Date | null
-    idCard: string | null
-    fromDate: Date | null
-    toDate: Date | null
-    empName: string | null
-    finYear: string | null
-    advType: string | null
-    total: number | null
-    payType: string | null
-    hod: string | null
-    hr: string | null
-    group: string | null
-    isCancelled: boolean | null
-    userId: string | null
-    preLoan: number | null
-    totalLoan: number | null
-    preDue: string | null
-    ins: number | null
-    due: number | null
-    remark: string | null
-    approvalStatus: string | null
-    compCode: string | null
-    createdOn: Date | null
-    updatedOn: Date | null
-    createdBy: string | null
-    mobile: string | null
-    create: number | null
-    update: number | null
-    modifiedBy: string | null
-    rejectBy: string | null
-    approvedBy: string | null
-    category: number | null
-    finCode: bigint | null
-    payCode: bigint | null
-  }
-
-  export type AdvanceRequestMaxAggregateOutputType = {
-    id: number | null
-    docId: string | null
-    docDate: Date | null
-    idCard: string | null
-    fromDate: Date | null
-    toDate: Date | null
-    empName: string | null
-    finYear: string | null
-    advType: string | null
-    total: number | null
-    payType: string | null
-    hod: string | null
-    hr: string | null
-    group: string | null
-    isCancelled: boolean | null
-    userId: string | null
-    preLoan: number | null
-    totalLoan: number | null
-    preDue: string | null
-    ins: number | null
-    due: number | null
-    remark: string | null
-    approvalStatus: string | null
-    compCode: string | null
-    createdOn: Date | null
-    updatedOn: Date | null
-    createdBy: string | null
-    mobile: string | null
-    create: number | null
-    update: number | null
-    modifiedBy: string | null
-    rejectBy: string | null
-    approvedBy: string | null
-    category: number | null
-    finCode: bigint | null
-    payCode: bigint | null
-  }
-
-  export type AdvanceRequestCountAggregateOutputType = {
-    id: number
-    docId: number
-    docDate: number
-    idCard: number
-    fromDate: number
-    toDate: number
-    empName: number
-    finYear: number
-    advType: number
-    total: number
-    payType: number
-    hod: number
-    hr: number
-    group: number
-    isCancelled: number
-    userId: number
-    preLoan: number
-    totalLoan: number
-    preDue: number
-    ins: number
-    due: number
-    remark: number
-    approvalStatus: number
-    compCode: number
-    createdOn: number
-    updatedOn: number
-    createdBy: number
-    mobile: number
-    create: number
-    update: number
-    modifiedBy: number
-    rejectBy: number
-    approvedBy: number
-    category: number
-    finCode: number
-    payCode: number
-    _all: number
-  }
-
-
-  export type AdvanceRequestAvgAggregateInputType = {
-    id?: true
-    total?: true
-    preLoan?: true
-    totalLoan?: true
-    ins?: true
-    due?: true
-    create?: true
-    update?: true
-    category?: true
-    finCode?: true
-    payCode?: true
-  }
-
-  export type AdvanceRequestSumAggregateInputType = {
-    id?: true
-    total?: true
-    preLoan?: true
-    totalLoan?: true
-    ins?: true
-    due?: true
-    create?: true
-    update?: true
-    category?: true
-    finCode?: true
-    payCode?: true
-  }
-
-  export type AdvanceRequestMinAggregateInputType = {
-    id?: true
-    docId?: true
-    docDate?: true
-    idCard?: true
-    fromDate?: true
-    toDate?: true
-    empName?: true
-    finYear?: true
-    advType?: true
-    total?: true
-    payType?: true
-    hod?: true
-    hr?: true
-    group?: true
-    isCancelled?: true
-    userId?: true
-    preLoan?: true
-    totalLoan?: true
-    preDue?: true
-    ins?: true
-    due?: true
-    remark?: true
-    approvalStatus?: true
-    compCode?: true
-    createdOn?: true
-    updatedOn?: true
-    createdBy?: true
-    mobile?: true
-    create?: true
-    update?: true
-    modifiedBy?: true
-    rejectBy?: true
-    approvedBy?: true
-    category?: true
-    finCode?: true
-    payCode?: true
-  }
-
-  export type AdvanceRequestMaxAggregateInputType = {
-    id?: true
-    docId?: true
-    docDate?: true
-    idCard?: true
-    fromDate?: true
-    toDate?: true
-    empName?: true
-    finYear?: true
-    advType?: true
-    total?: true
-    payType?: true
-    hod?: true
-    hr?: true
-    group?: true
-    isCancelled?: true
-    userId?: true
-    preLoan?: true
-    totalLoan?: true
-    preDue?: true
-    ins?: true
-    due?: true
-    remark?: true
-    approvalStatus?: true
-    compCode?: true
-    createdOn?: true
-    updatedOn?: true
-    createdBy?: true
-    mobile?: true
-    create?: true
-    update?: true
-    modifiedBy?: true
-    rejectBy?: true
-    approvedBy?: true
-    category?: true
-    finCode?: true
-    payCode?: true
-  }
-
-  export type AdvanceRequestCountAggregateInputType = {
-    id?: true
-    docId?: true
-    docDate?: true
-    idCard?: true
-    fromDate?: true
-    toDate?: true
-    empName?: true
-    finYear?: true
-    advType?: true
-    total?: true
-    payType?: true
-    hod?: true
-    hr?: true
-    group?: true
-    isCancelled?: true
-    userId?: true
-    preLoan?: true
-    totalLoan?: true
-    preDue?: true
-    ins?: true
-    due?: true
-    remark?: true
-    approvalStatus?: true
-    compCode?: true
-    createdOn?: true
-    updatedOn?: true
-    createdBy?: true
-    mobile?: true
-    create?: true
-    update?: true
-    modifiedBy?: true
-    rejectBy?: true
-    approvedBy?: true
-    category?: true
-    finCode?: true
-    payCode?: true
-    _all?: true
-  }
-
-  export type AdvanceRequestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AdvanceRequest to aggregate.
-     */
-    where?: AdvanceRequestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AdvanceRequests to fetch.
-     */
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: AdvanceRequestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AdvanceRequests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AdvanceRequests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned AdvanceRequests
-    **/
-    _count?: true | AdvanceRequestCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: AdvanceRequestAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: AdvanceRequestSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: AdvanceRequestMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: AdvanceRequestMaxAggregateInputType
-  }
-
-  export type GetAdvanceRequestAggregateType<T extends AdvanceRequestAggregateArgs> = {
-        [P in keyof T & keyof AggregateAdvanceRequest]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAdvanceRequest[P]>
-      : GetScalarType<T[P], AggregateAdvanceRequest[P]>
-  }
-
-
-
-
-  export type AdvanceRequestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AdvanceRequestWhereInput
-    orderBy?: AdvanceRequestOrderByWithAggregationInput | AdvanceRequestOrderByWithAggregationInput[]
-    by: AdvanceRequestScalarFieldEnum[] | AdvanceRequestScalarFieldEnum
-    having?: AdvanceRequestScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AdvanceRequestCountAggregateInputType | true
-    _avg?: AdvanceRequestAvgAggregateInputType
-    _sum?: AdvanceRequestSumAggregateInputType
-    _min?: AdvanceRequestMinAggregateInputType
-    _max?: AdvanceRequestMaxAggregateInputType
-  }
-
-  export type AdvanceRequestGroupByOutputType = {
-    id: number
-    docId: string
-    docDate: Date
-    idCard: string
-    fromDate: Date | null
-    toDate: Date
-    empName: string
-    finYear: string
-    advType: string
-    total: number
-    payType: string | null
-    hod: string
-    hr: string | null
-    group: string
-    isCancelled: boolean
-    userId: string
-    preLoan: number | null
-    totalLoan: number
-    preDue: string | null
-    ins: number
-    due: number
-    remark: string
-    approvalStatus: string
-    compCode: string
-    createdOn: Date
-    updatedOn: Date
-    createdBy: string
-    mobile: string | null
-    create: number
-    update: number
-    modifiedBy: string
-    rejectBy: string | null
-    approvedBy: string | null
-    category: number
-    finCode: bigint
-    payCode: bigint
-    _count: AdvanceRequestCountAggregateOutputType | null
-    _avg: AdvanceRequestAvgAggregateOutputType | null
-    _sum: AdvanceRequestSumAggregateOutputType | null
-    _min: AdvanceRequestMinAggregateOutputType | null
-    _max: AdvanceRequestMaxAggregateOutputType | null
-  }
-
-  type GetAdvanceRequestGroupByPayload<T extends AdvanceRequestGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AdvanceRequestGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AdvanceRequestGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AdvanceRequestGroupByOutputType[P]>
-            : GetScalarType<T[P], AdvanceRequestGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AdvanceRequestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    docId?: boolean
-    docDate?: boolean
-    idCard?: boolean
-    fromDate?: boolean
-    toDate?: boolean
-    empName?: boolean
-    finYear?: boolean
-    advType?: boolean
-    total?: boolean
-    payType?: boolean
-    hod?: boolean
-    hr?: boolean
-    group?: boolean
-    isCancelled?: boolean
-    userId?: boolean
-    preLoan?: boolean
-    totalLoan?: boolean
-    preDue?: boolean
-    ins?: boolean
-    due?: boolean
-    remark?: boolean
-    approvalStatus?: boolean
-    compCode?: boolean
-    createdOn?: boolean
-    updatedOn?: boolean
-    createdBy?: boolean
-    mobile?: boolean
-    create?: boolean
-    update?: boolean
-    modifiedBy?: boolean
-    rejectBy?: boolean
-    approvedBy?: boolean
-    category?: boolean
-    finCode?: boolean
-    payCode?: boolean
-    userData?: boolean | UserDefaultArgs<ExtArgs>
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
-    modifiedByUser?: boolean | UserDefaultArgs<ExtArgs>
-    categoryData?: boolean | PermissionMasterDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["advanceRequest"]>
-
-  export type AdvanceRequestSelectScalar = {
-    id?: boolean
-    docId?: boolean
-    docDate?: boolean
-    idCard?: boolean
-    fromDate?: boolean
-    toDate?: boolean
-    empName?: boolean
-    finYear?: boolean
-    advType?: boolean
-    total?: boolean
-    payType?: boolean
-    hod?: boolean
-    hr?: boolean
-    group?: boolean
-    isCancelled?: boolean
-    userId?: boolean
-    preLoan?: boolean
-    totalLoan?: boolean
-    preDue?: boolean
-    ins?: boolean
-    due?: boolean
-    remark?: boolean
-    approvalStatus?: boolean
-    compCode?: boolean
-    createdOn?: boolean
-    updatedOn?: boolean
-    createdBy?: boolean
-    mobile?: boolean
-    create?: boolean
-    update?: boolean
-    modifiedBy?: boolean
-    rejectBy?: boolean
-    approvedBy?: boolean
-    category?: boolean
-    finCode?: boolean
-    payCode?: boolean
-  }
-
-
-  export type AdvanceRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    userData?: boolean | UserDefaultArgs<ExtArgs>
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
-    modifiedByUser?: boolean | UserDefaultArgs<ExtArgs>
-    categoryData?: boolean | PermissionMasterDefaultArgs<ExtArgs>
-  }
-
-
-  export type $AdvanceRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "AdvanceRequest"
-    objects: {
-      userData: Prisma.$UserPayload<ExtArgs>
-      createdByUser: Prisma.$UserPayload<ExtArgs>
-      modifiedByUser: Prisma.$UserPayload<ExtArgs>
-      categoryData: Prisma.$PermissionMasterPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      docId: string
-      docDate: Date
-      idCard: string
-      fromDate: Date | null
-      toDate: Date
-      empName: string
-      finYear: string
-      advType: string
-      total: number
-      payType: string | null
-      hod: string
-      hr: string | null
-      group: string
-      isCancelled: boolean
-      userId: string
-      preLoan: number | null
-      totalLoan: number
-      preDue: string | null
-      ins: number
-      due: number
-      remark: string
-      approvalStatus: string
-      compCode: string
-      createdOn: Date
-      updatedOn: Date
-      createdBy: string
-      mobile: string | null
-      create: number
-      update: number
-      modifiedBy: string
-      rejectBy: string | null
-      approvedBy: string | null
-      category: number
-      finCode: bigint
-      payCode: bigint
-    }, ExtArgs["result"]["advanceRequest"]>
-    composites: {}
-  }
-
-
-  type AdvanceRequestGetPayload<S extends boolean | null | undefined | AdvanceRequestDefaultArgs> = $Result.GetResult<Prisma.$AdvanceRequestPayload, S>
-
-  type AdvanceRequestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<AdvanceRequestFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: AdvanceRequestCountAggregateInputType | true
-    }
-
-  export interface AdvanceRequestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdvanceRequest'], meta: { name: 'AdvanceRequest' } }
-    /**
-     * Find zero or one AdvanceRequest that matches the filter.
-     * @param {AdvanceRequestFindUniqueArgs} args - Arguments to find a AdvanceRequest
-     * @example
-     * // Get one AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUnique<T extends AdvanceRequestFindUniqueArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestFindUniqueArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
-
-    /**
-     * Find one AdvanceRequest that matches the filter or throw an error  with `error.code='P2025'` 
-     *     if no matches were found.
-     * @param {AdvanceRequestFindUniqueOrThrowArgs} args - Arguments to find a AdvanceRequest
-     * @example
-     * // Get one AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUniqueOrThrow<T extends AdvanceRequestFindUniqueOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find the first AdvanceRequest that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestFindFirstArgs} args - Arguments to find a AdvanceRequest
-     * @example
-     * // Get one AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirst<T extends AdvanceRequestFindFirstArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestFindFirstArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
-
-    /**
-     * Find the first AdvanceRequest that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestFindFirstOrThrowArgs} args - Arguments to find a AdvanceRequest
-     * @example
-     * // Get one AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirstOrThrow<T extends AdvanceRequestFindFirstOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find zero or more AdvanceRequests that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestFindManyArgs=} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all AdvanceRequests
-     * const advanceRequests = await prisma.advanceRequest.findMany()
-     * 
-     * // Get first 10 AdvanceRequests
-     * const advanceRequests = await prisma.advanceRequest.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const advanceRequestWithIdOnly = await prisma.advanceRequest.findMany({ select: { id: true } })
-     * 
-    **/
-    findMany<T extends AdvanceRequestFindManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findMany'>>
-
-    /**
-     * Create a AdvanceRequest.
-     * @param {AdvanceRequestCreateArgs} args - Arguments to create a AdvanceRequest.
-     * @example
-     * // Create one AdvanceRequest
-     * const AdvanceRequest = await prisma.advanceRequest.create({
-     *   data: {
-     *     // ... data to create a AdvanceRequest
-     *   }
-     * })
-     * 
-    **/
-    create<T extends AdvanceRequestCreateArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestCreateArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'create'>, never, ExtArgs>
-
-    /**
-     * Create many AdvanceRequests.
-     *     @param {AdvanceRequestCreateManyArgs} args - Arguments to create many AdvanceRequests.
-     *     @example
-     *     // Create many AdvanceRequests
-     *     const advanceRequest = await prisma.advanceRequest.createMany({
-     *       data: {
-     *         // ... provide data here
-     *       }
-     *     })
-     *     
-    **/
-    createMany<T extends AdvanceRequestCreateManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a AdvanceRequest.
-     * @param {AdvanceRequestDeleteArgs} args - Arguments to delete one AdvanceRequest.
-     * @example
-     * // Delete one AdvanceRequest
-     * const AdvanceRequest = await prisma.advanceRequest.delete({
-     *   where: {
-     *     // ... filter to delete one AdvanceRequest
-     *   }
-     * })
-     * 
-    **/
-    delete<T extends AdvanceRequestDeleteArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestDeleteArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
-
-    /**
-     * Update one AdvanceRequest.
-     * @param {AdvanceRequestUpdateArgs} args - Arguments to update one AdvanceRequest.
-     * @example
-     * // Update one AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    update<T extends AdvanceRequestUpdateArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestUpdateArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'update'>, never, ExtArgs>
-
-    /**
-     * Delete zero or more AdvanceRequests.
-     * @param {AdvanceRequestDeleteManyArgs} args - Arguments to filter AdvanceRequests to delete.
-     * @example
-     * // Delete a few AdvanceRequests
-     * const { count } = await prisma.advanceRequest.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-    **/
-    deleteMany<T extends AdvanceRequestDeleteManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, AdvanceRequestDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AdvanceRequests.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many AdvanceRequests
-     * const advanceRequest = await prisma.advanceRequest.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    updateMany<T extends AdvanceRequestUpdateManyArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one AdvanceRequest.
-     * @param {AdvanceRequestUpsertArgs} args - Arguments to update or create a AdvanceRequest.
-     * @example
-     * // Update or create a AdvanceRequest
-     * const advanceRequest = await prisma.advanceRequest.upsert({
-     *   create: {
-     *     // ... data to create a AdvanceRequest
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the AdvanceRequest we want to update
-     *   }
-     * })
-    **/
-    upsert<T extends AdvanceRequestUpsertArgs<ExtArgs>>(
-      args: SelectSubset<T, AdvanceRequestUpsertArgs<ExtArgs>>
-    ): Prisma__AdvanceRequestClient<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
-
-    /**
-     * Count the number of AdvanceRequests.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestCountArgs} args - Arguments to filter AdvanceRequests to count.
-     * @example
-     * // Count the number of AdvanceRequests
-     * const count = await prisma.advanceRequest.count({
-     *   where: {
-     *     // ... the filter for the AdvanceRequests we want to count
-     *   }
-     * })
-    **/
-    count<T extends AdvanceRequestCountArgs>(
-      args?: Subset<T, AdvanceRequestCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AdvanceRequestCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a AdvanceRequest.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AdvanceRequestAggregateArgs>(args: Subset<T, AdvanceRequestAggregateArgs>): Prisma.PrismaPromise<GetAdvanceRequestAggregateType<T>>
-
-    /**
-     * Group by AdvanceRequest.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AdvanceRequestGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends AdvanceRequestGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AdvanceRequestGroupByArgs['orderBy'] }
-        : { orderBy?: AdvanceRequestGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AdvanceRequestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdvanceRequestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the AdvanceRequest model
-   */
-  readonly fields: AdvanceRequestFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for AdvanceRequest.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AdvanceRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise';
-
-    userData<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
-
-    createdByUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
-
-    modifiedByUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
-
-    categoryData<T extends PermissionMasterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PermissionMasterDefaultArgs<ExtArgs>>): Prisma__PermissionMasterClient<$Result.GetResult<Prisma.$PermissionMasterPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
-
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
-  }
-
-
-
-  /**
-   * Fields of the AdvanceRequest model
-   */ 
-  interface AdvanceRequestFieldRefs {
-    readonly id: FieldRef<"AdvanceRequest", 'Int'>
-    readonly docId: FieldRef<"AdvanceRequest", 'String'>
-    readonly docDate: FieldRef<"AdvanceRequest", 'DateTime'>
-    readonly idCard: FieldRef<"AdvanceRequest", 'String'>
-    readonly fromDate: FieldRef<"AdvanceRequest", 'DateTime'>
-    readonly toDate: FieldRef<"AdvanceRequest", 'DateTime'>
-    readonly empName: FieldRef<"AdvanceRequest", 'String'>
-    readonly finYear: FieldRef<"AdvanceRequest", 'String'>
-    readonly advType: FieldRef<"AdvanceRequest", 'String'>
-    readonly total: FieldRef<"AdvanceRequest", 'Float'>
-    readonly payType: FieldRef<"AdvanceRequest", 'String'>
-    readonly hod: FieldRef<"AdvanceRequest", 'String'>
-    readonly hr: FieldRef<"AdvanceRequest", 'String'>
-    readonly group: FieldRef<"AdvanceRequest", 'String'>
-    readonly isCancelled: FieldRef<"AdvanceRequest", 'Boolean'>
-    readonly userId: FieldRef<"AdvanceRequest", 'String'>
-    readonly preLoan: FieldRef<"AdvanceRequest", 'Int'>
-    readonly totalLoan: FieldRef<"AdvanceRequest", 'Float'>
-    readonly preDue: FieldRef<"AdvanceRequest", 'String'>
-    readonly ins: FieldRef<"AdvanceRequest", 'Int'>
-    readonly due: FieldRef<"AdvanceRequest", 'Int'>
-    readonly remark: FieldRef<"AdvanceRequest", 'String'>
-    readonly approvalStatus: FieldRef<"AdvanceRequest", 'String'>
-    readonly compCode: FieldRef<"AdvanceRequest", 'String'>
-    readonly createdOn: FieldRef<"AdvanceRequest", 'DateTime'>
-    readonly updatedOn: FieldRef<"AdvanceRequest", 'DateTime'>
-    readonly createdBy: FieldRef<"AdvanceRequest", 'String'>
-    readonly mobile: FieldRef<"AdvanceRequest", 'String'>
-    readonly create: FieldRef<"AdvanceRequest", 'Int'>
-    readonly update: FieldRef<"AdvanceRequest", 'Int'>
-    readonly modifiedBy: FieldRef<"AdvanceRequest", 'String'>
-    readonly rejectBy: FieldRef<"AdvanceRequest", 'String'>
-    readonly approvedBy: FieldRef<"AdvanceRequest", 'String'>
-    readonly category: FieldRef<"AdvanceRequest", 'Int'>
-    readonly finCode: FieldRef<"AdvanceRequest", 'BigInt'>
-    readonly payCode: FieldRef<"AdvanceRequest", 'BigInt'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * AdvanceRequest findUnique
-   */
-  export type AdvanceRequestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter, which AdvanceRequest to fetch.
-     */
-    where: AdvanceRequestWhereUniqueInput
-  }
-
-  /**
-   * AdvanceRequest findUniqueOrThrow
-   */
-  export type AdvanceRequestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter, which AdvanceRequest to fetch.
-     */
-    where: AdvanceRequestWhereUniqueInput
-  }
-
-  /**
-   * AdvanceRequest findFirst
-   */
-  export type AdvanceRequestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter, which AdvanceRequest to fetch.
-     */
-    where?: AdvanceRequestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AdvanceRequests to fetch.
-     */
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AdvanceRequests.
-     */
-    cursor?: AdvanceRequestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AdvanceRequests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AdvanceRequests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AdvanceRequests.
-     */
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
-  }
-
-  /**
-   * AdvanceRequest findFirstOrThrow
-   */
-  export type AdvanceRequestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter, which AdvanceRequest to fetch.
-     */
-    where?: AdvanceRequestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AdvanceRequests to fetch.
-     */
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AdvanceRequests.
-     */
-    cursor?: AdvanceRequestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AdvanceRequests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AdvanceRequests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AdvanceRequests.
-     */
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
-  }
-
-  /**
-   * AdvanceRequest findMany
-   */
-  export type AdvanceRequestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter, which AdvanceRequests to fetch.
-     */
-    where?: AdvanceRequestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AdvanceRequests to fetch.
-     */
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing AdvanceRequests.
-     */
-    cursor?: AdvanceRequestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AdvanceRequests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AdvanceRequests.
-     */
-    skip?: number
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
-  }
-
-  /**
-   * AdvanceRequest create
-   */
-  export type AdvanceRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * The data needed to create a AdvanceRequest.
-     */
-    data: XOR<AdvanceRequestCreateInput, AdvanceRequestUncheckedCreateInput>
-  }
-
-  /**
-   * AdvanceRequest createMany
-   */
-  export type AdvanceRequestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many AdvanceRequests.
-     */
-    data: AdvanceRequestCreateManyInput | AdvanceRequestCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AdvanceRequest update
-   */
-  export type AdvanceRequestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * The data needed to update a AdvanceRequest.
-     */
-    data: XOR<AdvanceRequestUpdateInput, AdvanceRequestUncheckedUpdateInput>
-    /**
-     * Choose, which AdvanceRequest to update.
-     */
-    where: AdvanceRequestWhereUniqueInput
-  }
-
-  /**
-   * AdvanceRequest updateMany
-   */
-  export type AdvanceRequestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update AdvanceRequests.
-     */
-    data: XOR<AdvanceRequestUpdateManyMutationInput, AdvanceRequestUncheckedUpdateManyInput>
-    /**
-     * Filter which AdvanceRequests to update
-     */
-    where?: AdvanceRequestWhereInput
-  }
-
-  /**
-   * AdvanceRequest upsert
-   */
-  export type AdvanceRequestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * The filter to search for the AdvanceRequest to update in case it exists.
-     */
-    where: AdvanceRequestWhereUniqueInput
-    /**
-     * In case the AdvanceRequest found by the `where` argument doesn't exist, create a new AdvanceRequest with this data.
-     */
-    create: XOR<AdvanceRequestCreateInput, AdvanceRequestUncheckedCreateInput>
-    /**
-     * In case the AdvanceRequest was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AdvanceRequestUpdateInput, AdvanceRequestUncheckedUpdateInput>
-  }
-
-  /**
-   * AdvanceRequest delete
-   */
-  export type AdvanceRequestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    /**
-     * Filter which AdvanceRequest to delete.
-     */
-    where: AdvanceRequestWhereUniqueInput
-  }
-
-  /**
-   * AdvanceRequest deleteMany
-   */
-  export type AdvanceRequestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AdvanceRequests to delete
-     */
-    where?: AdvanceRequestWhereInput
-  }
-
-  /**
-   * AdvanceRequest without action
-   */
-  export type AdvanceRequestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
   }
 
 
@@ -11835,7 +9071,6 @@ export namespace Prisma {
     compCode?: boolean
     permissionEntry?: boolean | PermissionMaster$permissionEntryArgs<ExtArgs>
     leaveEntry?: boolean | PermissionMaster$leaveEntryArgs<ExtArgs>
-    advanceRequest?: boolean | PermissionMaster$advanceRequestArgs<ExtArgs>
     _count?: boolean | PermissionMasterCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["permissionMaster"]>
 
@@ -11851,7 +9086,6 @@ export namespace Prisma {
   export type PermissionMasterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     permissionEntry?: boolean | PermissionMaster$permissionEntryArgs<ExtArgs>
     leaveEntry?: boolean | PermissionMaster$leaveEntryArgs<ExtArgs>
-    advanceRequest?: boolean | PermissionMaster$advanceRequestArgs<ExtArgs>
     _count?: boolean | PermissionMasterCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -11861,7 +9095,6 @@ export namespace Prisma {
     objects: {
       permissionEntry: Prisma.$PermissionEntryPayload<ExtArgs>[]
       leaveEntry: Prisma.$LeaveEntryPayload<ExtArgs>[]
-      advanceRequest: Prisma.$AdvanceRequestPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -12238,8 +9471,6 @@ export namespace Prisma {
 
     leaveEntry<T extends PermissionMaster$leaveEntryArgs<ExtArgs> = {}>(args?: Subset<T, PermissionMaster$leaveEntryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaveEntryPayload<ExtArgs>, T, 'findMany'> | Null>;
 
-    advanceRequest<T extends PermissionMaster$advanceRequestArgs<ExtArgs> = {}>(args?: Subset<T, PermissionMaster$advanceRequestArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvanceRequestPayload<ExtArgs>, T, 'findMany'> | Null>;
-
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12609,26 +9840,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeaveEntryScalarFieldEnum | LeaveEntryScalarFieldEnum[]
-  }
-
-  /**
-   * PermissionMaster.advanceRequest
-   */
-  export type PermissionMaster$advanceRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AdvanceRequest
-     */
-    select?: AdvanceRequestSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AdvanceRequestInclude<ExtArgs> | null
-    where?: AdvanceRequestWhereInput
-    orderBy?: AdvanceRequestOrderByWithRelationInput | AdvanceRequestOrderByWithRelationInput[]
-    cursor?: AdvanceRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AdvanceRequestScalarFieldEnum | AdvanceRequestScalarFieldEnum[]
   }
 
   /**
@@ -20860,999 +18071,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Notification
-   */
-
-  export type AggregateNotification = {
-    _count: NotificationCountAggregateOutputType | null
-    _avg: NotificationAvgAggregateOutputType | null
-    _sum: NotificationSumAggregateOutputType | null
-    _min: NotificationMinAggregateOutputType | null
-    _max: NotificationMaxAggregateOutputType | null
-  }
-
-  export type NotificationAvgAggregateOutputType = {
-    id: number | null
-    costingId: number | null
-    senderId: number | null
-    receiverId: number | null
-  }
-
-  export type NotificationSumAggregateOutputType = {
-    id: number | null
-    costingId: number | null
-    senderId: number | null
-    receiverId: number | null
-  }
-
-  export type NotificationMinAggregateOutputType = {
-    id: number | null
-    costingId: number | null
-    senderId: number | null
-    receiverId: number | null
-    type: string | null
-    message: string | null
-    isRead: boolean | null
-  }
-
-  export type NotificationMaxAggregateOutputType = {
-    id: number | null
-    costingId: number | null
-    senderId: number | null
-    receiverId: number | null
-    type: string | null
-    message: string | null
-    isRead: boolean | null
-  }
-
-  export type NotificationCountAggregateOutputType = {
-    id: number
-    costingId: number
-    senderId: number
-    receiverId: number
-    type: number
-    message: number
-    isRead: number
-    _all: number
-  }
-
-
-  export type NotificationAvgAggregateInputType = {
-    id?: true
-    costingId?: true
-    senderId?: true
-    receiverId?: true
-  }
-
-  export type NotificationSumAggregateInputType = {
-    id?: true
-    costingId?: true
-    senderId?: true
-    receiverId?: true
-  }
-
-  export type NotificationMinAggregateInputType = {
-    id?: true
-    costingId?: true
-    senderId?: true
-    receiverId?: true
-    type?: true
-    message?: true
-    isRead?: true
-  }
-
-  export type NotificationMaxAggregateInputType = {
-    id?: true
-    costingId?: true
-    senderId?: true
-    receiverId?: true
-    type?: true
-    message?: true
-    isRead?: true
-  }
-
-  export type NotificationCountAggregateInputType = {
-    id?: true
-    costingId?: true
-    senderId?: true
-    receiverId?: true
-    type?: true
-    message?: true
-    isRead?: true
-    _all?: true
-  }
-
-  export type NotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Notification to aggregate.
-     */
-    where?: NotificationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Notifications to fetch.
-     */
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: NotificationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Notifications from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Notifications.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Notifications
-    **/
-    _count?: true | NotificationCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: NotificationAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: NotificationSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: NotificationMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: NotificationMaxAggregateInputType
-  }
-
-  export type GetNotificationAggregateType<T extends NotificationAggregateArgs> = {
-        [P in keyof T & keyof AggregateNotification]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateNotification[P]>
-      : GetScalarType<T[P], AggregateNotification[P]>
-  }
-
-
-
-
-  export type NotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotificationWhereInput
-    orderBy?: NotificationOrderByWithAggregationInput | NotificationOrderByWithAggregationInput[]
-    by: NotificationScalarFieldEnum[] | NotificationScalarFieldEnum
-    having?: NotificationScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: NotificationCountAggregateInputType | true
-    _avg?: NotificationAvgAggregateInputType
-    _sum?: NotificationSumAggregateInputType
-    _min?: NotificationMinAggregateInputType
-    _max?: NotificationMaxAggregateInputType
-  }
-
-  export type NotificationGroupByOutputType = {
-    id: number
-    costingId: number
-    senderId: number
-    receiverId: number | null
-    type: string | null
-    message: string | null
-    isRead: boolean
-    _count: NotificationCountAggregateOutputType | null
-    _avg: NotificationAvgAggregateOutputType | null
-    _sum: NotificationSumAggregateOutputType | null
-    _min: NotificationMinAggregateOutputType | null
-    _max: NotificationMaxAggregateOutputType | null
-  }
-
-  type GetNotificationGroupByPayload<T extends NotificationGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<NotificationGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof NotificationGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], NotificationGroupByOutputType[P]>
-            : GetScalarType<T[P], NotificationGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    costingId?: boolean
-    senderId?: boolean
-    receiverId?: boolean
-    type?: boolean
-    message?: boolean
-    isRead?: boolean
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-    receiver?: boolean | Notification$receiverArgs<ExtArgs>
-  }, ExtArgs["result"]["notification"]>
-
-  export type NotificationSelectScalar = {
-    id?: boolean
-    costingId?: boolean
-    senderId?: boolean
-    receiverId?: boolean
-    type?: boolean
-    message?: boolean
-    isRead?: boolean
-  }
-
-
-  export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-    receiver?: boolean | Notification$receiverArgs<ExtArgs>
-  }
-
-
-  export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Notification"
-    objects: {
-      sender: Prisma.$UserPayload<ExtArgs>
-      receiver: Prisma.$UserPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      costingId: number
-      senderId: number
-      receiverId: number | null
-      type: string | null
-      message: string | null
-      isRead: boolean
-    }, ExtArgs["result"]["notification"]>
-    composites: {}
-  }
-
-
-  type NotificationGetPayload<S extends boolean | null | undefined | NotificationDefaultArgs> = $Result.GetResult<Prisma.$NotificationPayload, S>
-
-  type NotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<NotificationFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: NotificationCountAggregateInputType | true
-    }
-
-  export interface NotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Notification'], meta: { name: 'Notification' } }
-    /**
-     * Find zero or one Notification that matches the filter.
-     * @param {NotificationFindUniqueArgs} args - Arguments to find a Notification
-     * @example
-     * // Get one Notification
-     * const notification = await prisma.notification.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUnique<T extends NotificationFindUniqueArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationFindUniqueArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
-
-    /**
-     * Find one Notification that matches the filter or throw an error  with `error.code='P2025'` 
-     *     if no matches were found.
-     * @param {NotificationFindUniqueOrThrowArgs} args - Arguments to find a Notification
-     * @example
-     * // Get one Notification
-     * const notification = await prisma.notification.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findUniqueOrThrow<T extends NotificationFindUniqueOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find the first Notification that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationFindFirstArgs} args - Arguments to find a Notification
-     * @example
-     * // Get one Notification
-     * const notification = await prisma.notification.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirst<T extends NotificationFindFirstArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationFindFirstArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
-
-    /**
-     * Find the first Notification that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationFindFirstOrThrowArgs} args - Arguments to find a Notification
-     * @example
-     * // Get one Notification
-     * const notification = await prisma.notification.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-    **/
-    findFirstOrThrow<T extends NotificationFindFirstOrThrowArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
-
-    /**
-     * Find zero or more Notifications that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationFindManyArgs=} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Notifications
-     * const notifications = await prisma.notification.findMany()
-     * 
-     * // Get first 10 Notifications
-     * const notifications = await prisma.notification.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const notificationWithIdOnly = await prisma.notification.findMany({ select: { id: true } })
-     * 
-    **/
-    findMany<T extends NotificationFindManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'findMany'>>
-
-    /**
-     * Create a Notification.
-     * @param {NotificationCreateArgs} args - Arguments to create a Notification.
-     * @example
-     * // Create one Notification
-     * const Notification = await prisma.notification.create({
-     *   data: {
-     *     // ... data to create a Notification
-     *   }
-     * })
-     * 
-    **/
-    create<T extends NotificationCreateArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationCreateArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'create'>, never, ExtArgs>
-
-    /**
-     * Create many Notifications.
-     *     @param {NotificationCreateManyArgs} args - Arguments to create many Notifications.
-     *     @example
-     *     // Create many Notifications
-     *     const notification = await prisma.notification.createMany({
-     *       data: {
-     *         // ... provide data here
-     *       }
-     *     })
-     *     
-    **/
-    createMany<T extends NotificationCreateManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a Notification.
-     * @param {NotificationDeleteArgs} args - Arguments to delete one Notification.
-     * @example
-     * // Delete one Notification
-     * const Notification = await prisma.notification.delete({
-     *   where: {
-     *     // ... filter to delete one Notification
-     *   }
-     * })
-     * 
-    **/
-    delete<T extends NotificationDeleteArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationDeleteArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
-
-    /**
-     * Update one Notification.
-     * @param {NotificationUpdateArgs} args - Arguments to update one Notification.
-     * @example
-     * // Update one Notification
-     * const notification = await prisma.notification.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    update<T extends NotificationUpdateArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationUpdateArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'update'>, never, ExtArgs>
-
-    /**
-     * Delete zero or more Notifications.
-     * @param {NotificationDeleteManyArgs} args - Arguments to filter Notifications to delete.
-     * @example
-     * // Delete a few Notifications
-     * const { count } = await prisma.notification.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-    **/
-    deleteMany<T extends NotificationDeleteManyArgs<ExtArgs>>(
-      args?: SelectSubset<T, NotificationDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Notifications.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Notifications
-     * const notification = await prisma.notification.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-    **/
-    updateMany<T extends NotificationUpdateManyArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one Notification.
-     * @param {NotificationUpsertArgs} args - Arguments to update or create a Notification.
-     * @example
-     * // Update or create a Notification
-     * const notification = await prisma.notification.upsert({
-     *   create: {
-     *     // ... data to create a Notification
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Notification we want to update
-     *   }
-     * })
-    **/
-    upsert<T extends NotificationUpsertArgs<ExtArgs>>(
-      args: SelectSubset<T, NotificationUpsertArgs<ExtArgs>>
-    ): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
-
-    /**
-     * Count the number of Notifications.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationCountArgs} args - Arguments to filter Notifications to count.
-     * @example
-     * // Count the number of Notifications
-     * const count = await prisma.notification.count({
-     *   where: {
-     *     // ... the filter for the Notifications we want to count
-     *   }
-     * })
-    **/
-    count<T extends NotificationCountArgs>(
-      args?: Subset<T, NotificationCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], NotificationCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Notification.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends NotificationAggregateArgs>(args: Subset<T, NotificationAggregateArgs>): Prisma.PrismaPromise<GetNotificationAggregateType<T>>
-
-    /**
-     * Group by Notification.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {NotificationGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends NotificationGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: NotificationGroupByArgs['orderBy'] }
-        : { orderBy?: NotificationGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, NotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Notification model
-   */
-  readonly fields: NotificationFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Notification.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise';
-
-    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
-
-    receiver<T extends Notification$receiverArgs<ExtArgs> = {}>(args?: Subset<T, Notification$receiverArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | null, null, ExtArgs>;
-
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
-  }
-
-
-
-  /**
-   * Fields of the Notification model
-   */ 
-  interface NotificationFieldRefs {
-    readonly id: FieldRef<"Notification", 'Int'>
-    readonly costingId: FieldRef<"Notification", 'Int'>
-    readonly senderId: FieldRef<"Notification", 'Int'>
-    readonly receiverId: FieldRef<"Notification", 'Int'>
-    readonly type: FieldRef<"Notification", 'String'>
-    readonly message: FieldRef<"Notification", 'String'>
-    readonly isRead: FieldRef<"Notification", 'Boolean'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Notification findUnique
-   */
-  export type NotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter, which Notification to fetch.
-     */
-    where: NotificationWhereUniqueInput
-  }
-
-  /**
-   * Notification findUniqueOrThrow
-   */
-  export type NotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter, which Notification to fetch.
-     */
-    where: NotificationWhereUniqueInput
-  }
-
-  /**
-   * Notification findFirst
-   */
-  export type NotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter, which Notification to fetch.
-     */
-    where?: NotificationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Notifications to fetch.
-     */
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Notifications.
-     */
-    cursor?: NotificationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Notifications from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Notifications.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Notifications.
-     */
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
-  }
-
-  /**
-   * Notification findFirstOrThrow
-   */
-  export type NotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter, which Notification to fetch.
-     */
-    where?: NotificationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Notifications to fetch.
-     */
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Notifications.
-     */
-    cursor?: NotificationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Notifications from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Notifications.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Notifications.
-     */
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
-  }
-
-  /**
-   * Notification findMany
-   */
-  export type NotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter, which Notifications to fetch.
-     */
-    where?: NotificationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Notifications to fetch.
-     */
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Notifications.
-     */
-    cursor?: NotificationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Notifications from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Notifications.
-     */
-    skip?: number
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
-  }
-
-  /**
-   * Notification create
-   */
-  export type NotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Notification.
-     */
-    data: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
-  }
-
-  /**
-   * Notification createMany
-   */
-  export type NotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Notifications.
-     */
-    data: NotificationCreateManyInput | NotificationCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Notification update
-   */
-  export type NotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Notification.
-     */
-    data: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
-    /**
-     * Choose, which Notification to update.
-     */
-    where: NotificationWhereUniqueInput
-  }
-
-  /**
-   * Notification updateMany
-   */
-  export type NotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Notifications.
-     */
-    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
-    /**
-     * Filter which Notifications to update
-     */
-    where?: NotificationWhereInput
-  }
-
-  /**
-   * Notification upsert
-   */
-  export type NotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Notification to update in case it exists.
-     */
-    where: NotificationWhereUniqueInput
-    /**
-     * In case the Notification found by the `where` argument doesn't exist, create a new Notification with this data.
-     */
-    create: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
-    /**
-     * In case the Notification was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
-  }
-
-  /**
-   * Notification delete
-   */
-  export type NotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-    /**
-     * Filter which Notification to delete.
-     */
-    where: NotificationWhereUniqueInput
-  }
-
-  /**
-   * Notification deleteMany
-   */
-  export type NotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Notifications to delete
-     */
-    where?: NotificationWhereInput
-  }
-
-  /**
-   * Notification.receiver
-   */
-  export type Notification$receiverArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-  }
-
-  /**
-   * Notification without action
-   */
-  export type NotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Notification
-     */
-    select?: NotificationSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: NotificationInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Enums
    */
 
@@ -21875,15 +18093,6 @@ export namespace Prisma {
   };
 
   export type SettingsScalarFieldEnum = (typeof SettingsScalarFieldEnum)[keyof typeof SettingsScalarFieldEnum]
-
-
-  export const NotifyApprovalGroupScalarFieldEnum: {
-    id: 'id',
-    idCard: 'idCard',
-    compCode: 'compCode'
-  };
-
-  export type NotifyApprovalGroupScalarFieldEnum = (typeof NotifyApprovalGroupScalarFieldEnum)[keyof typeof NotifyApprovalGroupScalarFieldEnum]
 
 
   export const UserScalarFieldEnum: {
@@ -21957,48 +18166,6 @@ export namespace Prisma {
   };
 
   export type OndutyScalarFieldEnum = (typeof OndutyScalarFieldEnum)[keyof typeof OndutyScalarFieldEnum]
-
-
-  export const AdvanceRequestScalarFieldEnum: {
-    id: 'id',
-    docId: 'docId',
-    docDate: 'docDate',
-    idCard: 'idCard',
-    fromDate: 'fromDate',
-    toDate: 'toDate',
-    empName: 'empName',
-    finYear: 'finYear',
-    advType: 'advType',
-    total: 'total',
-    payType: 'payType',
-    hod: 'hod',
-    hr: 'hr',
-    group: 'group',
-    isCancelled: 'isCancelled',
-    userId: 'userId',
-    preLoan: 'preLoan',
-    totalLoan: 'totalLoan',
-    preDue: 'preDue',
-    ins: 'ins',
-    due: 'due',
-    remark: 'remark',
-    approvalStatus: 'approvalStatus',
-    compCode: 'compCode',
-    createdOn: 'createdOn',
-    updatedOn: 'updatedOn',
-    createdBy: 'createdBy',
-    mobile: 'mobile',
-    create: 'create',
-    update: 'update',
-    modifiedBy: 'modifiedBy',
-    rejectBy: 'rejectBy',
-    approvedBy: 'approvedBy',
-    category: 'category',
-    finCode: 'finCode',
-    payCode: 'payCode'
-  };
-
-  export type AdvanceRequestScalarFieldEnum = (typeof AdvanceRequestScalarFieldEnum)[keyof typeof AdvanceRequestScalarFieldEnum]
 
 
   export const CompanyCodeScalarFieldEnum: {
@@ -22192,19 +18359,6 @@ export namespace Prisma {
   export type RoleOnPageScalarFieldEnum = (typeof RoleOnPageScalarFieldEnum)[keyof typeof RoleOnPageScalarFieldEnum]
 
 
-  export const NotificationScalarFieldEnum: {
-    id: 'id',
-    costingId: 'costingId',
-    senderId: 'senderId',
-    receiverId: 'receiverId',
-    type: 'type',
-    message: 'message',
-    isRead: 'isRead'
-  };
-
-  export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
-
-
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -22328,53 +18482,6 @@ export namespace Prisma {
     compCode?: StringNullableWithAggregatesFilter<"Settings"> | string | null
   }
 
-  export type NotifyApprovalGroupWhereInput = {
-    AND?: NotifyApprovalGroupWhereInput | NotifyApprovalGroupWhereInput[]
-    OR?: NotifyApprovalGroupWhereInput[]
-    NOT?: NotifyApprovalGroupWhereInput | NotifyApprovalGroupWhereInput[]
-    id?: IntFilter<"NotifyApprovalGroup"> | number
-    idCard?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-    compCode?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-    user?: UserListRelationFilter
-  }
-
-  export type NotifyApprovalGroupOrderByWithRelationInput = {
-    id?: SortOrder
-    idCard?: SortOrderInput | SortOrder
-    compCode?: SortOrderInput | SortOrder
-    user?: UserOrderByRelationAggregateInput
-  }
-
-  export type NotifyApprovalGroupWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    AND?: NotifyApprovalGroupWhereInput | NotifyApprovalGroupWhereInput[]
-    OR?: NotifyApprovalGroupWhereInput[]
-    NOT?: NotifyApprovalGroupWhereInput | NotifyApprovalGroupWhereInput[]
-    idCard?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-    compCode?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-    user?: UserListRelationFilter
-  }, "id">
-
-  export type NotifyApprovalGroupOrderByWithAggregationInput = {
-    id?: SortOrder
-    idCard?: SortOrderInput | SortOrder
-    compCode?: SortOrderInput | SortOrder
-    _count?: NotifyApprovalGroupCountOrderByAggregateInput
-    _avg?: NotifyApprovalGroupAvgOrderByAggregateInput
-    _max?: NotifyApprovalGroupMaxOrderByAggregateInput
-    _min?: NotifyApprovalGroupMinOrderByAggregateInput
-    _sum?: NotifyApprovalGroupSumOrderByAggregateInput
-  }
-
-  export type NotifyApprovalGroupScalarWhereWithAggregatesInput = {
-    AND?: NotifyApprovalGroupScalarWhereWithAggregatesInput | NotifyApprovalGroupScalarWhereWithAggregatesInput[]
-    OR?: NotifyApprovalGroupScalarWhereWithAggregatesInput[]
-    NOT?: NotifyApprovalGroupScalarWhereWithAggregatesInput | NotifyApprovalGroupScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"NotifyApprovalGroup"> | number
-    idCard?: StringNullableWithAggregatesFilter<"NotifyApprovalGroup"> | string | null
-    compCode?: StringNullableWithAggregatesFilter<"NotifyApprovalGroup"> | string | null
-  }
-
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
@@ -22401,11 +18508,8 @@ export namespace Prisma {
     isAdmin?: BoolFilter<"User"> | boolean
     fcm?: StringNullableFilter<"User"> | string | null
     role?: XOR<RoleNullableRelationFilter, RoleWhereInput> | null
-    optionalNotify?: NotifyApprovalGroupListRelationFilter
     permission?: PermissionEntryListRelationFilter
     companies?: CompanyCodeListRelationFilter
-    notificationSender?: NotificationListRelationFilter
-    notificationReceiver?: NotificationListRelationFilter
     permissionEntry?: PermissionEntryListRelationFilter
     permissionEntryCreateUser?: PermissionEntryListRelationFilter
     permissionEntryModifiedUser?: PermissionEntryListRelationFilter
@@ -22414,9 +18518,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryListRelationFilter
     leaveEntryHod?: LeaveEntryListRelationFilter
     leaveEntryUser?: LeaveEntryListRelationFilter
-    advanceRequestCreate?: AdvanceRequestListRelationFilter
-    advanceRequestModified?: AdvanceRequestListRelationFilter
-    advanceRequest?: AdvanceRequestListRelationFilter
     onDuty?: OndutyListRelationFilter
     ondutyCreate?: OndutyListRelationFilter
     ondutyModify?: OndutyListRelationFilter
@@ -22446,11 +18547,8 @@ export namespace Prisma {
     isAdmin?: SortOrder
     fcm?: SortOrderInput | SortOrder
     role?: RoleOrderByWithRelationInput
-    optionalNotify?: NotifyApprovalGroupOrderByRelationAggregateInput
     permission?: PermissionEntryOrderByRelationAggregateInput
     companies?: CompanyCodeOrderByRelationAggregateInput
-    notificationSender?: NotificationOrderByRelationAggregateInput
-    notificationReceiver?: NotificationOrderByRelationAggregateInput
     permissionEntry?: PermissionEntryOrderByRelationAggregateInput
     permissionEntryCreateUser?: PermissionEntryOrderByRelationAggregateInput
     permissionEntryModifiedUser?: PermissionEntryOrderByRelationAggregateInput
@@ -22459,9 +18557,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryOrderByRelationAggregateInput
     leaveEntryHod?: LeaveEntryOrderByRelationAggregateInput
     leaveEntryUser?: LeaveEntryOrderByRelationAggregateInput
-    advanceRequestCreate?: AdvanceRequestOrderByRelationAggregateInput
-    advanceRequestModified?: AdvanceRequestOrderByRelationAggregateInput
-    advanceRequest?: AdvanceRequestOrderByRelationAggregateInput
     onDuty?: OndutyOrderByRelationAggregateInput
     ondutyCreate?: OndutyOrderByRelationAggregateInput
     ondutyModify?: OndutyOrderByRelationAggregateInput
@@ -22494,11 +18589,8 @@ export namespace Prisma {
     isAdmin?: BoolFilter<"User"> | boolean
     fcm?: StringNullableFilter<"User"> | string | null
     role?: XOR<RoleNullableRelationFilter, RoleWhereInput> | null
-    optionalNotify?: NotifyApprovalGroupListRelationFilter
     permission?: PermissionEntryListRelationFilter
     companies?: CompanyCodeListRelationFilter
-    notificationSender?: NotificationListRelationFilter
-    notificationReceiver?: NotificationListRelationFilter
     permissionEntry?: PermissionEntryListRelationFilter
     permissionEntryCreateUser?: PermissionEntryListRelationFilter
     permissionEntryModifiedUser?: PermissionEntryListRelationFilter
@@ -22507,9 +18599,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryListRelationFilter
     leaveEntryHod?: LeaveEntryListRelationFilter
     leaveEntryUser?: LeaveEntryListRelationFilter
-    advanceRequestCreate?: AdvanceRequestListRelationFilter
-    advanceRequestModified?: AdvanceRequestListRelationFilter
-    advanceRequest?: AdvanceRequestListRelationFilter
     onDuty?: OndutyListRelationFilter
     ondutyCreate?: OndutyListRelationFilter
     ondutyModify?: OndutyListRelationFilter
@@ -22813,227 +18902,6 @@ export namespace Prisma {
     category?: IntNullableWithAggregatesFilter<"Onduty"> | number | null
   }
 
-  export type AdvanceRequestWhereInput = {
-    AND?: AdvanceRequestWhereInput | AdvanceRequestWhereInput[]
-    OR?: AdvanceRequestWhereInput[]
-    NOT?: AdvanceRequestWhereInput | AdvanceRequestWhereInput[]
-    id?: IntFilter<"AdvanceRequest"> | number
-    docId?: StringFilter<"AdvanceRequest"> | string
-    docDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    idCard?: StringFilter<"AdvanceRequest"> | string
-    fromDate?: DateTimeNullableFilter<"AdvanceRequest"> | Date | string | null
-    toDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    empName?: StringFilter<"AdvanceRequest"> | string
-    finYear?: StringFilter<"AdvanceRequest"> | string
-    advType?: StringFilter<"AdvanceRequest"> | string
-    total?: FloatFilter<"AdvanceRequest"> | number
-    payType?: StringNullableFilter<"AdvanceRequest"> | string | null
-    hod?: StringFilter<"AdvanceRequest"> | string
-    hr?: StringNullableFilter<"AdvanceRequest"> | string | null
-    group?: StringFilter<"AdvanceRequest"> | string
-    isCancelled?: BoolFilter<"AdvanceRequest"> | boolean
-    userId?: StringFilter<"AdvanceRequest"> | string
-    preLoan?: IntNullableFilter<"AdvanceRequest"> | number | null
-    totalLoan?: FloatFilter<"AdvanceRequest"> | number
-    preDue?: StringNullableFilter<"AdvanceRequest"> | string | null
-    ins?: IntFilter<"AdvanceRequest"> | number
-    due?: IntFilter<"AdvanceRequest"> | number
-    remark?: StringFilter<"AdvanceRequest"> | string
-    approvalStatus?: StringFilter<"AdvanceRequest"> | string
-    compCode?: StringFilter<"AdvanceRequest"> | string
-    createdOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    updatedOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    createdBy?: StringFilter<"AdvanceRequest"> | string
-    mobile?: StringNullableFilter<"AdvanceRequest"> | string | null
-    create?: IntFilter<"AdvanceRequest"> | number
-    update?: IntFilter<"AdvanceRequest"> | number
-    modifiedBy?: StringFilter<"AdvanceRequest"> | string
-    rejectBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    approvedBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    category?: IntFilter<"AdvanceRequest"> | number
-    finCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-    payCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-    userData?: XOR<UserRelationFilter, UserWhereInput>
-    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
-    modifiedByUser?: XOR<UserRelationFilter, UserWhereInput>
-    categoryData?: XOR<PermissionMasterRelationFilter, PermissionMasterWhereInput>
-  }
-
-  export type AdvanceRequestOrderByWithRelationInput = {
-    id?: SortOrder
-    docId?: SortOrder
-    docDate?: SortOrder
-    idCard?: SortOrder
-    fromDate?: SortOrderInput | SortOrder
-    toDate?: SortOrder
-    empName?: SortOrder
-    finYear?: SortOrder
-    advType?: SortOrder
-    total?: SortOrder
-    payType?: SortOrderInput | SortOrder
-    hod?: SortOrder
-    hr?: SortOrderInput | SortOrder
-    group?: SortOrder
-    isCancelled?: SortOrder
-    userId?: SortOrder
-    preLoan?: SortOrderInput | SortOrder
-    totalLoan?: SortOrder
-    preDue?: SortOrderInput | SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    remark?: SortOrder
-    approvalStatus?: SortOrder
-    compCode?: SortOrder
-    createdOn?: SortOrder
-    updatedOn?: SortOrder
-    createdBy?: SortOrder
-    mobile?: SortOrderInput | SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    modifiedBy?: SortOrder
-    rejectBy?: SortOrderInput | SortOrder
-    approvedBy?: SortOrderInput | SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-    userData?: UserOrderByWithRelationInput
-    createdByUser?: UserOrderByWithRelationInput
-    modifiedByUser?: UserOrderByWithRelationInput
-    categoryData?: PermissionMasterOrderByWithRelationInput
-  }
-
-  export type AdvanceRequestWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    docId?: string
-    AND?: AdvanceRequestWhereInput | AdvanceRequestWhereInput[]
-    OR?: AdvanceRequestWhereInput[]
-    NOT?: AdvanceRequestWhereInput | AdvanceRequestWhereInput[]
-    docDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    idCard?: StringFilter<"AdvanceRequest"> | string
-    fromDate?: DateTimeNullableFilter<"AdvanceRequest"> | Date | string | null
-    toDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    empName?: StringFilter<"AdvanceRequest"> | string
-    finYear?: StringFilter<"AdvanceRequest"> | string
-    advType?: StringFilter<"AdvanceRequest"> | string
-    total?: FloatFilter<"AdvanceRequest"> | number
-    payType?: StringNullableFilter<"AdvanceRequest"> | string | null
-    hod?: StringFilter<"AdvanceRequest"> | string
-    hr?: StringNullableFilter<"AdvanceRequest"> | string | null
-    group?: StringFilter<"AdvanceRequest"> | string
-    isCancelled?: BoolFilter<"AdvanceRequest"> | boolean
-    userId?: StringFilter<"AdvanceRequest"> | string
-    preLoan?: IntNullableFilter<"AdvanceRequest"> | number | null
-    totalLoan?: FloatFilter<"AdvanceRequest"> | number
-    preDue?: StringNullableFilter<"AdvanceRequest"> | string | null
-    ins?: IntFilter<"AdvanceRequest"> | number
-    due?: IntFilter<"AdvanceRequest"> | number
-    remark?: StringFilter<"AdvanceRequest"> | string
-    approvalStatus?: StringFilter<"AdvanceRequest"> | string
-    compCode?: StringFilter<"AdvanceRequest"> | string
-    createdOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    updatedOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    createdBy?: StringFilter<"AdvanceRequest"> | string
-    mobile?: StringNullableFilter<"AdvanceRequest"> | string | null
-    create?: IntFilter<"AdvanceRequest"> | number
-    update?: IntFilter<"AdvanceRequest"> | number
-    modifiedBy?: StringFilter<"AdvanceRequest"> | string
-    rejectBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    approvedBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    category?: IntFilter<"AdvanceRequest"> | number
-    finCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-    payCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-    userData?: XOR<UserRelationFilter, UserWhereInput>
-    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
-    modifiedByUser?: XOR<UserRelationFilter, UserWhereInput>
-    categoryData?: XOR<PermissionMasterRelationFilter, PermissionMasterWhereInput>
-  }, "id" | "docId">
-
-  export type AdvanceRequestOrderByWithAggregationInput = {
-    id?: SortOrder
-    docId?: SortOrder
-    docDate?: SortOrder
-    idCard?: SortOrder
-    fromDate?: SortOrderInput | SortOrder
-    toDate?: SortOrder
-    empName?: SortOrder
-    finYear?: SortOrder
-    advType?: SortOrder
-    total?: SortOrder
-    payType?: SortOrderInput | SortOrder
-    hod?: SortOrder
-    hr?: SortOrderInput | SortOrder
-    group?: SortOrder
-    isCancelled?: SortOrder
-    userId?: SortOrder
-    preLoan?: SortOrderInput | SortOrder
-    totalLoan?: SortOrder
-    preDue?: SortOrderInput | SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    remark?: SortOrder
-    approvalStatus?: SortOrder
-    compCode?: SortOrder
-    createdOn?: SortOrder
-    updatedOn?: SortOrder
-    createdBy?: SortOrder
-    mobile?: SortOrderInput | SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    modifiedBy?: SortOrder
-    rejectBy?: SortOrderInput | SortOrder
-    approvedBy?: SortOrderInput | SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-    _count?: AdvanceRequestCountOrderByAggregateInput
-    _avg?: AdvanceRequestAvgOrderByAggregateInput
-    _max?: AdvanceRequestMaxOrderByAggregateInput
-    _min?: AdvanceRequestMinOrderByAggregateInput
-    _sum?: AdvanceRequestSumOrderByAggregateInput
-  }
-
-  export type AdvanceRequestScalarWhereWithAggregatesInput = {
-    AND?: AdvanceRequestScalarWhereWithAggregatesInput | AdvanceRequestScalarWhereWithAggregatesInput[]
-    OR?: AdvanceRequestScalarWhereWithAggregatesInput[]
-    NOT?: AdvanceRequestScalarWhereWithAggregatesInput | AdvanceRequestScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    docId?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    docDate?: DateTimeWithAggregatesFilter<"AdvanceRequest"> | Date | string
-    idCard?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    fromDate?: DateTimeNullableWithAggregatesFilter<"AdvanceRequest"> | Date | string | null
-    toDate?: DateTimeWithAggregatesFilter<"AdvanceRequest"> | Date | string
-    empName?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    finYear?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    advType?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    total?: FloatWithAggregatesFilter<"AdvanceRequest"> | number
-    payType?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    hod?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    hr?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    group?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    isCancelled?: BoolWithAggregatesFilter<"AdvanceRequest"> | boolean
-    userId?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    preLoan?: IntNullableWithAggregatesFilter<"AdvanceRequest"> | number | null
-    totalLoan?: FloatWithAggregatesFilter<"AdvanceRequest"> | number
-    preDue?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    ins?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    due?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    remark?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    approvalStatus?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    compCode?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    createdOn?: DateTimeWithAggregatesFilter<"AdvanceRequest"> | Date | string
-    updatedOn?: DateTimeWithAggregatesFilter<"AdvanceRequest"> | Date | string
-    createdBy?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    mobile?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    create?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    update?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    modifiedBy?: StringWithAggregatesFilter<"AdvanceRequest"> | string
-    rejectBy?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    approvedBy?: StringNullableWithAggregatesFilter<"AdvanceRequest"> | string | null
-    category?: IntWithAggregatesFilter<"AdvanceRequest"> | number
-    finCode?: BigIntWithAggregatesFilter<"AdvanceRequest"> | bigint | number
-    payCode?: BigIntWithAggregatesFilter<"AdvanceRequest"> | bigint | number
-  }
-
   export type CompanyCodeWhereInput = {
     AND?: CompanyCodeWhereInput | CompanyCodeWhereInput[]
     OR?: CompanyCodeWhereInput[]
@@ -23210,7 +19078,6 @@ export namespace Prisma {
     compCode?: StringFilter<"PermissionMaster"> | string
     permissionEntry?: PermissionEntryListRelationFilter
     leaveEntry?: LeaveEntryListRelationFilter
-    advanceRequest?: AdvanceRequestListRelationFilter
   }
 
   export type PermissionMasterOrderByWithRelationInput = {
@@ -23221,7 +19088,6 @@ export namespace Prisma {
     compCode?: SortOrder
     permissionEntry?: PermissionEntryOrderByRelationAggregateInput
     leaveEntry?: LeaveEntryOrderByRelationAggregateInput
-    advanceRequest?: AdvanceRequestOrderByRelationAggregateInput
   }
 
   export type PermissionMasterWhereUniqueInput = Prisma.AtLeast<{
@@ -23235,7 +19101,6 @@ export namespace Prisma {
     compCode?: StringFilter<"PermissionMaster"> | string
     permissionEntry?: PermissionEntryListRelationFilter
     leaveEntry?: LeaveEntryListRelationFilter
-    advanceRequest?: AdvanceRequestListRelationFilter
   }, "id">
 
   export type PermissionMasterOrderByWithAggregationInput = {
@@ -24034,76 +19899,6 @@ export namespace Prisma {
     isDefault?: BoolWithAggregatesFilter<"RoleOnPage"> | boolean
   }
 
-  export type NotificationWhereInput = {
-    AND?: NotificationWhereInput | NotificationWhereInput[]
-    OR?: NotificationWhereInput[]
-    NOT?: NotificationWhereInput | NotificationWhereInput[]
-    id?: IntFilter<"Notification"> | number
-    costingId?: IntFilter<"Notification"> | number
-    senderId?: IntFilter<"Notification"> | number
-    receiverId?: IntNullableFilter<"Notification"> | number | null
-    type?: StringNullableFilter<"Notification"> | string | null
-    message?: StringNullableFilter<"Notification"> | string | null
-    isRead?: BoolFilter<"Notification"> | boolean
-    sender?: XOR<UserRelationFilter, UserWhereInput>
-    receiver?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-  }
-
-  export type NotificationOrderByWithRelationInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrderInput | SortOrder
-    type?: SortOrderInput | SortOrder
-    message?: SortOrderInput | SortOrder
-    isRead?: SortOrder
-    sender?: UserOrderByWithRelationInput
-    receiver?: UserOrderByWithRelationInput
-  }
-
-  export type NotificationWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    AND?: NotificationWhereInput | NotificationWhereInput[]
-    OR?: NotificationWhereInput[]
-    NOT?: NotificationWhereInput | NotificationWhereInput[]
-    costingId?: IntFilter<"Notification"> | number
-    senderId?: IntFilter<"Notification"> | number
-    receiverId?: IntNullableFilter<"Notification"> | number | null
-    type?: StringNullableFilter<"Notification"> | string | null
-    message?: StringNullableFilter<"Notification"> | string | null
-    isRead?: BoolFilter<"Notification"> | boolean
-    sender?: XOR<UserRelationFilter, UserWhereInput>
-    receiver?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-  }, "id">
-
-  export type NotificationOrderByWithAggregationInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrderInput | SortOrder
-    type?: SortOrderInput | SortOrder
-    message?: SortOrderInput | SortOrder
-    isRead?: SortOrder
-    _count?: NotificationCountOrderByAggregateInput
-    _avg?: NotificationAvgOrderByAggregateInput
-    _max?: NotificationMaxOrderByAggregateInput
-    _min?: NotificationMinOrderByAggregateInput
-    _sum?: NotificationSumOrderByAggregateInput
-  }
-
-  export type NotificationScalarWhereWithAggregatesInput = {
-    AND?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
-    OR?: NotificationScalarWhereWithAggregatesInput[]
-    NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"Notification"> | number
-    costingId?: IntWithAggregatesFilter<"Notification"> | number
-    senderId?: IntWithAggregatesFilter<"Notification"> | number
-    receiverId?: IntNullableWithAggregatesFilter<"Notification"> | number | null
-    type?: StringNullableWithAggregatesFilter<"Notification"> | string | null
-    message?: StringNullableWithAggregatesFilter<"Notification"> | string | null
-    isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
-  }
-
   export type SettingsCreateInput = {
     notification?: boolean | null
     bioMatrics?: boolean | null
@@ -24156,49 +19951,6 @@ export namespace Prisma {
     compCode?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type NotifyApprovalGroupCreateInput = {
-    idCard?: string | null
-    compCode?: string | null
-    user?: UserCreateNestedManyWithoutOptionalNotifyInput
-  }
-
-  export type NotifyApprovalGroupUncheckedCreateInput = {
-    id?: number
-    idCard?: string | null
-    compCode?: string | null
-    user?: UserUncheckedCreateNestedManyWithoutOptionalNotifyInput
-  }
-
-  export type NotifyApprovalGroupUpdateInput = {
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateManyWithoutOptionalNotifyNestedInput
-  }
-
-  export type NotifyApprovalGroupUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUncheckedUpdateManyWithoutOptionalNotifyNestedInput
-  }
-
-  export type NotifyApprovalGroupCreateManyInput = {
-    id?: number
-    idCard?: string | null
-    compCode?: string | null
-  }
-
-  export type NotifyApprovalGroupUpdateManyMutationInput = {
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type NotifyApprovalGroupUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
   export type UserCreateInput = {
     userName: string
     pic?: string | null
@@ -24220,11 +19972,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -24233,9 +19982,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -24264,11 +20010,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -24277,9 +20020,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -24307,11 +20047,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -24320,9 +20057,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -24351,11 +20085,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -24364,9 +20095,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -24737,272 +20465,6 @@ export namespace Prisma {
     category?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type AdvanceRequestCreateInput = {
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-    userData: UserCreateNestedOneWithoutAdvanceRequestInput
-    createdByUser: UserCreateNestedOneWithoutAdvanceRequestCreateInput
-    modifiedByUser: UserCreateNestedOneWithoutAdvanceRequestModifiedInput
-    categoryData?: PermissionMasterCreateNestedOneWithoutAdvanceRequestInput
-  }
-
-  export type AdvanceRequestUncheckedCreateInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestUpdateInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    userData?: UserUpdateOneRequiredWithoutAdvanceRequestNestedInput
-    createdByUser?: UserUpdateOneRequiredWithoutAdvanceRequestCreateNestedInput
-    modifiedByUser?: UserUpdateOneRequiredWithoutAdvanceRequestModifiedNestedInput
-    categoryData?: PermissionMasterUpdateOneRequiredWithoutAdvanceRequestNestedInput
-  }
-
-  export type AdvanceRequestUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestCreateManyInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestUpdateManyMutationInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
   export type CompanyCodeCreateInput = {
     companyCode: string
     gComp?: string | null
@@ -25168,7 +20630,6 @@ export namespace Prisma {
     compCode?: string
     permissionEntry?: PermissionEntryCreateNestedManyWithoutCategoryDataInput
     leaveEntry?: LeaveEntryCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterUncheckedCreateInput = {
@@ -25179,7 +20640,6 @@ export namespace Prisma {
     compCode?: string
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutCategoryDataInput
     leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterUpdateInput = {
@@ -25189,7 +20649,6 @@ export namespace Prisma {
     compCode?: StringFieldUpdateOperationsInput | string
     permissionEntry?: PermissionEntryUpdateManyWithoutCategoryDataNestedInput
     leaveEntry?: LeaveEntryUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type PermissionMasterUncheckedUpdateInput = {
@@ -25200,7 +20659,6 @@ export namespace Prisma {
     compCode?: StringFieldUpdateOperationsInput | string
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
     leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type PermissionMasterCreateManyInput = {
@@ -26068,71 +21526,6 @@ export namespace Prisma {
     isDefault?: BoolFieldUpdateOperationsInput | boolean
   }
 
-  export type NotificationCreateInput = {
-    costingId: number
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-    sender: UserCreateNestedOneWithoutNotificationSenderInput
-    receiver?: UserCreateNestedOneWithoutNotificationReceiverInput
-  }
-
-  export type NotificationUncheckedCreateInput = {
-    id?: number
-    costingId: number
-    senderId: number
-    receiverId?: number | null
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-  }
-
-  export type NotificationUpdateInput = {
-    costingId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-    sender?: UserUpdateOneRequiredWithoutNotificationSenderNestedInput
-    receiver?: UserUpdateOneWithoutNotificationReceiverNestedInput
-  }
-
-  export type NotificationUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    senderId?: IntFieldUpdateOperationsInput | number
-    receiverId?: NullableIntFieldUpdateOperationsInput | number | null
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type NotificationCreateManyInput = {
-    id?: number
-    costingId: number
-    senderId: number
-    receiverId?: number | null
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-  }
-
-  export type NotificationUpdateManyMutationInput = {
-    costingId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type NotificationUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    senderId?: IntFieldUpdateOperationsInput | number
-    receiverId?: NullableIntFieldUpdateOperationsInput | number | null
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -26277,42 +21670,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type UserListRelationFilter = {
-    every?: UserWhereInput
-    some?: UserWhereInput
-    none?: UserWhereInput
-  }
-
-  export type UserOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type NotifyApprovalGroupCountOrderByAggregateInput = {
-    id?: SortOrder
-    idCard?: SortOrder
-    compCode?: SortOrder
-  }
-
-  export type NotifyApprovalGroupAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
-  export type NotifyApprovalGroupMaxOrderByAggregateInput = {
-    id?: SortOrder
-    idCard?: SortOrder
-    compCode?: SortOrder
-  }
-
-  export type NotifyApprovalGroupMinOrderByAggregateInput = {
-    id?: SortOrder
-    idCard?: SortOrder
-    compCode?: SortOrder
-  }
-
-  export type NotifyApprovalGroupSumOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -26345,12 +21702,6 @@ export namespace Prisma {
     isNot?: RoleWhereInput | null
   }
 
-  export type NotifyApprovalGroupListRelationFilter = {
-    every?: NotifyApprovalGroupWhereInput
-    some?: NotifyApprovalGroupWhereInput
-    none?: NotifyApprovalGroupWhereInput
-  }
-
   export type PermissionEntryListRelationFilter = {
     every?: PermissionEntryWhereInput
     some?: PermissionEntryWhereInput
@@ -26363,22 +21714,10 @@ export namespace Prisma {
     none?: CompanyCodeWhereInput
   }
 
-  export type NotificationListRelationFilter = {
-    every?: NotificationWhereInput
-    some?: NotificationWhereInput
-    none?: NotificationWhereInput
-  }
-
   export type LeaveEntryListRelationFilter = {
     every?: LeaveEntryWhereInput
     some?: LeaveEntryWhereInput
     none?: LeaveEntryWhereInput
-  }
-
-  export type AdvanceRequestListRelationFilter = {
-    every?: AdvanceRequestWhereInput
-    some?: AdvanceRequestWhereInput
-    none?: AdvanceRequestWhereInput
   }
 
   export type OndutyListRelationFilter = {
@@ -26393,10 +21732,6 @@ export namespace Prisma {
     none?: SettingsWhereInput
   }
 
-  export type NotifyApprovalGroupOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type PermissionEntryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -26405,15 +21740,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type NotificationOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type LeaveEntryOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AdvanceRequestOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -26723,210 +22050,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type BigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[]
-    notIn?: bigint[] | number[]
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
-  }
-
-  export type PermissionMasterRelationFilter = {
-    is?: PermissionMasterWhereInput
-    isNot?: PermissionMasterWhereInput
-  }
-
-  export type AdvanceRequestCountOrderByAggregateInput = {
-    id?: SortOrder
-    docId?: SortOrder
-    docDate?: SortOrder
-    idCard?: SortOrder
-    fromDate?: SortOrder
-    toDate?: SortOrder
-    empName?: SortOrder
-    finYear?: SortOrder
-    advType?: SortOrder
-    total?: SortOrder
-    payType?: SortOrder
-    hod?: SortOrder
-    hr?: SortOrder
-    group?: SortOrder
-    isCancelled?: SortOrder
-    userId?: SortOrder
-    preLoan?: SortOrder
-    totalLoan?: SortOrder
-    preDue?: SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    remark?: SortOrder
-    approvalStatus?: SortOrder
-    compCode?: SortOrder
-    createdOn?: SortOrder
-    updatedOn?: SortOrder
-    createdBy?: SortOrder
-    mobile?: SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    modifiedBy?: SortOrder
-    rejectBy?: SortOrder
-    approvedBy?: SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-  }
-
-  export type AdvanceRequestAvgOrderByAggregateInput = {
-    id?: SortOrder
-    total?: SortOrder
-    preLoan?: SortOrder
-    totalLoan?: SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-  }
-
-  export type AdvanceRequestMaxOrderByAggregateInput = {
-    id?: SortOrder
-    docId?: SortOrder
-    docDate?: SortOrder
-    idCard?: SortOrder
-    fromDate?: SortOrder
-    toDate?: SortOrder
-    empName?: SortOrder
-    finYear?: SortOrder
-    advType?: SortOrder
-    total?: SortOrder
-    payType?: SortOrder
-    hod?: SortOrder
-    hr?: SortOrder
-    group?: SortOrder
-    isCancelled?: SortOrder
-    userId?: SortOrder
-    preLoan?: SortOrder
-    totalLoan?: SortOrder
-    preDue?: SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    remark?: SortOrder
-    approvalStatus?: SortOrder
-    compCode?: SortOrder
-    createdOn?: SortOrder
-    updatedOn?: SortOrder
-    createdBy?: SortOrder
-    mobile?: SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    modifiedBy?: SortOrder
-    rejectBy?: SortOrder
-    approvedBy?: SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-  }
-
-  export type AdvanceRequestMinOrderByAggregateInput = {
-    id?: SortOrder
-    docId?: SortOrder
-    docDate?: SortOrder
-    idCard?: SortOrder
-    fromDate?: SortOrder
-    toDate?: SortOrder
-    empName?: SortOrder
-    finYear?: SortOrder
-    advType?: SortOrder
-    total?: SortOrder
-    payType?: SortOrder
-    hod?: SortOrder
-    hr?: SortOrder
-    group?: SortOrder
-    isCancelled?: SortOrder
-    userId?: SortOrder
-    preLoan?: SortOrder
-    totalLoan?: SortOrder
-    preDue?: SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    remark?: SortOrder
-    approvalStatus?: SortOrder
-    compCode?: SortOrder
-    createdOn?: SortOrder
-    updatedOn?: SortOrder
-    createdBy?: SortOrder
-    mobile?: SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    modifiedBy?: SortOrder
-    rejectBy?: SortOrder
-    approvedBy?: SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-  }
-
-  export type AdvanceRequestSumOrderByAggregateInput = {
-    id?: SortOrder
-    total?: SortOrder
-    preLoan?: SortOrder
-    totalLoan?: SortOrder
-    ins?: SortOrder
-    due?: SortOrder
-    create?: SortOrder
-    update?: SortOrder
-    category?: SortOrder
-    finCode?: SortOrder
-    payCode?: SortOrder
-  }
-
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[]
-    notIn?: bigint[] | number[]
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedBigIntFilter<$PrismaModel>
-    _min?: NestedBigIntFilter<$PrismaModel>
-    _max?: NestedBigIntFilter<$PrismaModel>
-  }
-
   export type CompanyCodeCountOrderByAggregateInput = {
     id?: SortOrder
     idCard?: SortOrder
@@ -27086,6 +22209,28 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
   export type FloatNullableFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -27167,6 +22312,38 @@ export namespace Prisma {
     altitude?: SortOrder
   }
 
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -27181,6 +22358,21 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type PermissionMasterRelationFilter = {
+    is?: PermissionMasterWhereInput
+    isNot?: PermissionMasterWhereInput
+  }
+
+  export type UserListRelationFilter = {
+    every?: UserWhereInput
+    some?: UserWhereInput
+    none?: UserWhereInput
+  }
+
+  export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type PermissionEntryCountOrderByAggregateInput = {
@@ -27562,50 +22754,6 @@ export namespace Prisma {
     roleId?: SortOrder
   }
 
-  export type NotificationCountOrderByAggregateInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrder
-    type?: SortOrder
-    message?: SortOrder
-    isRead?: SortOrder
-  }
-
-  export type NotificationAvgOrderByAggregateInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrder
-  }
-
-  export type NotificationMaxOrderByAggregateInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrder
-    type?: SortOrder
-    message?: SortOrder
-    isRead?: SortOrder
-  }
-
-  export type NotificationMinOrderByAggregateInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrder
-    type?: SortOrder
-    message?: SortOrder
-    isRead?: SortOrder
-  }
-
-  export type NotificationSumOrderByAggregateInput = {
-    id?: SortOrder
-    costingId?: SortOrder
-    senderId?: SortOrder
-    receiverId?: SortOrder
-  }
-
   export type UserCreateNestedOneWithoutSettingsInput = {
     create?: XOR<UserCreateWithoutSettingsInput, UserUncheckedCreateWithoutSettingsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSettingsInput
@@ -27640,54 +22788,10 @@ export namespace Prisma {
     set?: string
   }
 
-  export type UserCreateNestedManyWithoutOptionalNotifyInput = {
-    create?: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput> | UserCreateWithoutOptionalNotifyInput[] | UserUncheckedCreateWithoutOptionalNotifyInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutOptionalNotifyInput | UserCreateOrConnectWithoutOptionalNotifyInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-  }
-
-  export type UserUncheckedCreateNestedManyWithoutOptionalNotifyInput = {
-    create?: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput> | UserCreateWithoutOptionalNotifyInput[] | UserUncheckedCreateWithoutOptionalNotifyInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutOptionalNotifyInput | UserCreateOrConnectWithoutOptionalNotifyInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-  }
-
-  export type UserUpdateManyWithoutOptionalNotifyNestedInput = {
-    create?: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput> | UserCreateWithoutOptionalNotifyInput[] | UserUncheckedCreateWithoutOptionalNotifyInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutOptionalNotifyInput | UserCreateOrConnectWithoutOptionalNotifyInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutOptionalNotifyInput | UserUpsertWithWhereUniqueWithoutOptionalNotifyInput[]
-    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutOptionalNotifyInput | UserUpdateWithWhereUniqueWithoutOptionalNotifyInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutOptionalNotifyInput | UserUpdateManyWithWhereWithoutOptionalNotifyInput[]
-    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
-  }
-
-  export type UserUncheckedUpdateManyWithoutOptionalNotifyNestedInput = {
-    create?: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput> | UserCreateWithoutOptionalNotifyInput[] | UserUncheckedCreateWithoutOptionalNotifyInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutOptionalNotifyInput | UserCreateOrConnectWithoutOptionalNotifyInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutOptionalNotifyInput | UserUpsertWithWhereUniqueWithoutOptionalNotifyInput[]
-    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutOptionalNotifyInput | UserUpdateWithWhereUniqueWithoutOptionalNotifyInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutOptionalNotifyInput | UserUpdateManyWithWhereWithoutOptionalNotifyInput[]
-    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
-  }
-
   export type RoleCreateNestedOneWithoutUserInput = {
     create?: XOR<RoleCreateWithoutUserInput, RoleUncheckedCreateWithoutUserInput>
     connectOrCreate?: RoleCreateOrConnectWithoutUserInput
     connect?: RoleWhereUniqueInput
-  }
-
-  export type NotifyApprovalGroupCreateNestedManyWithoutUserInput = {
-    create?: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput> | NotifyApprovalGroupCreateWithoutUserInput[] | NotifyApprovalGroupUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotifyApprovalGroupCreateOrConnectWithoutUserInput | NotifyApprovalGroupCreateOrConnectWithoutUserInput[]
-    connect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
   }
 
   export type PermissionEntryCreateNestedManyWithoutUserInput = {
@@ -27701,20 +22805,6 @@ export namespace Prisma {
     connectOrCreate?: CompanyCodeCreateOrConnectWithoutUserInput | CompanyCodeCreateOrConnectWithoutUserInput[]
     createMany?: CompanyCodeCreateManyUserInputEnvelope
     connect?: CompanyCodeWhereUniqueInput | CompanyCodeWhereUniqueInput[]
-  }
-
-  export type NotificationCreateNestedManyWithoutSenderInput = {
-    create?: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput> | NotificationCreateWithoutSenderInput[] | NotificationUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutSenderInput | NotificationCreateOrConnectWithoutSenderInput[]
-    createMany?: NotificationCreateManySenderInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type NotificationCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput> | NotificationCreateWithoutReceiverInput[] | NotificationUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutReceiverInput | NotificationCreateOrConnectWithoutReceiverInput[]
-    createMany?: NotificationCreateManyReceiverInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type PermissionEntryCreateNestedManyWithoutHodIdInput = {
@@ -27773,27 +22863,6 @@ export namespace Prisma {
     connect?: LeaveEntryWhereUniqueInput | LeaveEntryWhereUniqueInput[]
   }
 
-  export type AdvanceRequestCreateNestedManyWithoutCreatedByUserInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput> | AdvanceRequestCreateWithoutCreatedByUserInput[] | AdvanceRequestUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCreatedByUserInput | AdvanceRequestCreateOrConnectWithoutCreatedByUserInput[]
-    createMany?: AdvanceRequestCreateManyCreatedByUserInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
-  export type AdvanceRequestCreateNestedManyWithoutModifiedByUserInput = {
-    create?: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput> | AdvanceRequestCreateWithoutModifiedByUserInput[] | AdvanceRequestUncheckedCreateWithoutModifiedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutModifiedByUserInput | AdvanceRequestCreateOrConnectWithoutModifiedByUserInput[]
-    createMany?: AdvanceRequestCreateManyModifiedByUserInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
-  export type AdvanceRequestCreateNestedManyWithoutUserDataInput = {
-    create?: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput> | AdvanceRequestCreateWithoutUserDataInput[] | AdvanceRequestUncheckedCreateWithoutUserDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutUserDataInput | AdvanceRequestCreateOrConnectWithoutUserDataInput[]
-    createMany?: AdvanceRequestCreateManyUserDataInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
   export type OndutyCreateNestedManyWithoutUserDataInput = {
     create?: XOR<OndutyCreateWithoutUserDataInput, OndutyUncheckedCreateWithoutUserDataInput> | OndutyCreateWithoutUserDataInput[] | OndutyUncheckedCreateWithoutUserDataInput[]
     connectOrCreate?: OndutyCreateOrConnectWithoutUserDataInput | OndutyCreateOrConnectWithoutUserDataInput[]
@@ -27822,12 +22891,6 @@ export namespace Prisma {
     connect?: SettingsWhereUniqueInput | SettingsWhereUniqueInput[]
   }
 
-  export type NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput> | NotifyApprovalGroupCreateWithoutUserInput[] | NotifyApprovalGroupUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotifyApprovalGroupCreateOrConnectWithoutUserInput | NotifyApprovalGroupCreateOrConnectWithoutUserInput[]
-    connect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-  }
-
   export type PermissionEntryUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<PermissionEntryCreateWithoutUserInput, PermissionEntryUncheckedCreateWithoutUserInput> | PermissionEntryCreateWithoutUserInput[] | PermissionEntryUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PermissionEntryCreateOrConnectWithoutUserInput | PermissionEntryCreateOrConnectWithoutUserInput[]
@@ -27839,20 +22902,6 @@ export namespace Prisma {
     connectOrCreate?: CompanyCodeCreateOrConnectWithoutUserInput | CompanyCodeCreateOrConnectWithoutUserInput[]
     createMany?: CompanyCodeCreateManyUserInputEnvelope
     connect?: CompanyCodeWhereUniqueInput | CompanyCodeWhereUniqueInput[]
-  }
-
-  export type NotificationUncheckedCreateNestedManyWithoutSenderInput = {
-    create?: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput> | NotificationCreateWithoutSenderInput[] | NotificationUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutSenderInput | NotificationCreateOrConnectWithoutSenderInput[]
-    createMany?: NotificationCreateManySenderInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type NotificationUncheckedCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput> | NotificationCreateWithoutReceiverInput[] | NotificationUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutReceiverInput | NotificationCreateOrConnectWithoutReceiverInput[]
-    createMany?: NotificationCreateManyReceiverInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput = {
@@ -27911,27 +22960,6 @@ export namespace Prisma {
     connect?: LeaveEntryWhereUniqueInput | LeaveEntryWhereUniqueInput[]
   }
 
-  export type AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput> | AdvanceRequestCreateWithoutCreatedByUserInput[] | AdvanceRequestUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCreatedByUserInput | AdvanceRequestCreateOrConnectWithoutCreatedByUserInput[]
-    createMany?: AdvanceRequestCreateManyCreatedByUserInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
-  export type AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput = {
-    create?: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput> | AdvanceRequestCreateWithoutModifiedByUserInput[] | AdvanceRequestUncheckedCreateWithoutModifiedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutModifiedByUserInput | AdvanceRequestCreateOrConnectWithoutModifiedByUserInput[]
-    createMany?: AdvanceRequestCreateManyModifiedByUserInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
-  export type AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput = {
-    create?: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput> | AdvanceRequestCreateWithoutUserDataInput[] | AdvanceRequestUncheckedCreateWithoutUserDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutUserDataInput | AdvanceRequestCreateOrConnectWithoutUserDataInput[]
-    createMany?: AdvanceRequestCreateManyUserDataInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
   export type OndutyUncheckedCreateNestedManyWithoutUserDataInput = {
     create?: XOR<OndutyCreateWithoutUserDataInput, OndutyUncheckedCreateWithoutUserDataInput> | OndutyCreateWithoutUserDataInput[] | OndutyUncheckedCreateWithoutUserDataInput[]
     connectOrCreate?: OndutyCreateOrConnectWithoutUserDataInput | OndutyCreateOrConnectWithoutUserDataInput[]
@@ -27986,19 +23014,6 @@ export namespace Prisma {
     update?: XOR<XOR<RoleUpdateToOneWithWhereWithoutUserInput, RoleUpdateWithoutUserInput>, RoleUncheckedUpdateWithoutUserInput>
   }
 
-  export type NotifyApprovalGroupUpdateManyWithoutUserNestedInput = {
-    create?: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput> | NotifyApprovalGroupCreateWithoutUserInput[] | NotifyApprovalGroupUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotifyApprovalGroupCreateOrConnectWithoutUserInput | NotifyApprovalGroupCreateOrConnectWithoutUserInput[]
-    upsert?: NotifyApprovalGroupUpsertWithWhereUniqueWithoutUserInput | NotifyApprovalGroupUpsertWithWhereUniqueWithoutUserInput[]
-    set?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    disconnect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    delete?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    connect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    update?: NotifyApprovalGroupUpdateWithWhereUniqueWithoutUserInput | NotifyApprovalGroupUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: NotifyApprovalGroupUpdateManyWithWhereWithoutUserInput | NotifyApprovalGroupUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: NotifyApprovalGroupScalarWhereInput | NotifyApprovalGroupScalarWhereInput[]
-  }
-
   export type PermissionEntryUpdateManyWithoutUserNestedInput = {
     create?: XOR<PermissionEntryCreateWithoutUserInput, PermissionEntryUncheckedCreateWithoutUserInput> | PermissionEntryCreateWithoutUserInput[] | PermissionEntryUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PermissionEntryCreateOrConnectWithoutUserInput | PermissionEntryCreateOrConnectWithoutUserInput[]
@@ -28024,34 +23039,6 @@ export namespace Prisma {
     update?: CompanyCodeUpdateWithWhereUniqueWithoutUserInput | CompanyCodeUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: CompanyCodeUpdateManyWithWhereWithoutUserInput | CompanyCodeUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: CompanyCodeScalarWhereInput | CompanyCodeScalarWhereInput[]
-  }
-
-  export type NotificationUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput> | NotificationCreateWithoutSenderInput[] | NotificationUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutSenderInput | NotificationCreateOrConnectWithoutSenderInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutSenderInput | NotificationUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: NotificationCreateManySenderInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutSenderInput | NotificationUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutSenderInput | NotificationUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-  }
-
-  export type NotificationUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput> | NotificationCreateWithoutReceiverInput[] | NotificationUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutReceiverInput | NotificationCreateOrConnectWithoutReceiverInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutReceiverInput | NotificationUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: NotificationCreateManyReceiverInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutReceiverInput | NotificationUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutReceiverInput | NotificationUpdateManyWithWhereWithoutReceiverInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type PermissionEntryUpdateManyWithoutHodIdNestedInput = {
@@ -28166,48 +23153,6 @@ export namespace Prisma {
     deleteMany?: LeaveEntryScalarWhereInput | LeaveEntryScalarWhereInput[]
   }
 
-  export type AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput> | AdvanceRequestCreateWithoutCreatedByUserInput[] | AdvanceRequestUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCreatedByUserInput | AdvanceRequestCreateOrConnectWithoutCreatedByUserInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutCreatedByUserInput | AdvanceRequestUpsertWithWhereUniqueWithoutCreatedByUserInput[]
-    createMany?: AdvanceRequestCreateManyCreatedByUserInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutCreatedByUserInput | AdvanceRequestUpdateWithWhereUniqueWithoutCreatedByUserInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutCreatedByUserInput | AdvanceRequestUpdateManyWithWhereWithoutCreatedByUserInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput> | AdvanceRequestCreateWithoutModifiedByUserInput[] | AdvanceRequestUncheckedCreateWithoutModifiedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutModifiedByUserInput | AdvanceRequestCreateOrConnectWithoutModifiedByUserInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutModifiedByUserInput | AdvanceRequestUpsertWithWhereUniqueWithoutModifiedByUserInput[]
-    createMany?: AdvanceRequestCreateManyModifiedByUserInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutModifiedByUserInput | AdvanceRequestUpdateWithWhereUniqueWithoutModifiedByUserInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutModifiedByUserInput | AdvanceRequestUpdateManyWithWhereWithoutModifiedByUserInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUpdateManyWithoutUserDataNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput> | AdvanceRequestCreateWithoutUserDataInput[] | AdvanceRequestUncheckedCreateWithoutUserDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutUserDataInput | AdvanceRequestCreateOrConnectWithoutUserDataInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutUserDataInput | AdvanceRequestUpsertWithWhereUniqueWithoutUserDataInput[]
-    createMany?: AdvanceRequestCreateManyUserDataInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutUserDataInput | AdvanceRequestUpdateWithWhereUniqueWithoutUserDataInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutUserDataInput | AdvanceRequestUpdateManyWithWhereWithoutUserDataInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
   export type OndutyUpdateManyWithoutUserDataNestedInput = {
     create?: XOR<OndutyCreateWithoutUserDataInput, OndutyUncheckedCreateWithoutUserDataInput> | OndutyCreateWithoutUserDataInput[] | OndutyUncheckedCreateWithoutUserDataInput[]
     connectOrCreate?: OndutyCreateOrConnectWithoutUserDataInput | OndutyCreateOrConnectWithoutUserDataInput[]
@@ -28264,19 +23209,6 @@ export namespace Prisma {
     deleteMany?: SettingsScalarWhereInput | SettingsScalarWhereInput[]
   }
 
-  export type NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput> | NotifyApprovalGroupCreateWithoutUserInput[] | NotifyApprovalGroupUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotifyApprovalGroupCreateOrConnectWithoutUserInput | NotifyApprovalGroupCreateOrConnectWithoutUserInput[]
-    upsert?: NotifyApprovalGroupUpsertWithWhereUniqueWithoutUserInput | NotifyApprovalGroupUpsertWithWhereUniqueWithoutUserInput[]
-    set?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    disconnect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    delete?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    connect?: NotifyApprovalGroupWhereUniqueInput | NotifyApprovalGroupWhereUniqueInput[]
-    update?: NotifyApprovalGroupUpdateWithWhereUniqueWithoutUserInput | NotifyApprovalGroupUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: NotifyApprovalGroupUpdateManyWithWhereWithoutUserInput | NotifyApprovalGroupUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: NotifyApprovalGroupScalarWhereInput | NotifyApprovalGroupScalarWhereInput[]
-  }
-
   export type PermissionEntryUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<PermissionEntryCreateWithoutUserInput, PermissionEntryUncheckedCreateWithoutUserInput> | PermissionEntryCreateWithoutUserInput[] | PermissionEntryUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PermissionEntryCreateOrConnectWithoutUserInput | PermissionEntryCreateOrConnectWithoutUserInput[]
@@ -28302,34 +23234,6 @@ export namespace Prisma {
     update?: CompanyCodeUpdateWithWhereUniqueWithoutUserInput | CompanyCodeUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: CompanyCodeUpdateManyWithWhereWithoutUserInput | CompanyCodeUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: CompanyCodeScalarWhereInput | CompanyCodeScalarWhereInput[]
-  }
-
-  export type NotificationUncheckedUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput> | NotificationCreateWithoutSenderInput[] | NotificationUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutSenderInput | NotificationCreateOrConnectWithoutSenderInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutSenderInput | NotificationUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: NotificationCreateManySenderInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutSenderInput | NotificationUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutSenderInput | NotificationUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-  }
-
-  export type NotificationUncheckedUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput> | NotificationCreateWithoutReceiverInput[] | NotificationUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutReceiverInput | NotificationCreateOrConnectWithoutReceiverInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutReceiverInput | NotificationUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: NotificationCreateManyReceiverInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutReceiverInput | NotificationUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutReceiverInput | NotificationUpdateManyWithWhereWithoutReceiverInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput = {
@@ -28442,48 +23346,6 @@ export namespace Prisma {
     update?: LeaveEntryUpdateWithWhereUniqueWithoutUserDataInput | LeaveEntryUpdateWithWhereUniqueWithoutUserDataInput[]
     updateMany?: LeaveEntryUpdateManyWithWhereWithoutUserDataInput | LeaveEntryUpdateManyWithWhereWithoutUserDataInput[]
     deleteMany?: LeaveEntryScalarWhereInput | LeaveEntryScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput> | AdvanceRequestCreateWithoutCreatedByUserInput[] | AdvanceRequestUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCreatedByUserInput | AdvanceRequestCreateOrConnectWithoutCreatedByUserInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutCreatedByUserInput | AdvanceRequestUpsertWithWhereUniqueWithoutCreatedByUserInput[]
-    createMany?: AdvanceRequestCreateManyCreatedByUserInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutCreatedByUserInput | AdvanceRequestUpdateWithWhereUniqueWithoutCreatedByUserInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutCreatedByUserInput | AdvanceRequestUpdateManyWithWhereWithoutCreatedByUserInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput> | AdvanceRequestCreateWithoutModifiedByUserInput[] | AdvanceRequestUncheckedCreateWithoutModifiedByUserInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutModifiedByUserInput | AdvanceRequestCreateOrConnectWithoutModifiedByUserInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutModifiedByUserInput | AdvanceRequestUpsertWithWhereUniqueWithoutModifiedByUserInput[]
-    createMany?: AdvanceRequestCreateManyModifiedByUserInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutModifiedByUserInput | AdvanceRequestUpdateWithWhereUniqueWithoutModifiedByUserInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutModifiedByUserInput | AdvanceRequestUpdateManyWithWhereWithoutModifiedByUserInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput> | AdvanceRequestCreateWithoutUserDataInput[] | AdvanceRequestUncheckedCreateWithoutUserDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutUserDataInput | AdvanceRequestCreateOrConnectWithoutUserDataInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutUserDataInput | AdvanceRequestUpsertWithWhereUniqueWithoutUserDataInput[]
-    createMany?: AdvanceRequestCreateManyUserDataInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutUserDataInput | AdvanceRequestUpdateWithWhereUniqueWithoutUserDataInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutUserDataInput | AdvanceRequestUpdateManyWithWhereWithoutUserDataInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
   }
 
   export type OndutyUncheckedUpdateManyWithoutUserDataNestedInput = {
@@ -28610,78 +23472,6 @@ export namespace Prisma {
     update?: XOR<XOR<OndutyMasterUpdateToOneWithWhereWithoutOnDutyInput, OndutyMasterUpdateWithoutOnDutyInput>, OndutyMasterUncheckedUpdateWithoutOnDutyInput>
   }
 
-  export type UserCreateNestedOneWithoutAdvanceRequestInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestInput, UserUncheckedCreateWithoutAdvanceRequestInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserCreateNestedOneWithoutAdvanceRequestCreateInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestCreateInput, UserUncheckedCreateWithoutAdvanceRequestCreateInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestCreateInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserCreateNestedOneWithoutAdvanceRequestModifiedInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestModifiedInput, UserUncheckedCreateWithoutAdvanceRequestModifiedInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestModifiedInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type PermissionMasterCreateNestedOneWithoutAdvanceRequestInput = {
-    create?: XOR<PermissionMasterCreateWithoutAdvanceRequestInput, PermissionMasterUncheckedCreateWithoutAdvanceRequestInput>
-    connectOrCreate?: PermissionMasterCreateOrConnectWithoutAdvanceRequestInput
-    connect?: PermissionMasterWhereUniqueInput
-  }
-
-  export type FloatFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type BigIntFieldUpdateOperationsInput = {
-    set?: bigint | number
-    increment?: bigint | number
-    decrement?: bigint | number
-    multiply?: bigint | number
-    divide?: bigint | number
-  }
-
-  export type UserUpdateOneRequiredWithoutAdvanceRequestNestedInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestInput, UserUncheckedCreateWithoutAdvanceRequestInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestInput
-    upsert?: UserUpsertWithoutAdvanceRequestInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdvanceRequestInput, UserUpdateWithoutAdvanceRequestInput>, UserUncheckedUpdateWithoutAdvanceRequestInput>
-  }
-
-  export type UserUpdateOneRequiredWithoutAdvanceRequestCreateNestedInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestCreateInput, UserUncheckedCreateWithoutAdvanceRequestCreateInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestCreateInput
-    upsert?: UserUpsertWithoutAdvanceRequestCreateInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdvanceRequestCreateInput, UserUpdateWithoutAdvanceRequestCreateInput>, UserUncheckedUpdateWithoutAdvanceRequestCreateInput>
-  }
-
-  export type UserUpdateOneRequiredWithoutAdvanceRequestModifiedNestedInput = {
-    create?: XOR<UserCreateWithoutAdvanceRequestModifiedInput, UserUncheckedCreateWithoutAdvanceRequestModifiedInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvanceRequestModifiedInput
-    upsert?: UserUpsertWithoutAdvanceRequestModifiedInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdvanceRequestModifiedInput, UserUpdateWithoutAdvanceRequestModifiedInput>, UserUncheckedUpdateWithoutAdvanceRequestModifiedInput>
-  }
-
-  export type PermissionMasterUpdateOneRequiredWithoutAdvanceRequestNestedInput = {
-    create?: XOR<PermissionMasterCreateWithoutAdvanceRequestInput, PermissionMasterUncheckedCreateWithoutAdvanceRequestInput>
-    connectOrCreate?: PermissionMasterCreateOrConnectWithoutAdvanceRequestInput
-    upsert?: PermissionMasterUpsertWithoutAdvanceRequestInput
-    connect?: PermissionMasterWhereUniqueInput
-    update?: XOR<XOR<PermissionMasterUpdateToOneWithWhereWithoutAdvanceRequestInput, PermissionMasterUpdateWithoutAdvanceRequestInput>, PermissionMasterUncheckedUpdateWithoutAdvanceRequestInput>
-  }
-
   export type UserCreateNestedOneWithoutCompaniesInput = {
     create?: XOR<UserCreateWithoutCompaniesInput, UserUncheckedCreateWithoutCompaniesInput>
     connectOrCreate?: UserCreateOrConnectWithoutCompaniesInput
@@ -28710,13 +23500,6 @@ export namespace Prisma {
     connect?: LeaveEntryWhereUniqueInput | LeaveEntryWhereUniqueInput[]
   }
 
-  export type AdvanceRequestCreateNestedManyWithoutCategoryDataInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput> | AdvanceRequestCreateWithoutCategoryDataInput[] | AdvanceRequestUncheckedCreateWithoutCategoryDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCategoryDataInput | AdvanceRequestCreateOrConnectWithoutCategoryDataInput[]
-    createMany?: AdvanceRequestCreateManyCategoryDataInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-  }
-
   export type PermissionEntryUncheckedCreateNestedManyWithoutCategoryDataInput = {
     create?: XOR<PermissionEntryCreateWithoutCategoryDataInput, PermissionEntryUncheckedCreateWithoutCategoryDataInput> | PermissionEntryCreateWithoutCategoryDataInput[] | PermissionEntryUncheckedCreateWithoutCategoryDataInput[]
     connectOrCreate?: PermissionEntryCreateOrConnectWithoutCategoryDataInput | PermissionEntryCreateOrConnectWithoutCategoryDataInput[]
@@ -28729,13 +23512,6 @@ export namespace Prisma {
     connectOrCreate?: LeaveEntryCreateOrConnectWithoutCategoryDataInput | LeaveEntryCreateOrConnectWithoutCategoryDataInput[]
     createMany?: LeaveEntryCreateManyCategoryDataInputEnvelope
     connect?: LeaveEntryWhereUniqueInput | LeaveEntryWhereUniqueInput[]
-  }
-
-  export type AdvanceRequestUncheckedCreateNestedManyWithoutCategoryDataInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput> | AdvanceRequestCreateWithoutCategoryDataInput[] | AdvanceRequestUncheckedCreateWithoutCategoryDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCategoryDataInput | AdvanceRequestCreateOrConnectWithoutCategoryDataInput[]
-    createMany?: AdvanceRequestCreateManyCategoryDataInputEnvelope
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
   }
 
   export type PermissionEntryUpdateManyWithoutCategoryDataNestedInput = {
@@ -28766,20 +23542,6 @@ export namespace Prisma {
     deleteMany?: LeaveEntryScalarWhereInput | LeaveEntryScalarWhereInput[]
   }
 
-  export type AdvanceRequestUpdateManyWithoutCategoryDataNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput> | AdvanceRequestCreateWithoutCategoryDataInput[] | AdvanceRequestUncheckedCreateWithoutCategoryDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCategoryDataInput | AdvanceRequestCreateOrConnectWithoutCategoryDataInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutCategoryDataInput | AdvanceRequestUpsertWithWhereUniqueWithoutCategoryDataInput[]
-    createMany?: AdvanceRequestCreateManyCategoryDataInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutCategoryDataInput | AdvanceRequestUpdateWithWhereUniqueWithoutCategoryDataInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutCategoryDataInput | AdvanceRequestUpdateManyWithWhereWithoutCategoryDataInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-  }
-
   export type PermissionEntryUncheckedUpdateManyWithoutCategoryDataNestedInput = {
     create?: XOR<PermissionEntryCreateWithoutCategoryDataInput, PermissionEntryUncheckedCreateWithoutCategoryDataInput> | PermissionEntryCreateWithoutCategoryDataInput[] | PermissionEntryUncheckedCreateWithoutCategoryDataInput[]
     connectOrCreate?: PermissionEntryCreateOrConnectWithoutCategoryDataInput | PermissionEntryCreateOrConnectWithoutCategoryDataInput[]
@@ -28806,20 +23568,6 @@ export namespace Prisma {
     update?: LeaveEntryUpdateWithWhereUniqueWithoutCategoryDataInput | LeaveEntryUpdateWithWhereUniqueWithoutCategoryDataInput[]
     updateMany?: LeaveEntryUpdateManyWithWhereWithoutCategoryDataInput | LeaveEntryUpdateManyWithWhereWithoutCategoryDataInput[]
     deleteMany?: LeaveEntryScalarWhereInput | LeaveEntryScalarWhereInput[]
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutCategoryDataNestedInput = {
-    create?: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput> | AdvanceRequestCreateWithoutCategoryDataInput[] | AdvanceRequestUncheckedCreateWithoutCategoryDataInput[]
-    connectOrCreate?: AdvanceRequestCreateOrConnectWithoutCategoryDataInput | AdvanceRequestCreateOrConnectWithoutCategoryDataInput[]
-    upsert?: AdvanceRequestUpsertWithWhereUniqueWithoutCategoryDataInput | AdvanceRequestUpsertWithWhereUniqueWithoutCategoryDataInput[]
-    createMany?: AdvanceRequestCreateManyCategoryDataInputEnvelope
-    set?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    disconnect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    delete?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    connect?: AdvanceRequestWhereUniqueInput | AdvanceRequestWhereUniqueInput[]
-    update?: AdvanceRequestUpdateWithWhereUniqueWithoutCategoryDataInput | AdvanceRequestUpdateWithWhereUniqueWithoutCategoryDataInput[]
-    updateMany?: AdvanceRequestUpdateManyWithWhereWithoutCategoryDataInput | AdvanceRequestUpdateManyWithWhereWithoutCategoryDataInput[]
-    deleteMany?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
   }
 
   export type OndutyCreateNestedManyWithoutCategoryDataInput = {
@@ -28862,6 +23610,22 @@ export namespace Prisma {
     update?: OndutyUpdateWithWhereUniqueWithoutCategoryDataInput | OndutyUpdateWithWhereUniqueWithoutCategoryDataInput[]
     updateMany?: OndutyUpdateManyWithWhereWithoutCategoryDataInput | OndutyUpdateManyWithWhereWithoutCategoryDataInput[]
     deleteMany?: OndutyScalarWhereInput | OndutyScalarWhereInput[]
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
@@ -29146,36 +23910,6 @@ export namespace Prisma {
     upsert?: RoleUpsertWithoutRoleOnPageInput
     connect?: RoleWhereUniqueInput
     update?: XOR<XOR<RoleUpdateToOneWithWhereWithoutRoleOnPageInput, RoleUpdateWithoutRoleOnPageInput>, RoleUncheckedUpdateWithoutRoleOnPageInput>
-  }
-
-  export type UserCreateNestedOneWithoutNotificationSenderInput = {
-    create?: XOR<UserCreateWithoutNotificationSenderInput, UserUncheckedCreateWithoutNotificationSenderInput>
-    connectOrCreate?: UserCreateOrConnectWithoutNotificationSenderInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserCreateNestedOneWithoutNotificationReceiverInput = {
-    create?: XOR<UserCreateWithoutNotificationReceiverInput, UserUncheckedCreateWithoutNotificationReceiverInput>
-    connectOrCreate?: UserCreateOrConnectWithoutNotificationReceiverInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutNotificationSenderNestedInput = {
-    create?: XOR<UserCreateWithoutNotificationSenderInput, UserUncheckedCreateWithoutNotificationSenderInput>
-    connectOrCreate?: UserCreateOrConnectWithoutNotificationSenderInput
-    upsert?: UserUpsertWithoutNotificationSenderInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationSenderInput, UserUpdateWithoutNotificationSenderInput>, UserUncheckedUpdateWithoutNotificationSenderInput>
-  }
-
-  export type UserUpdateOneWithoutNotificationReceiverNestedInput = {
-    create?: XOR<UserCreateWithoutNotificationReceiverInput, UserUncheckedCreateWithoutNotificationReceiverInput>
-    connectOrCreate?: UserCreateOrConnectWithoutNotificationReceiverInput
-    upsert?: UserUpsertWithoutNotificationReceiverInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationReceiverInput, UserUpdateWithoutNotificationReceiverInput>, UserUncheckedUpdateWithoutNotificationReceiverInput>
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -29472,11 +24206,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -29485,9 +24216,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -29515,11 +24243,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -29528,9 +24253,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -29573,11 +24295,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -29586,9 +24305,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -29616,11 +24332,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -29629,145 +24342,9 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-  }
-
-  export type UserCreateWithoutOptionalNotifyInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutOptionalNotifyInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutOptionalNotifyInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput>
-  }
-
-  export type UserUpsertWithWhereUniqueWithoutOptionalNotifyInput = {
-    where: UserWhereUniqueInput
-    update: XOR<UserUpdateWithoutOptionalNotifyInput, UserUncheckedUpdateWithoutOptionalNotifyInput>
-    create: XOR<UserCreateWithoutOptionalNotifyInput, UserUncheckedCreateWithoutOptionalNotifyInput>
-  }
-
-  export type UserUpdateWithWhereUniqueWithoutOptionalNotifyInput = {
-    where: UserWhereUniqueInput
-    data: XOR<UserUpdateWithoutOptionalNotifyInput, UserUncheckedUpdateWithoutOptionalNotifyInput>
-  }
-
-  export type UserUpdateManyWithWhereWithoutOptionalNotifyInput = {
-    where: UserScalarWhereInput
-    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutOptionalNotifyInput>
-  }
-
-  export type UserScalarWhereInput = {
-    AND?: UserScalarWhereInput | UserScalarWhereInput[]
-    OR?: UserScalarWhereInput[]
-    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
-    id?: IntFilter<"User"> | number
-    userName?: StringFilter<"User"> | string
-    pic?: StringNullableFilter<"User"> | string | null
-    email?: StringNullableFilter<"User"> | string | null
-    otpEmail?: StringNullableFilter<"User"> | string | null
-    approval?: StringFilter<"User"> | string
-    password?: StringNullableFilter<"User"> | string | null
-    idCard?: StringNullableFilter<"User"> | string | null
-    roleId?: StringNullableFilter<"User"> | string | null
-    otp?: StringNullableFilter<"User"> | string | null
-    hod?: StringNullableFilter<"User"> | string | null
-    hr?: StringNullableFilter<"User"> | string | null
-    level?: StringFilter<"User"> | string
-    verificationOtp?: StringNullableFilter<"User"> | string | null
-    expiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    createdAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    active?: BoolFilter<"User"> | boolean
-    employeeId?: IntNullableFilter<"User"> | number | null
-    isAllParty?: BoolFilter<"User"> | boolean
-    isAdmin?: BoolFilter<"User"> | boolean
-    fcm?: StringNullableFilter<"User"> | string | null
   }
 
   export type RoleCreateWithoutUserInput = {
@@ -29790,22 +24367,6 @@ export namespace Prisma {
   export type RoleCreateOrConnectWithoutUserInput = {
     where: RoleWhereUniqueInput
     create: XOR<RoleCreateWithoutUserInput, RoleUncheckedCreateWithoutUserInput>
-  }
-
-  export type NotifyApprovalGroupCreateWithoutUserInput = {
-    idCard?: string | null
-    compCode?: string | null
-  }
-
-  export type NotifyApprovalGroupUncheckedCreateWithoutUserInput = {
-    id?: number
-    idCard?: string | null
-    compCode?: string | null
-  }
-
-  export type NotifyApprovalGroupCreateOrConnectWithoutUserInput = {
-    where: NotifyApprovalGroupWhereUniqueInput
-    create: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput>
   }
 
   export type PermissionEntryCreateWithoutUserInput = {
@@ -29892,60 +24453,6 @@ export namespace Prisma {
 
   export type CompanyCodeCreateManyUserInputEnvelope = {
     data: CompanyCodeCreateManyUserInput | CompanyCodeCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type NotificationCreateWithoutSenderInput = {
-    costingId: number
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-    receiver?: UserCreateNestedOneWithoutNotificationReceiverInput
-  }
-
-  export type NotificationUncheckedCreateWithoutSenderInput = {
-    id?: number
-    costingId: number
-    receiverId?: number | null
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-  }
-
-  export type NotificationCreateOrConnectWithoutSenderInput = {
-    where: NotificationWhereUniqueInput
-    create: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput>
-  }
-
-  export type NotificationCreateManySenderInputEnvelope = {
-    data: NotificationCreateManySenderInput | NotificationCreateManySenderInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type NotificationCreateWithoutReceiverInput = {
-    costingId: number
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-    sender: UserCreateNestedOneWithoutNotificationSenderInput
-  }
-
-  export type NotificationUncheckedCreateWithoutReceiverInput = {
-    id?: number
-    costingId: number
-    senderId: number
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-  }
-
-  export type NotificationCreateOrConnectWithoutReceiverInput = {
-    where: NotificationWhereUniqueInput
-    create: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput>
-  }
-
-  export type NotificationCreateManyReceiverInputEnvelope = {
-    data: NotificationCreateManyReceiverInput | NotificationCreateManyReceiverInput[]
     skipDuplicates?: boolean
   }
 
@@ -30517,261 +25024,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type AdvanceRequestCreateWithoutCreatedByUserInput = {
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-    userData: UserCreateNestedOneWithoutAdvanceRequestInput
-    modifiedByUser: UserCreateNestedOneWithoutAdvanceRequestModifiedInput
-    categoryData?: PermissionMasterCreateNestedOneWithoutAdvanceRequestInput
-  }
-
-  export type AdvanceRequestUncheckedCreateWithoutCreatedByUserInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateOrConnectWithoutCreatedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    create: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput>
-  }
-
-  export type AdvanceRequestCreateManyCreatedByUserInputEnvelope = {
-    data: AdvanceRequestCreateManyCreatedByUserInput | AdvanceRequestCreateManyCreatedByUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AdvanceRequestCreateWithoutModifiedByUserInput = {
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-    userData: UserCreateNestedOneWithoutAdvanceRequestInput
-    createdByUser: UserCreateNestedOneWithoutAdvanceRequestCreateInput
-    categoryData?: PermissionMasterCreateNestedOneWithoutAdvanceRequestInput
-  }
-
-  export type AdvanceRequestUncheckedCreateWithoutModifiedByUserInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateOrConnectWithoutModifiedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    create: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput>
-  }
-
-  export type AdvanceRequestCreateManyModifiedByUserInputEnvelope = {
-    data: AdvanceRequestCreateManyModifiedByUserInput | AdvanceRequestCreateManyModifiedByUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AdvanceRequestCreateWithoutUserDataInput = {
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-    createdByUser: UserCreateNestedOneWithoutAdvanceRequestCreateInput
-    modifiedByUser: UserCreateNestedOneWithoutAdvanceRequestModifiedInput
-    categoryData?: PermissionMasterCreateNestedOneWithoutAdvanceRequestInput
-  }
-
-  export type AdvanceRequestUncheckedCreateWithoutUserDataInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateOrConnectWithoutUserDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    create: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput>
-  }
-
-  export type AdvanceRequestCreateManyUserDataInputEnvelope = {
-    data: AdvanceRequestCreateManyUserDataInput | AdvanceRequestCreateManyUserDataInput[]
-    skipDuplicates?: boolean
-  }
-
   export type OndutyCreateWithoutUserDataInput = {
     docId: string
     docDate?: Date | string
@@ -31102,31 +25354,6 @@ export namespace Prisma {
     roleOnPage?: RoleOnPageUncheckedUpdateManyWithoutRoleNestedInput
   }
 
-  export type NotifyApprovalGroupUpsertWithWhereUniqueWithoutUserInput = {
-    where: NotifyApprovalGroupWhereUniqueInput
-    update: XOR<NotifyApprovalGroupUpdateWithoutUserInput, NotifyApprovalGroupUncheckedUpdateWithoutUserInput>
-    create: XOR<NotifyApprovalGroupCreateWithoutUserInput, NotifyApprovalGroupUncheckedCreateWithoutUserInput>
-  }
-
-  export type NotifyApprovalGroupUpdateWithWhereUniqueWithoutUserInput = {
-    where: NotifyApprovalGroupWhereUniqueInput
-    data: XOR<NotifyApprovalGroupUpdateWithoutUserInput, NotifyApprovalGroupUncheckedUpdateWithoutUserInput>
-  }
-
-  export type NotifyApprovalGroupUpdateManyWithWhereWithoutUserInput = {
-    where: NotifyApprovalGroupScalarWhereInput
-    data: XOR<NotifyApprovalGroupUpdateManyMutationInput, NotifyApprovalGroupUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type NotifyApprovalGroupScalarWhereInput = {
-    AND?: NotifyApprovalGroupScalarWhereInput | NotifyApprovalGroupScalarWhereInput[]
-    OR?: NotifyApprovalGroupScalarWhereInput[]
-    NOT?: NotifyApprovalGroupScalarWhereInput | NotifyApprovalGroupScalarWhereInput[]
-    id?: IntFilter<"NotifyApprovalGroup"> | number
-    idCard?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-    compCode?: StringNullableFilter<"NotifyApprovalGroup"> | string | null
-  }
-
   export type PermissionEntryUpsertWithWhereUniqueWithoutUserInput = {
     where: PermissionEntryWhereUniqueInput
     update: XOR<PermissionEntryUpdateWithoutUserInput, PermissionEntryUncheckedUpdateWithoutUserInput>
@@ -31201,51 +25428,6 @@ export namespace Prisma {
     companyCode?: StringFilter<"CompanyCode"> | string
     gComp?: StringNullableFilter<"CompanyCode"> | string | null
     companyId?: StringFilter<"CompanyCode"> | string
-  }
-
-  export type NotificationUpsertWithWhereUniqueWithoutSenderInput = {
-    where: NotificationWhereUniqueInput
-    update: XOR<NotificationUpdateWithoutSenderInput, NotificationUncheckedUpdateWithoutSenderInput>
-    create: XOR<NotificationCreateWithoutSenderInput, NotificationUncheckedCreateWithoutSenderInput>
-  }
-
-  export type NotificationUpdateWithWhereUniqueWithoutSenderInput = {
-    where: NotificationWhereUniqueInput
-    data: XOR<NotificationUpdateWithoutSenderInput, NotificationUncheckedUpdateWithoutSenderInput>
-  }
-
-  export type NotificationUpdateManyWithWhereWithoutSenderInput = {
-    where: NotificationScalarWhereInput
-    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutSenderInput>
-  }
-
-  export type NotificationScalarWhereInput = {
-    AND?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-    OR?: NotificationScalarWhereInput[]
-    NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-    id?: IntFilter<"Notification"> | number
-    costingId?: IntFilter<"Notification"> | number
-    senderId?: IntFilter<"Notification"> | number
-    receiverId?: IntNullableFilter<"Notification"> | number | null
-    type?: StringNullableFilter<"Notification"> | string | null
-    message?: StringNullableFilter<"Notification"> | string | null
-    isRead?: BoolFilter<"Notification"> | boolean
-  }
-
-  export type NotificationUpsertWithWhereUniqueWithoutReceiverInput = {
-    where: NotificationWhereUniqueInput
-    update: XOR<NotificationUpdateWithoutReceiverInput, NotificationUncheckedUpdateWithoutReceiverInput>
-    create: XOR<NotificationCreateWithoutReceiverInput, NotificationUncheckedCreateWithoutReceiverInput>
-  }
-
-  export type NotificationUpdateWithWhereUniqueWithoutReceiverInput = {
-    where: NotificationWhereUniqueInput
-    data: XOR<NotificationUpdateWithoutReceiverInput, NotificationUncheckedUpdateWithoutReceiverInput>
-  }
-
-  export type NotificationUpdateManyWithWhereWithoutReceiverInput = {
-    where: NotificationScalarWhereInput
-    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutReceiverInput>
   }
 
   export type PermissionEntryUpsertWithWhereUniqueWithoutHodIdInput = {
@@ -31412,96 +25594,6 @@ export namespace Prisma {
     data: XOR<LeaveEntryUpdateManyMutationInput, LeaveEntryUncheckedUpdateManyWithoutUserDataInput>
   }
 
-  export type AdvanceRequestUpsertWithWhereUniqueWithoutCreatedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    update: XOR<AdvanceRequestUpdateWithoutCreatedByUserInput, AdvanceRequestUncheckedUpdateWithoutCreatedByUserInput>
-    create: XOR<AdvanceRequestCreateWithoutCreatedByUserInput, AdvanceRequestUncheckedCreateWithoutCreatedByUserInput>
-  }
-
-  export type AdvanceRequestUpdateWithWhereUniqueWithoutCreatedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    data: XOR<AdvanceRequestUpdateWithoutCreatedByUserInput, AdvanceRequestUncheckedUpdateWithoutCreatedByUserInput>
-  }
-
-  export type AdvanceRequestUpdateManyWithWhereWithoutCreatedByUserInput = {
-    where: AdvanceRequestScalarWhereInput
-    data: XOR<AdvanceRequestUpdateManyMutationInput, AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserInput>
-  }
-
-  export type AdvanceRequestScalarWhereInput = {
-    AND?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-    OR?: AdvanceRequestScalarWhereInput[]
-    NOT?: AdvanceRequestScalarWhereInput | AdvanceRequestScalarWhereInput[]
-    id?: IntFilter<"AdvanceRequest"> | number
-    docId?: StringFilter<"AdvanceRequest"> | string
-    docDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    idCard?: StringFilter<"AdvanceRequest"> | string
-    fromDate?: DateTimeNullableFilter<"AdvanceRequest"> | Date | string | null
-    toDate?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    empName?: StringFilter<"AdvanceRequest"> | string
-    finYear?: StringFilter<"AdvanceRequest"> | string
-    advType?: StringFilter<"AdvanceRequest"> | string
-    total?: FloatFilter<"AdvanceRequest"> | number
-    payType?: StringNullableFilter<"AdvanceRequest"> | string | null
-    hod?: StringFilter<"AdvanceRequest"> | string
-    hr?: StringNullableFilter<"AdvanceRequest"> | string | null
-    group?: StringFilter<"AdvanceRequest"> | string
-    isCancelled?: BoolFilter<"AdvanceRequest"> | boolean
-    userId?: StringFilter<"AdvanceRequest"> | string
-    preLoan?: IntNullableFilter<"AdvanceRequest"> | number | null
-    totalLoan?: FloatFilter<"AdvanceRequest"> | number
-    preDue?: StringNullableFilter<"AdvanceRequest"> | string | null
-    ins?: IntFilter<"AdvanceRequest"> | number
-    due?: IntFilter<"AdvanceRequest"> | number
-    remark?: StringFilter<"AdvanceRequest"> | string
-    approvalStatus?: StringFilter<"AdvanceRequest"> | string
-    compCode?: StringFilter<"AdvanceRequest"> | string
-    createdOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    updatedOn?: DateTimeFilter<"AdvanceRequest"> | Date | string
-    createdBy?: StringFilter<"AdvanceRequest"> | string
-    mobile?: StringNullableFilter<"AdvanceRequest"> | string | null
-    create?: IntFilter<"AdvanceRequest"> | number
-    update?: IntFilter<"AdvanceRequest"> | number
-    modifiedBy?: StringFilter<"AdvanceRequest"> | string
-    rejectBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    approvedBy?: StringNullableFilter<"AdvanceRequest"> | string | null
-    category?: IntFilter<"AdvanceRequest"> | number
-    finCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-    payCode?: BigIntFilter<"AdvanceRequest"> | bigint | number
-  }
-
-  export type AdvanceRequestUpsertWithWhereUniqueWithoutModifiedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    update: XOR<AdvanceRequestUpdateWithoutModifiedByUserInput, AdvanceRequestUncheckedUpdateWithoutModifiedByUserInput>
-    create: XOR<AdvanceRequestCreateWithoutModifiedByUserInput, AdvanceRequestUncheckedCreateWithoutModifiedByUserInput>
-  }
-
-  export type AdvanceRequestUpdateWithWhereUniqueWithoutModifiedByUserInput = {
-    where: AdvanceRequestWhereUniqueInput
-    data: XOR<AdvanceRequestUpdateWithoutModifiedByUserInput, AdvanceRequestUncheckedUpdateWithoutModifiedByUserInput>
-  }
-
-  export type AdvanceRequestUpdateManyWithWhereWithoutModifiedByUserInput = {
-    where: AdvanceRequestScalarWhereInput
-    data: XOR<AdvanceRequestUpdateManyMutationInput, AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserInput>
-  }
-
-  export type AdvanceRequestUpsertWithWhereUniqueWithoutUserDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    update: XOR<AdvanceRequestUpdateWithoutUserDataInput, AdvanceRequestUncheckedUpdateWithoutUserDataInput>
-    create: XOR<AdvanceRequestCreateWithoutUserDataInput, AdvanceRequestUncheckedCreateWithoutUserDataInput>
-  }
-
-  export type AdvanceRequestUpdateWithWhereUniqueWithoutUserDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    data: XOR<AdvanceRequestUpdateWithoutUserDataInput, AdvanceRequestUncheckedUpdateWithoutUserDataInput>
-  }
-
-  export type AdvanceRequestUpdateManyWithWhereWithoutUserDataInput = {
-    where: AdvanceRequestScalarWhereInput
-    data: XOR<AdvanceRequestUpdateManyMutationInput, AdvanceRequestUncheckedUpdateManyWithoutUserDataInput>
-  }
-
   export type OndutyUpsertWithWhereUniqueWithoutUserDataInput = {
     where: OndutyWhereUniqueInput
     update: XOR<OndutyUpdateWithoutUserDataInput, OndutyUncheckedUpdateWithoutUserDataInput>
@@ -31644,11 +25736,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -31657,9 +25746,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
     settings?: SettingsCreateNestedManyWithoutUserInput
@@ -31687,11 +25773,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -31700,9 +25783,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
     settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
@@ -31734,11 +25814,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -31747,9 +25824,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
     settings?: SettingsCreateNestedManyWithoutUserInput
@@ -31777,11 +25851,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -31790,9 +25861,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
     settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
@@ -31824,11 +25892,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -31837,9 +25902,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     settings?: SettingsCreateNestedManyWithoutUserInput
@@ -31867,11 +25929,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -31880,9 +25939,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
@@ -31943,11 +25999,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -31956,9 +26009,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
     settings?: SettingsUpdateManyWithoutUserNestedInput
@@ -31986,11 +26036,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -31999,9 +26046,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
@@ -32039,11 +26083,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -32052,9 +26093,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
     settings?: SettingsUpdateManyWithoutUserNestedInput
@@ -32082,11 +26120,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -32095,9 +26130,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
@@ -32135,11 +26167,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -32148,9 +26177,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     settings?: SettingsUpdateManyWithoutUserNestedInput
@@ -32178,11 +26204,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -32191,9 +26214,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
@@ -32223,618 +26243,6 @@ export namespace Prisma {
     compCode?: StringFieldUpdateOperationsInput | string
   }
 
-  export type UserCreateWithoutAdvanceRequestInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutAdvanceRequestInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutAdvanceRequestInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutAdvanceRequestInput, UserUncheckedCreateWithoutAdvanceRequestInput>
-  }
-
-  export type UserCreateWithoutAdvanceRequestCreateInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutAdvanceRequestCreateInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutAdvanceRequestCreateInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutAdvanceRequestCreateInput, UserUncheckedCreateWithoutAdvanceRequestCreateInput>
-  }
-
-  export type UserCreateWithoutAdvanceRequestModifiedInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutAdvanceRequestModifiedInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutAdvanceRequestModifiedInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutAdvanceRequestModifiedInput, UserUncheckedCreateWithoutAdvanceRequestModifiedInput>
-  }
-
-  export type PermissionMasterCreateWithoutAdvanceRequestInput = {
-    name: string
-    active: string
-    pType?: string | null
-    compCode?: string
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutCategoryDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCategoryDataInput
-  }
-
-  export type PermissionMasterUncheckedCreateWithoutAdvanceRequestInput = {
-    id?: number
-    name: string
-    active: string
-    pType?: string | null
-    compCode?: string
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutCategoryDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCategoryDataInput
-  }
-
-  export type PermissionMasterCreateOrConnectWithoutAdvanceRequestInput = {
-    where: PermissionMasterWhereUniqueInput
-    create: XOR<PermissionMasterCreateWithoutAdvanceRequestInput, PermissionMasterUncheckedCreateWithoutAdvanceRequestInput>
-  }
-
-  export type UserUpsertWithoutAdvanceRequestInput = {
-    update: XOR<UserUpdateWithoutAdvanceRequestInput, UserUncheckedUpdateWithoutAdvanceRequestInput>
-    create: XOR<UserCreateWithoutAdvanceRequestInput, UserUncheckedCreateWithoutAdvanceRequestInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutAdvanceRequestInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutAdvanceRequestInput, UserUncheckedUpdateWithoutAdvanceRequestInput>
-  }
-
-  export type UserUpdateWithoutAdvanceRequestInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutAdvanceRequestInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUpsertWithoutAdvanceRequestCreateInput = {
-    update: XOR<UserUpdateWithoutAdvanceRequestCreateInput, UserUncheckedUpdateWithoutAdvanceRequestCreateInput>
-    create: XOR<UserCreateWithoutAdvanceRequestCreateInput, UserUncheckedCreateWithoutAdvanceRequestCreateInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutAdvanceRequestCreateInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutAdvanceRequestCreateInput, UserUncheckedUpdateWithoutAdvanceRequestCreateInput>
-  }
-
-  export type UserUpdateWithoutAdvanceRequestCreateInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutAdvanceRequestCreateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUpsertWithoutAdvanceRequestModifiedInput = {
-    update: XOR<UserUpdateWithoutAdvanceRequestModifiedInput, UserUncheckedUpdateWithoutAdvanceRequestModifiedInput>
-    create: XOR<UserCreateWithoutAdvanceRequestModifiedInput, UserUncheckedCreateWithoutAdvanceRequestModifiedInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutAdvanceRequestModifiedInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutAdvanceRequestModifiedInput, UserUncheckedUpdateWithoutAdvanceRequestModifiedInput>
-  }
-
-  export type UserUpdateWithoutAdvanceRequestModifiedInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutAdvanceRequestModifiedInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type PermissionMasterUpsertWithoutAdvanceRequestInput = {
-    update: XOR<PermissionMasterUpdateWithoutAdvanceRequestInput, PermissionMasterUncheckedUpdateWithoutAdvanceRequestInput>
-    create: XOR<PermissionMasterCreateWithoutAdvanceRequestInput, PermissionMasterUncheckedCreateWithoutAdvanceRequestInput>
-    where?: PermissionMasterWhereInput
-  }
-
-  export type PermissionMasterUpdateToOneWithWhereWithoutAdvanceRequestInput = {
-    where?: PermissionMasterWhereInput
-    data: XOR<PermissionMasterUpdateWithoutAdvanceRequestInput, PermissionMasterUncheckedUpdateWithoutAdvanceRequestInput>
-  }
-
-  export type PermissionMasterUpdateWithoutAdvanceRequestInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    active?: StringFieldUpdateOperationsInput | string
-    pType?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: StringFieldUpdateOperationsInput | string
-    permissionEntry?: PermissionEntryUpdateManyWithoutCategoryDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCategoryDataNestedInput
-  }
-
-  export type PermissionMasterUncheckedUpdateWithoutAdvanceRequestInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
-    active?: StringFieldUpdateOperationsInput | string
-    pType?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: StringFieldUpdateOperationsInput | string
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
-  }
-
   export type UserCreateWithoutCompaniesInput = {
     userName: string
     pic?: string | null
@@ -32856,10 +26264,7 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -32868,9 +26273,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -32899,10 +26301,7 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -32911,9 +26310,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -32957,10 +26353,7 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -32969,9 +26362,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -33000,10 +26390,7 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -33012,9 +26399,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -33163,91 +26547,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type AdvanceRequestCreateWithoutCategoryDataInput = {
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-    userData: UserCreateNestedOneWithoutAdvanceRequestInput
-    createdByUser: UserCreateNestedOneWithoutAdvanceRequestCreateInput
-    modifiedByUser: UserCreateNestedOneWithoutAdvanceRequestModifiedInput
-  }
-
-  export type AdvanceRequestUncheckedCreateWithoutCategoryDataInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateOrConnectWithoutCategoryDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    create: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput>
-  }
-
-  export type AdvanceRequestCreateManyCategoryDataInputEnvelope = {
-    data: AdvanceRequestCreateManyCategoryDataInput | AdvanceRequestCreateManyCategoryDataInput[]
-    skipDuplicates?: boolean
-  }
-
   export type PermissionEntryUpsertWithWhereUniqueWithoutCategoryDataInput = {
     where: PermissionEntryWhereUniqueInput
     update: XOR<PermissionEntryUpdateWithoutCategoryDataInput, PermissionEntryUncheckedUpdateWithoutCategoryDataInput>
@@ -33278,22 +26577,6 @@ export namespace Prisma {
   export type LeaveEntryUpdateManyWithWhereWithoutCategoryDataInput = {
     where: LeaveEntryScalarWhereInput
     data: XOR<LeaveEntryUpdateManyMutationInput, LeaveEntryUncheckedUpdateManyWithoutCategoryDataInput>
-  }
-
-  export type AdvanceRequestUpsertWithWhereUniqueWithoutCategoryDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    update: XOR<AdvanceRequestUpdateWithoutCategoryDataInput, AdvanceRequestUncheckedUpdateWithoutCategoryDataInput>
-    create: XOR<AdvanceRequestCreateWithoutCategoryDataInput, AdvanceRequestUncheckedCreateWithoutCategoryDataInput>
-  }
-
-  export type AdvanceRequestUpdateWithWhereUniqueWithoutCategoryDataInput = {
-    where: AdvanceRequestWhereUniqueInput
-    data: XOR<AdvanceRequestUpdateWithoutCategoryDataInput, AdvanceRequestUncheckedUpdateWithoutCategoryDataInput>
-  }
-
-  export type AdvanceRequestUpdateManyWithWhereWithoutCategoryDataInput = {
-    where: AdvanceRequestScalarWhereInput
-    data: XOR<AdvanceRequestUpdateManyMutationInput, AdvanceRequestUncheckedUpdateManyWithoutCategoryDataInput>
   }
 
   export type OndutyCreateWithoutCategoryDataInput = {
@@ -33426,11 +26709,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
     permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
@@ -33438,9 +26718,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -33469,11 +26746,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
@@ -33481,9 +26755,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33516,11 +26787,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
@@ -33528,9 +26796,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -33559,11 +26824,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
@@ -33571,9 +26833,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33591,7 +26850,6 @@ export namespace Prisma {
     pType?: string | null
     compCode?: string
     leaveEntry?: LeaveEntryCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterUncheckedCreateWithoutPermissionEntryInput = {
@@ -33601,7 +26859,6 @@ export namespace Prisma {
     pType?: string | null
     compCode?: string
     leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterCreateOrConnectWithoutPermissionEntryInput = {
@@ -33630,11 +26887,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
     permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
@@ -33642,9 +26896,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -33673,11 +26924,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
@@ -33685,9 +26933,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33720,11 +26965,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -33732,9 +26974,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -33763,11 +27002,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33775,9 +27011,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33810,10 +27043,7 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -33822,9 +27052,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -33853,10 +27080,7 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33865,9 +27089,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -33911,11 +27132,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
     permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
@@ -33923,9 +27141,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -33954,11 +27169,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
@@ -33966,9 +27178,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34007,11 +27216,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
@@ -34019,9 +27225,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34050,11 +27253,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
@@ -34062,9 +27262,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34088,7 +27285,6 @@ export namespace Prisma {
     pType?: NullableStringFieldUpdateOperationsInput | string | null
     compCode?: StringFieldUpdateOperationsInput | string
     leaveEntry?: LeaveEntryUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type PermissionMasterUncheckedUpdateWithoutPermissionEntryInput = {
@@ -34098,7 +27294,6 @@ export namespace Prisma {
     pType?: NullableStringFieldUpdateOperationsInput | string | null
     compCode?: StringFieldUpdateOperationsInput | string
     leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type UserUpsertWithoutPermissionEntryInput = {
@@ -34133,11 +27328,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
     permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
@@ -34145,9 +27337,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34176,11 +27365,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
@@ -34188,9 +27374,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34229,11 +27412,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -34241,9 +27421,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34272,11 +27449,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34284,9 +27458,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34307,6 +27478,33 @@ export namespace Prisma {
   export type UserUpdateManyWithWhereWithoutPermissionInput = {
     where: UserScalarWhereInput
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutPermissionInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: IntFilter<"User"> | number
+    userName?: StringFilter<"User"> | string
+    pic?: StringNullableFilter<"User"> | string | null
+    email?: StringNullableFilter<"User"> | string | null
+    otpEmail?: StringNullableFilter<"User"> | string | null
+    approval?: StringFilter<"User"> | string
+    password?: StringNullableFilter<"User"> | string | null
+    idCard?: StringNullableFilter<"User"> | string | null
+    roleId?: StringNullableFilter<"User"> | string | null
+    otp?: StringNullableFilter<"User"> | string | null
+    hod?: StringNullableFilter<"User"> | string | null
+    hr?: StringNullableFilter<"User"> | string | null
+    level?: StringFilter<"User"> | string
+    verificationOtp?: StringNullableFilter<"User"> | string | null
+    expiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    createdAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    active?: BoolFilter<"User"> | boolean
+    employeeId?: IntNullableFilter<"User"> | number | null
+    isAllParty?: BoolFilter<"User"> | boolean
+    isAdmin?: BoolFilter<"User"> | boolean
+    fcm?: StringNullableFilter<"User"> | string | null
   }
 
   export type UserCreateWithoutLeaveEntryInput = {
@@ -34330,11 +27528,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -34342,9 +27537,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -34373,11 +27565,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34385,9 +27574,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34420,11 +27606,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -34432,9 +27615,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -34463,11 +27643,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34475,9 +27652,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34510,11 +27684,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -34522,9 +27693,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -34553,11 +27721,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34565,9 +27730,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34600,11 +27762,8 @@ export namespace Prisma {
     isAdmin?: boolean
     fcm?: string | null
     role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -34612,9 +27771,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -34643,11 +27799,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34655,9 +27808,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -34675,7 +27825,6 @@ export namespace Prisma {
     pType?: string | null
     compCode?: string
     permissionEntry?: PermissionEntryCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterUncheckedCreateWithoutLeaveEntryInput = {
@@ -34685,7 +27834,6 @@ export namespace Prisma {
     pType?: string | null
     compCode?: string
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutCategoryDataInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutCategoryDataInput
   }
 
   export type PermissionMasterCreateOrConnectWithoutLeaveEntryInput = {
@@ -34725,11 +27873,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -34737,9 +27882,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34768,11 +27910,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34780,9 +27919,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34821,11 +27957,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -34833,9 +27966,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34864,11 +27994,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34876,9 +28003,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34917,11 +28041,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -34929,9 +28050,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -34960,11 +28078,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -34972,9 +28087,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -35013,11 +28125,8 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -35025,9 +28134,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -35056,11 +28162,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -35068,9 +28171,6 @@ export namespace Prisma {
     leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -35094,7 +28194,6 @@ export namespace Prisma {
     pType?: NullableStringFieldUpdateOperationsInput | string | null
     compCode?: StringFieldUpdateOperationsInput | string
     permissionEntry?: PermissionEntryUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type PermissionMasterUncheckedUpdateWithoutLeaveEntryInput = {
@@ -35104,7 +28203,6 @@ export namespace Prisma {
     pType?: NullableStringFieldUpdateOperationsInput | string | null
     compCode?: StringFieldUpdateOperationsInput | string
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutCategoryDataNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutCategoryDataNestedInput
   }
 
   export type UserCreateWithoutRoleInput = {
@@ -35127,11 +28225,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
     permission?: PermissionEntryCreateNestedManyWithoutUserInput
     companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
@@ -35140,9 +28235,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
@@ -35170,11 +28262,8 @@ export namespace Prisma {
     isAllParty?: boolean
     isAdmin?: boolean
     fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
     permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
     companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
     permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
     permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -35183,9 +28272,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
     leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
     leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
     onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
     ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
     ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
@@ -35330,510 +28416,11 @@ export namespace Prisma {
     user?: UserUncheckedUpdateManyWithoutRoleNestedInput
   }
 
-  export type UserCreateWithoutNotificationSenderInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationReceiver?: NotificationCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutNotificationSenderInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationReceiver?: NotificationUncheckedCreateNestedManyWithoutReceiverInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutNotificationSenderInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutNotificationSenderInput, UserUncheckedCreateWithoutNotificationSenderInput>
-  }
-
-  export type UserCreateWithoutNotificationReceiverInput = {
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    role?: RoleCreateNestedOneWithoutUserInput
-    optionalNotify?: NotifyApprovalGroupCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationCreateNestedManyWithoutSenderInput
-    permissionEntry?: PermissionEntryCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutNotificationReceiverInput = {
-    id?: number
-    userName: string
-    pic?: string | null
-    email?: string | null
-    otpEmail?: string | null
-    approval?: string
-    password?: string | null
-    idCard?: string | null
-    roleId?: string | null
-    otp?: string | null
-    hod?: string | null
-    hr?: string | null
-    level?: string
-    verificationOtp?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string | null
-    active?: boolean
-    employeeId?: number | null
-    isAllParty?: boolean
-    isAdmin?: boolean
-    fcm?: string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedCreateNestedManyWithoutUserInput
-    permission?: PermissionEntryUncheckedCreateNestedManyWithoutUserInput
-    companies?: CompanyCodeUncheckedCreateNestedManyWithoutUserInput
-    notificationSender?: NotificationUncheckedCreateNestedManyWithoutSenderInput
-    permissionEntry?: PermissionEntryUncheckedCreateNestedManyWithoutHodIdInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    permissionEntryUser?: PermissionEntryUncheckedCreateNestedManyWithoutUserDataInput
-    leaveEntry?: LeaveEntryUncheckedCreateNestedManyWithoutCreatedByUserInput
-    leaveEntryModified?: LeaveEntryUncheckedCreateNestedManyWithoutModifiedByUserInput
-    leaveEntryHod?: LeaveEntryUncheckedCreateNestedManyWithoutHodIdInput
-    leaveEntryUser?: LeaveEntryUncheckedCreateNestedManyWithoutUserDataInput
-    advanceRequestCreate?: AdvanceRequestUncheckedCreateNestedManyWithoutCreatedByUserInput
-    advanceRequestModified?: AdvanceRequestUncheckedCreateNestedManyWithoutModifiedByUserInput
-    advanceRequest?: AdvanceRequestUncheckedCreateNestedManyWithoutUserDataInput
-    onDuty?: OndutyUncheckedCreateNestedManyWithoutUserDataInput
-    ondutyCreate?: OndutyUncheckedCreateNestedManyWithoutCreatedByUserInput
-    ondutyModify?: OndutyUncheckedCreateNestedManyWithoutModifiedByUserInput
-    settings?: SettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutNotificationReceiverInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutNotificationReceiverInput, UserUncheckedCreateWithoutNotificationReceiverInput>
-  }
-
-  export type UserUpsertWithoutNotificationSenderInput = {
-    update: XOR<UserUpdateWithoutNotificationSenderInput, UserUncheckedUpdateWithoutNotificationSenderInput>
-    create: XOR<UserCreateWithoutNotificationSenderInput, UserUncheckedCreateWithoutNotificationSenderInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutNotificationSenderInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutNotificationSenderInput, UserUncheckedUpdateWithoutNotificationSenderInput>
-  }
-
-  export type UserUpdateWithoutNotificationSenderInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutNotificationSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUpsertWithoutNotificationReceiverInput = {
-    update: XOR<UserUpdateWithoutNotificationReceiverInput, UserUncheckedUpdateWithoutNotificationReceiverInput>
-    create: XOR<UserCreateWithoutNotificationReceiverInput, UserUncheckedCreateWithoutNotificationReceiverInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutNotificationReceiverInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutNotificationReceiverInput, UserUncheckedUpdateWithoutNotificationReceiverInput>
-  }
-
-  export type UserUpdateWithoutNotificationReceiverInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutNotificationReceiverInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUpdateWithoutOptionalNotifyInput = {
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: RoleUpdateOneWithoutUserNestedInput
-    permission?: PermissionEntryUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutOptionalNotifyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
-    companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
-    permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    permissionEntryUser?: PermissionEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    leaveEntry?: LeaveEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
-    leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
-    onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
-    ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    settings?: SettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateManyWithoutOptionalNotifyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    userName?: StringFieldUpdateOperationsInput | string
-    pic?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    otpEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    approval?: StringFieldUpdateOperationsInput | string
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    otp?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: NullableStringFieldUpdateOperationsInput | string | null
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: StringFieldUpdateOperationsInput | string
-    verificationOtp?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
-    employeeId?: NullableIntFieldUpdateOperationsInput | number | null
-    isAllParty?: BoolFieldUpdateOperationsInput | boolean
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    fcm?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
   export type CompanyCodeCreateManyUserInput = {
     id?: number
     companyCode: string
     gComp?: string | null
     companyId: string
-  }
-
-  export type NotificationCreateManySenderInput = {
-    id?: number
-    costingId: number
-    receiverId?: number | null
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
-  }
-
-  export type NotificationCreateManyReceiverInput = {
-    id?: number
-    costingId: number
-    senderId: number
-    type?: string | null
-    message?: string | null
-    isRead?: boolean
   }
 
   export type PermissionEntryCreateManyHodIdInput = {
@@ -36080,120 +28667,6 @@ export namespace Prisma {
     category?: number
   }
 
-  export type AdvanceRequestCreateManyCreatedByUserInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateManyModifiedByUserInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
-  export type AdvanceRequestCreateManyUserDataInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    category?: number
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
   export type OndutyCreateManyUserDataInput = {
     id?: number
     docId: string
@@ -36327,23 +28800,6 @@ export namespace Prisma {
     compCode?: string | null
   }
 
-  export type NotifyApprovalGroupUpdateWithoutUserInput = {
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type NotifyApprovalGroupUncheckedUpdateWithoutUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type NotifyApprovalGroupUncheckedUpdateManyWithoutUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    idCard?: NullableStringFieldUpdateOperationsInput | string | null
-    compCode?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
   export type PermissionEntryUpdateWithoutUserInput = {
     createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedOn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -36451,58 +28907,6 @@ export namespace Prisma {
     companyCode?: StringFieldUpdateOperationsInput | string
     gComp?: NullableStringFieldUpdateOperationsInput | string | null
     companyId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type NotificationUpdateWithoutSenderInput = {
-    costingId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-    receiver?: UserUpdateOneWithoutNotificationReceiverNestedInput
-  }
-
-  export type NotificationUncheckedUpdateWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    receiverId?: NullableIntFieldUpdateOperationsInput | number | null
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type NotificationUncheckedUpdateManyWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    receiverId?: NullableIntFieldUpdateOperationsInput | number | null
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type NotificationUpdateWithoutReceiverInput = {
-    costingId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-    sender?: UserUpdateOneRequiredWithoutNotificationSenderNestedInput
-  }
-
-  export type NotificationUncheckedUpdateWithoutReceiverInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    senderId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type NotificationUncheckedUpdateManyWithoutReceiverInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    costingId?: IntFieldUpdateOperationsInput | number
-    senderId?: IntFieldUpdateOperationsInput | number
-    type?: NullableStringFieldUpdateOperationsInput | string | null
-    message?: NullableStringFieldUpdateOperationsInput | string | null
-    isRead?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type PermissionEntryUpdateWithoutHodIdInput = {
@@ -37237,345 +29641,6 @@ export namespace Prisma {
     category?: IntFieldUpdateOperationsInput | number
   }
 
-  export type AdvanceRequestUpdateWithoutCreatedByUserInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    userData?: UserUpdateOneRequiredWithoutAdvanceRequestNestedInput
-    modifiedByUser?: UserUpdateOneRequiredWithoutAdvanceRequestModifiedNestedInput
-    categoryData?: PermissionMasterUpdateOneRequiredWithoutAdvanceRequestNestedInput
-  }
-
-  export type AdvanceRequestUncheckedUpdateWithoutCreatedByUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUpdateWithoutModifiedByUserInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    userData?: UserUpdateOneRequiredWithoutAdvanceRequestNestedInput
-    createdByUser?: UserUpdateOneRequiredWithoutAdvanceRequestCreateNestedInput
-    categoryData?: PermissionMasterUpdateOneRequiredWithoutAdvanceRequestNestedInput
-  }
-
-  export type AdvanceRequestUncheckedUpdateWithoutModifiedByUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUpdateWithoutUserDataInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    createdByUser?: UserUpdateOneRequiredWithoutAdvanceRequestCreateNestedInput
-    modifiedByUser?: UserUpdateOneRequiredWithoutAdvanceRequestModifiedNestedInput
-    categoryData?: PermissionMasterUpdateOneRequiredWithoutAdvanceRequestNestedInput
-  }
-
-  export type AdvanceRequestUncheckedUpdateWithoutUserDataInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutUserDataInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: IntFieldUpdateOperationsInput | number
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
   export type OndutyUpdateWithoutUserDataInput = {
     docId?: StringFieldUpdateOperationsInput | string
     docDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38032,44 +30097,6 @@ export namespace Prisma {
     update?: number
   }
 
-  export type AdvanceRequestCreateManyCategoryDataInput = {
-    id?: number
-    docId: string
-    docDate?: Date | string
-    idCard: string
-    fromDate?: Date | string | null
-    toDate?: Date | string
-    empName: string
-    finYear: string
-    advType: string
-    total?: number
-    payType?: string | null
-    hod: string
-    hr?: string | null
-    group?: string
-    isCancelled?: boolean
-    userId: string
-    preLoan?: number | null
-    totalLoan?: number
-    preDue?: string | null
-    ins?: number
-    due?: number
-    remark: string
-    approvalStatus?: string
-    compCode: string
-    createdOn?: Date | string
-    updatedOn?: Date | string
-    createdBy: string
-    mobile?: string | null
-    create?: number
-    update?: number
-    modifiedBy: string
-    rejectBy?: string | null
-    approvedBy?: string | null
-    finCode: bigint | number
-    payCode: bigint | number
-  }
-
   export type PermissionEntryUpdateWithoutCategoryDataInput = {
     createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedOn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38251,119 +30278,6 @@ export namespace Prisma {
     create?: IntFieldUpdateOperationsInput | number
     empName?: NullableStringFieldUpdateOperationsInput | string | null
     update?: IntFieldUpdateOperationsInput | number
-  }
-
-  export type AdvanceRequestUpdateWithoutCategoryDataInput = {
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    userData?: UserUpdateOneRequiredWithoutAdvanceRequestNestedInput
-    createdByUser?: UserUpdateOneRequiredWithoutAdvanceRequestCreateNestedInput
-    modifiedByUser?: UserUpdateOneRequiredWithoutAdvanceRequestModifiedNestedInput
-  }
-
-  export type AdvanceRequestUncheckedUpdateWithoutCategoryDataInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AdvanceRequestUncheckedUpdateManyWithoutCategoryDataInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    docId?: StringFieldUpdateOperationsInput | string
-    docDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    idCard?: StringFieldUpdateOperationsInput | string
-    fromDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    toDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    empName?: StringFieldUpdateOperationsInput | string
-    finYear?: StringFieldUpdateOperationsInput | string
-    advType?: StringFieldUpdateOperationsInput | string
-    total?: FloatFieldUpdateOperationsInput | number
-    payType?: NullableStringFieldUpdateOperationsInput | string | null
-    hod?: StringFieldUpdateOperationsInput | string
-    hr?: NullableStringFieldUpdateOperationsInput | string | null
-    group?: StringFieldUpdateOperationsInput | string
-    isCancelled?: BoolFieldUpdateOperationsInput | boolean
-    userId?: StringFieldUpdateOperationsInput | string
-    preLoan?: NullableIntFieldUpdateOperationsInput | number | null
-    totalLoan?: FloatFieldUpdateOperationsInput | number
-    preDue?: NullableStringFieldUpdateOperationsInput | string | null
-    ins?: IntFieldUpdateOperationsInput | number
-    due?: IntFieldUpdateOperationsInput | number
-    remark?: StringFieldUpdateOperationsInput | string
-    approvalStatus?: StringFieldUpdateOperationsInput | string
-    compCode?: StringFieldUpdateOperationsInput | string
-    createdOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedOn?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    mobile?: NullableStringFieldUpdateOperationsInput | string | null
-    create?: IntFieldUpdateOperationsInput | number
-    update?: IntFieldUpdateOperationsInput | number
-    modifiedBy?: StringFieldUpdateOperationsInput | string
-    rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    finCode?: BigIntFieldUpdateOperationsInput | bigint | number
-    payCode?: BigIntFieldUpdateOperationsInput | bigint | number
   }
 
   export type OndutyCreateManyCategoryDataInput = {
@@ -38554,10 +30468,7 @@ export namespace Prisma {
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
     role?: RoleUpdateOneWithoutUserNestedInput
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -38566,9 +30477,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -38597,10 +30505,7 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -38609,9 +30514,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -38696,11 +30598,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUpdateManyWithoutModifiedByUserNestedInput
@@ -38709,9 +30608,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUpdateManyWithoutModifiedByUserNestedInput
@@ -38739,11 +30635,8 @@ export namespace Prisma {
     isAllParty?: BoolFieldUpdateOperationsInput | boolean
     isAdmin?: BoolFieldUpdateOperationsInput | boolean
     fcm?: NullableStringFieldUpdateOperationsInput | string | null
-    optionalNotify?: NotifyApprovalGroupUncheckedUpdateManyWithoutUserNestedInput
     permission?: PermissionEntryUncheckedUpdateManyWithoutUserNestedInput
     companies?: CompanyCodeUncheckedUpdateManyWithoutUserNestedInput
-    notificationSender?: NotificationUncheckedUpdateManyWithoutSenderNestedInput
-    notificationReceiver?: NotificationUncheckedUpdateManyWithoutReceiverNestedInput
     permissionEntry?: PermissionEntryUncheckedUpdateManyWithoutHodIdNestedInput
     permissionEntryCreateUser?: PermissionEntryUncheckedUpdateManyWithoutCreatedByUserNestedInput
     permissionEntryModifiedUser?: PermissionEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -38752,9 +30645,6 @@ export namespace Prisma {
     leaveEntryModified?: LeaveEntryUncheckedUpdateManyWithoutModifiedByUserNestedInput
     leaveEntryHod?: LeaveEntryUncheckedUpdateManyWithoutHodIdNestedInput
     leaveEntryUser?: LeaveEntryUncheckedUpdateManyWithoutUserDataNestedInput
-    advanceRequestCreate?: AdvanceRequestUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    advanceRequestModified?: AdvanceRequestUncheckedUpdateManyWithoutModifiedByUserNestedInput
-    advanceRequest?: AdvanceRequestUncheckedUpdateManyWithoutUserDataNestedInput
     onDuty?: OndutyUncheckedUpdateManyWithoutUserDataNestedInput
     ondutyCreate?: OndutyUncheckedUpdateManyWithoutCreatedByUserNestedInput
     ondutyModify?: OndutyUncheckedUpdateManyWithoutModifiedByUserNestedInput
@@ -38822,10 +30712,6 @@ export namespace Prisma {
    * Aliases for legacy arg types
    */
     /**
-     * @deprecated Use NotifyApprovalGroupCountOutputTypeDefaultArgs instead
-     */
-    export type NotifyApprovalGroupCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = NotifyApprovalGroupCountOutputTypeDefaultArgs<ExtArgs>
-    /**
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -38850,10 +30736,6 @@ export namespace Prisma {
      */
     export type SettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SettingsDefaultArgs<ExtArgs>
     /**
-     * @deprecated Use NotifyApprovalGroupDefaultArgs instead
-     */
-    export type NotifyApprovalGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = NotifyApprovalGroupDefaultArgs<ExtArgs>
-    /**
      * @deprecated Use UserDefaultArgs instead
      */
     export type UserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserDefaultArgs<ExtArgs>
@@ -38861,10 +30743,6 @@ export namespace Prisma {
      * @deprecated Use OndutyDefaultArgs instead
      */
     export type OndutyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OndutyDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use AdvanceRequestDefaultArgs instead
-     */
-    export type AdvanceRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = AdvanceRequestDefaultArgs<ExtArgs>
     /**
      * @deprecated Use CompanyCodeDefaultArgs instead
      */
@@ -38913,10 +30791,6 @@ export namespace Prisma {
      * @deprecated Use RoleOnPageDefaultArgs instead
      */
     export type RoleOnPageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = RoleOnPageDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use NotificationDefaultArgs instead
-     */
-    export type NotificationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = NotificationDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

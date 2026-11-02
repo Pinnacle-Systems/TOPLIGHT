@@ -14,7 +14,54 @@ import { showMessage } from 'react-native-flash-message';
 import { usePunchInMutation, usePunchOutMutation } from '../../store/api/AttendanceApi';
 import { useAppTheme } from '../../theme';
 
-const displayTime = value => value || '--:--';
+const formatTimeIST = (val) => {
+    if (!val || val === '--:--' || val === '-' || val === 'null' || val === 'undefined') return '--:--';
+    const str = String(val).trim();
+    if (/am|pm/i.test(str)) return str.toUpperCase();
+    const parts = str.split(':');
+    if (parts.length >= 2) {
+        let h = parseInt(parts[0], 10);
+        const m = String(parts[1]).padStart(2, '0');
+        if (isNaN(h)) return str;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+    }
+    return str;
+};
+
+const formatHumanDuration = (val, totalPunches = 1) => {
+    if (!val || val === '--:--' || val === '-' || val === 'null' || val === 'undefined') {
+        return totalPunches === 0 ? '--' : '0m';
+    }
+    let totalSec = 0;
+    if (typeof val === 'number') {
+        totalSec = val;
+    } else if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (/[hm]/i.test(trimmed) && !trimmed.includes(':')) return trimmed;
+        const parts = trimmed.split(':').map(Number);
+        if (parts.length === 3) {
+            totalSec = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+        } else if (parts.length === 2) {
+            totalSec = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60;
+        } else {
+            const num = Number(trimmed);
+            if (!isNaN(num)) totalSec = num;
+        }
+    }
+    if (totalSec <= 0) return totalPunches === 0 ? '--' : '0m';
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0 && m > 0) return `${h}h ${m}m`;
+    if (h > 0 && m === 0) return `${h}h 0m`;
+    if (m > 0) return `${m}m`;
+    return `${s}s`;
+};
+
+const displayTime = value => formatTimeIST(value);
 
 function EmployeeCard({ employee, onPunch, isPunching, isPunchBusy, theme, styles }) {
     const [expanded, setExpanded] = useState(false);
@@ -27,7 +74,7 @@ function EmployeeCard({ employee, onPunch, isPunching, isPunchBusy, theme, style
             ? 'Punched out'
             : 'No punches yet';
     const statusColor = lastInout === '1' ? theme.colors.success : theme.colors.textMuted;
-    const totalTime = employee?.totalTimeFormatted || '00:00';
+    const totalTime = formatHumanDuration(employee?.totalTimeFormatted || '00:00', Number(employee?.totalPunches ?? employee?.TOTALPUNCHES ?? punches.length));
     const totalPunches = Number(employee?.totalPunches ?? employee?.TOTALPUNCHES ?? punches.length);
     const totalMinutes = Number(employee?.totalMinutesWorked ?? employee?.TOTALMINUTESWORKED ?? 0);
 
@@ -43,9 +90,6 @@ function EmployeeCard({ employee, onPunch, isPunching, isPunchBusy, theme, style
                     </Text>
                     <Text style={styles.employeeId}>
                         {employee?.idcard || employee?.IDCARD || '—'}
-                        {(employee?.deptname || employee?.DEPTNAME)
-                            ? `  ·  ${employee?.deptname || employee?.DEPTNAME}`
-                            : ''}
                     </Text>
                 </View>
                 <View style={styles.statusBadge}>

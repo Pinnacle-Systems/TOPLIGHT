@@ -34,6 +34,12 @@ const AttendanceApi = createApi({
             providesTags: ['Att_History'],
         }),
 
+        // GET /attendance/approval-list — approval records from PSSATT
+        getAttendanceApprovalList: builder.query({
+            query: () => ({ url: '/approval-list', method: 'GET' }),
+            providesTags: ['Att_History'],
+        }),
+
         // POST /attendance/punch-in
         punchIn: builder.mutation({
             query: (body) => ({
@@ -55,6 +61,17 @@ const AttendanceApi = createApi({
             }),
             invalidatesTags: ['Att_Status'],
         }),
+
+        // POST /attendance/requestAttendance_Approval — update APPROVAL_STATUS
+        requestAttendance_Approval: builder.mutation({
+            query: (body) => ({
+                url: '/requestAttendance_Approval',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Att_History', 'Att_Status'],
+        }),
     }),
 });
 
@@ -62,8 +79,10 @@ export const {
     useGetAttendanceStatusQuery,
     useGetAttendanceSummaryQuery,
     useGetAttendanceHistoryQuery,
+    useGetAttendanceApprovalListQuery,
     usePunchInMutation,
     usePunchOutMutation,
+    useRequestAttendance_ApprovalMutation,
 } = AttendanceApi;
 
 export default AttendanceApi;

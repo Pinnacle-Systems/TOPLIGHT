@@ -6,6 +6,7 @@ const SiderBarTabs = [
     { name: "On Duty", icon: <MaterialCommunityIcons name="clock-outline" size={24} color="#64748B" />, path: "onduty" },
     { name: "Leave Entry", icon: <MaterialCommunityIcons name="calendar-account-outline" size={24} color="#64748B" />, path: "lentry" },
     { name: "Permission Entry", icon: <MaterialCommunityIcons name="account-clock-outline" size={24} color="#64748B" />, path: "pentry" },
+    { name: "Attendance Approval", icon: <MaterialCommunityIcons name="clipboard-check-outline" size={24} color="#64748B" />, path: "attendance_approval" },
     { name: "User Control", icon: <MaterialIcons name="manage-accounts" size={24} color="#64748B" />, path: "USERANDROLES" },
     { name: "DashBoard", icon: <MaterialIcons name="dashboard" size={24} color="#64748B" />, path: "DashBoard" },
     { name: "Location Tracking", icon: <MaterialCommunityIcons name="map-marker-path" size={24} color="#64748B" />, path: "map" },

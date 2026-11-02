@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Image, Modal, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,6 +16,7 @@ import { Notofication_Approval_handler } from '../../utils/NotificationApprovalH
 import NotificationModal from '../modal/NotificationModal';
 import { useGetUserMobDataQuery } from '../../store/api/DashboardApi';
 import { useAppTheme } from '../../theme';
+import { Common_Context } from '../../context/CommonContext';
 
 // Reanimated for bell
 import Animated, {
@@ -44,6 +45,34 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     const styles = useMemo(() => createStyles(theme), [theme]);
     const dispatch = useDispatch();
     const UserSelect = useSelector((state) => state?.UserDetails);
+
+    // Derive allowed notification groups from user's RoleOnPage permissions
+    const { page: rolesOnPage, admin: isAdmin, level } = useContext(Common_Context) || {};
+    const allowedGroups = useMemo(() => {
+        if (isAdmin === 1 || isAdmin === true || String(level || '').toLowerCase() === 'hr') return ['leave', 'permission', 'onduty', 'attendance'];
+        if (!rolesOnPage || !Array.isArray(rolesOnPage) || rolesOnPage.length === 0) return [];
+        const links = rolesOnPage
+            .filter(r => (
+                r?.isdefault === 1 || r?.isdefault === true || r?.isdefault === '1' || r?.isdefault === 'true' ||
+                r?.read === 1 || r?.read === true || r?.read === '1' || r?.read === 'true' ||
+                r?.create === 1 || r?.create === true || r?.create === '1' || r?.create === 'true'
+            ))
+            .map(r => String(r?.link || '').toLowerCase());
+        const groups = [];
+        if (links.some(l => l === 'l_approval' || l === 'leave_approval' || l === 'lentry' || l === 'leave')) {
+            groups.push('leave');
+        }
+        if (links.some(l => l === 'p_approval' || l === 'permission_approval' || l === 'pentry' || l === 'permission')) {
+            groups.push('permission');
+        }
+        if (links.some(l => l === 'onduty_approval' || l === 'onduty' || l === 'on_duty')) {
+            groups.push('onduty');
+        }
+        if (links.some(l => l === 'attendance_approval' || l === 'att_approval' || l === 'att' || l === 'attendance')) {
+            groups.push('attendance');
+        }
+        return groups;
+    }, [rolesOnPage, isAdmin, level]);
 
     const [notificationCount, setNotificationCount] = useState(0);
     const [liveNotifi, setLiveNotifi] = useState();
@@ -122,10 +151,18 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
         }
     }, [isSuccess]);
 
-    // Initial Notification Count
+    // Initial & Updated Notification Count (filtered by user's RoleOnPage permissions)
     useEffect(() => {
-        setNotificationCount(notifiData?.data ? Number(notifiData.data.length) : 0);
-    }, [notifiData?.data]);
+        if (!notifiData?.data) {
+            setNotificationCount(0);
+            return;
+        }
+        const filteredCount = notifiData.data.filter(item => {
+            const grp = String(item?.group || '').toLowerCase();
+            return allowedGroups.includes(grp);
+        }).length;
+        setNotificationCount(filteredCount);
+    }, [notifiData?.data, allowedGroups]);
 
     // Bell Shake Animation
     useEffect(() => {
@@ -141,7 +178,12 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
     }, [notificationCount]);
 
     // Socket Notifications
-    const Get_Notification_handler = (data) => {
+    const Get_Notification_handler = (data, groupType) => {
+        const itemGroup = String(groupType || data?.data?.group || '').toLowerCase();
+        // If user doesn't have RoleOnPage access to this group, ignore it completely
+        if (allowedGroups.length === 0 || !allowedGroups.includes(itemGroup)) {
+            return;
+        }
         setNotificationCount((c) => c + 1);
         setLiveNotifi(data);
         const sender =
@@ -174,15 +216,17 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
         if (!UserSelect?.UserId || !socket?.connected) return;
 
         const notifiEvents = {
-            [`get_Notifi_permission_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
-            [`get_Notifi_leave_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
-            [`get_Notifi_onduty_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Get_Notification_handler,
+            [`get_Notifi_permission_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: (data) => Get_Notification_handler(data, 'permission'),
+            [`get_Notifi_leave_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: (data) => Get_Notification_handler(data, 'leave'),
+            [`get_Notifi_onduty_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: (data) => Get_Notification_handler(data, 'onduty'),
+            [`get_Notifi_attendance_id:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: (data) => Get_Notification_handler(data, 'attendance'),
         };
 
         const approvalEvents = {
             [`get_Approval_Notifi:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
             [`get_leave_Approval_Notifi:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
             [`get_Onduty_Approval_status:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
+            [`get_Attendance_Approval_status:${UserSelect?.GCOMPCODE}${UserSelect?.UserId}`]: Notofication_Approval_handler,
         };
 
         [...Object.entries(notifiEvents), ...Object.entries(approvalEvents)]
@@ -192,7 +236,7 @@ export default function Navbar({ openSidebar, setopenSidebar }) {
             [...Object.entries(notifiEvents), ...Object.entries(approvalEvents)]
                 .forEach(([event, handler]) => socket.off(event, handler));
         };
-    }, [UserSelect, socket?.connected]);
+    }, [UserSelect, socket?.connected, allowedGroups]);
 
     // Global Company Switcher
     const handleCompanySwitch = async (newCompanyCode) => {

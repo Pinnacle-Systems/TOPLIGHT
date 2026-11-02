@@ -154,7 +154,7 @@ export async function punchIn(req, res) {
     console.log("punchIn target:", target);
     if (!target) return;
     const { COMPCODE, Idcard } = target;
-    connection = await getConnection(res);
+    connection = await getConnection();
 
     // 1. Check last punch â€” must be INOUT=0 (OUT) or no row at all to allow IN
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
@@ -228,7 +228,7 @@ export async function punchOut(req, res) {
     const target = await resolvePunchTarget(req, res);
     if (!target) return;
     const { COMPCODE, Idcard } = target;
-    connection = await getConnection(res);
+    connection = await getConnection();
 
     // 1. Check last punch â€” must be INOUT=1 (IN) to allow OUT
     const lastPunch = await getLastPunchToday(connection, COMPCODE, Idcard);
@@ -304,7 +304,7 @@ export async function getAttendanceStatus(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
   const Idcard = String(req?.headers?.idcard);
 
-  const connection = await getConnection(res);
+  const connection = await getConnection();
 
   try {
     // Fetch all today's rows ordered oldestâ†’newest
@@ -368,7 +368,7 @@ export async function getPunchSummary(req, res) {
   const COMPCODE = String(req?.headers?.compcode).toUpperCase();
   const Idcard = String(req?.headers?.idcard);
 
-  const connection = await getConnection(res);
+  const connection = await getConnection();
 
   try {
     const result = await connection.execute(
@@ -496,3 +496,331 @@ function formatDuration(totalSeconds) {
 
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
+
+function formatTimeIST(timeStr) {
+  if (!timeStr || timeStr === '--:--' || timeStr === '-' || timeStr === 'null') return '--:--';
+  const str = String(timeStr).trim();
+  if (/am|pm/i.test(str)) return str.toUpperCase();
+  const parts = str.split(':');
+  if (parts.length >= 2) {
+    let h = parseInt(parts[0], 10);
+    const m = String(parts[1]).padStart(2, '0');
+    if (isNaN(h)) return str;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+  }
+  return str;
+}
+
+function formatHumanDuration(totalSeconds) {
+  if (!totalSeconds || totalSeconds <= 0) return "0m";
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0 && m === 0) return `${h}h 0m`;
+  if (m > 0) return `${m}m`;
+  return `${s}s`;
+}
+
+
+// ---------------------------------------------------------------------------
+// GET ATTENDANCE APPROVAL LIST FROM PSSATT
+// ---------------------------------------------------------------------------
+export async function fetchAttendanceApprovalItems(connection) {
+  const sql = `
+    SELECT 
+      TO_CHAR(ATTDATE, 'YYYY-MM-DD') AS ATTDATE_STR,
+      ATTDATE,
+      ATTTIME,
+      COMPCODE,
+      IDCARD,
+      INOUT,
+      PMNO,
+      UNQID,
+      USERNAME,
+      DTYPE,
+      APPROVAL_STATUS
+    FROM (
+      SELECT ATTDATE, ATTTIME, COMPCODE, IDCARD, INOUT, PMNO, UNQID, USERNAME, DTYPE, APPROVAL_STATUS
+      FROM PSSATT
+      WHERE IDCARD IS NOT NULL
+        AND (APPROVAL_STATUS IS NULL OR LOWER(APPROVAL_STATUS) NOT IN ('approved', 'rejected'))
+      ORDER BY ATTDATE DESC, ATTTIME DESC
+    )
+    WHERE ROWNUM <= 200
+  `;
+
+  const result = await connection.execute(sql);
+  if (!result?.rows?.length) return [];
+
+  const groups = {};
+  for (const [attDateStr, attdate, atttime, compcode, idcard, inout, pmno, unqid, username, dtype, approvalStatus] of result.rows) {
+    const key = `${idcard}_${attDateStr}`;
+    if (!groups[key]) {
+      const rawName = username ? String(username).split('@')[0].trim() : String(idcard);
+      const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+      groups[key] = {
+        id: `ATT-${idcard}-${attDateStr}`,
+        docid: `ATT-${idcard}-${attDateStr}`,
+        docId: `ATT-${idcard}-${attDateStr}`,
+        idcard: String(idcard),
+        idCard: String(idcard),
+        empname: formattedName,
+        empName: formattedName,
+        userName: formattedName,
+        compcode: compcode || 'PSS',
+        deptname: '',
+        attDateStr: attDateStr,
+        dateStr: attDateStr,
+        date: attDateStr,
+        docdate: attdate,
+        docDate: attdate,
+        createdAt: attdate,
+        group: 'attendance',
+        approvalStatus: approvalStatus || 'pending',
+        approval_status: approvalStatus || 'pending',
+        punches: [],
+        firstIn: null,
+        lastOut: null,
+        totalPunches: 0,
+      };
+    }
+
+    const isPunchIn = Number(pmno) === 1;
+    groups[key].punches.push({
+      inout: isPunchIn ? 1 : 0,
+      pmno: Number(pmno),
+      atttime,
+      atttimeFormatted: formatTimeIST(atttime),
+      unqid,
+      dtype,
+    });
+  }
+
+  const uniqueIdcards = [...new Set(Object.values(groups).map(g => g.idcard).filter(Boolean))];
+  const userMap = {};
+  if (uniqueIdcards.length > 0) {
+    try {
+      const users = await prisma_Connector.user.findMany({
+        where: { idCard: { in: uniqueIdcards } },
+        select: { idCard: true, userName: true }
+      });
+      users.forEach(u => {
+        if (u.idCard) userMap[String(u.idCard).trim()] = u.userName;
+      });
+    } catch (_) {}
+  }
+
+  const list = Object.values(groups).map(item => {
+    if (userMap[item.idcard]) {
+      item.empname = userMap[item.idcard];
+      item.empName = userMap[item.idcard];
+      item.userName = userMap[item.idcard];
+    }
+    item.punches.sort((a, b) => timeToSeconds(a.atttime) - timeToSeconds(b.atttime));
+    item.totalPunches = item.punches.length;
+
+    const firstInRow = item.punches.find(p => p.pmno === 1);
+    const lastOutRow = [...item.punches].reverse().find(p => p.pmno === 2);
+    const lastPunch = item.punches[item.punches.length - 1];
+
+    item.punchIn = firstInRow ? firstInRow.atttime : (item.punches[0] ? item.punches[0].atttime : '--:--');
+    item.punchOut = lastOutRow ? lastOutRow.atttime : '--:--';
+    item.lastInout = lastPunch ? (lastPunch.pmno === 1 ? 1 : 0) : 0;
+
+    let workedSeconds = 0;
+    if (firstInRow && lastOutRow) {
+      const diff = timeToSeconds(lastOutRow.atttime) - timeToSeconds(firstInRow.atttime);
+      if (diff > 0) workedSeconds = diff;
+    }
+    item.totalTimeFormatted = formatDuration(workedSeconds);
+    item.humanWorked = formatHumanDuration(workedSeconds);
+    item.totalMinutesWorked = Math.floor(workedSeconds / 60);
+    item.punchInFormatted = formatTimeIST(item.punchIn);
+    item.punchOutFormatted = formatTimeIST(item.punchOut);
+
+    const statusTag = item.lastInout === 1 ? 'Punched IN' : 'Punched OUT';
+    item.reason = `${statusTag} · Total: ${item.humanWorked}`;
+    item.userdata = {
+      username: item.empname,
+      userName: item.empname,
+      Idcard: item.idcard,
+      idCard: item.idcard,
+    };
+    item.userData = item.userdata;
+
+    return item;
+  });
+
+  return list;
+}
+
+export async function getAttendanceApprovalList(req, res) {
+  let connection;
+  try {
+    connection = await getConnection();
+    if (!connection) return res.status(500).json({ status: 0, message: "Database connection failed", data: [] });
+
+    const data = await fetchAttendanceApprovalItems(connection);
+    return res.status(200).json({ status: 1, data });
+  } catch (err) {
+    logServiceError("AttendanceService:getAttendanceApprovalList", err, req);
+    return res.status(500).json({ status: 0, message: err.message, data: [] });
+  } finally {
+    await connection?.close();
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// APPROVE / REJECT ATTENDANCE RECORD (UPDATE APPROVAL_STATUS IN PSSATT)
+// ---------------------------------------------------------------------------
+export async function requestAttendance_Approval(req, res) {
+  let connection;
+  try {
+    let {
+      idcard,
+      idCard,
+      attdate,
+      dateStr,
+      date,
+      unqids,
+      unqid,
+      docid,
+      docId,
+      approval,
+      status,
+      approvedBy,
+      rejectBy,
+      rejectRemark,
+      rejectReason,
+      reason,
+    } = req.body || {};
+
+    const approvalStatus = String(approval || status || '').trim().toLowerCase();
+    if (!['approved', 'rejected', 'pending'].includes(approvalStatus)) {
+      return res.status(400).json({
+        status: 0,
+        message: "Invalid approval status. Must be 'approved', 'rejected', or 'pending'.",
+      });
+    }
+
+    if (!idcard && idCard) idcard = idCard;
+    if (!attdate && dateStr) attdate = dateStr;
+    if (!attdate && date) attdate = date;
+    const effectiveDocId = docid || docId;
+
+    if ((!idcard || !attdate) && effectiveDocId && String(effectiveDocId).startsWith('ATT-')) {
+      const parts = String(effectiveDocId).split('-');
+      if (parts.length >= 3) {
+        if (!idcard) idcard = parts[1];
+        if (!attdate) attdate = parts.slice(2).join('-');
+      }
+    }
+
+    async function resolveApproverIdCard(val, headerVal) {
+      const candidate = String(val || headerVal || '').trim();
+      if (!candidate) return null;
+      try {
+        const found = await prisma_Connector.user.findFirst({
+          where: { OR: [{ idCard: candidate }, { userName: candidate }] },
+          select: { idCard: true },
+        });
+        if (found?.idCard) return String(found.idCard).trim();
+      } catch (_) {}
+      return candidate;
+    }
+
+    const headerIdCard = req.headers?.idcard || req.headers?.Idcard;
+    const effectiveApprovedBy = approvalStatus === 'approved'
+      ? await resolveApproverIdCard(approvedBy, headerIdCard)
+      : null;
+    const effectiveRejectBy = approvalStatus === 'rejected'
+      ? await resolveApproverIdCard(rejectBy, headerIdCard)
+      : null;
+    const effectiveRejectReason = approvalStatus === 'rejected' ? (rejectRemark || rejectReason || reason || '') : null;
+
+    connection = await getConnection();
+    if (!connection) {
+      return res.status(500).json({ status: 0, message: "Database connection failed" });
+    }
+
+    let rowsAffected = 0;
+
+    // 1. If unqids are provided, update matching UNQIDs directly
+    const validUnqids = Array.isArray(unqids) ? unqids.filter(Boolean) : (unqid ? [unqid] : []);
+    if (validUnqids.length > 0) {
+      const placeholders = validUnqids.map((_, i) => `:unq${i}`).join(', ');
+      const bindObj = Object.fromEntries(validUnqids.map((u, i) => [`unq${i}`, String(u)]));
+      bindObj.approvalStatus = approvalStatus;
+      bindObj.approvedBy = effectiveApprovedBy;
+      bindObj.rejectBy = effectiveRejectBy;
+      bindObj.rejectRemark = effectiveRejectReason;
+
+      const sqlByUnqid = `
+        UPDATE PSSTLT.PSSATT
+        SET 
+          APPROVAL_STATUS = :approvalStatus,
+          APPROVED_BY     = :approvedBy,
+          REJECTED_BY     = :rejectBy,
+          REJECTED_REASON = :rejectRemark,
+          APPROVAL_DATE   = SYSDATE
+        WHERE UNQID IN (${placeholders})
+      `;
+      const result = await connection.execute(sqlByUnqid, bindObj, { autoCommit: true });
+      rowsAffected = result?.rowsAffected || 0;
+    }
+
+    // 2. If rowsAffected is 0 and idcard + attdate are known, update by IDCARD & ATTDATE
+    if (rowsAffected === 0 && idcard && attdate) {
+      const cleanDate = String(attdate).slice(0, 10);
+      const sqlByDate = `
+        UPDATE PSSTLT.PSSATT
+        SET 
+          APPROVAL_STATUS = :approvalStatus,
+          APPROVED_BY     = :approvedBy,
+          REJECTED_BY     = :rejectBy,
+          REJECTED_REASON = :rejectRemark,
+          APPROVAL_DATE   = SYSDATE
+        WHERE IDCARD = :idcard
+          AND TRUNC(ATTDATE) = TO_DATE(:attdate, 'YYYY-MM-DD')
+      `;
+      const result = await connection.execute(
+        sqlByDate,
+        {
+          approvalStatus,
+          approvedBy: effectiveApprovedBy,
+          rejectBy: effectiveRejectBy,
+          rejectRemark: effectiveRejectReason,
+          idcard: String(idcard),
+          attdate: cleanDate,
+        },
+        { autoCommit: true }
+      );
+      rowsAffected = result?.rowsAffected || 0;
+    }
+
+    if (rowsAffected === 0) {
+      return res.status(404).json({
+        status: 0,
+        message: "No matching attendance records found to update.",
+      });
+    }
+
+    return res.status(200).json({
+      status: 1,
+      message: `Attendance ${approvalStatus} successfully.`,
+      rowsAffected,
+    });
+  } catch (err) {
+    logServiceError("AttendanceService:requestAttendance_Approval", err, req);
+    return res.status(500).json({ status: 0, message: err.message });
+  } finally {
+    await connection?.close();
+  }
+}
+
+export const approveAttendanceRecord = requestAttendance_Approval;

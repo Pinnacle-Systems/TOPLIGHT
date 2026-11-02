@@ -7,6 +7,7 @@ import OndutyMasterScreen from '../screens/masters/OndutyMasterScreen';
 import PermissionMasterScreen from '../screens/masters/PermissionMasterScreen';
 import RoleMasterScreen from '../screens/masters/RoleMasterScreen';
 import AttendanceScreen from '../screens/attendance/AttendanceScreen';
+import AttendanceApprovalScreen from '../screens/attendance/AttendanceApprovalScreen';
 import OndutyApprovalScreen from '../screens/onduty/approval/OndutyApprovalScreen';
 import LeaveEntryScreen from '../screens/leave/LeaveEntryScreen';
 import LeaveApprovalScreen from '../screens/leave/LeaveApprovalScreen';
@@ -29,6 +30,8 @@ export const APP_ROUTES = [
     { key: 'onduty_approval', name: 'onduty_approval', component: OndutyApprovalScreen, isDefault: true },
     { key: 'settings', name: 'settings', component: SettingsScreen, isDefault: true },
     { key: 'Att', name: 'Att', component: AttendanceScreen, isDefault: false },
+    { key: 'attendance_approval', name: 'attendance_approval', component: AttendanceApprovalScreen, isDefault: true },
+    { key: 'att_approval', name: 'att_approval', component: AttendanceApprovalScreen, isDefault: true },
     { key: 'lentry', name: 'lentry', component: LeaveEntryScreen, isDefault: false },
     { key: 'l_approval', name: 'l_approval', component: LeaveApprovalScreen, isDefault: true },
     { key: 'pentry', name: 'pentry', component: PermissionEntryScreen, isDefault: false },

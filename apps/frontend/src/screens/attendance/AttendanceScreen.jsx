@@ -194,6 +194,16 @@ export default function AttendanceScreen() {
                     <Text style={styles.headerTitle}>Attendance</Text>
                     <Text style={styles.headerSub}>Track your daily in / out time</Text>
                 </View>
+                {canManageEmployees && (
+                    <TouchableOpacity
+                        style={[styles.refreshBtn, { marginRight: 8 }]}
+                        onPress={() => navigation.navigate('attendance_approval')}
+                        activeOpacity={0.7}
+                        accessibilityLabel="Attendance Approval"
+                    >
+                        <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={theme.colors.brand} />
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.refreshBtn} onPress={refreshActiveTab} activeOpacity={0.7}>
                     <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brand} />
                 </TouchableOpacity>

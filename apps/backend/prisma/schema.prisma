@@ -23,12 +23,6 @@ model Settings {
   compCode     String?
 }
 
-model NotifyApprovalGroup {
-  id       Int     @id @default(autoincrement())
-  idCard   String?
-  compCode String?
-  user     User[]
-}
 
 //Used
 model User {
@@ -45,7 +39,6 @@ model User {
   otp                         String?
   hod                         String?
   hr                          String?
-  optionalNotify              NotifyApprovalGroup[]
   level                       String                @default("user")
   permission                  PermissionEntry[]
   verificationOtp             String?
@@ -56,8 +49,6 @@ model User {
   companies                   CompanyCode[]
   isAllParty                  Boolean               @default(false)
   isAdmin                     Boolean               @default(false)
-  notificationSender          Notification[]        @relation(name: "sender")
-  notificationReceiver        Notification[]        @relation(name: "receiver")
   fcm                         String?               @default("")
   permissionEntry             PermissionEntry[]     @relation("PermissionHod")
   permissionEntryCreateUser   PermissionEntry[]     @relation("create_User")
@@ -71,12 +62,6 @@ model User {
   leaveEntryHod LeaveEntry[] @relation("LeaveHod")
 
   leaveEntryUser LeaveEntry[] @relation("LeaveUser")
-
-  advanceRequestCreate AdvanceRequest[] @relation("create_User")
-
-  advanceRequestModified AdvanceRequest[] @relation("modified_User")
-
-  advanceRequest AdvanceRequest[] @relation("User")
 
   onDuty Onduty[] @relation("User")
 
@@ -135,52 +120,6 @@ model Onduty {
   //  OndutyMaster OndutyMaster[] @relation("onduty_Category")
 }
 
-model AdvanceRequest {
-  id             Int              @id @default(autoincrement())
-  docId          String           @unique @db.VarChar(50)
-  docDate        DateTime         @default(now())
-  idCard         String           @db.VarChar(200)
-  fromDate       DateTime?        @default(now())
-  toDate         DateTime         @default(now())
-  empName        String           @db.VarChar(100)
-  finYear        String           @db.VarChar(10)
-  advType        String           @db.VarChar(30)
-  total          Float            @default(0)
-  payType        String?
-  hod            String
-  hr             String?
-  group          String           @default("Advance")
-  isCancelled    Boolean          @default(false)
-  userId         String
-  preLoan        Int?             @default(0)
-  totalLoan      Float            @default(0)
-  preDue         String?          @default("0") @db.VarChar(200)
-  ins            Int              @default(0)
-  due            Int              @default(0)
-  remark         String           @db.VarChar(500)
-  approvalStatus String           @default("pending")
-  compCode       String
-  createdOn      DateTime         @default(now())
-  updatedOn      DateTime         @default(now())
-  createdBy      String
-  userData       User             @relation("User", fields: [userId], references: [idCard], onDelete: Cascade)
-  mobile         String?
-  create         Int              @default(0)
-  update         Int              @default(0)
-  createdByUser  User             @relation("create_User", fields: [createdBy], references: [idCard], onDelete: Cascade)
-  modifiedBy     String
-  modifiedByUser User             @relation("modified_User", fields: [modifiedBy], references: [idCard], onDelete: Cascade)
-  rejectBy       String?          @default("")
-  approvedBy     String?          @default("")
-  category       Int              @default(1)
-  finCode        BigInt
-  payCode        BigInt
-  categoryData   PermissionMaster @relation("Advance_Category", fields: [category], references: [id])
-
-  @@index([idCard])
-  @@index([finYear])
-  @@index([approvalStatus])
-}
 
 //used 
 
@@ -221,7 +160,6 @@ model PermissionMaster {
 
   leaveEntry LeaveEntry[] @relation("leave_Category")
 
-  advanceRequest AdvanceRequest[] @relation("Advance_Category")
 }
 
 model OndutyMaster {
@@ -362,14 +300,3 @@ model RoleOnPage {
   isDefault Boolean @default(false)
 }
 
-model Notification {
-  id         Int     @id @default(autoincrement())
-  costingId  Int
-  sender     User    @relation("sender", fields: [senderId], references: [id])
-  senderId   Int
-  receiver   User?   @relation("receiver", fields: [receiverId], references: [id])
-  receiverId Int?
-  type       String?
-  message    String?
-  isRead     Boolean @default(false)
-}
