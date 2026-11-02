@@ -608,8 +608,18 @@ export default function PermissionApprovalScreen({ route, navigation }) {
         <View style={styles.screen}>
             {/* 1. Header Banner */}
             <View style={styles.header}>
+                {navigation?.canGoBack?.() && (
+                    <TouchableOpacity
+                        style={styles.backBtn}
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={0.7}
+                        accessibilityLabel="Go back"
+                    >
+                        <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
+                    </TouchableOpacity>
+                )}
                 <View style={styles.headerIcon}>
-                    <MaterialCommunityIcons name="account-check-outline" size={22} color={theme.colors.brand} />
+                    <MaterialCommunityIcons name="account-check-outline" size={20} color={theme.colors.brand} />
                 </View>
                 <View style={styles.headerText}>
                     <Text style={styles.title}>Permission Approval</Text>
@@ -617,6 +627,14 @@ export default function PermissionApprovalScreen({ route, navigation }) {
                         {requests.length} {requests.length === 1 ? 'request' : 'requests'} pending • Swipe right to approve
                     </Text>
                 </View>
+                <TouchableOpacity
+                    style={styles.refreshBtn}
+                    onPress={handleRefresh}
+                    activeOpacity={0.7}
+                    accessibilityLabel="Refresh"
+                >
+                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brand} />
+                </TouchableOpacity>
             </View>
 
             {/* 2. Compact Search & Filter Section */}
@@ -769,37 +787,50 @@ export default function PermissionApprovalScreen({ route, navigation }) {
 const createStyles = theme => StyleSheet.create({
     screen: { flex: 1, backgroundColor: theme.colors.backgroundSubtle },
     header: {
-        minHeight: 72,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing.md + 2,
-        paddingVertical: theme.spacing.sm + 2,
-        backgroundColor: theme.colors.brand,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: theme.colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.borderSubtle,
+    },
+    backBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.surfaceSunken,
+        marginRight: 10,
     },
     headerIcon: {
-        width: 38,
-        height: 38,
-        borderRadius: theme.radii.md,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: theme.colors.brandSoft,
-        marginRight: theme.spacing.sm + 2,
+        marginRight: 10,
     },
     headerText: { flex: 1 },
     title: {
-        ...theme.typography.h4,
-        color: theme.colors.brandContrast,
-        fontSize: theme.fontSizes.lg,
-        fontFamily: theme.fontFamilies.bold,
-        fontWeight: theme.fontWeights.bold,
+        fontSize: 17,
+        fontWeight: '700',
+        color: theme.colors.text,
     },
     subtitle: {
-        ...theme.typography.caption,
-        color: theme.colors.brandContrast,
-        opacity: 0.85,
-        fontSize: theme.fontSizes.xs,
-        fontFamily: theme.fontFamilies.regular,
-        marginTop: 2,
+        fontSize: 11.5,
+        color: theme.colors.textSecondary,
+        marginTop: 1,
+    },
+    refreshBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.surfaceSunken,
     },
 
     // Search and Filter Section

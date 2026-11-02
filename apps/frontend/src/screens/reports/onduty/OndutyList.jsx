@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useAppTheme } from '../../../theme';
 import { 
   FlatList, 
   View, 
@@ -77,7 +78,9 @@ const friendlyTime = (timeStr) => {
   return m && m.isValid() ? m.format('hh:mm A') : timeStr;
 };
 
-const OndutyList = () => {
+const OndutyList = ({ navigation }) => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   // State management
   const [Idcard_filter, setIdCard_Idcard] = useState([]);
   const [selected_item_status, setSelected_item_status] = useState("");
@@ -111,11 +114,23 @@ const OndutyList = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'approved': return '#4CAF50';
-      case 'rejected': return '#F44336';
-      default: return '#FF9800';
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'approved': return theme.colors.success || '#15803D';
+      case 'rejected': return theme.colors.danger || '#B91C1C';
+      default: return theme.colors.warning || '#B45309';
     }
+  };
+
+  const getStatusStyle = (status) => {
+    const s = String(status || '').toLowerCase();
+    if (s === 'approved') {
+      return { bg: theme.colors.successSoft || '#DCFCE7', color: theme.colors.success || '#15803D', label: 'APPROVED' };
+    }
+    if (s === 'rejected') {
+      return { bg: theme.colors.dangerSoft || '#FEE2E2', color: theme.colors.danger || '#B91C1C', label: 'REJECTED' };
+    }
+    return { bg: theme.colors.warningSoft || '#FEF3C7', color: theme.colors.warning || '#B45309', label: 'PENDING' };
   };
 
   const handleTabSwitch = (tab) => {
@@ -187,47 +202,70 @@ const OndutyList = () => {
   }) : [];
 
   // Render functions
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.card}
-      onPress={() => {
-        setSelectedItem(item);
-        setSelected_item_status(item?.approvalStatus);
-        setmore_model(true);
-      }}
-    >
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardId}>#{item?.docid}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.approvalStatus) }]}>
-          <FontAwesome name="circle" size={10} color="white" /> 
-          <Text style={styles.statusText}>{item.approvalStatus}</Text>
-        </View>
-      </View>
-      
-      <View style={styles.cardBody}>
-          <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="account" size={16} color="#555" />
-          <Text style={styles.infoText}>{item.empname}</Text>
+  const renderItem = ({ item }) => {
+    const statusMeta = getStatusStyle(item.approvalStatus);
+
+    return (
+      <TouchableOpacity 
+        style={styles.card}
+        onPress={() => {
+          setSelectedItem(item);
+          setSelected_item_status(item?.approvalStatus);
+          setmore_model(true);
+        }}
+        activeOpacity={0.8}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.docIdBadge}>
+            <MaterialCommunityIcons name="pound" size={12} color={theme.colors.brand} />
+            <Text style={styles.cardId}>{item?.docid}</Text>
           </View>
-        
-        <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="calendar" size={16} color="#555" />
-          <Text style={styles.infoText}>{moment(item.docdate).format('DD MMM YYYY')}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusMeta.bg }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusMeta.color }]} />
+            <Text style={[styles.statusText, { color: statusMeta.color }]}>
+              {statusMeta.label}
+            </Text>
+          </View>
         </View>
         
-        <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="map-marker" size={16} color="#555" />
-          <Text style={styles.infoText} numberOfLines={1} ellipsizeMode="tail">
-            {item.in_location || 'Location not specified'}
-          </Text>
+        <View style={styles.cardBody}>
+          <View style={styles.employeeRow}>
+            <View style={styles.avatarCircle}>
+              <MaterialCommunityIcons name="account" size={18} color={theme.colors.brand} />
+            </View>
+            <View style={styles.employeeInfo}>
+              <Text style={styles.employeeName} numberOfLines={1}>
+                {item.empname || 'Employee'}
+              </Text>
+              <Text style={styles.requestDate}>
+                Requested: {moment(item.docdate).format('DD MMM YYYY')}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.locationBox}>
+            <View style={styles.locationRow}>
+              <MaterialCommunityIcons name="map-marker-radius" size={16} color={theme.colors.brand} />
+              <Text style={styles.locationText} numberOfLines={2}>
+                {item.in_location || 'Location not specified'}
+              </Text>
+            </View>
+            {!!item.others && item.others !== 'ONDUTY' && (
+              <View style={styles.purposeRow}>
+                <MaterialCommunityIcons name="clipboard-text-outline" size={14} color={theme.colors.textMuted} />
+                <Text style={styles.purposeText} numberOfLines={1}>{item.others}</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-      
-      <View style={styles.cardFooter}>
-        <Text style={styles.moreText}>Tap to view details →</Text>
-      </View>
-    </TouchableOpacity>
-  );
+        
+        <View style={styles.cardFooter}>
+          <Text style={styles.moreText}>View full details</Text>
+          <MaterialCommunityIcons name="chevron-right" size={16} color={theme.colors.brand} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (isLoading || isFetching) {
     return (
@@ -240,54 +278,73 @@ const OndutyList = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      {/* Header with Gradient */}
-      <LinearGradient
-        colors={['#0f172a', '#1e3a8a', '#3b82f6']}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Onduty Request Report</Text>
-      </LinearGradient>
-
-      {/* Tabs and Filters */}
-      <View style={styles.tabContainer}>
-        <View style={styles.tabs}>
-          <TouchableOpacity 
-            style={[styles.tab, My_onduty && !My_Summary && styles.activeTab]} 
-            onPress={() => handleTabSwitch('my')}
+      {/* Common Header Bar */}
+      <View style={styles.header}>
+        {navigation?.canGoBack?.() && (
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
           >
-            <Text style={[styles.tabText, My_onduty && !My_Summary && styles.activeTabText]}>My Onduties</Text>
+            <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
+          </TouchableOpacity>
+        )}
+        <View style={styles.headerTextWrap}>
+          <Text style={styles.headerTitle}>Onduty Report</Text>
+          <Text style={styles.headerSubtitle}>
+            {Filtered_data.length} {Filtered_data.length === 1 ? 'record' : 'records'} found
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.filterToggleBtn,
+            showFilters && styles.filterToggleBtnActive,
+            (Idcard_filter.length > 0 || status_filter || searchQuery) && styles.filterToggleBtnBadge,
+          ]}
+          onPress={() => setShowFilters(!showFilters)}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons
+            name={showFilters ? "filter-remove" : "filter-variant"}
+            size={18}
+            color={showFilters ? theme.colors.danger : theme.colors.brand}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Segmented Control Tabs */}
+      <View style={styles.tabBar}>
+        <View style={styles.segmentedControl}>
+          <TouchableOpacity 
+            style={[styles.segment, My_onduty && !My_Summary && styles.segmentActive]} 
+            onPress={() => handleTabSwitch('my')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.segmentText, My_onduty && !My_Summary && styles.segmentTextActive]}>
+              My Onduties
+            </Text>
           </TouchableOpacity>
         
           <TouchableOpacity 
-            style={[styles.tab, !My_onduty && !My_Summary && styles.activeTab]} 
+            style={[styles.segment, !My_onduty && !My_Summary && styles.segmentActive]} 
             onPress={() => handleTabSwitch('team')}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.tabText, !My_onduty && !My_Summary && styles.activeTabText]}>Team Onduties</Text>
+            <Text style={[styles.segmentText, !My_onduty && !My_Summary && styles.segmentTextActive]}>
+              Team Onduties
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.tab, !My_onduty && My_Summary && styles.activeTab]} 
+            style={[styles.segment, !My_onduty && My_Summary && styles.segmentActive]} 
             onPress={() => handleTabSwitch('sumary')}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.tabText, !My_onduty && My_Summary && styles.activeTabText]}>
-              <MaterialIcons name="summarize" size={20} color={My_Summary ? "white" : "black"} />
+            <Text style={[styles.segmentText, !My_onduty && My_Summary && styles.segmentTextActive]}>
+              Daily Summary
             </Text>
           </TouchableOpacity>
         </View>
-        
-        <TouchableOpacity 
-          style={styles.filterButton} 
-          onPress={() => setShowFilters(!showFilters)}
-        >
-          <MaterialCommunityIcons 
-            name={showFilters ? "filter-remove" : "filter"} 
-            size={20} 
-            color={showFilters ? "#F44336" : "#3B82F6"} 
-          />
-        </TouchableOpacity>
       </View>
 
       {/* Enhanced Filter Section */}
@@ -621,451 +678,555 @@ const OndutyList = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FB',
-  },
-  contentContainer: {
-    flex: 1,
-    paddingBottom: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F7FB',
-  },
-  loadingText: {
-    marginTop: 16,
-    color: '#555',
-    fontSize: 16,
-  },
-  header: {
-    paddingTop: 40,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    fontFamily: 'Nunito-Bold',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  tabs: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    backgroundColor: '#F0F0F0',
-    overflow: 'hidden',
-  },
-  tab: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  activeTab: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#555',
-  },
-  activeTabText: {
-    color: 'white',
-  },
-  filterButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: '#EFF6FF',
-  },
-  filterSection: {
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  searchInput: {
-    height: 48,
-    backgroundColor: '#F5F7FB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  filterRow: {
-    marginBottom: 12,
-  },
-  dropdown: {
-    backgroundColor: '#F5F7FB',
-    borderRadius: 8,
-  },
-  dateFilterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#F5F7FB',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  dateFilterText: {
-    marginLeft: 8,
-    color: '#333',
-  },
-  filterActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  filterActionButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  clearButton: {
-    backgroundColor: '#F5F7FB',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  clearButtonText: {
-    color: '#F44336',
-    fontWeight: '500',
-  },
-  applyButton: {
-    backgroundColor: '#3B82F6',
-  },
-  applyButtonText: {
-    color: 'white',
-    fontWeight: '500',
-  },
-  listContent: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  cardId: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#3B82F6',
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  statusText: {
-    marginLeft: 4,
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'white',
-    textTransform: 'capitalize',
-  },
-  cardBody: {
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#555',
-    flex: 1,
-  },
-  cardFooter: {
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: 12,
-    alignItems: 'flex-end',
-  },
-  moreText: {
-    fontSize: 12,
-    color: '#3B82F6',
-    fontWeight: '500',
-  },
-  emptyState: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
-    marginBottom: 4,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#777',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  emptyStateButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-  },
-  emptyStateButtonText: {
-    color: 'white',
-    fontWeight: '500',
-  },
-  modalContentContainer: {
-    width: '100%',
-    paddingBottom: 20,
-  },
-  modalScrollView: {
-    width: '100%',
-    paddingBottom: 40,
-  },
-  modalContent: {
-    padding: 16,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-  },
-  modalStatus: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  modalStatusText: {
-    color: 'white',
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  detailSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  detailLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  labelText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#555',
-  },
-  detailValue: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    textAlign: 'right',
-  },
-  multilineText: {
-    textAlign: 'left',
-  },
-  imageContainer: {
-    height: 200,
-    marginBottom: 16,
-    width: '100%',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  mapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  mapButtonText: {
-    marginLeft: 8,
-    color: 'white',
-    fontWeight: '500',
-  },
-  tableSection: {
-    marginBottom: 20,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  tableCell: {
-    flex: 1,
-    padding: 10,
-    fontSize: 14,
-    color: '#333',
-  },
-  tableHeader: {
-    fontWeight: '600',
-    backgroundColor: '#F5F7FB',
-    color: '#3B82F6',
-  },
-  totalRow: {
-    backgroundColor: '#EFF6FF',
-  },
-  totalText: {
-    fontWeight: '600',
-    color: '#3B82F6',
-  },
-  summaryContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  summaryHeader: {
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  dateText: {
-    fontSize: 16,
-  },
-  tableContainer: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    marginBottom: 10,
-    backgroundColor: 'white',
-    maxHeight: 400,
-  },
-  landscapeTableContainer: {
-    maxHeight: Dimensions.get('window').height * 0.6,
-  },
-  tableHeaderRow: {
-    backgroundColor: '#3B82F6',
-    padding: 10,
-  },
-  tableHeaderCell: {
-    color: 'white',
-    padding: 5,
-    fontWeight: 'bold',
-  },
-  columnIndex: {
-    width: 50,
-    textAlign: 'center',
-  },
-  columnEmployee: {
-    width: 150,
-  },
-  columnVehicle: {
-    width: 100,
-  },
-  columnUnit: {
-    width: 150,
-  },
-  columnTime: {
-    width: 100,
-  },
-  columnPurpose: {
-    width: 120,
-  },
-  columnKm: {
-    width: 80,
-    textAlign: 'right',
-  },
-  evenRow: {
-    backgroundColor: '#FFFFFF',
-  },
-  oddRow: {
-    backgroundColor: '#F5F7FB',
-  },
-  noDataRow: {
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: Dimensions.get('window').width - 32,
-  },
-  noDataText: {
-    color: '#777',
-    fontSize: 14,
-  },
-  summaryFooter: {
-    marginTop: 8,
-    alignItems: 'flex-end',
-  },
-  summaryFooterText: {
-    color: '#555',
-    fontSize: 14,
-  },
-});
+const createStyles = (theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    contentContainer: {
+      flex: 1,
+      paddingBottom: 20,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    loadingText: {
+      marginTop: 14,
+      color: theme.colors.textSecondary,
+      fontSize: theme.fontSizes.sm || 14,
+      fontWeight: theme.fontWeights.medium || '500',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: theme.spacing.md || 16,
+      paddingVertical: theme.spacing.sm || 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    backBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: theme.spacing.sm || 12,
+    },
+    headerTextWrap: {
+      flex: 1,
+    },
+    headerTitle: {
+      fontSize: theme.fontSizes.md || 17,
+      fontWeight: theme.fontWeights.bold || '700',
+      color: theme.colors.text,
+    },
+    headerSubtitle: {
+      fontSize: theme.fontSizes.xs || 11.5,
+      color: theme.colors.textSecondary,
+      marginTop: 1,
+    },
+    filterToggleBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: theme.colors.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+    },
+    filterToggleBtnActive: {
+      backgroundColor: theme.colors.dangerSoft,
+    },
+    filterToggleBtnBadge: {
+      backgroundColor: theme.colors.brandSoft,
+    },
+    tabBar: {
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: theme.spacing.md || 16,
+      paddingVertical: theme.spacing.xs || 8,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    segmentedControl: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.surfaceSunken,
+      borderRadius: theme.radii.pill || 99,
+      padding: 3,
+    },
+    segment: {
+      flex: 1,
+      paddingVertical: 7,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: theme.radii.pill || 99,
+    },
+    segmentActive: {
+      backgroundColor: theme.colors.brand,
+      shadowColor: theme.colors.brand,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    segmentText: {
+      fontSize: theme.fontSizes.xs || 13,
+      fontWeight: theme.fontWeights.medium || '500',
+      color: theme.colors.textSecondary,
+    },
+    segmentTextActive: {
+      color: '#FFFFFF',
+      fontWeight: theme.fontWeights.bold || '700',
+    },
+    filterSection: {
+      backgroundColor: theme.colors.surface,
+      padding: theme.spacing.md || 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    searchInput: {
+      height: 44,
+      backgroundColor: theme.colors.surfaceSunken,
+      borderRadius: theme.radii.md || 10,
+      paddingHorizontal: 14,
+      fontSize: 13,
+      color: theme.colors.text,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+    },
+    filterRow: {
+      marginBottom: 10,
+    },
+    dropdown: {
+      backgroundColor: theme.colors.surfaceSunken,
+      borderRadius: theme.radii.sm || 8,
+    },
+    dateFilterButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      backgroundColor: theme.colors.surfaceSunken,
+      borderRadius: theme.radii.md || 10,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+    },
+    dateFilterText: {
+      marginLeft: 8,
+      color: theme.colors.text,
+      fontSize: 13,
+    },
+    filterActions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 10,
+      gap: 10,
+    },
+    filterActionButton: {
+      flex: 1,
+      paddingVertical: 10,
+      borderRadius: theme.radii.md || 8,
+      alignItems: 'center',
+    },
+    clearButton: {
+      backgroundColor: theme.colors.dangerSoft,
+    },
+    clearButtonText: {
+      color: theme.colors.danger,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    applyButton: {
+      backgroundColor: theme.colors.brand,
+    },
+    applyButtonText: {
+      color: '#FFFFFF',
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    listContent: {
+      padding: theme.spacing.md || 16,
+      paddingBottom: 36,
+    },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radii.lg || 14,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+      padding: theme.spacing.md || 16,
+      marginBottom: 12,
+      shadowColor: theme.colors.shadow || 'rgba(0,0,0,0.05)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+      paddingBottom: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    docIdBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceSunken,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 6,
+      gap: 4,
+    },
+    cardId: {
+      fontSize: 12.5,
+      fontWeight: '700',
+      color: theme.colors.brand,
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: 99,
+      gap: 5,
+    },
+    statusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    statusText: {
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.4,
+    },
+    cardBody: {
+      marginBottom: 8,
+    },
+    employeeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    avatarCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.brandSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 10,
+    },
+    employeeInfo: {
+      flex: 1,
+    },
+    employeeName: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    requestDate: {
+      fontSize: 11,
+      color: theme.colors.textSecondary,
+      marginTop: 2,
+    },
+    locationBox: {
+      backgroundColor: theme.colors.surfaceSunken,
+      borderRadius: 8,
+      padding: 10,
+      marginBottom: 4,
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    locationText: {
+      fontSize: 12.5,
+      fontWeight: '500',
+      color: theme.colors.text,
+      flex: 1,
+    },
+    purposeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 4,
+    },
+    purposeText: {
+      fontSize: 11.5,
+      color: theme.colors.textSecondary,
+    },
+    cardFooter: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.borderSubtle,
+      gap: 4,
+    },
+    moreText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.brand,
+    },
+    emptyState: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+    },
+    emptyStateTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: theme.colors.text,
+      marginTop: 14,
+      marginBottom: 4,
+    },
+    emptyStateText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: 16,
+    },
+    emptyStateButton: {
+      paddingVertical: 9,
+      paddingHorizontal: 18,
+      backgroundColor: theme.colors.brand,
+      borderRadius: 8,
+    },
+    emptyStateButtonText: {
+      color: '#FFFFFF',
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    modalContentContainer: {
+      width: '100%',
+      paddingBottom: 20,
+    },
+    modalScrollView: {
+      width: '100%',
+      paddingBottom: 40,
+    },
+    modalContent: {
+      padding: 16,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    modalStatus: {
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: 99,
+    },
+    modalStatusText: {
+      fontWeight: '700',
+      fontSize: 11,
+      textTransform: 'uppercase',
+    },
+    detailSection: {
+      marginBottom: 18,
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.text,
+      marginBottom: 10,
+      paddingBottom: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    detailRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 10,
+    },
+    detailLabel: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    labelText: {
+      marginLeft: 8,
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+    },
+    detailValue: {
+      flex: 1,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+      textAlign: 'right',
+    },
+    multilineText: {
+      textAlign: 'left',
+    },
+    imageContainer: {
+      height: 200,
+      marginBottom: 16,
+      width: '100%',
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    image: {
+      width: '100%',
+      height: '100%',
+    },
+    mapButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 11,
+      backgroundColor: theme.colors.brand,
+      borderRadius: 8,
+      marginTop: 8,
+      gap: 6,
+    },
+    mapButtonText: {
+      color: '#FFFFFF',
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    tableSection: {
+      marginBottom: 20,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 10,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+    },
+    table: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+      borderRadius: 6,
+      overflow: 'hidden',
+      marginTop: 8,
+    },
+    tableRow: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderSubtle,
+    },
+    tableCell: {
+      flex: 1,
+      padding: 10,
+      fontSize: 13,
+      color: theme.colors.text,
+    },
+    tableHeader: {
+      fontWeight: '600',
+      backgroundColor: theme.colors.surfaceSunken,
+      color: theme.colors.brand,
+    },
+    totalRow: {
+      backgroundColor: theme.colors.brandSoft,
+    },
+    totalText: {
+      fontWeight: '700',
+      color: theme.colors.brand,
+    },
+    summaryContainer: {
+      flex: 1,
+      padding: 16,
+    },
+    summaryHeader: {
+      marginBottom: 14,
+      alignItems: 'center',
+    },
+    summaryTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    dateText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      marginTop: 2,
+    },
+    tableContainer: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+      borderRadius: 8,
+      marginBottom: 10,
+      backgroundColor: theme.colors.surface,
+      maxHeight: 400,
+    },
+    landscapeTableContainer: {
+      maxHeight: Dimensions.get('window').height * 0.6,
+    },
+    tableHeaderRow: {
+      backgroundColor: theme.colors.brand,
+      padding: 10,
+    },
+    tableHeaderCell: {
+      color: '#FFFFFF',
+      padding: 5,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    columnIndex: {
+      width: 50,
+      textAlign: 'center',
+    },
+    columnEmployee: {
+      width: 150,
+    },
+    columnVehicle: {
+      width: 100,
+    },
+    columnUnit: {
+      width: 150,
+    },
+    columnTime: {
+      width: 100,
+    },
+    columnPurpose: {
+      width: 120,
+    },
+    columnKm: {
+      width: 80,
+      textAlign: 'right',
+    },
+    evenRow: {
+      backgroundColor: theme.colors.surface,
+    },
+    oddRow: {
+      backgroundColor: theme.colors.surfaceSunken,
+    },
+    noDataRow: {
+      padding: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: Dimensions.get('window').width - 32,
+    },
+    noDataText: {
+      color: theme.colors.textSecondary,
+      fontSize: 13,
+    },
+    summaryFooter: {
+      marginTop: 8,
+      alignItems: 'flex-end',
+    },
+    summaryFooterText: {
+      color: theme.colors.textSecondary,
+      fontSize: 12,
+    },
+  });
 
 export default OndutyList;

@@ -743,7 +743,7 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                     activeOpacity={0.7}
                     accessibilityLabel="Go back"
                 >
-                    <MaterialCommunityIcons name="arrow-left" size={22} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerIcon}>
                     <MaterialCommunityIcons name="fingerprint" size={20} color={theme.colors.brand} />
@@ -763,7 +763,7 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                     activeOpacity={0.7}
                     accessibilityLabel="Refresh"
                 >
-                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brandContrast} />
+                    <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.brand} />
                 </TouchableOpacity>
             </View>
 
@@ -950,56 +950,50 @@ const createStyles = theme =>
             backgroundColor: theme.colors.background,
         },
         header: {
-            backgroundColor: theme.colors.brand,
+            backgroundColor: theme.colors.surface,
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: theme.layout?.screenGutter || 16,
-            paddingVertical: theme.spacing.md,
-            elevation: 3,
-            shadowColor: theme.colors.shadow,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.12,
-            shadowRadius: 4,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.borderSubtle,
         },
         backBtn: {
             width: 36,
             height: 36,
-            borderRadius: theme.radii.sm,
+            borderRadius: 18,
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: theme.spacing.xs,
+            backgroundColor: theme.colors.surfaceSunken,
+            marginRight: 10,
         },
         headerIcon: {
-            width: 38,
-            height: 38,
-            borderRadius: theme.radii.md,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: theme.colors.brandSoft,
-            marginRight: theme.spacing.sm + 2,
+            marginRight: 10,
         },
         headerText: { flex: 1 },
         title: {
-            ...theme.typography.h4,
-            color: theme.colors.brandContrast,
-            fontSize: theme.fontSizes.lg,
-            fontFamily: theme.fontFamilies.bold,
-            fontWeight: theme.fontWeights.bold,
+            fontSize: 17,
+            fontWeight: '700',
+            color: theme.colors.text,
         },
         subtitle: {
-            ...theme.typography.caption,
-            color: theme.colors.brandContrast,
-            opacity: 0.85,
-            fontSize: theme.fontSizes.xs,
-            fontFamily: theme.fontFamilies.regular,
-            marginTop: 2,
+            fontSize: 11.5,
+            color: theme.colors.textSecondary,
+            marginTop: 1,
         },
         refreshBtn: {
             width: 36,
             height: 36,
-            borderRadius: theme.radii.sm,
+            borderRadius: 18,
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: theme.colors.surfaceSunken,
         },
 
         // Filter Section

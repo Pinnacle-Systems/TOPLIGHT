@@ -99,38 +99,55 @@ export default function HomeScreen() {
                 {/* Modules Grid */}
                 <View style={styles.gridContainer}>
                     {filteredCards.length > 0 ? (
-                        filteredCards.map((card, index) => (
-                            <TouchableOpacity 
-                                key={card.action || index} 
-                                style={[styles.gridCard, { width: CARD_WIDTH }]} 
-                                onPress={() => handleCardPress(card.action)}
-                                activeOpacity={0.7}
-                            >
-                                <View style={styles.cardTopRow}>
-                                    <View style={[styles.iconWrapper, { backgroundColor: `${theme.colors.chart[index % theme.colors.chart.length]}14` }]}>
+                        filteredCards.map((card, index) => {
+                            const cardColor = card.bg || card.color || theme.colors.brand;
+                            const isApproval = card.label?.toLowerCase().includes('approval');
+                            const footerText = isApproval ? 'Open Approval' : `Open ${card.label}`;
+
+                            return (
+                                <TouchableOpacity 
+                                    key={card.action || index} 
+                                    style={[styles.gridCard, { width: CARD_WIDTH }]} 
+                                    onPress={() => handleCardPress(card.action)}
+                                    activeOpacity={0.75}
+                                >
+                                    {/* Top Accent Strip */}
+                                    <View style={[styles.cardAccent, { backgroundColor: cardColor }]} />
+
+                                    <View style={styles.cardTopRow}>
+                                        <View style={[styles.iconWrapper, { backgroundColor: card.softColor || `${cardColor}15` }]}>
+                                            <MaterialCommunityIcons 
+                                                name={card.icon} 
+                                                size={22} 
+                                                color={cardColor}
+                                            />
+                                        </View>
+                                    </View>
+                                    
+                                    <View style={styles.cardContent}>
+                                        <Text style={styles.cardLabel} numberOfLines={1}>
+                                            {card.label}
+                                        </Text>
+                                        {!!card.description && (
+                                            <Text style={styles.cardDescription} numberOfLines={2}>
+                                                {card.description}
+                                            </Text>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.cardFooter}>
+                                        <Text style={[styles.cardFooterText, { color: cardColor }]}>
+                                            {footerText}
+                                        </Text>
                                         <MaterialCommunityIcons 
-                                            name={card.icon} 
-                                            size={24} 
-                                                color={theme.colors.chart[index % theme.colors.chart.length]}
+                                            name="chevron-right" 
+                                            size={16} 
+                                            color={cardColor} 
                                         />
                                     </View>
-                                    <View style={styles.arrowBadge}>
-                                        <MaterialCommunityIcons 
-                                            name="arrow-top-right" 
-                                            size={14} 
-                                            color={theme.colors.textDisabled}
-                                        />
-                                    </View>
-                                </View>
-                                
-                                <View style={styles.cardBottomRow}>
-                                    <Text style={styles.cardLabel} numberOfLines={2}>
-                                        {card.label}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))
-                    ) : (
+                                </TouchableOpacity>
+                            );
+                        })                    ) : (
                         <View style={styles.emptyContainer}>
                             <View style={styles.emptyIconBox}>
                                 <MaterialCommunityIcons name="view-grid-plus-outline" size={36} color={theme.colors.textDisabled} />
@@ -255,48 +272,72 @@ const createStyles = theme => StyleSheet.create({
         paddingHorizontal: HORIZONTAL_PADDING,
     },
     gridCard: {
-        height: 116,
         backgroundColor: theme.colors.surface,
-        borderRadius: theme.radii.lg,
-        padding: theme.spacing.md + 2,
-        justifyContent: 'space-between',
+        borderRadius: theme.radii.lg || 14,
         borderWidth: 1,
         borderColor: theme.colors.borderSubtle,
-        shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: theme.isDark ? 0.3 : 0.04,
-        shadowRadius: 8,
+        overflow: 'hidden',
+        paddingHorizontal: 14,
+        paddingTop: 14,
+        paddingBottom: 10,
+        minHeight: 156,
+        justifyContent: 'space-between',
+        shadowColor: theme.colors.shadow || 'rgba(0,0,0,0.04)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
         elevation: 2,
+    },
+    cardAccent: {
+        height: 4,
+        width: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
     },
     cardTopRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        marginBottom: 8,
     },
     iconWrapper: {
-        width: theme.controlSizes.avatarMd,
-        height: theme.controlSizes.avatarMd,
-        borderRadius: theme.radii.md,
-        justifyContent: 'center',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
-    },
-    arrowBadge: {
-        width: theme.controlSizes.iconMd + 4,
-        height: theme.controlSizes.iconMd + 4,
-        borderRadius: theme.radii.circle,
-        backgroundColor: theme.colors.backgroundSubtle,
         justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: theme.colors.borderSubtle,
     },
-    cardBottomRow: {
-        marginTop: theme.spacing.sm - 2,
+    cardContent: {
+        flex: 1,
+        justifyContent: 'center',
+        marginVertical: 4,
     },
     cardLabel: {
-        ...theme.typography.bodySmall,
-        fontWeight: theme.fontWeights.semiBold,
+        fontSize: theme.fontSizes.sm || 13.5,
+        fontFamily: theme.fontFamilies?.bold || 'System',
+        fontWeight: '700',
         color: theme.colors.text,
+        marginBottom: 3,
+    },
+    cardDescription: {
+        fontSize: theme.fontSizes.xs || 11,
+        fontFamily: theme.fontFamilies?.regular || 'System',
+        color: theme.colors.textSecondary,
+        lineHeight: 15,
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 8,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.borderSubtle,
+    },
+    cardFooterText: {
+        fontSize: 11.5,
+        fontWeight: '600',
     },
     emptyContainer: {
         width: '100%',
