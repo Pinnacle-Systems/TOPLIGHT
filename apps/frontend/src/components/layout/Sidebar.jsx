@@ -196,7 +196,6 @@ export default function Sidebar({ openSidebar, setopenSidebar, allowedTabs }) {
                             <Feather name="log-out" size={20} color={theme.colors.danger} />
                             <Text style={styles.logoutText}>Log Out</Text>
                         </TouchableOpacity>
-                        <Text style={styles.versionText}>TopLight v2.0</Text>
                     </View>
 
                 </SafeAreaView>

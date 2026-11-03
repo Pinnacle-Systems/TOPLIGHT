@@ -19,9 +19,11 @@ export async function get__per(req, res) {
                 : { compCode: COMPCODE, userId: id },
             include: {
                 createdByUser: { select: { userName: true, idCard: true } },
-                modifiedByUser: { select: { userName: true, idCard: true } }
+                modifiedByUser: { select: { userName: true, idCard: true } },
+                categoryData:true
             }
         });
+        console.log("dddd",result)
         res.json({ status: 1, data: result.map(mapPermission) });
     } catch (err) {
         logServiceError('PermissionEntryService:get__per', err, req);

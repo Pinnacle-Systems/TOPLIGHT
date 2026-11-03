@@ -368,6 +368,7 @@ export default function PermissionApprovalScreen({ route, navigation }) {
     // Rejection reason modal state
     const [rejectModalItem, setRejectModalItem] = useState(null);
     const [rejectReasonInput, setRejectReasonInput] = useState('');
+    const [rejectReasonError, setRejectReasonError] = useState(false);
     const [updateStatus] = useRequestPermission_ApprovalMutation();
     const { data: refreshTokenData } = useGet_refresh_tokenQuery();
     const [fetchEmployeeToken] = useLazyGet_fcm_tokenQuery();
@@ -533,13 +534,10 @@ export default function PermissionApprovalScreen({ route, navigation }) {
         if (!rejectModalItem) return;
         const reason = rejectReasonInput.trim();
         if (!reason) {
-            showMessage({
-                message: 'Rejection reason required',
-                description: 'Please enter a reason before rejecting.',
-                type: 'warning',
-            });
+            setRejectReasonError(true);
             return;
         }
+        setRejectReasonError(false);
         setRejectModalItem(null);
         handleAction(rejectModalItem, 'rejected', reason);
     }, [handleAction, rejectModalItem, rejectReasonInput]);
@@ -596,6 +594,7 @@ export default function PermissionApprovalScreen({ route, navigation }) {
                 onReject={() => {
                     setRejectModalItem(item);
                     setRejectReasonInput('');
+                    setRejectReasonError(false);
                 }}
                 onCall={() => callEmployee(item)}
                 styles={styles}
@@ -749,16 +748,20 @@ export default function PermissionApprovalScreen({ route, navigation }) {
                                 </Text>
 
                                 <TextInput
+                                    style={[styles.modalRejectInput, rejectReasonError && { borderColor: '#E53935', borderWidth: 1.5 }]}
                                     value={rejectReasonInput}
-                                    onChangeText={setRejectReasonInput}
+                                    onChangeText={(t) => { setRejectReasonInput(t); if (t.trim()) setRejectReasonError(false); }}
                                     placeholder="Remarks"
                                     placeholderTextColor={theme.colors.placeholder}
                                     multiline
                                     autoFocus
                                     textAlignVertical="top"
-                                    style={styles.modalRejectInput}
                                 />
-
+                                {rejectReasonError && (
+                                    <Text style={{ color: '#E53935', fontSize: 12, marginTop: 2, marginBottom: 8 }}>
+                                        ⚠ Remarks is required before rejecting.
+                                    </Text>
+                                )}
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
                                         style={styles.modalBtnCancel}

@@ -14,7 +14,8 @@ import {
     KeyboardAvoidingView,
     Platform,
     ActivityIndicator,
-    Alert
+    Alert,
+    BackHandler
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -28,6 +29,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 // Store imports
 import { useLoginUserMutation, useUpdate_user_fcmMutation } from '../../store/api/UserApi';
 import { useAppTheme } from '../../theme';
+import { NavRef } from '../../components/utils/NavigationRef';
 
 // Reusable components could go to src/components/common, but for Login completeness we ensure they are handled
 // You can extract these into `src/components/common` later
@@ -79,6 +81,32 @@ export default function LoginScreen() {
             useNativeDriver: true,
         }).start();
     }, []);
+
+
+
+    useEffect(() => {
+    
+            const handleHardwareBack = () => {
+                if (!NavRef.isReady() || NavRef.canGoBack()) return false;
+    
+                Alert.alert(
+                    'Exit Confirmation',
+                    'Are you sure you want to exit the app?',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Exit', style: 'destructive', onPress: async () => {
+                                                      BackHandler.exitApp();
+                             } },
+                    ],
+                    { cancelable: true },
+                );
+                return true;
+            };
+    
+            const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBack);
+            return () => subscription.remove();
+        }, []);
+
 
     const handleLogin = async () => {
         setError(null);

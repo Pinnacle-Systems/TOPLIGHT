@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {  useEffect, useMemo, useState } from 'react';
 import { Alert, BackHandler } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,6 +15,9 @@ import SplashScreen from './src/screens/auth/SplashScreen';
 import MainNavigator from './src/navigation/MainNavigator';
 import { NavRef } from './src/components/utils/NavigationRef';
 import { NetworkErrorView } from './src/components/utils/NoIntertNetPage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setClearAll } from './src/store/slices/UserDetailsSlice';
+import { useDispatch } from 'react-redux';
 
 
 const Stack = createNativeStackNavigator();
@@ -23,6 +26,7 @@ const Stack = createNativeStackNavigator();
 
 const MainApp = () => {
     const { theme } = useAppTheme();
+    const dispatch = useDispatch();
     // We use null to represent the "loading/splashing" state
     const [isAuthenticated, setIsAuthenticated] = useState(null);
 
@@ -33,11 +37,15 @@ const MainApp = () => {
             if (!NavRef.isReady() || NavRef.canGoBack()) return false;
 
             Alert.alert(
-                'Close app',
-                'Do you want to close the app?',
+                'Logout Confirmation',
+                'Are you sure you want to log out of the app?',
                 [
                     { text: 'Cancel', style: 'cancel' },
-                    { text: 'Close', style: 'destructive', onPress: () => BackHandler.exitApp() },
+                    { text: 'Logout', style: 'destructive', onPress: async () => {
+                                                    await AsyncStorage.removeItem('userName');
+                                                    dispatch(setClearAll());
+                                                    setIsAuthenticated(false);
+                         } },
                 ],
                 { cancelable: true },
             );

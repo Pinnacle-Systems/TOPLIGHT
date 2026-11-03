@@ -286,11 +286,6 @@ function AttendanceCard({
                             <Text style={styles.gridLabel}>Worked:</Text>
                             <Text style={styles.durationText} numberOfLines={1}>{totalTime}</Text>
                         </View>
-                        <View style={styles.gridCol}>
-                            <MaterialCommunityIcons name="format-list-numbered" size={15} color={theme.colors.textMuted} />
-                            <Text style={styles.gridLabel}>Punches:</Text>
-                            <Text style={styles.gridValue} numberOfLines={1}>{totalPunches}</Text>
-                        </View>
                     </View>
 
                     {/* Expandable Punches Breakdown */}
@@ -400,6 +395,7 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
     const [rejectModalVisible, setRejectModalVisible] = useState(false);
     const [rejectTargetItem, setRejectTargetItem] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
+    const [rejectReasonError, setRejectReasonError] = useState(false);
 
     const userIdcard = user?.IDCARD || user?.UserId || user?.Id;
     const isHodOrHr = user?.IDCARD == user?.hod || user?.IDCARD == user?.hr || user?.level != 'user';
@@ -482,16 +478,35 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
             }
         });
 
+        // Helper: parse 'HH:MM:SS' or 'HH:MM' to seconds
+        const parseTimeStr = (t) => {
+            if (!t) return 0;
+            const parts = String(t).split(':').map(Number);
+            return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+        };
+
+        // Helper: sum all IN->OUT punch pair durations
+        const calcWorkedFromPunches = (sortedPunches) => {
+            let totalSec = 0;
+            let lastIn = null;
+            for (const p of sortedPunches) {
+                const isIn = Number(p.pmno) === 1 || Number(p.inout) === 1;
+                const isOut = Number(p.pmno) === 2 || Number(p.inout) === 0;
+                const tSec = parseTimeStr(p.atttime);
+                if (isIn) {
+                    lastIn = tSec;
+                } else if (isOut && lastIn !== null) {
+                    const diff = tSec - lastIn;
+                    if (diff > 0) totalSec += diff;
+                    lastIn = null;
+                }
+            }
+            return totalSec;
+        };
+
         const list = Object.values(grouped).map(item => {
             const punches = item.punches || [];
-            punches.sort((a, b) => {
-                const parseT = (t) => {
-                    if (!t) return 0;
-                    const parts = String(t).split(':').map(Number);
-                    return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
-                };
-                return parseT(a.atttime) - parseT(b.atttime);
-            });
+            punches.sort((a, b) => parseTimeStr(a.atttime) - parseTimeStr(b.atttime));
 
             const firstIn = punches.find(p => Number(p.pmno) === 1 || Number(p.inout) === 1);
             const lastOut = [...punches].reverse().find(p => Number(p.pmno) === 2 || Number(p.inout) === 0);
@@ -504,6 +519,13 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                 item.lastInout = isPunchIn ? 1 : 0;
             }
             item.totalPunches = punches.length;
+
+            // Calculate worked hours from IN->OUT pairs (not first-punch to last-punch)
+            const workedSec = calcWorkedFromPunches(punches);
+            const wH = Math.floor(workedSec / 3600);
+            const wM = Math.floor((workedSec % 3600) / 60);
+            const wS = workedSec % 60;
+            item.totalTimeFormatted = `${String(wH).padStart(2, '0')}:${String(wM).padStart(2, '0')}:${String(wS).padStart(2, '0')}`;
 
             return item;
         });
@@ -638,12 +660,15 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
     const handleOpenRejectModal = useCallback((item) => {
         setRejectTargetItem(item);
         setRejectReason('');
+        setRejectReasonError(false);
         setRejectModalVisible(true);
     }, []);
 
     // Confirm Rejection (Updates APPROVAL_STATUS and REJECTED_REASON in PSSATT)
     const handleConfirmReject = useCallback(async () => {
         if (!rejectTargetItem) return;
+        if (!rejectReason.trim()) { setRejectReasonError(true); return; }
+        setRejectReasonError(false);
         const idKey = String(rejectTargetItem?.id || rejectTargetItem?.idcard || rejectTargetItem?.docid || '').trim();
         if (!idKey) return;
 
@@ -907,16 +932,21 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                                     :
                                 </Text>
                                 <TextInput
-                                    style={styles.modalTextInput}
+                                    style={[styles.modalTextInput, rejectReasonError && { borderColor: '#E53935', borderWidth: 1.5 }]}
                                     placeholder="Remarks"
                                     placeholderTextColor={theme.colors.textMuted}
                                     multiline={true}
                                     numberOfLines={3}
                                     value={rejectReason}
-                                    onChangeText={setRejectReason}
+                                    onChangeText={(t) => { setRejectReason(t); if (t.trim()) setRejectReasonError(false); }}
                                     textAlignVertical="top"
                                     autoFocus={true}
                                 />
+                                {rejectReasonError && (
+                                    <Text style={{ color: '#E53935', fontSize: 12, marginTop: 2, marginBottom: 8 }}>
+                                        ⚠ Remarks is required before rejecting.
+                                    </Text>
+                                )}
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
                                         style={styles.modalCancelBtn}

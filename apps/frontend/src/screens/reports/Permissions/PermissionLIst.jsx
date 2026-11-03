@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
     StyleSheet,
     Text,
@@ -18,6 +19,20 @@ import { useGetEmployeeidsQuery } from '../../../store/api/UserApi';
 import { useGet__per_categoryQuery, useGetHod_showable_dataQuery } from '../../../store/api/PermissionApi';
 import FilterModel from '../../../components/filter_modal/FilterModel';
 import { useAppTheme } from '../../../theme';
+import { exportReportToPdf, exportReportToExcel, ExportReportModal } from '../../../utils/ReportExportUtils';
+
+const PERMISSION_COLUMNS = [
+    { key: '#', label: '#' },
+    { key: 'docid', label: 'Doc ID', getValue: (item) => item?.docid || '-' },
+    { key: 'employee', label: 'Employee Name', getValue: (item) => item?.createdBy_user?.username || item?.username || 'Employee' },
+    { key: 'userId', label: 'Emp ID', getValue: (item) => item?.userId || '-' },
+    { key: 'fTime', label: 'From Time', getValue: (item) => item?.fTime || '--:--' },
+    { key: 'tTime', label: 'To Time', getValue: (item) => item?.tTime || '--:--' },
+    { key: 'duration', label: 'Duration', getValue: (item) => item?.thrs || '-' },
+    { key: 'status', label: 'Status', getValue: (item) => (item?.approvalStatus || 'PENDING').toUpperCase() },
+    { key: 'reason', label: 'Reason', getValue: (item) => item?.reason || '-' },
+    { key: 'appliedDate', label: 'Applied Date', getValue: (item) => item?.docDate ? moment(item.docDate).format('DD MMM YYYY') : '-' },
+];
 
 const PermissionList = ({ navigation }) => {
     const { theme } = useAppTheme();
@@ -30,6 +45,10 @@ const PermissionList = ({ navigation }) => {
     const [more_model, setmore_model] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [exportModalVisible, setExportModalVisible] = useState(false);
+    const [singleItemToExport, setSingleItemToExport] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportingType, setExportingType] = useState(null);
 
     const UserSelect = useSelector((state) => state?.UserDetails);
     const { data: get_per_category, isLoading: get_cayegory_loading } = useGet__per_categoryQuery();
@@ -85,6 +104,57 @@ const PermissionList = ({ navigation }) => {
             return matchesId && matchesStatus && matchesSearch && matchesCategory;
         });
     }, [data?.data, Idcard_filter, status_filter, category, searchQuery]);
+
+    const handleExportPdf = async () => {
+        try {
+            setIsExporting(true);
+            setExportingType('pdf');
+            const targetData = singleItemToExport ? [singleItemToExport] : Filtered_data;
+            const docSuffix = singleItemToExport?.docid ? `_${String(singleItemToExport.docid).replace(/[^a-zA-Z0-9_-]/g, '_')}` : '';
+            await exportReportToPdf({
+                title: singleItemToExport ? `Permission Request (#${singleItemToExport.docid || ''})` : 'Permission Report',
+                subtitle: singleItemToExport
+                    ? `Employee: ${singleItemToExport.createdBy_user?.username || singleItemToExport.username || 'Employee'}`
+                    : (My_permission ? 'My Permissions' : 'Team Permissions'),
+                columns: PERMISSION_COLUMNS,
+                data: targetData,
+                fileName: `Permission_Report${docSuffix}_${moment().format('YYYYMMDD_HHmmss')}`,
+            });
+            setExportModalVisible(false);
+            setSingleItemToExport(null);
+        } catch (err) {
+            Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+        } finally {
+            setIsExporting(false);
+            setExportingType(null);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            setIsExporting(true);
+            setExportingType('excel');
+            const targetData = singleItemToExport ? [singleItemToExport] : Filtered_data;
+            const docSuffix = singleItemToExport?.docid ? `_${String(singleItemToExport.docid).replace(/[^a-zA-Z0-9_-]/g, '_')}` : '';
+            await exportReportToExcel({
+                title: singleItemToExport ? `Permission Request (#${singleItemToExport.docid || ''})` : 'Permission Report',
+                subtitle: singleItemToExport
+                    ? `Employee: ${singleItemToExport.createdBy_user?.username || singleItemToExport.username || 'Employee'}`
+                    : (My_permission ? 'My Permissions' : 'Team Permissions'),
+                columns: PERMISSION_COLUMNS,
+                data: targetData,
+                fileName: `Permission_Report${docSuffix}_${moment().format('YYYYMMDD_HHmmss')}`,
+                sheetName: singleItemToExport?.docid ? String(singleItemToExport.docid).slice(0, 31) : 'Permission Report',
+            });
+            setExportModalVisible(false);
+            setSingleItemToExport(null);
+        } catch (err) {
+            Alert.alert('Export Error', err?.message || 'Failed to export Excel');
+        } finally {
+            setIsExporting(false);
+            setExportingType(null);
+        }
+    };
 
     const activeFilterCount = (Idcard_filter.length > 0 ? 1 : 0) +
         (category ? 1 : 0) +
@@ -182,12 +252,30 @@ const PermissionList = ({ navigation }) => {
 
                 {/* Card Footer */}
                 <View style={styles.cardFooter}>
-                    <Text style={styles.moreText}>View full details</Text>
-                    <MaterialCommunityIcons
-                        name="chevron-right"
-                        size={16}
-                        color={theme.colors.brand}
-                    />
+                    <View style={styles.cardFooterLeft}>
+                        <Text style={styles.moreText}>View full details</Text>
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={16}
+                            color={theme.colors.brand}
+                        />
+                    </View>
+                    <TouchableOpacity
+                        style={styles.cardDownloadBtn}
+                        onPress={(e) => {
+                            e?.stopPropagation?.();
+                            setSingleItemToExport(item);
+                            setExportModalVisible(true);
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name="tray-arrow-down"
+                            size={14}
+                            color={theme.colors.brand}
+                        />
+                        <Text style={styles.cardDownloadText}>Download</Text>
+                    </TouchableOpacity>
                 </View>
             </TouchableOpacity>
         );
@@ -225,26 +313,42 @@ const PermissionList = ({ navigation }) => {
                         {Filtered_data.length} {Filtered_data.length === 1 ? 'record' : 'records'} found
                     </Text>
                 </View>
-                <TouchableOpacity
-                    style={[
-                        styles.filterToggleBtn,
-                        showFilters && styles.filterToggleBtnActive,
-                        activeFilterCount > 0 && styles.filterToggleBtnBadge,
-                    ]}
-                    onPress={() => setShowFilters(!showFilters)}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons
-                        name={showFilters ? 'filter-remove' : 'filter-variant'}
-                        size={18}
-                        color={showFilters ? theme.colors.danger : theme.colors.brand}
-                    />
-                    {activeFilterCount > 0 && (
-                        <View style={styles.activeFilterDot}>
-                            <Text style={styles.activeFilterDotText}>{activeFilterCount}</Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
+                <View style={styles.headerRightActions}>
+                    <TouchableOpacity
+                        style={styles.exportToggleBtn}
+                        onPress={() => {
+                            setSingleItemToExport(null);
+                            setExportModalVisible(true);
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name="tray-arrow-down"
+                            size={18}
+                            color={theme.colors.brand}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterToggleBtn,
+                            showFilters && styles.filterToggleBtnActive,
+                            activeFilterCount > 0 && styles.filterToggleBtnBadge,
+                        ]}
+                        onPress={() => setShowFilters(!showFilters)}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name={showFilters ? 'filter-remove' : 'filter-variant'}
+                            size={18}
+                            color={showFilters ? theme.colors.danger : theme.colors.brand}
+                        />
+                        {activeFilterCount > 0 && (
+                            <View style={styles.activeFilterDot}>
+                                <Text style={styles.activeFilterDotText}>{activeFilterCount}</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Segmented Control: My Permissions vs Team Permissions */}
@@ -523,7 +627,7 @@ const PermissionList = ({ navigation }) => {
                                     </Text>
                                 </View>
 
-                                {!!selectedItem.category && (
+                                {!!selectedItem.categoryData && (
                                     <View style={styles.detailRow}>
                                         <View style={styles.detailLabel}>
                                             <MaterialCommunityIcons
@@ -533,14 +637,42 @@ const PermissionList = ({ navigation }) => {
                                             />
                                             <Text style={styles.labelText}>Category</Text>
                                         </View>
-                                        <Text style={styles.detailValue}>{selectedItem.category}</Text>
+                                        <Text style={styles.detailValue}>{selectedItem.categoryData?.name || 'N/A'}</Text>
                                     </View>
                                 )}
                             </View>
+
+                            <TouchableOpacity
+                                style={styles.modalDownloadActionBtn}
+                                onPress={() => {
+                                    setmore_model(false);
+                                    setSingleItemToExport(selectedItem);
+                                    setExportModalVisible(true);
+                                }}
+                                activeOpacity={0.8}
+                            >
+                                <MaterialCommunityIcons name="tray-arrow-down" size={16} color="#FFFFFF" />
+                                <Text style={styles.modalDownloadActionText}>Download This Request</Text>
+                            </TouchableOpacity>
                         </View>
                     )}
                 </FilterModel>
             </View>
+
+            <ExportReportModal
+                visible={exportModalVisible}
+                onClose={() => {
+                    setExportModalVisible(false);
+                    setSingleItemToExport(null);
+                }}
+                onExportPdf={handleExportPdf}
+                onExportExcel={handleExportExcel}
+                isExporting={isExporting}
+                exportingType={exportingType}
+                recordCount={singleItemToExport ? 1 : (Filtered_data?.length || 0)}
+                reportTitle={singleItemToExport ? `Permission Request (#${singleItemToExport.docid || ''})` : "Permission Report"}
+                theme={theme}
+            />
         </View>
     );
 };
@@ -593,6 +725,19 @@ const createStyles = (theme) =>
             fontSize: theme.fontSizes.xs || 11.5,
             color: theme.colors.textSecondary,
             marginTop: 1,
+        },
+        headerRightActions: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+        },
+        exportToggleBtn: {
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: theme.colors.surfaceSunken,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         filterToggleBtn: {
             width: 38,
@@ -849,6 +994,42 @@ const createStyles = (theme) =>
             fontSize: theme.fontSizes.xs || 12,
             color: theme.colors.textSecondary,
             flex: 1,
+        },
+        cardFooterLeft: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 2,
+        },
+        cardDownloadBtn: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: theme.radii.pill || 99,
+            backgroundColor: theme.colors.surfaceSunken,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+        },
+        cardDownloadText: {
+            fontSize: theme.fontSizes.xs || 11.5,
+            fontWeight: theme.fontWeights.semibold || '600',
+            color: theme.colors.brand,
+        },
+        modalDownloadActionBtn: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginTop: 18,
+            paddingVertical: 12,
+            backgroundColor: theme.colors.brand,
+            borderRadius: 12,
+        },
+        modalDownloadActionText: {
+            fontSize: 14,
+            fontWeight: '600',
+            color: '#FFFFFF',
         },
         cardFooter: {
             flexDirection: 'row',

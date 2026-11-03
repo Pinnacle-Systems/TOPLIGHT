@@ -360,6 +360,7 @@ export default function LeaveApprovalScreen({ route, navigation }) {
     const processingDocIdRef = useRef(null);
     const [rejectModalItem, setRejectModalItem] = useState(null);
     const [rejectReasonInput, setRejectReasonInput] = useState('');
+    const [rejectReasonError, setRejectReasonError] = useState(false);
     const [updateStatus] = useRequestLeave_ApprovalMutation();
     const { data: refreshTokenData } = useGet_refresh_tokenQuery();
     const [fetchEmployeeToken] = useLazyGet_fcm_tokenQuery();
@@ -553,13 +554,10 @@ export default function LeaveApprovalScreen({ route, navigation }) {
         if (!rejectModalItem) return;
         const reason = rejectReasonInput.trim();
         if (!reason) {
-            showMessage({
-                message: 'Rejection reason required',
-                description: 'Please enter a reason before rejecting.',
-                type: 'warning',
-            });
+            setRejectReasonError(true);
             return;
         }
+        setRejectReasonError(false);
         handleAction(rejectModalItem, 'rejected', reason);
     }, [handleAction, rejectModalItem, rejectReasonInput]);
 
@@ -573,6 +571,7 @@ export default function LeaveApprovalScreen({ route, navigation }) {
                 onReject={() => {
                     setRejectModalItem(item);
                     setRejectReasonInput('');
+                    setRejectReasonError(false);
                 }}
                 onCall={() => callEmployee(item)}
                 styles={styles}
@@ -721,8 +720,9 @@ export default function LeaveApprovalScreen({ route, navigation }) {
                                 </Text>
 
                                 <TextInput
+                                    style={[styles.modalRejectInput, rejectReasonError && { borderColor: '#E53935', borderWidth: 1.5 }]}
                                     value={rejectReasonInput}
-                                    onChangeText={setRejectReasonInput}
+                                    onChangeText={(t) => { setRejectReasonInput(t); if (t.trim()) setRejectReasonError(false); }}
                                     placeholder="Remarks"
                                     placeholderTextColor={theme.colors.placeholder}
                                     multiline
@@ -730,7 +730,11 @@ export default function LeaveApprovalScreen({ route, navigation }) {
                                     textAlignVertical="top"
                                     style={styles.modalRejectInput}
                                 />
-
+                                {rejectReasonError && (
+                                    <Text style={{ color: '#E53935', fontSize: 12, marginTop: 2, marginBottom: 8 }}>
+                                        ⚠ Remarks is required before rejecting.
+                                    </Text>
+                                )}
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
                                         style={styles.modalBtnCancel}

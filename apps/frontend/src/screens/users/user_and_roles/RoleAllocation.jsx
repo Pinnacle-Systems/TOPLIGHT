@@ -588,6 +588,7 @@ const createStyles = theme => StyleSheet.create({
         textAlign: 'center',
         fontWeight: '700',
         ...theme.typography.caption,
+        fontSize: theme.fontSizes.sm,
         color: theme.colors.brandContrast,
     },
     pageName: {

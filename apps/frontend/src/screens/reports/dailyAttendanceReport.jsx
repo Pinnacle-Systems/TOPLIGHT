@@ -14,8 +14,24 @@ import moment from 'moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useGetMisDashboardOrdersInHandMonthWiseQuery } from '../../store/api/DashboardApi';
 import { DateInput } from '../../components/reusable_components/Inputs';
+import { Alert } from 'react-native';
+import { exportReportToPdf, exportReportToExcel, ExportReportModal } from '../../utils/ReportExportUtils';
 import { screenWidth } from '../../components/utils/Screens';
 import { useAppTheme } from '../../theme';
+
+const ATTENDANCE_COLUMNS = [
+    { key: '#', label: '#' },
+    { key: 'DEPTNAME', label: 'Department', getValue: (item) => item?.DEPTNAME || '-' },
+    { key: 'PREMALE', label: 'Present Male', getValue: (item) => Number(item?.PREMALE || 0) },
+    { key: 'ABSMALE', label: 'Absent Male', getValue: (item) => Number(item?.ABSMALE || 0) },
+    { key: 'TOTMALE', label: 'Total Male', getValue: (item) => Number(item?.PREMALE || 0) + Number(item?.ABSMALE || 0) },
+    { key: 'PREFEMALE', label: 'Present Female', getValue: (item) => Number(item?.PREFEMALE || 0) },
+    { key: 'ABSFEMALE', label: 'Absent Female', getValue: (item) => Number(item?.ABSFEMALE || 0) },
+    { key: 'TOTFEMALE', label: 'Total Female', getValue: (item) => Number(item?.PREFEMALE || 0) + Number(item?.ABSFEMALE || 0) },
+    { key: 'TOTSTRENGTH', label: 'Strength', getValue: (item) => Number(item?.PREMALE || 0) + Number(item?.ABSMALE || 0) + Number(item?.PREFEMALE || 0) + Number(item?.ABSFEMALE || 0) },
+    { key: 'TOTPRESENT', label: 'Total Present', getValue: (item) => Number(item?.PREMALE || 0) + Number(item?.PREFEMALE || 0) },
+    { key: 'TOTABSENT', label: 'Total Absent', getValue: (item) => Number(item?.ABSMALE || 0) + Number(item?.ABSFEMALE || 0) },
+];
 
 export default function AttendanceReport({ navigation }) {
     const { theme } = useAppTheme();
@@ -26,6 +42,50 @@ export default function AttendanceReport({ navigation }) {
     const [uniqueDepartments, setUniqueDepartments] = useState([]);
     const [uniqueCategories, setUniqueCategories] = useState([]);
     const [filter_enable, set_filter_enable] = useState(false);
+    const [exportModalVisible, setExportModalVisible] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportingType, setExportingType] = useState(null);
+
+    const handleExportPdf = async () => {
+        try {
+            setIsExporting(true);
+            setExportingType('pdf');
+            await exportReportToPdf({
+                title: 'Attendance Report',
+                subtitle: `Date: ${moment(date).format('DD MMM YYYY')}`,
+                columns: ATTENDANCE_COLUMNS,
+                data: tableData,
+                fileName: `Attendance_Report_${moment(date).format('YYYYMMDD')}`,
+            });
+            setExportModalVisible(false);
+        } catch (err) {
+            Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+        } finally {
+            setIsExporting(false);
+            setExportingType(null);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            setIsExporting(true);
+            setExportingType('excel');
+            await exportReportToExcel({
+                title: 'Attendance Report',
+                subtitle: `Date: ${moment(date).format('DD MMM YYYY')}`,
+                columns: ATTENDANCE_COLUMNS,
+                data: tableData,
+                fileName: `Attendance_Report_${moment(date).format('YYYYMMDD')}`,
+                sheetName: 'Attendance Report',
+            });
+            setExportModalVisible(false);
+        } catch (err) {
+            Alert.alert('Export Error', err?.message || 'Failed to export Excel');
+        } finally {
+            setIsExporting(false);
+            setExportingType(null);
+        }
+    };
     const { width } = useWindowDimensions();
     const isTablet = width >= 768;
 
@@ -146,26 +206,39 @@ export default function AttendanceReport({ navigation }) {
                         {tableData.length} records · {moment(date).format('DD MMM YYYY')}
                     </Text>
                 </View>
-                <TouchableOpacity
-                    style={[
-                        styles.filterToggleBtn,
-                        filter_enable && styles.filterToggleBtnActive,
-                        hasActiveFilter && styles.filterToggleBtnBadge,
-                    ]}
-                    onPress={() => set_filter_enable(!filter_enable)}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons
-                        name={filter_enable ? "filter-remove" : "filter-variant"}
-                        size={18}
-                        color={filter_enable ? theme.colors.danger : theme.colors.brand}
-                    />
-                    {hasActiveFilter && !filter_enable && (
-                        <View style={styles.activeFilterDot}>
-                            <Text style={styles.activeFilterDotText}>!</Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
+                <View style={styles.headerRightActions}>
+                    <TouchableOpacity
+                        style={styles.exportToggleBtn}
+                        onPress={() => setExportModalVisible(true)}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name="tray-arrow-down"
+                            size={18}
+                            color={theme.colors.brand}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterToggleBtn,
+                            filter_enable && styles.filterToggleBtnActive,
+                            hasActiveFilter && styles.filterToggleBtnBadge,
+                        ]}
+                        onPress={() => set_filter_enable(!filter_enable)}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name={filter_enable ? "filter-remove" : "filter-variant"}
+                            size={18}
+                            color={filter_enable ? theme.colors.danger : theme.colors.brand}
+                        />
+                        {hasActiveFilter && !filter_enable && (
+                            <View style={styles.activeFilterDot}>
+                                <Text style={styles.activeFilterDotText}>!</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Date Navigation Bar */}
@@ -491,6 +564,17 @@ export default function AttendanceReport({ navigation }) {
                     </ScrollView>
                 </View>
             </ScrollView>
+            <ExportReportModal
+                visible={exportModalVisible}
+                onClose={() => setExportModalVisible(false)}
+                onExportPdf={handleExportPdf}
+                onExportExcel={handleExportExcel}
+                isExporting={isExporting}
+                exportingType={exportingType}
+                recordCount={tableData.length}
+                reportTitle="Attendance Report"
+                theme={theme}
+            />
         </View>
     );
 }
@@ -543,6 +627,19 @@ const createStyles = (theme, isTablet) =>
             fontSize: theme.fontSizes.xs || 11.5,
             color: theme.colors.textSecondary,
             marginTop: 1,
+        },
+        headerRightActions: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+        },
+        exportToggleBtn: {
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: theme.colors.surfaceSunken,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         filterToggleBtn: {
             width: 38,

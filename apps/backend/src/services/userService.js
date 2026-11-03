@@ -1,4 +1,4 @@
-import { mapRole, mapUser } from "../utils/responseMapper.js";
+﻿import { mapRole, mapUser } from "../utils/responseMapper.js";
 import { logServiceError } from "../utils/logger.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
@@ -6,8 +6,6 @@ import OracleDB from "oracledb";
 import { prisma_Connector } from "../../index.js";
 import { readFile } from 'fs/promises';
 import { google } from 'googleapis';
-import Random_Otp from "../utils/randomOtp.js";
-import { sendMail } from "../utils/mailer.js";
 import fs from "fs"
 import path from "path";
 import fetch  from  "node-fetch"
@@ -1395,60 +1393,6 @@ export async function remove(req, res) {
     }
 }
 
-export async function send_Otp(req,res){
-    var reset=req?.body?.reset
-    
-        try {
-      var data=await prisma_Connector.user?.findFirst({where: reset ? {OR:[{otpemail:req?.body?.username},{username:req?.body?.username}]}:{username:req?.body?.username}})
-     
-      
-       const isMatched = !reset && await bcrypt.compare(req?.body?.password, data?.password)
-
-
- 
-       
-      if(isMatched || reset && data?.otpemail){
-      var Random_otp_val=Random_Otp()
-      console.log(data);
-      
-      var otp=await sendMail({to:data?.otpemail,otp:Random_otp_val})
-     
-     
-     
-      if(otp?.accepted[0]==data?.otpemail){
-        await prisma_Connector.user?.update({
-          where:{
-            username:data?.username
-          },data:{
-            otp:Random_otp_val
-          }
-        }).then((data)=>{
-          if(data?.otp)
-            res.json({status:1})
-          else
-            res.json({status:0})
-        })
-      
-      }else{
-        res.json({status:0})
-      }
-      }
-      else if(!data?.otpemail){
-        return res.json({status:0,err:"Email is Not Register!"})
-      }else{
-        return res.json({status:0,err:"Password is Not Correct!"})
-      }
-      } catch (error) {
-    logServiceError('UserService:send_Otp', error, req);
-        console.log(error);
-        res.json({status:500,err:error})
-      }
-      
-      
-      
-  
-}
-
 
 
 
@@ -1589,7 +1533,6 @@ export const getRolesOnPageList = getRolesOnPage;
 export const getUserRolesOnPageList = getUserRolesOnPage;
 export const getCreatedRolesOnPageList = getCreatedRolesOnPage;
 export const deleteUser = remove;
-export const sendOtp = send_Otp;
 export const verifyOtpAndChangePassword = verify_Otp_and_change_pass;
 export const updateFcmToken = update_fcm;
 export const getHodToken = get_hod_token;

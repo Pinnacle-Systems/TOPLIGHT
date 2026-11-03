@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppTheme } from '../../../theme';
+import { exportReportToPdf, exportReportToExcel, ExportReportModal } from '../../../utils/ReportExportUtils';
 import { 
   FlatList, 
   View, 
@@ -78,6 +79,21 @@ const friendlyTime = (timeStr) => {
   return m && m.isValid() ? m.format('hh:mm A') : timeStr;
 };
 
+const ONDUTY_COLUMNS = [
+    { key: '#', label: '#' },
+    { key: 'docid', label: 'Doc ID', getValue: (item) => item?.docid || '-' },
+    { key: 'employee', label: 'Employee Name', getValue: (item) => item?.empname || item?.createdBy_user?.username || 'Employee' },
+    { key: 'userId', label: 'Emp ID', getValue: (item) => item?.userId || item?.idCard || '-' },
+    { key: 'docdate', label: 'Date', getValue: (item) => item?.docdate ? moment(item.docdate).format('DD MMM YYYY') : '-' },
+    { key: 'inLocation', label: 'In Location', getValue: (item) => item?.in_location || '-' },
+    { key: 'outLocation', label: 'Out Location', getValue: (item) => item?.out_location || '-' },
+    { key: 'inTime', label: 'In Time', getValue: (item) => friendlyTime(item?.intime) },
+    { key: 'outTime', label: 'Out Time', getValue: (item) => friendlyTime(item?.outtime) },
+    { key: 'totalKm', label: 'Total KM', getValue: (item) => item?.tot_km ? `${item.tot_km} km` : '-' },
+    { key: 'status', label: 'Status', getValue: (item) => (item?.approvalStatus || 'PENDING').toUpperCase() },
+    { key: 'reason', label: 'Purpose', getValue: (item) => item?.others || item?.reason || '-' },
+];
+
 const OndutyList = ({ navigation }) => {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -94,6 +110,10 @@ const OndutyList = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [Location_report, set_Location_report] = useState(true);
   const [showPicker, setshowPicker] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [singleItemToExport, setSingleItemToExport] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportingType, setExportingType] = useState(null);
   const {data:get_all_vechile}=useGet__VechileQuery({})
 
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -201,6 +221,60 @@ const OndutyList = ({ navigation }) => {
     return matchesId && matchesStatus && matchesSearch && date_match;
   }) : [];
 
+  const currentExportData = (My_Summary ? Filtered_sumary_data : Filtered_data) || [];
+  const currentExportSubtitle = My_Summary ? 'Daily Summary' : (My_onduty ? 'My Onduties' : 'Team Onduties');
+
+  const handleExportPdf = async () => {
+    try {
+      setIsExporting(true);
+      setExportingType('pdf');
+      const targetData = singleItemToExport ? [singleItemToExport] : currentExportData;
+      const docSuffix = singleItemToExport?.docid ? `_${String(singleItemToExport.docid).replace(/[^a-zA-Z0-9_-]/g, '_')}` : '';
+      await exportReportToPdf({
+        title: singleItemToExport ? `Onduty Request (#${singleItemToExport.docid || ''})` : 'Onduty Report',
+        subtitle: singleItemToExport
+          ? `Employee: ${singleItemToExport.empname || singleItemToExport.createdBy_user?.username || 'Employee'}`
+          : currentExportSubtitle,
+        columns: ONDUTY_COLUMNS,
+        data: targetData,
+        fileName: `Onduty_Report${docSuffix}_${moment().format('YYYYMMDD_HHmmss')}`,
+      });
+      setExportModalVisible(false);
+      setSingleItemToExport(null);
+    } catch (err) {
+      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+    } finally {
+      setIsExporting(false);
+      setExportingType(null);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true);
+      setExportingType('excel');
+      const targetData = singleItemToExport ? [singleItemToExport] : currentExportData;
+      const docSuffix = singleItemToExport?.docid ? `_${String(singleItemToExport.docid).replace(/[^a-zA-Z0-9_-]/g, '_')}` : '';
+      await exportReportToExcel({
+        title: singleItemToExport ? `Onduty Request (#${singleItemToExport.docid || ''})` : 'Onduty Report',
+        subtitle: singleItemToExport
+          ? `Employee: ${singleItemToExport.empname || singleItemToExport.createdBy_user?.username || 'Employee'}`
+          : currentExportSubtitle,
+        columns: ONDUTY_COLUMNS,
+        data: targetData,
+        fileName: `Onduty_Report${docSuffix}_${moment().format('YYYYMMDD_HHmmss')}`,
+        sheetName: singleItemToExport?.docid ? String(singleItemToExport.docid).slice(0, 31) : 'Onduty Report',
+      });
+      setExportModalVisible(false);
+      setSingleItemToExport(null);
+    } catch (err) {
+      Alert.alert('Export Error', err?.message || 'Failed to export Excel');
+    } finally {
+      setIsExporting(false);
+      setExportingType(null);
+    }
+  };
+
   // Render functions
   const renderItem = ({ item }) => {
     const statusMeta = getStatusStyle(item.approvalStatus);
@@ -260,8 +334,22 @@ const OndutyList = ({ navigation }) => {
         </View>
         
         <View style={styles.cardFooter}>
-          <Text style={styles.moreText}>View full details</Text>
-          <MaterialCommunityIcons name="chevron-right" size={16} color={theme.colors.brand} />
+          <View style={styles.cardFooterLeft}>
+            <Text style={styles.moreText}>View full details</Text>
+            <MaterialCommunityIcons name="chevron-right" size={16} color={theme.colors.brand} />
+          </View>
+          <TouchableOpacity
+            style={styles.cardDownloadBtn}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              setSingleItemToExport(item);
+              setExportModalVisible(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="tray-arrow-down" size={14} color={theme.colors.brand} />
+            <Text style={styles.cardDownloadText}>Download</Text>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -295,21 +383,37 @@ const OndutyList = ({ navigation }) => {
             {Filtered_data.length} {Filtered_data.length === 1 ? 'record' : 'records'} found
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.filterToggleBtn,
-            showFilters && styles.filterToggleBtnActive,
-            (Idcard_filter.length > 0 || status_filter || searchQuery) && styles.filterToggleBtnBadge,
-          ]}
-          onPress={() => setShowFilters(!showFilters)}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name={showFilters ? "filter-remove" : "filter-variant"}
-            size={18}
-            color={showFilters ? theme.colors.danger : theme.colors.brand}
-          />
-        </TouchableOpacity>
+        <View style={styles.headerRightActions}>
+          <TouchableOpacity
+            style={styles.exportToggleBtn}
+            onPress={() => {
+              setSingleItemToExport(null);
+              setExportModalVisible(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name="tray-arrow-down"
+              size={18}
+              color={theme.colors.brand}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterToggleBtn,
+              showFilters && styles.filterToggleBtnActive,
+              (Idcard_filter.length > 0 || status_filter || searchQuery) && styles.filterToggleBtnBadge,
+            ]}
+            onPress={() => setShowFilters(!showFilters)}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name={showFilters ? "filter-remove" : "filter-variant"}
+              size={18}
+              color={showFilters ? theme.colors.danger : theme.colors.brand}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Segmented Control Tabs */}
@@ -668,12 +772,40 @@ const OndutyList = ({ navigation }) => {
                     </Text>
                   </View>
                 </View>
+
+                <TouchableOpacity
+                  style={styles.modalDownloadActionBtn}
+                  onPress={() => {
+                    setmore_model(false);
+                    setSingleItemToExport(selectedItem);
+                    setExportModalVisible(true);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <MaterialCommunityIcons name="tray-arrow-down" size={16} color="#FFFFFF" />
+                  <Text style={styles.modalDownloadActionText}>Download This Request</Text>
+                </TouchableOpacity>
               </View>
             )}
           </ScrollView>
         </View>
       </FilterModel>
       </View>
+
+      <ExportReportModal
+        visible={exportModalVisible}
+        onClose={() => {
+          setExportModalVisible(false);
+          setSingleItemToExport(null);
+        }}
+        onExportPdf={handleExportPdf}
+        onExportExcel={handleExportExcel}
+        isExporting={isExporting}
+        exportingType={exportingType}
+        recordCount={singleItemToExport ? 1 : (currentExportData?.length || 0)}
+        reportTitle={singleItemToExport ? `Onduty Request (#${singleItemToExport.docid || ''})` : "Onduty Report"}
+        theme={theme}
+      />
     </View>
   );
 };
@@ -730,6 +862,19 @@ const createStyles = (theme) =>
       fontSize: theme.fontSizes.xs || 11.5,
       color: theme.colors.textSecondary,
       marginTop: 1,
+    },
+    headerRightActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    exportToggleBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: theme.colors.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     filterToggleBtn: {
       width: 38,
@@ -963,6 +1108,42 @@ const createStyles = (theme) =>
     purposeText: {
       fontSize: 11.5,
       color: theme.colors.textSecondary,
+    },
+    cardFooterLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+    },
+    cardDownloadBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: theme.radii.pill || 99,
+      backgroundColor: theme.colors.surfaceSunken,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+    },
+    cardDownloadText: {
+      fontSize: theme.fontSizes.xs || 11.5,
+      fontWeight: theme.fontWeights.semibold || '600',
+      color: theme.colors.brand,
+    },
+    modalDownloadActionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 18,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.brand,
+      borderRadius: 12,
+    },
+    modalDownloadActionText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#FFFFFF',
     },
     cardFooter: {
       flexDirection: 'row',

@@ -19,7 +19,6 @@ import {
   get_hod_token,
   get_refresh_token,
   get_fcm_token,
-  send_Otp,
   verify_Otp_and_change_pass,
   getUserRolesOnPage,
   getCreatedRolesOnPage,
@@ -35,8 +34,6 @@ const router = Router();
 
 // ── Authentication & Password ──────────────────────────────────────────────
 router.post('/login', login);
-router.post('/send_Otp', send_Otp);
-router.post('/otp/send', send_Otp);
 router.post('/change_password', verify_Otp_and_change_pass);
 router.post('/password/change', verify_Otp_and_change_pass);
 router.get('/get_refresh_token', get_refresh_token);
