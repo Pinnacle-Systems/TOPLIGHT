@@ -87,9 +87,8 @@ const ONDUTY_COLUMNS = [
     { key: 'docdate', label: 'Date', getValue: (item) => item?.docdate ? moment(item.docdate).format('DD MMM YYYY') : '-' },
     { key: 'inLocation', label: 'In Location', getValue: (item) => item?.in_location || '-' },
     { key: 'outLocation', label: 'Out Location', getValue: (item) => item?.out_location || '-' },
-    { key: 'inTime', label: 'In Time', getValue: (item) => friendlyTime(item?.intime) },
-    { key: 'outTime', label: 'Out Time', getValue: (item) => friendlyTime(item?.outtime) },
-    { key: 'totalKm', label: 'Total KM', getValue: (item) => item?.tot_km ? `${item.tot_km} km` : '-' },
+    { key: 'inTime', label: 'In Time', getValue: (item) => friendlyTime(item?.in_time) },
+    { key: 'outTime', label: 'Out Time', getValue: (item) => friendlyTime(item?.out_time) },
     { key: 'status', label: 'Status', getValue: (item) => (item?.approvalStatus || 'PENDING').toUpperCase() },
     { key: 'reason', label: 'Purpose', getValue: (item) => item?.others || item?.reason || '-' },
 ];
