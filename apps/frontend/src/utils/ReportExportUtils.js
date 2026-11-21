@@ -57,6 +57,79 @@ const shareFile = async (shareOptions) => {
     }
 };
 
+// ── Time & Duration Formatting Helpers ─────────────────────────────────────
+const formatTimeIST = (val) => {
+    if (!val || val === '--:--' || val === '-' || val === 'null' || val === 'undefined') return '--:--';
+    const str = String(val).trim();
+    if (/am|pm/i.test(str)) return str.toUpperCase();
+    const m = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (m) {
+        let h = parseInt(m[1], 10);
+        const mins = m[2];
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+        return `${String(h).padStart(2, '0')}:${mins} ${ampm}`;
+    }
+    return str;
+};
+
+const formatHumanDuration = (val) => {
+    if (!val || val === '--:--' || val === '00:00:00' || val === '00:00' || val === '-') return '-';
+    const str = String(val).trim();
+    const parts = str.split(':').map(Number);
+    if (parts.length === 3) {
+        const [h, m, s] = parts;
+        if (h > 0) return `${h}h ${m}m ${s}s`;
+        if (m > 0) return `${m}m ${s}s`;
+        return `${s}s`;
+    }
+    if (parts.length === 2) {
+        const [h, m] = parts;
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m`;
+    }
+    return str;
+};
+
+const getPunchData = (firstItem) => {
+    if (!firstItem) return { sessions: [], rawPunches: [] };
+
+    const sessions = Array.isArray(firstItem.punches) ? [...firstItem.punches] : [];
+    let rawPunches = Array.isArray(firstItem.allPunches) && firstItem.allPunches.length > 0
+        ? [...firstItem.allPunches]
+        : [];
+
+    // Fallback: If rawPunches is empty but sessions has data, synthesize raw punch events from sessions
+    if (rawPunches.length === 0 && sessions.length > 0) {
+        let pIndex = 1;
+        sessions.forEach((s, idx) => {
+            if (s?.inTime) {
+                rawPunches.push({
+                    punchNo: pIndex++,
+                    type: 'PUNCH IN',
+                    inout: 1,
+                    atttime: s.inTime,
+                    sessionInfo: `Session #${idx + 1} In`,
+                    durationFormatted: '',
+                });
+            }
+            if (s?.outTime) {
+                rawPunches.push({
+                    punchNo: pIndex++,
+                    type: 'PUNCH OUT',
+                    inout: 0,
+                    atttime: s.outTime,
+                    sessionInfo: `Session #${idx + 1} Out (${s.durationFormatted || ''})`,
+                    durationFormatted: s.durationFormatted || '',
+                });
+            }
+        });
+    }
+
+    return { sessions, rawPunches };
+};
+
 // ── Generate HTML template for PDF ──────────────────────────────────────────
 export const generateReportHtml = ({ title, subtitle, columns, data }) => {
     const nowStr = moment().format('DD MMM YYYY, hh:mm A');
@@ -110,6 +183,8 @@ export const generateReportHtml = ({ title, subtitle, columns, data }) => {
             return `<tr class="${isEven ? 'row-even' : 'row-odd'}">${tds}</tr>`;
         })
         .join('');
+
+    const { sessions, rawPunches } = data && data.length === 1 ? getPunchData(data[0]) : { sessions: [], rawPunches: [] };
 
     return `
 <!DOCTYPE html>
@@ -302,6 +377,107 @@ export const generateReportHtml = ({ title, subtitle, columns, data }) => {
             }).join('')}
         </div>
     </div>
+    ${data.length === 1 && (sessions.length > 0 || rawPunches.length > 0) ? `
+    <!-- Work Sessions Table -->
+    ${sessions.length > 0 ? `
+    <div style="margin-top: 12px; border: 1.5px solid #0284C7; border-radius: 8px; overflow: hidden; background: #FFFFFF;">
+        <div style="background: #F0F9FF; padding: 7px 12px; border-bottom: 1.5px solid #0284C7; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #0284C7; text-transform: uppercase; letter-spacing: 0.5px;">
+                Work Sessions Breakdown (${sessions.length} Sessions)
+            </span>
+            <span style="font-size: 9.5px; font-weight: 700; color: #0369A1;">
+                Total Worked: ${data[0]?.totalTimeFormatted || data[0]?.humanWorked || '-'}
+            </span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin: 0;">
+            <thead>
+                <tr style="background: #0F172A; color: #FFFFFF;">
+                    <th style="padding: 6px 8px; text-align: center; width: 65px; border: 1px solid #334155;">#</th>
+                    <th style="padding: 6px 8px; text-align: left; border: 1px solid #334155;">Punch In Time</th>
+                    <th style="padding: 6px 8px; text-align: left; border: 1px solid #334155;">Punch Out Time</th>
+                    <th style="padding: 6px 8px; text-align: center; border: 1px solid #334155;">Duration</th>
+                    <th style="padding: 6px 8px; text-align: center; width: 100px; border: 1px solid #334155;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sessions.map((sess, idx) => {
+                    const inStr = formatTimeIST(sess?.inTime || sess?.INTIME);
+                    const outStr = sess?.outTime ? formatTimeIST(sess?.outTime || sess?.OUTTIME) : 'Active / Working';
+                    const durStr = sess?.durationFormatted || formatHumanDuration(sess?.duration);
+                    const isCompleted = Boolean(sess?.outTime);
+                    const rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+                    return `
+                    <tr style="background: ${rowBg};">
+                        <td style="padding: 5px 8px; text-align: center; font-weight: 700; border: 1px solid #E2E8F0; color: #0284C7;">Session ${idx + 1}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0; font-weight: 700; color: #16A34A;">
+                            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #16A34A; margin-right: 5px;"></span>
+                            ${inStr}
+                        </td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0; font-weight: 700; color: ${isCompleted ? '#DC2626' : '#D97706'};">
+                            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${isCompleted ? '#DC2626' : '#D97706'}; margin-right: 5px;"></span>
+                            ${outStr}
+                        </td>
+                        <td style="padding: 5px 8px; text-align: center; border: 1px solid #E2E8F0; font-weight: 700; color: #0284C7;">
+                            ${durStr || '-'}
+                        </td>
+                        <td style="padding: 5px 8px; text-align: center; border: 1px solid #E2E8F0;">
+                            <span style="display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 8px; font-weight: 700; background: ${isCompleted ? '#DCFCE7' : '#FEF3C7'}; color: ${isCompleted ? '#15803D' : '#B45309'};">
+                                ${isCompleted ? 'COMPLETED' : 'ACTIVE'}
+                            </span>
+                        </td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    </div>
+    ` : ''}
+
+    <!-- Chronological Punch Events Log -->
+    ${rawPunches.length > 0 ? `
+    <div style="margin-top: 10px; border: 1px solid #CBD5E1; border-radius: 8px; overflow: hidden; background: #FFFFFF;">
+        <div style="background: #F1F5F9; padding: 6px 12px; border-bottom: 1px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 10px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">
+                Individual Punch Log (${rawPunches.length} Punch Events)
+            </span>
+            <span style="font-size: 8.5px; font-weight: 600; color: #64748B;">
+                Sequential In / Out Records
+            </span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px; margin: 0;">
+            <thead>
+                <tr style="background: #334155; color: #FFFFFF;">
+                    <th style="padding: 5px 8px; text-align: center; width: 55px; border: 1px solid #475569;">Punch #</th>
+                    <th style="padding: 5px 8px; text-align: left; width: 120px; border: 1px solid #475569;">Punch Action</th>
+                    <th style="padding: 5px 8px; text-align: left; width: 120px; border: 1px solid #475569;">Punch Time</th>
+                    <th style="padding: 5px 8px; text-align: left; width: 120px; border: 1px solid #475569;">Punch Date</th>
+                    <th style="padding: 5px 8px; text-align: left; border: 1px solid #475569;">Session Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rawPunches.map((p, idx) => {
+                    const isPunchIn = Number(p?.inout) === 1 || String(p?.type || '').toUpperCase().includes('IN');
+                    const timeStr = formatTimeIST(p?.atttime || p?.time);
+                    const dateStr = p?.attdate ? moment(p.attdate).format('DD MMM YYYY') : (data[0]?.date || moment().format('DD MMM YYYY'));
+                    const sessNote = p?.sessionInfo || (isPunchIn ? `Session #${Math.floor(idx/2)+1} Entry` : `Session #${Math.floor(idx/2)+1} Exit`);
+                    const rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+                    return `
+                    <tr style="background: ${rowBg};">
+                        <td style="padding: 5px 8px; text-align: center; font-weight: 700; border: 1px solid #E2E8F0; color: #334155;">#${idx + 1}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0;">
+                            <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 8px; font-weight: 700; background: ${isPunchIn ? '#DCFCE7' : '#FEE2E2'}; color: ${isPunchIn ? '#15803D' : '#DC2626'};">
+                                ${isPunchIn ? 'PUNCH IN' : 'PUNCH OUT'}
+                            </span>
+                        </td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0; font-weight: 700; color: #0F172A;">${timeStr}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0; color: #64748B;">${dateStr}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #E2E8F0; color: #475569;">${sessNote}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    </div>
+    ` : ''}
+    ` : ''}
     ` : ''}
 
     <div class="footer">
@@ -482,6 +658,86 @@ export const generateExcelBase64 = ({ title, subtitle, columns, data, sheetName 
     });
 
     const aoa = [row0, row1, row2, row3, headerRow, ...dataRows];
+
+    // Append Individual Punch Details & Sessions if single record with punch data
+    if (data && data.length === 1) {
+        const { sessions, rawPunches } = getPunchData(data[0]);
+
+        if (sessions.length > 0) {
+            aoa.push(Array(colCount).fill(null).map(() => ({ v: '', t: 's' })));
+            const sTitle = {
+                v: `WORK SESSIONS BREAKDOWN (${sessions.length} SESSIONS)`,
+                t: 's',
+                s: { font: { name: 'Segoe UI', sz: 11, bold: true, color: { rgb: '0284C7' } } },
+            };
+            aoa.push(Array(colCount).fill(null).map((_, i) => (i === 0 ? sTitle : { v: '', t: 's' })));
+
+            const sHeader = [
+                { v: 'SESSION #', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'PUNCH IN TIME', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'PUNCH OUT TIME', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'SESSION DURATION', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'STATUS', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+            ];
+            while (sHeader.length < colCount) sHeader.push({ v: '', t: 's', s: { fill: { fgColor: { rgb: '0F172A' } } } });
+            aoa.push(sHeader);
+
+            sessions.forEach((sess, idx) => {
+                const inStr = formatTimeIST(sess?.inTime || sess?.INTIME);
+                const outStr = sess?.outTime ? formatTimeIST(sess?.outTime || sess?.OUTTIME) : 'Active / Working';
+                const durStr = sess?.durationFormatted || formatHumanDuration(sess?.duration);
+                const isCompleted = Boolean(sess?.outTime);
+
+                const sRow = [
+                    { v: `Session ${idx + 1}`, t: 's', s: { font: { bold: true }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: inStr, t: 's', s: { font: { color: { rgb: '166534' } }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: outStr, t: 's', s: { font: { color: { rgb: isCompleted ? '991B1B' : '92400E' } }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: durStr, t: 's', s: { font: { bold: true, color: { rgb: '0284C7' } }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: isCompleted ? 'COMPLETED' : 'ACTIVE', t: 's', s: { alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                ];
+                while (sRow.length < colCount) sRow.push({ v: '', t: 's', s: { border: EXCEL_BORDERS.cell } });
+                aoa.push(sRow);
+            });
+        }
+
+        if (rawPunches.length > 0) {
+            aoa.push(Array(colCount).fill(null).map(() => ({ v: '', t: 's' })));
+            const pTitle = {
+                v: `INDIVIDUAL PUNCH LOG (${rawPunches.length} PUNCHES)`,
+                t: 's',
+                s: { font: { name: 'Segoe UI', sz: 10.5, bold: true, color: { rgb: '334155' } } },
+            };
+            aoa.push(Array(colCount).fill(null).map((_, i) => (i === 0 ? pTitle : { v: '', t: 's' })));
+
+            const pHeader = [
+                { v: 'PUNCH #', t: 's', s: { fill: { fgColor: { rgb: '334155' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'PUNCH TYPE', t: 's', s: { fill: { fgColor: { rgb: '334155' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'TIME', t: 's', s: { fill: { fgColor: { rgb: '334155' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'DATE', t: 's', s: { fill: { fgColor: { rgb: '334155' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'center' } } },
+                { v: 'REMARKS', t: 's', s: { fill: { fgColor: { rgb: '334155' } }, font: { color: { rgb: 'FFFFFF' }, bold: true }, alignment: { horizontal: 'left' } } },
+            ];
+            while (pHeader.length < colCount) pHeader.push({ v: '', t: 's', s: { fill: { fgColor: { rgb: '334155' } } } });
+            aoa.push(pHeader);
+
+            rawPunches.forEach((p, idx) => {
+                const isPunchIn = Number(p?.inout) === 1 || String(p?.type || '').toUpperCase().includes('IN');
+                const timeStr = formatTimeIST(p?.atttime || p?.time);
+                const dateStr = p?.attdate ? moment(p.attdate).format('DD MMM YYYY') : moment().format('DD MMM YYYY');
+                const note = p?.sessionInfo || (isPunchIn ? `Session #${Math.floor(idx/2)+1} Entry` : `Session #${Math.floor(idx/2)+1} Exit`);
+
+                const pRow = [
+                    { v: `#${idx + 1}`, t: 's', s: { font: { bold: true }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: isPunchIn ? 'PUNCH IN' : 'PUNCH OUT', t: 's', s: { font: { bold: true, color: { rgb: isPunchIn ? '166534' : '991B1B' } }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: timeStr, t: 's', s: { font: { bold: true }, alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: dateStr, t: 's', s: { alignment: { horizontal: 'center' }, border: EXCEL_BORDERS.cell } },
+                    { v: note, t: 's', s: { alignment: { horizontal: 'left' }, border: EXCEL_BORDERS.cell } },
+                ];
+                while (pRow.length < colCount) pRow.push({ v: '', t: 's', s: { border: EXCEL_BORDERS.cell } });
+                aoa.push(pRow);
+            });
+        }
+    }
+
     const ws = XLSXLib.utils.aoa_to_sheet(aoa);
 
     // Merge corporate banners across all columns

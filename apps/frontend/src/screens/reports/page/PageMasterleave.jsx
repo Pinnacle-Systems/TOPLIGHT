@@ -57,7 +57,7 @@ const PageMaster_leave = ({ navigation }) => {
             icon: 'clipboard-text-outline',
             color: '#2563eb',
             softColor: '#eff6ff',
-            description: 'Daily department attendance',
+            description: 'Daily attendance entry & register',
         },
     ], [theme]);
 

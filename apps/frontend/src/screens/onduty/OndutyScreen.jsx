@@ -6,6 +6,7 @@ import {
     ScrollView,
     ActivityIndicator,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -378,6 +379,8 @@ export default function OndutyScreen() {
             </View>
         );
     }
+
+   
 
     return (
         <View style={styles.container}>

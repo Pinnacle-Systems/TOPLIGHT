@@ -175,11 +175,6 @@ export default function OndutyEntryForm({
                         <Text style={styles.locationMainText} selectable>
                             {displayLocation}
                         </Text>
-                        {isAddressResolved && hasCoords ? (
-                            <Text style={styles.locationCoordsSubtext}>
-                                Lat: {numLat.toFixed(5)}, Lon: {numLon.toFixed(5)}
-                            </Text>
-                        ) : null}
                     </View>
                 </View>
             </View>

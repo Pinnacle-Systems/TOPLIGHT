@@ -1,4 +1,4 @@
-﻿import { mapRole, mapUser } from "../utils/responseMapper.js";
+import { mapRole, mapUser } from "../utils/responseMapper.js";
 import { logServiceError } from "../utils/logger.js";
 import bcrypt from "bcryptjs"
 import { getConnection } from "../constants/dbConnection.js";
@@ -990,7 +990,7 @@ B.IDCARD "idCard",
 B.IDCARD "IDCARD"
 FROM HREMPLOYMAST A 
 JOIN HREMPLOYDETAILS B ON A.HREMPLOYMASTID = B.HREMPLOYMASTID
-JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE
+JOIN GTCOMPMAST C ON C.GTCOMPMASTID = A.COMPCODE AND C.COMPCODE = 'TLT'
 JOIN HREMPLOYMAST D ON D.HREMPLOYMASTID = B.HREMPLOYMASTID
 ORDER BY 3,TO_NUMBER(B.IDCARD)`
 
@@ -1091,6 +1091,26 @@ export async function getEmployeeIdsWithAtt(req, res) {
       });
     }
 
+    // If supervisor is Admin, include all users
+    if ((!prismaIdget || prismaIdget.length === 0) && (supervisorUser?.isAdmin || supervisorLevel === 'admin' || req?.query?.admin === 'true')) {
+      prismaIdget = await prisma_Connector?.user?.findMany({
+        include: {
+          companies: true,
+        },
+      });
+    }
+
+    // Optionally include self
+    if ((req?.query?.includeSelf === 'true' || req?.query?.self === 'true') && supervisorUser) {
+      if (!prismaIdget) prismaIdget = [];
+      const alreadyHasSupervisor = prismaIdget.some(
+        u => String(u?.idCard || u?.Idcard || u?.IDCARD || '').trim() === supervisorCard
+      );
+      if (!alreadyHasSupervisor) {
+        prismaIdget.unshift(supervisorUser);
+      }
+    }
+
     if (!prismaIdget?.length) {
       return res.json({ status: 1, statusCode: 0, data: [] });
     }
@@ -1146,7 +1166,15 @@ export async function getEmployeeIdsWithAtt(req, res) {
           });
         }
 
-        // 3. Today's attendance from PSSATT for all these IDCARDs at once
+        // 3. Attendance from PSSATT for all these IDCARDs at once
+        const reqDate = req?.query?.date ? String(req.query.date).substring(0, 10) : null;
+        let dateCondition = 'AND TRUNC(ATTDATE) = TRUNC(SYSDATE)';
+        const attBindValues = { ...bindValues };
+        if (reqDate && /^\d{4}-\d{2}-\d{2}$/.test(reqDate)) {
+          dateCondition = 'AND TRUNC(ATTDATE) = TO_DATE(:reqDate, \'YYYY-MM-DD\')';
+          attBindValues.reqDate = reqDate;
+        }
+
         const attSql = `
           SELECT
             IDCARD,
@@ -1155,17 +1183,17 @@ export async function getEmployeeIdsWithAtt(req, res) {
             ATTDATE
           FROM PSSATT
           WHERE IDCARD IN (${bindPlaceholders})
-            AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
-          ORDER BY IDCARD, ATTDATE ASC
+            ${dateCondition}
+          ORDER BY IDCARD, ATTDATE ASC, ATTTIME ASC
         `;
 
-        const attResult = await connection.execute(attSql, bindValues);
+        const attResult = await connection.execute(attSql, attBindValues);
 
         if (attResult?.rows) {
-          for (const [idcard, inout, atttime] of attResult.rows) {
+          for (const [idcard, inout, atttime, attdate] of attResult.rows) {
             const key = String(idcard);
             if (!attMap[key]) attMap[key] = [];
-            attMap[key].push({ inout: Number(inout), atttime });
+            attMap[key].push({ inout: Number(inout), atttime, attdate });
           }
         }
       } catch (oracleErr) {
@@ -1217,11 +1245,13 @@ export async function getEmployeeIdsWithAtt(req, res) {
 
         // summary stats
         totalPunches      : summary.totalPunches,
+        rawPunchesCount   : summary.rawPunchesCount,
         totalMinutesWorked: summary.totalMinutes,
         totalTimeFormatted: summary.totalTimeFormatted,
 
         // full punch log for expanded view
-        punches: summary.punches,
+        punches   : summary.punches,
+        allPunches: summary.allPunches,
       };
     });
 
@@ -1333,8 +1363,17 @@ function computeAttSummary(rows) {
 
   const totalMinutes = Math.floor(totalSpanSeconds / 60);
 
+  const allPunches = rows.map((r, idx) => ({
+    punchNo: idx + 1,
+    type: Number(r.inout) === 1 ? 'PUNCH IN' : 'PUNCH OUT',
+    inout: Number(r.inout),
+    atttime: r.atttime,
+    attdate: r.attdate,
+  }));
+
   return {
     punches,
+    allPunches,
     totalSeconds: totalSpanSeconds,
     totalMinutes,
     totalTimeFormatted: formatDuration(totalSpanSeconds),
@@ -1342,6 +1381,7 @@ function computeAttSummary(rows) {
     lastOutTime,
     lastInout,
     totalPunches: punches.length,
+    rawPunchesCount: rows.length,
   };
 }
 

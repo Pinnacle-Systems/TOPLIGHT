@@ -177,7 +177,11 @@ export default function LoginScreen() {
                 if (filterunique && filterunique.length > 0) {
                     setGlobalData(filterunique);
                     setGlobal(true);
-                } else {
+ 
+                    if(filterunique && filterunique.length == 1){
+                     OnSelectCompany(filterunique[0]?.companyCode)
+                      } 
+                }else {
                     setError('No companies assigned to this user.');
                 }
             } else {

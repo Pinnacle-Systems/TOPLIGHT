@@ -20,7 +20,8 @@ import PageMaster_leave from '../screens/reports/page/PageMasterleave';
 import LeaveReport from '../screens/reports/leave/LeaveReport';
 import PermissionReport from '../screens/reports/permissions/PermissionReport';
 import OndutyReport from '../screens/reports/onduty/OndutyReport';
-import AttendanceReport from '../screens/reports/DailyAttendanceReport';
+// import AttendanceReport from '../screens/reports/DailyAttendanceReport';
+import AttendanceReport from '../screens/reports/attendance/AttendanceReport';
 
 export const APP_ROUTES = [
     { key: 'HOME', name: 'HOME', component: HomeScreen, isDefault: true },
@@ -32,17 +33,17 @@ export const APP_ROUTES = [
     { key: 'Att', name: 'Att', component: AttendanceScreen, isDefault: false },
     { key: 'attendance_approval', name: 'attendance_approval', component: AttendanceApprovalScreen, isDefault: true },
     { key: 'att_approval', name: 'att_approval', component: AttendanceApprovalScreen, isDefault: true },
-    { key: 'lentry', name: 'lentry', component: LeaveEntryScreen, isDefault: false },
-    { key: 'l_approval', name: 'l_approval', component: LeaveApprovalScreen, isDefault: true },
-    { key: 'pentry', name: 'pentry', component: PermissionEntryScreen, isDefault: false },
-    { key: 'p_approval', name: 'p_approval', component: PermissionApprovalScreen, isDefault: true },
+    // { key: 'lentry', name: 'lentry', component: LeaveEntryScreen, isDefault: false },
+    // { key: 'l_approval', name: 'l_approval', component: LeaveApprovalScreen, isDefault: true },
+    // { key: 'pentry', name: 'pentry', component: PermissionEntryScreen, isDefault: false },
+    // { key: 'p_approval', name: 'p_approval', component: PermissionApprovalScreen, isDefault: true },
     { key: 'uinfo', name: 'uinfo', component: UserInfoScreen, isDefault: false },
     { key: 'logs', name: 'logs', component: UserLogsScreen, isDefault: false },
     { key: 'map', name: 'map', component: LocationTrackingScreen, isDefault: true },
     // ── Reports ─────────────────────────────────────────────────────────────
     { key: 'report', name: 'report', component: PageMaster_leave, isDefault: false },
-    { key: 'leave_report', name: 'leave_report', component: LeaveReport, isDefault: false },
-    { key: 'per_report', name: 'per_report', component: PermissionReport, isDefault: false },
+    // { key: 'leave_report', name: 'leave_report', component: LeaveReport, isDefault: false },
+    // { key: 'per_report', name: 'per_report', component: PermissionReport, isDefault: false },
     { key: 'onduty_report', name: 'onduty_report', component: OndutyReport, isDefault: false },
     { key: 'ATTENDANCEREPORT', name: 'ATTENDANCEREPORT', component: AttendanceReport, isDefault: false },
     // ── Masters Hub ──────────────────────────────────────────────────────────

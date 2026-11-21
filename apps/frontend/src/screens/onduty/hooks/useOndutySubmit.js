@@ -25,6 +25,7 @@ import { _FCM_SENDER } from '../../../components/utils/Fcm';
 import socket from '../../../utils/Socket';
 import { formatUserFriendlyError } from '../../../utils/UserFriendlyError';
 import OndutyRTk from '../../../store/api/OndutyApi';
+import { NavRef } from '../../../components/utils/NavigationRef';
 
 const ONDUTY_API = `${BASE_URL}/onduty/requestOnduty`;
 
@@ -426,7 +427,9 @@ export function useOndutySubmit({
                         _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {});
                     }
                 }
-
+                if(NavRef.isReady()){
+                     NavRef.resetRoot({index:0 , routes:[{name: "HOME"}]})
+                }
                 await refreshAndReset();
 
             } else {

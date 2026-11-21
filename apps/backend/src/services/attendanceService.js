@@ -82,7 +82,7 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
-       ORDER BY ATTDATE DESC
+       ORDER BY ATTDATE DESC, ATTTIME DESC
      )
      WHERE ROWNUM = 1`,
     { COMPCODE, IDCARD: Idcard }
@@ -97,6 +97,40 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
 // ---------------------------------------------------------------------------
 // SHARED HELPER â€” INSERT a new punch row
 // ---------------------------------------------------------------------------
+
+function parseTimeToOracleString(timeInput, fallbackDate = new Date()) {
+  if (!timeInput) {
+    return formatDateToOracle(fallbackDate).split(" ")[1];
+  }
+  if (typeof timeInput === 'string') {
+    const trimmed = timeInput.trim();
+    if (/^\d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+    if (/^\d{1,2}:\d{2}$/.test(trimmed)) {
+      const [h, m] = trimmed.split(':');
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+    }
+    if (/am|pm/i.test(trimmed)) {
+      const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)$/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = match[2];
+        const s = match[3] || '00';
+        const isPM = match[4].toLowerCase() === 'pm';
+        if (isPM && h < 12) h += 12;
+        if (!isPM && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${m}:${s}`;
+      }
+    }
+  }
+  const formatted = formatDateToOracle(timeInput);
+  if (formatted && formatted.includes(' ')) {
+    return formatted.split(' ')[1];
+  }
+  return formatDateToOracle(fallbackDate).split(" ")[1];
+}
+
 async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, atttime, empname, location }) {
   const UNQID = String(generateUniqueId_Number());
   const now = new Date();
@@ -108,20 +142,20 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
     + dateStr
     + String(atttime).substring(0, 8);
 
-
-
+  const attDateTimeStr = `${yyyy}-${mm}-${dd} ${atttime}`;
 
   const sql = `
     INSERT INTO PSSATT (
       ATTDATE, ATTTIME, COMPCODE, IDCARD,
-      USERNAME, IPADD, INOUT, PMNO, UNQID, CHK,DTYPE
+      USERNAME, IPADD, INOUT, PMNO, UNQID, CHK, DTYPE
     ) VALUES (
-      SYSDATE, :ATTTIME, :COMPCODE, :IDCARD,
-      :USERNAME, :IPADD, :INOUT, :PMNO, :UNQID,:CHK,:DTYPE
+      TO_DATE(:ATTDATE_TIME, 'YYYY-MM-DD HH24:MI:SS'), :ATTTIME, :COMPCODE, :IDCARD,
+      :USERNAME, :IPADD, :INOUT, :PMNO, :UNQID, :CHK, :DTYPE
     )
   `;
 
   const binds = {
+    ATTDATE_TIME: attDateTimeStr,
     ATTTIME: atttime,
     COMPCODE,
     IDCARD: Idcard,
@@ -172,7 +206,8 @@ export async function punchIn(req, res) {
     // 2. lastPunch is null (no punch today) OR lastPunch.inout === 0 (last was OUT)
     //    Both cases allow a new PUNCH IN
     const now = new Date();
-    const inTime = formatDateToOracle(now).split(" ")[1]; // "HH24:MI:SS"
+    const requestedTime = req.body.time || req.body.punchTime || req.body.atttime;
+    const inTime = parseTimeToOracleString(requestedTime, now);
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
@@ -251,7 +286,8 @@ export async function punchOut(req, res) {
 
     // 2. lastPunch.inout === 1 â†’ valid, insert OUT row
     const now = new Date();
-    const outTime = formatDateToOracle(now).split(" ")[1]; // "HH24:MI:SS"
+    const requestedTime = req.body.time || req.body.punchTime || req.body.atttime;
+    const outTime = parseTimeToOracleString(requestedTime, now);
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
@@ -259,7 +295,7 @@ export async function punchOut(req, res) {
       inout: 0,           // OUT
       pmno: 2,           // MOBATTLOG_TRG uses PMNO=2 to mark an OUT punch
       atttime: outTime,
-      empname: null,
+      empname: req.body.empname || lastPunch?.username || null,
       location,
     });
 
@@ -314,7 +350,7 @@ export async function getAttendanceStatus(req, res) {
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
-       ORDER BY ATTDATE ASC`,
+       ORDER BY ATTDATE ASC, ATTTIME ASC`,
       { COMPCODE, IDCARD: Idcard }
     );
 
@@ -377,7 +413,7 @@ export async function getPunchSummary(req, res) {
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
-       ORDER BY ATTDATE ASC`,
+       ORDER BY ATTDATE ASC, ATTTIME ASC`,
       { COMPCODE, IDCARD: Idcard }
     );
 

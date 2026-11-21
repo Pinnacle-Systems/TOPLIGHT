@@ -98,7 +98,8 @@ export default function NotificationModal({
     const { page: rolesOnPage, admin: isAdmin, level } = useContext(Common_Context) || {};
     const allowedGroups = useMemo(() => {
         // Admins see all notifications
-        if (isAdmin === 1 || isAdmin === true || String(level || '').toLowerCase() === 'hr') return ['leave', 'permission', 'onduty', 'attendance'];
+        //'leave', 'permission',
+        if (isAdmin === 1 || isAdmin === true || String(level || '').toLowerCase() === 'hr') return [ 'onduty', 'attendance'];
         if (!rolesOnPage || !Array.isArray(rolesOnPage) || rolesOnPage.length === 0) return [];
         const links = rolesOnPage
             .filter(r => (
