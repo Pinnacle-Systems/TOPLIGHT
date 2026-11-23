@@ -3,6 +3,7 @@ package com.frontend
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.location.Geocoder
 import android.location.Location
 import android.os.*
 import android.util.Log
@@ -19,6 +20,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import android.content.SharedPreferences
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class BackgroundService : Service() {
@@ -39,6 +41,7 @@ class BackgroundService : Service() {
         // Default values loaded from BuildConfig (which reads .env at build time)
         val DEFAULT_LOCATION_INTERVAL = BuildConfig.LOCATION_INTERVAL.toLongOrNull() ?: 5000L
         val DEFAULT_FASTEST_INTERVAL = BuildConfig.LOCATION_FASTEST_INTERVAL.toLongOrNull() ?: 3000L
+        val DEFAULT_MIN_DISTANCE = BuildConfig.LOCATION_MIN_DISTANCE.toFloatOrNull() ?: 3f
 
         var isTrackingEnabled = false
             private set
@@ -48,7 +51,8 @@ class BackgroundService : Service() {
             fastestInterval = DEFAULT_FASTEST_INTERVAL,
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY,
             apiUrl = BuildConfig.LOCATION_API_URL,
-            maxWaitTime = DEFAULT_LOCATION_INTERVAL * 2
+            maxWaitTime = DEFAULT_LOCATION_INTERVAL * 2,
+            minUpdateDistance = DEFAULT_MIN_DISTANCE
         )
 
         private const val SHARED_PREFS_NAME = "TrackingPrefs"
@@ -72,7 +76,7 @@ class BackgroundService : Service() {
         val priority: Int,
         val apiUrl: String,
         val maxWaitTime: Long,
-        val minUpdateDistance: Float = 3f
+        val minUpdateDistance: Float = DEFAULT_MIN_DISTANCE
     )
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -235,6 +239,28 @@ class BackgroundService : Service() {
         }
     }
 
+    private fun getHumanReadableAddress(lat: Double, lon: Double): String? {
+        return try {
+            if (!Geocoder.isPresent()) null
+            else {
+                val geocoder = Geocoder(this, Locale.getDefault())
+                val addresses = geocoder.getFromLocation(lat, lon, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    val addr = addresses[0]
+                    val sb = StringBuilder()
+                    for (i in 0..addr.maxAddressLineIndex) {
+                        if (i > 0) sb.append(", ")
+                        sb.append(addr.getAddressLine(i))
+                    }
+                    val res = sb.toString().trim()
+                    if (res.isNotEmpty()) res else null
+                } else null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private fun sendLocationToApi(location: Location) {
         val prefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val userId = prefs?.getString("userId", null)
@@ -249,9 +275,15 @@ class BackgroundService : Service() {
             else -> BuildConfig.LOCATION_API_URL
         }
 
+        val address = getHumanReadableAddress(location.latitude, location.longitude)
+
         val json = JSONObject().apply {
             put("latitude", location.latitude)
             put("longitude", location.longitude)
+            if (!address.isNullOrEmpty()) {
+                put("address", address)
+                put("locationName", address)
+            }
             put("timestamp", System.currentTimeMillis())
             put("timeStamp", System.currentTimeMillis())
             put("accuracy", location.accuracy)

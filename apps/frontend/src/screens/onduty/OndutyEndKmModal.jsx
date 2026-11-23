@@ -76,6 +76,7 @@ export default function OndutyEndKmModal({
         }
 
         onChangeReachedKm(trimmed);
+        onClose?.();
         onConfirmReached?.({
             docId: reachedData?.docid,
             vehicleNo: reachedData?.vechileno,

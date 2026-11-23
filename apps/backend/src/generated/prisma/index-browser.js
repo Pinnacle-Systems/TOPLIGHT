@@ -175,6 +175,7 @@ exports.Prisma.OndutyScalarFieldEnum = {
   inLocation: 'inLocation',
   inLatitude: 'inLatitude',
   inLongtiude: 'inLongtiude',
+  inAddress: 'inAddress',
   vehicleNo: 'vehicleNo',
   bunk: 'bunk',
   startKm: 'startKm',
@@ -182,6 +183,7 @@ exports.Prisma.OndutyScalarFieldEnum = {
   outLocation: 'outLocation',
   outLatitude: 'outLatitude',
   outLongtiude: 'outLongtiude',
+  outAddress: 'outAddress',
   toOnduty: 'toOnduty',
   createdBy: 'createdBy',
   modifiedBy: 'modifiedBy',
@@ -246,6 +248,7 @@ exports.Prisma.LocationScalarFieldEnum = {
   compCode: 'compCode',
   userId: 'userId',
   docId: 'docId',
+  address: 'address',
   createdAt: 'createdAt'
 };
 

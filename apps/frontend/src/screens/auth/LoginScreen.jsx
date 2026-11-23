@@ -167,21 +167,26 @@ export default function LoginScreen() {
                 setHead(filterdata?.hod);
                 
                 const addComp = [];
-                const filterunique = filterdata?.Companies?.filter((d) => {
-                    if (!addComp.includes(d?.companyCode)) {
-                        addComp.push(d?.companyCode);
-                        return d;
+                const filterunique = (filterdata?.Companies || []).filter((d) => {
+                    const code = d?.companyCode || d?.companycode;
+                    if (code && !addComp.includes(code)) {
+                        addComp.push(code);
+                        return true;
                     }
+                    return false;
                 });
 
                 if (filterunique && filterunique.length > 0) {
                     setGlobalData(filterunique);
-                    setGlobal(true);
- 
-                    if(filterunique && filterunique.length == 1){
-                     OnSelectCompany(filterunique[0]?.companyCode)
-                      } 
-                }else {
+                    if (filterunique.length > 1) {
+                        // More than one company available -> show company selection
+                        setGlobal(true);
+                    } else {
+                        // Exactly one company available -> do not show selection, auto-select it directly
+                        setGlobal(false);
+                        await finalizeLogin(filterunique[0], filterdata, filterunique);
+                    }
+                } else {
                     setError('No companies assigned to this user.');
                 }
             } else {
@@ -196,58 +201,71 @@ export default function LoginScreen() {
         }
     };
 
+    const finalizeLogin = async (company, userData, allCompanies) => {
+        const companyCode = company?.companyCode || company?.companycode;
+        const companyId = company?.companyId || company?.companyid;
+
+        if (!companyId) {
+            Alert.alert("Failed", "Selected company is missing ID.");
+            return;
+        }
+
+        const userId = userData?.idCard || Id;
+        await AsyncStorage.setItem('userName', JSON.stringify({
+            userName: username, 
+            Id: userId, 
+            UserId: userId,
+            IDCARD: userId,
+            GCOMPCODE: companyCode, 
+            COMPID: companyId,
+            hr: userData?.hr ?? hr, 
+            hod: userData?.hod ?? head, 
+            approval: userData?.approval || userRecord?.approval || 'HOD',
+            roleId: userData?.roleId ?? roleid,
+            level: userData?.level || (userData?.isAdmin ? 'admin' : 'user'),
+            isAdmin: userData?.isAdmin === 1 || userData?.isAdmin === true ? 1 : 0,
+            Companies: allCompanies || Globaldata,
+        }));
+        
+        try {
+            if (Platform.OS === 'android') {
+                await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+            }
+            const authStatus = await messaging().requestPermission();
+            await notifee.requestPermission();
+
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+            if (enabled) {
+                const token = await messaging().getToken();
+                if (token && userId) {
+                    await update_fcm({ Idcard: userId, fcm: token });
+                }
+                messaging().onTokenRefresh(async (newToken) => {
+                    if (newToken && userId) {
+                        await update_fcm({ Idcard: userId, fcm: newToken });
+                    }
+                });
+            }
+        } catch (err) {
+            console.log("FCM setup error:", err);
+        }
+        
+        // Exact original functionality triggers a restart upon successful login.
+        // On reload, the root component will check AsyncStorage and redirect via RoleOnPage.
+        RNRestart.restart();
+    };
+
     const OnSelectCompany = async (companyCode) => {
         if (!companyCode) return Alert.alert("Error", "Select Company");
         
-        const company = Globaldata?.find((d) => d?.companyCode === companyCode);
-        if (company?.companyId) {
-            await AsyncStorage.setItem('userName', JSON.stringify({
-                userName: username, 
-                Id: Id, 
-                UserId: Id,
-                IDCARD: Id,
-                GCOMPCODE: company?.companyCode, 
-                COMPID: company?.companyId,
-                hr, 
-                hod: head, 
-                approval: userRecord?.approval || 'HOD',
-                roleId: roleid,
-                level: userRecord?.level || (userRecord?.isAdmin ? 'admin' : 'user'),
-                isAdmin: userRecord?.isAdmin === 1 || userRecord?.isAdmin === true ? 1 : 0,
-                Companies: Globaldata,
-            }));
-            
-            try {
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
-                const authStatus = await messaging().requestPermission();
-                await notifee.requestPermission();
-
-                const enabled =
-                    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-                if (enabled) {
-                    const token = await messaging().getToken();
-                    if (token && Id) {
-                        await update_fcm({ Idcard: Id, fcm: token });
-                    }
-                    messaging().onTokenRefresh(async (newToken) => {
-                        if (newToken && Id) {
-                            await update_fcm({ Idcard: Id, fcm: newToken });
-                        }
-                    });
-                }
-            } catch (err) {
-                console.log("FCM setup error:", err);
-            }
-            
-            // Exact original functionality triggers a restart upon successful login.
-            // On reload, the root component will check AsyncStorage and redirect via RoleOnPage.
-            RNRestart.restart();
+        const company = (Globaldata || []).find((d) => (d?.companyCode || d?.companycode) === companyCode);
+        if (company) {
+            await finalizeLogin(company, userRecord, Globaldata);
         } else {
-          //  Alert.alert("Failed", "Company Selection Failed");
+            Alert.alert("Failed", "Company selection not found.");
         }
     };
 

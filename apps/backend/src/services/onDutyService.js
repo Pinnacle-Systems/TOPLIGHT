@@ -12,6 +12,9 @@ import { logServiceError } from "../utils/logger.js";
 import { promises as fsp } from 'fs';
 import fetch from "node-fetch";
 import { gunzipSync } from 'fflate';
+import { getIO } from "../sockets/socketHandler.js";
+
+const geocodeCache = new Map();
 
 async function getAddressFromCoords(lat, lon) {
   if (!lat || !lon) return null;
@@ -19,23 +22,70 @@ async function getAddressFromCoords(lat, lon) {
   const nLon = Number(lon);
   if (isNaN(nLat) || isNaN(nLon) || (nLat === 0 && nLon === 0)) return null;
 
+  // Use coordinate key with ~100m grid for caching
+  const cacheKey = `${nLat.toFixed(3)},${nLon.toFixed(3)}`;
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey);
+  }
+
+  let address = null;
+
+  // 1. Try TomTom Reverse Geocode
   try {
     const tomtomKey = process.env.TOMTOM_API_KEY;
-    const url = `https://api.tomtom.com/search/2/reverseGeocode/${nLat},${nLon}.json?key=${tomtomKey}&radius=50&language=en-US`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const best = data.addresses?.[0]?.address;
-    if (!best) return null;
-
-    const street = `${best?.streetNumber || ''} ${best?.streetName || ''}`.trim();
-    const municipality = best?.municipality || best?.countrySubdivision || '';
-    const rawAddr = best?.freeformAddress || (street ? `${street}, ${municipality}` : municipality);
-    const clean = String(rawAddr || '').trim().replace(/^,\s*/, '');
-    return clean && clean !== 'Unknown' && clean !== ', Unknown' ? clean : null;
+    if (tomtomKey) {
+      const url = `https://api.tomtom.com/search/2/reverseGeocode/${nLat},${nLon}.json?key=${tomtomKey}&radius=50&language=en-US`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        const best = data.addresses?.[0]?.address;
+        if (best) {
+          const street = `${best?.streetNumber || ''} ${best?.streetName || ''}`.trim();
+          const municipality = best?.municipality || best?.countrySubdivision || '';
+          const rawAddr = best?.freeformAddress || (street ? `${street}, ${municipality}` : municipality);
+          const clean = String(rawAddr || '').trim().replace(/^,\s*/, '');
+          if (clean && clean !== 'Unknown' && clean !== ', Unknown') {
+            address = clean;
+          }
+        }
+      }
+    }
   } catch (e) {
-    logServiceError('OnDutyService:OnDutyService', e, req);
-    return null;
+    console.warn('[getAddressFromCoords] TomTom reverse geocode error:', e?.message);
   }
+
+  // 2. Fallback to OpenStreetMap Nominatim if TomTom didn't resolve
+  if (!address) {
+    try {
+      const nomUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${nLat}&lon=${nLon}&zoom=18&addressdetails=1`;
+      const res = await fetch(nomUrl, {
+        headers: { 'User-Agent': 'TopLight-MobileApp/1.0' },
+      });
+      if (res.ok) {
+        const nomData = await res.json();
+        if (nomData?.display_name) {
+          address = nomData.display_name;
+        }
+      }
+    } catch (nomErr) {
+      console.warn('[getAddressFromCoords] Nominatim reverse geocode error:', nomErr?.message);
+    }
+  }
+
+  // 3. Fallback to coordinate label
+  if (!address) {
+    address = `Near ${nLat.toFixed(4)}, ${nLon.toFixed(4)}`;
+  }
+
+  if (address) {
+    if (geocodeCache.size > 1000) {
+      const firstKey = geocodeCache.keys().next().value;
+      geocodeCache.delete(firstKey);
+    }
+    geocodeCache.set(cacheKey, address);
+  }
+
+  return address;
 }
 
 export async function get__Onduty(req, res) {
@@ -417,6 +467,11 @@ function buildPrismaData(body, photoname, in_time) {
     inLocation: inLocation ?? in_location ?? null,
     inLatitude: inLatitude ?? (in_latitude != null ? String(in_latitude) : null),
     inLongtiude: inLongtiude ?? (in_longtiude != null ? String(in_longtiude) : null),
+    inAddress: body.inAddress ?? body.in_address ?? null,
+    outLocation: body.outLocation ?? body.out_location ?? null,
+    outLatitude: body.outLatitude ?? (body.out_latitude != null ? String(body.out_latitude) : null),
+    outLongtiude: body.outLongtiude ?? (body.out_longtiude != null ? String(body.out_longtiude) : null),
+    outAddress: body.outAddress ?? body.out_address ?? null,
     docDate: docDate ? new Date(docDate) : (docdate ? new Date(docdate) : new Date()),
     group: group ?? 'onduty',
     toOnduty: toOnduty === true || toOnduty === 'true' || to_onduty === true || to_onduty === 'true',
@@ -588,13 +643,15 @@ export async function requestOnduty(req, res) {
     }
 
     if (hasValidInCoords) {
+      const resolvedInAddr = await getAddressFromCoords(req.body.in_latitude, req.body.in_longtiude);
+      req.body.in_address = req.body.in_address || req.body.inAddress || resolvedInAddr;
       if (!req.body.in_location || req.body.in_location.includes('Unknown') || req.body.in_location === 'Location unavailable' || req.body.in_location === 'Location retrieved on submission' || req.body.in_location === 'GPS coordinates ready') {
-        const addr = await getAddressFromCoords(req.body.in_latitude, req.body.in_longtiude);
-        if (addr) req.body.in_location = addr;
+        req.body.in_location = resolvedInAddr || `Near ${numInLat.toFixed(4)}, ${numInLon.toFixed(4)}`;
       }
     } else {
       req.body.in_latitude = null;
       req.body.in_longtiude = null;
+      req.body.in_address = null;
     }
 
     if (!req.body.in_location || req.body.in_location.includes('Unknown') || req.body.in_location === 'Location retrieved on submission' || req.body.in_location === 'GPS coordinates ready' || req.body.in_location === 'Location unavailable') {
@@ -834,6 +891,11 @@ export async function send_location(req, res) {
     const rawTime = data.timeStamp || data.timestamp || Date.now();
     const timeStampVal = typeof rawTime === 'bigint' ? rawTime : BigInt(Math.floor(Number(rawTime) || Date.now()));
 
+    // Convert coordinates to address for separate address column
+    const resolvedAddress = (data.address && !data.address.includes('Unknown'))
+      ? data.address
+      : await getAddressFromCoords(numLat, numLon);
+
     const locationPayload = {
       latitude: numLat,
       longitude: numLon,
@@ -846,12 +908,33 @@ export async function send_location(req, res) {
       compCode: COMPCODE || (data.compCode ? String(data.compCode).trim().toUpperCase() : null),
       userId: data.userId != null ? String(data.userId).trim() : null,
       docId: data.docId != null ? String(data.docId).trim() : null,
+      address: resolvedAddress || null,
     };
 
     const result = await prisma_Connector.location.create({ data: locationPayload });
     // var auvit_data={PERMISSIONID:String(result?.permissionId),THRS:result?.thrs,APPROVALSTATUS:String(result?.approvalStatus),DOCID:String(result?.docid),REASON:result?.reason,TTIME:result?.tTime,FTIME:result?.fTime,COMPCODE:String(result?.compCode),CREATED_BY:String(result?.createdBy),CREATED_ON:formatDateToOracle(result?.createdOn),MODIFIED_BY:result?.createdBy,MODIFIED_ON:formatDateToOracle(result?.modifiedOn),IDCARD:Number(result?.userId),DOCDATE:result?.docDate,IS_CANCELLED:'false'}
     if (result?.id) {
-      const safeResult = { ...result, timeStamp: Number(result.timeStamp), timestamp: Number(result.timeStamp) };
+      const safeResult = {
+        ...result,
+        timeStamp: Number(result.timeStamp),
+        timestamp: Number(result.timeStamp),
+        address: result.address || resolvedAddress,
+        locationName: result.address || resolvedAddress,
+        isLive: true,
+      };
+
+      try {
+        const io = getIO();
+        if (io) {
+          io.emit('location_update', safeResult);
+          if (safeResult.userId) {
+            io.emit(`location_update:${safeResult.userId}`, safeResult);
+          }
+        }
+      } catch (sockErr) {
+        console.warn('[send_location] Socket broadcast warning:', sockErr?.message);
+      }
+
       return res.json({ status: 1, data: safeResult });
     } else {
       return res.json({ status: 0, data: {} })
@@ -1069,6 +1152,24 @@ export async function get_live_location(req, res) {
 
     if (!latestLocation) return res.json([]);
 
+    const numLat = Number(latestLocation.latitude);
+    const numLon = Number(latestLocation.longitude);
+
+    // Ensure live location always provides a human-readable converted address
+    let liveAddress = latestLocation.address || latestLocation.locationName || latestLocation.location || null;
+    if (!liveAddress || liveAddress.startsWith('Near ') || liveAddress.includes('Unknown') || liveAddress === 'Location unavailable' || liveAddress === 'GPS coordinates ready') {
+      const resolved = await getAddressFromCoords(numLat, numLon);
+      if (resolved && !resolved.startsWith('Near ')) {
+        liveAddress = resolved;
+        if (typeof latestLocation.id === 'number') {
+          prisma_Connector.location.update({
+            where: { id: latestLocation.id },
+            data: { address: resolved },
+          }).catch(() => {});
+        }
+      }
+    }
+
     const timestampNum = latestLocation.timeStamp != null
       ? Number(latestLocation.timeStamp)
       : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime());
@@ -1077,11 +1178,12 @@ export async function get_live_location(req, res) {
       id: latestLocation.id,
       userId: latestLocation.userId,
       compCode: latestLocation.compCode,
-      latitude: Number(latestLocation.latitude),
-      longitude: Number(latestLocation.longitude),
+      latitude: numLat,
+      longitude: numLon,
       docId: latestLocation.docId,
       isLive: true,
-      locationName: latestLocation.locationName || latestLocation.location || null,
+      address: liveAddress || `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`,
+      locationName: liveAddress || `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`,
       createdAt: latestLocation.createdAt,
       timestamp: timestampNum,
       timeStamp: timestampNum,
@@ -1132,6 +1234,15 @@ export async function requestReachedOut(req, res) {
       rOutLocation = rOutLocation || currentOnduty.inLocation || `Near ${Number(rOutLat).toFixed(4)}, ${Number(rOutLon).toFixed(4)}`;
     }
 
+    let rOutAddress = reset.out_address ?? reset.outAddress ?? null;
+    if (hasValidRCoords) {
+      const resolvedAddress = await getAddressFromCoords(rOutLat, rOutLon);
+      rOutAddress = rOutAddress || resolvedAddress;
+      if (!rOutLocation || rOutLocation === 'Location unavailable' || rOutLocation.includes('Unknown')) {
+        rOutLocation = resolvedAddress || `Near ${numRLat.toFixed(4)}, ${numRLon.toFixed(4)}`;
+      }
+    }
+
     if (!rOutLocation || rOutLocation === 'Location unavailable') {
       rOutLocation = currentOnduty.inLocation && currentOnduty.inLocation !== 'Location unavailable'
         ? currentOnduty.inLocation
@@ -1144,6 +1255,7 @@ export async function requestReachedOut(req, res) {
         ...(reset.end_km != null || reset.endKm != null ? { endKm: String(reset.endKm ?? reset.end_km) } : {}),
         ...(reset.Evechilekm != null || reset.endVehicleKm != null ? { endVehicleKm: String(reset.endVehicleKm ?? reset.Evechilekm) } : {}),
         ...(rOutLocation != null ? { outLocation: rOutLocation } : {}),
+        ...(rOutAddress != null ? { outAddress: rOutAddress } : {}),
         ...(rOutLat != null ? { outLatitude: rOutLat } : {}),
         ...(rOutLon != null ? { outLongtiude: rOutLon } : {}),
         inOut: "OUT",
@@ -1304,6 +1416,8 @@ export async function get_history_location(req, res) {
           ...item,
           latitude: Number(item.latitude),
           longitude: Number(item.longitude),
+          address: item.address || item.location || null,
+          locationName: item.address || item.location || null,
           timestamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
           timeStamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
         });
@@ -1357,6 +1471,8 @@ export async function get_history_location(req, res) {
             latitude: Number(trip.inLatitude),
             longitude: Number(trip.inLongtiude),
             location: trip.inLocation,
+            address: trip.inAddress || trip.inLocation,
+            locationName: trip.inAddress || trip.inLocation,
             createdAt: trip.docDate || trip.createdAt,
             timestamp: new Date(trip.docDate || trip.createdAt).getTime(),
             timeStamp: new Date(trip.docDate || trip.createdAt).getTime(),
@@ -1373,6 +1489,8 @@ export async function get_history_location(req, res) {
             latitude: Number(trip.outLatitude),
             longitude: Number(trip.outLongtiude),
             location: trip.outLocation,
+            address: trip.outAddress || trip.outLocation,
+            locationName: trip.outAddress || trip.outLocation,
             createdAt: trip.createdAt,
             timestamp: new Date(trip.createdAt).getTime(),
             timeStamp: new Date(trip.createdAt).getTime(),
@@ -1514,9 +1632,11 @@ export async function requestOndutyOut(req, res) {
   const validLon = Number(outLon);
   const hasValidOutCoords = Boolean(validLat && validLon && !(validLat === 0 && validLon === 0));
 
+  let outAddress = reset.out_address ?? reset.outAddress ?? null;
   if (hasValidOutCoords) {
     const addr = await getAddressFromCoords(outLat, outLon);
-    if (addr) {
+    outAddress = outAddress || addr;
+    if (addr && (!outLocation || outLocation.includes('Unknown') || outLocation === 'Location unavailable' || outLocation === 'Location retrieved on submission' || outLocation === 'GPS coordinates ready')) {
       outLocation = addr;
     }
   } else {
@@ -1566,6 +1686,7 @@ export async function requestOndutyOut(req, res) {
     if (!outLat && existing.inLatitude && existing.inLongtiude && Number(existing.inLatitude) !== 0) {
       outLat = String(existing.inLatitude);
       outLon = String(existing.inLongtiude);
+      outAddress = outAddress || existing.inAddress;
       if (!outLocation || outLocation === 'Location unavailable' || outLocation.includes('Unknown')) {
         outLocation = existing.inLocation || `Near ${Number(outLat).toFixed(4)}, ${Number(outLon).toFixed(4)}`;
       }
@@ -1578,6 +1699,7 @@ export async function requestOndutyOut(req, res) {
         outLocation: outLocation,
         outLatitude: outLat,
         outLongtiude: outLon,
+        outAddress: outAddress,
         outTime: out_time,
         endKm: reset.end_km != null ? String(reset.end_km) : (reset.endKm != null ? String(reset.endKm) : null),
         endVehicleKm: reset.Evechilekm != null ? String(reset.Evechilekm) : (reset.endVehicleKm != null ? String(reset.endVehicleKm) : null),

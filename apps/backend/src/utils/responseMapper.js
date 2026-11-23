@@ -126,7 +126,9 @@ export function mapOnduty(row) {
   const empname = row.empName !== undefined ? row.empName : row.empname;
   const inout = row.inOut !== undefined ? row.inOut : row.inout;
   const in_location = row.inLocation !== undefined ? row.inLocation : row.in_location;
+  const in_address = row.inAddress !== undefined ? row.inAddress : row.in_address;
   const out_location = row.outLocation !== undefined ? row.outLocation : row.out_location;
+  const out_address = row.outAddress !== undefined ? row.outAddress : row.out_address;
   const categoryName = row.categoryData?.name || row.categoryName || (isNaN(Number(row.category)) ? row.category : null);
   const userdata = mapUserSnippet(row.userData || row.userdata) || {
     username: empname || idcard || '',
@@ -154,12 +156,16 @@ export function mapOnduty(row) {
     outTime: row.outTime !== undefined ? row.outTime : row.out_time,
     in_location,
     inLocation: in_location,
+    in_address,
+    inAddress: in_address,
     in_latitude: row.inLatitude !== undefined ? row.inLatitude : row.in_latitude,
     inLatitude: row.inLatitude !== undefined ? row.inLatitude : row.in_latitude,
     in_longtiude: row.inLongtiude !== undefined ? row.inLongtiude : row.in_longtiude,
     inLongtiude: row.inLongtiude !== undefined ? row.inLongtiude : row.in_longtiude,
     out_location,
     outLocation: out_location,
+    out_address,
+    outAddress: out_address,
     out_latitude: row.outLatitude !== undefined ? row.outLatitude : row.out_latitude,
     outLatitude: row.outLatitude !== undefined ? row.outLatitude : row.out_latitude,
     out_longtiude: row.outLongtiude !== undefined ? row.outLongtiude : row.out_longtiude,

@@ -119,6 +119,15 @@ export function getCurrentLocationAsync(timeout = 10000) {
                     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Native location timeout')), 3000));
                     const loc = await Promise.race([nativePromise, timeoutPromise]);
                     if (loc && (Number(loc.latitude) !== 0 || Number(loc.longitude) !== 0)) {
+                        if (loc.address && !loc.address.startsWith('Near ')) {
+                            resolve({
+                                latitude: Number(loc.latitude),
+                                longitude: Number(loc.longitude),
+                                accuracy: Number(loc.accuracy || 0),
+                                address: loc.address,
+                            });
+                            return;
+                        }
                         await finishWithCoords(loc.latitude, loc.longitude);
                         return;
                     }

@@ -4785,6 +4785,7 @@ export namespace Prisma {
     inLocation: string | null
     inLatitude: string | null
     inLongtiude: string | null
+    inAddress: string | null
     vehicleNo: string | null
     bunk: string | null
     startKm: string | null
@@ -4792,6 +4793,7 @@ export namespace Prisma {
     outLocation: string | null
     outLatitude: string | null
     outLongtiude: string | null
+    outAddress: string | null
     toOnduty: boolean | null
     createdBy: string | null
     modifiedBy: string | null
@@ -4828,6 +4830,7 @@ export namespace Prisma {
     inLocation: string | null
     inLatitude: string | null
     inLongtiude: string | null
+    inAddress: string | null
     vehicleNo: string | null
     bunk: string | null
     startKm: string | null
@@ -4835,6 +4838,7 @@ export namespace Prisma {
     outLocation: string | null
     outLatitude: string | null
     outLongtiude: string | null
+    outAddress: string | null
     toOnduty: boolean | null
     createdBy: string | null
     modifiedBy: string | null
@@ -4871,6 +4875,7 @@ export namespace Prisma {
     inLocation: number
     inLatitude: number
     inLongtiude: number
+    inAddress: number
     vehicleNo: number
     bunk: number
     startKm: number
@@ -4878,6 +4883,7 @@ export namespace Prisma {
     outLocation: number
     outLatitude: number
     outLongtiude: number
+    outAddress: number
     toOnduty: number
     createdBy: number
     modifiedBy: number
@@ -4930,6 +4936,7 @@ export namespace Prisma {
     inLocation?: true
     inLatitude?: true
     inLongtiude?: true
+    inAddress?: true
     vehicleNo?: true
     bunk?: true
     startKm?: true
@@ -4937,6 +4944,7 @@ export namespace Prisma {
     outLocation?: true
     outLatitude?: true
     outLongtiude?: true
+    outAddress?: true
     toOnduty?: true
     createdBy?: true
     modifiedBy?: true
@@ -4973,6 +4981,7 @@ export namespace Prisma {
     inLocation?: true
     inLatitude?: true
     inLongtiude?: true
+    inAddress?: true
     vehicleNo?: true
     bunk?: true
     startKm?: true
@@ -4980,6 +4989,7 @@ export namespace Prisma {
     outLocation?: true
     outLatitude?: true
     outLongtiude?: true
+    outAddress?: true
     toOnduty?: true
     createdBy?: true
     modifiedBy?: true
@@ -5016,6 +5026,7 @@ export namespace Prisma {
     inLocation?: true
     inLatitude?: true
     inLongtiude?: true
+    inAddress?: true
     vehicleNo?: true
     bunk?: true
     startKm?: true
@@ -5023,6 +5034,7 @@ export namespace Prisma {
     outLocation?: true
     outLatitude?: true
     outLongtiude?: true
+    outAddress?: true
     toOnduty?: true
     createdBy?: true
     modifiedBy?: true
@@ -5146,6 +5158,7 @@ export namespace Prisma {
     inLocation: string | null
     inLatitude: string | null
     inLongtiude: string | null
+    inAddress: string | null
     vehicleNo: string | null
     bunk: string | null
     startKm: string | null
@@ -5153,6 +5166,7 @@ export namespace Prisma {
     outLocation: string | null
     outLatitude: string | null
     outLongtiude: string | null
+    outAddress: string | null
     toOnduty: boolean
     createdBy: string | null
     modifiedBy: string | null
@@ -5208,6 +5222,7 @@ export namespace Prisma {
     inLocation?: boolean
     inLatitude?: boolean
     inLongtiude?: boolean
+    inAddress?: boolean
     vehicleNo?: boolean
     bunk?: boolean
     startKm?: boolean
@@ -5215,6 +5230,7 @@ export namespace Prisma {
     outLocation?: boolean
     outLatitude?: boolean
     outLongtiude?: boolean
+    outAddress?: boolean
     toOnduty?: boolean
     createdBy?: boolean
     modifiedBy?: boolean
@@ -5255,6 +5271,7 @@ export namespace Prisma {
     inLocation?: boolean
     inLatitude?: boolean
     inLongtiude?: boolean
+    inAddress?: boolean
     vehicleNo?: boolean
     bunk?: boolean
     startKm?: boolean
@@ -5262,6 +5279,7 @@ export namespace Prisma {
     outLocation?: boolean
     outLatitude?: boolean
     outLongtiude?: boolean
+    outAddress?: boolean
     toOnduty?: boolean
     createdBy?: boolean
     modifiedBy?: boolean
@@ -5315,6 +5333,7 @@ export namespace Prisma {
       inLocation: string | null
       inLatitude: string | null
       inLongtiude: string | null
+      inAddress: string | null
       vehicleNo: string | null
       bunk: string | null
       startKm: string | null
@@ -5322,6 +5341,7 @@ export namespace Prisma {
       outLocation: string | null
       outLatitude: string | null
       outLongtiude: string | null
+      outAddress: string | null
       toOnduty: boolean
       createdBy: string | null
       modifiedBy: string | null
@@ -5756,6 +5776,7 @@ export namespace Prisma {
     readonly inLocation: FieldRef<"Onduty", 'String'>
     readonly inLatitude: FieldRef<"Onduty", 'String'>
     readonly inLongtiude: FieldRef<"Onduty", 'String'>
+    readonly inAddress: FieldRef<"Onduty", 'String'>
     readonly vehicleNo: FieldRef<"Onduty", 'String'>
     readonly bunk: FieldRef<"Onduty", 'String'>
     readonly startKm: FieldRef<"Onduty", 'String'>
@@ -5763,6 +5784,7 @@ export namespace Prisma {
     readonly outLocation: FieldRef<"Onduty", 'String'>
     readonly outLatitude: FieldRef<"Onduty", 'String'>
     readonly outLongtiude: FieldRef<"Onduty", 'String'>
+    readonly outAddress: FieldRef<"Onduty", 'String'>
     readonly toOnduty: FieldRef<"Onduty", 'Boolean'>
     readonly createdBy: FieldRef<"Onduty", 'String'>
     readonly modifiedBy: FieldRef<"Onduty", 'String'>
@@ -10854,6 +10876,7 @@ export namespace Prisma {
     compCode: string | null
     userId: string | null
     docId: string | null
+    address: string | null
     createdAt: Date | null
   }
 
@@ -10870,6 +10893,7 @@ export namespace Prisma {
     compCode: string | null
     userId: string | null
     docId: string | null
+    address: string | null
     createdAt: Date | null
   }
 
@@ -10886,6 +10910,7 @@ export namespace Prisma {
     compCode: number
     userId: number
     docId: number
+    address: number
     createdAt: number
     _all: number
   }
@@ -10926,6 +10951,7 @@ export namespace Prisma {
     compCode?: true
     userId?: true
     docId?: true
+    address?: true
     createdAt?: true
   }
 
@@ -10942,6 +10968,7 @@ export namespace Prisma {
     compCode?: true
     userId?: true
     docId?: true
+    address?: true
     createdAt?: true
   }
 
@@ -10958,6 +10985,7 @@ export namespace Prisma {
     compCode?: true
     userId?: true
     docId?: true
+    address?: true
     createdAt?: true
     _all?: true
   }
@@ -11061,6 +11089,7 @@ export namespace Prisma {
     compCode: string | null
     userId: string | null
     docId: string | null
+    address: string | null
     createdAt: Date
     _count: LocationCountAggregateOutputType | null
     _avg: LocationAvgAggregateOutputType | null
@@ -11096,6 +11125,7 @@ export namespace Prisma {
     compCode?: boolean
     userId?: boolean
     docId?: boolean
+    address?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["location"]>
 
@@ -11112,6 +11142,7 @@ export namespace Prisma {
     compCode?: boolean
     userId?: boolean
     docId?: boolean
+    address?: boolean
     createdAt?: boolean
   }
 
@@ -11133,6 +11164,7 @@ export namespace Prisma {
       compCode: string | null
       userId: string | null
       docId: string | null
+      address: string | null
       createdAt: Date
     }, ExtArgs["result"]["location"]>
     composites: {}
@@ -11540,6 +11572,7 @@ export namespace Prisma {
     readonly compCode: FieldRef<"Location", 'String'>
     readonly userId: FieldRef<"Location", 'String'>
     readonly docId: FieldRef<"Location", 'String'>
+    readonly address: FieldRef<"Location", 'String'>
     readonly createdAt: FieldRef<"Location", 'DateTime'>
   }
     
@@ -18146,6 +18179,7 @@ export namespace Prisma {
     inLocation: 'inLocation',
     inLatitude: 'inLatitude',
     inLongtiude: 'inLongtiude',
+    inAddress: 'inAddress',
     vehicleNo: 'vehicleNo',
     bunk: 'bunk',
     startKm: 'startKm',
@@ -18153,6 +18187,7 @@ export namespace Prisma {
     outLocation: 'outLocation',
     outLatitude: 'outLatitude',
     outLongtiude: 'outLongtiude',
+    outAddress: 'outAddress',
     toOnduty: 'toOnduty',
     createdBy: 'createdBy',
     modifiedBy: 'modifiedBy',
@@ -18235,6 +18270,7 @@ export namespace Prisma {
     compCode: 'compCode',
     userId: 'userId',
     docId: 'docId',
+    address: 'address',
     createdAt: 'createdAt'
   };
 
@@ -18688,6 +18724,7 @@ export namespace Prisma {
     inLocation?: StringNullableFilter<"Onduty"> | string | null
     inLatitude?: StringNullableFilter<"Onduty"> | string | null
     inLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    inAddress?: StringNullableFilter<"Onduty"> | string | null
     vehicleNo?: StringNullableFilter<"Onduty"> | string | null
     bunk?: StringNullableFilter<"Onduty"> | string | null
     startKm?: StringNullableFilter<"Onduty"> | string | null
@@ -18695,6 +18732,7 @@ export namespace Prisma {
     outLocation?: StringNullableFilter<"Onduty"> | string | null
     outLatitude?: StringNullableFilter<"Onduty"> | string | null
     outLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    outAddress?: StringNullableFilter<"Onduty"> | string | null
     toOnduty?: BoolFilter<"Onduty"> | boolean
     createdBy?: StringNullableFilter<"Onduty"> | string | null
     modifiedBy?: StringNullableFilter<"Onduty"> | string | null
@@ -18735,6 +18773,7 @@ export namespace Prisma {
     inLocation?: SortOrderInput | SortOrder
     inLatitude?: SortOrderInput | SortOrder
     inLongtiude?: SortOrderInput | SortOrder
+    inAddress?: SortOrderInput | SortOrder
     vehicleNo?: SortOrderInput | SortOrder
     bunk?: SortOrderInput | SortOrder
     startKm?: SortOrderInput | SortOrder
@@ -18742,6 +18781,7 @@ export namespace Prisma {
     outLocation?: SortOrderInput | SortOrder
     outLatitude?: SortOrderInput | SortOrder
     outLongtiude?: SortOrderInput | SortOrder
+    outAddress?: SortOrderInput | SortOrder
     toOnduty?: SortOrder
     createdBy?: SortOrderInput | SortOrder
     modifiedBy?: SortOrderInput | SortOrder
@@ -18785,6 +18825,7 @@ export namespace Prisma {
     inLocation?: StringNullableFilter<"Onduty"> | string | null
     inLatitude?: StringNullableFilter<"Onduty"> | string | null
     inLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    inAddress?: StringNullableFilter<"Onduty"> | string | null
     vehicleNo?: StringNullableFilter<"Onduty"> | string | null
     bunk?: StringNullableFilter<"Onduty"> | string | null
     startKm?: StringNullableFilter<"Onduty"> | string | null
@@ -18792,6 +18833,7 @@ export namespace Prisma {
     outLocation?: StringNullableFilter<"Onduty"> | string | null
     outLatitude?: StringNullableFilter<"Onduty"> | string | null
     outLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    outAddress?: StringNullableFilter<"Onduty"> | string | null
     toOnduty?: BoolFilter<"Onduty"> | boolean
     createdBy?: StringNullableFilter<"Onduty"> | string | null
     modifiedBy?: StringNullableFilter<"Onduty"> | string | null
@@ -18832,6 +18874,7 @@ export namespace Prisma {
     inLocation?: SortOrderInput | SortOrder
     inLatitude?: SortOrderInput | SortOrder
     inLongtiude?: SortOrderInput | SortOrder
+    inAddress?: SortOrderInput | SortOrder
     vehicleNo?: SortOrderInput | SortOrder
     bunk?: SortOrderInput | SortOrder
     startKm?: SortOrderInput | SortOrder
@@ -18839,6 +18882,7 @@ export namespace Prisma {
     outLocation?: SortOrderInput | SortOrder
     outLatitude?: SortOrderInput | SortOrder
     outLongtiude?: SortOrderInput | SortOrder
+    outAddress?: SortOrderInput | SortOrder
     toOnduty?: SortOrder
     createdBy?: SortOrderInput | SortOrder
     modifiedBy?: SortOrderInput | SortOrder
@@ -18883,6 +18927,7 @@ export namespace Prisma {
     inLocation?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     inLatitude?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     inLongtiude?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
+    inAddress?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     vehicleNo?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     bunk?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     startKm?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
@@ -18890,6 +18935,7 @@ export namespace Prisma {
     outLocation?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     outLatitude?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     outLongtiude?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
+    outAddress?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     toOnduty?: BoolWithAggregatesFilter<"Onduty"> | boolean
     createdBy?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
     modifiedBy?: StringNullableWithAggregatesFilter<"Onduty"> | string | null
@@ -19195,6 +19241,7 @@ export namespace Prisma {
     compCode?: StringNullableFilter<"Location"> | string | null
     userId?: StringNullableFilter<"Location"> | string | null
     docId?: StringNullableFilter<"Location"> | string | null
+    address?: StringNullableFilter<"Location"> | string | null
     createdAt?: DateTimeFilter<"Location"> | Date | string
   }
 
@@ -19211,6 +19258,7 @@ export namespace Prisma {
     compCode?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     docId?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
     createdAt?: SortOrder
   }
 
@@ -19230,6 +19278,7 @@ export namespace Prisma {
     compCode?: StringNullableFilter<"Location"> | string | null
     userId?: StringNullableFilter<"Location"> | string | null
     docId?: StringNullableFilter<"Location"> | string | null
+    address?: StringNullableFilter<"Location"> | string | null
     createdAt?: DateTimeFilter<"Location"> | Date | string
   }, "id">
 
@@ -19246,6 +19295,7 @@ export namespace Prisma {
     compCode?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     docId?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: LocationCountOrderByAggregateInput
     _avg?: LocationAvgOrderByAggregateInput
@@ -19270,6 +19320,7 @@ export namespace Prisma {
     compCode?: StringNullableWithAggregatesFilter<"Location"> | string | null
     userId?: StringNullableWithAggregatesFilter<"Location"> | string | null
     docId?: StringNullableWithAggregatesFilter<"Location"> | string | null
+    address?: StringNullableWithAggregatesFilter<"Location"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Location"> | Date | string
   }
 
@@ -20193,6 +20244,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -20200,6 +20252,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     rejectBy?: string | null
     approvedBy?: string | null
@@ -20237,6 +20290,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -20244,6 +20298,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -20278,6 +20333,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20285,6 +20341,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20322,6 +20379,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20329,6 +20387,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20365,6 +20424,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -20372,6 +20432,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -20406,6 +20467,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20413,6 +20475,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20446,6 +20509,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20453,6 +20517,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20746,6 +20811,7 @@ export namespace Prisma {
     compCode?: string | null
     userId?: string | null
     docId?: string | null
+    address?: string | null
     createdAt?: Date | string
   }
 
@@ -20762,6 +20828,7 @@ export namespace Prisma {
     compCode?: string | null
     userId?: string | null
     docId?: string | null
+    address?: string | null
     createdAt?: Date | string
   }
 
@@ -20777,6 +20844,7 @@ export namespace Prisma {
     compCode?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     docId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20793,6 +20861,7 @@ export namespace Prisma {
     compCode?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     docId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20809,6 +20878,7 @@ export namespace Prisma {
     compCode?: string | null
     userId?: string | null
     docId?: string | null
+    address?: string | null
     createdAt?: Date | string
   }
 
@@ -20824,6 +20894,7 @@ export namespace Prisma {
     compCode?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     docId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20840,6 +20911,7 @@ export namespace Prisma {
     compCode?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     docId?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21917,6 +21989,7 @@ export namespace Prisma {
     inLocation?: SortOrder
     inLatitude?: SortOrder
     inLongtiude?: SortOrder
+    inAddress?: SortOrder
     vehicleNo?: SortOrder
     bunk?: SortOrder
     startKm?: SortOrder
@@ -21924,6 +21997,7 @@ export namespace Prisma {
     outLocation?: SortOrder
     outLatitude?: SortOrder
     outLongtiude?: SortOrder
+    outAddress?: SortOrder
     toOnduty?: SortOrder
     createdBy?: SortOrder
     modifiedBy?: SortOrder
@@ -21967,6 +22041,7 @@ export namespace Prisma {
     inLocation?: SortOrder
     inLatitude?: SortOrder
     inLongtiude?: SortOrder
+    inAddress?: SortOrder
     vehicleNo?: SortOrder
     bunk?: SortOrder
     startKm?: SortOrder
@@ -21974,6 +22049,7 @@ export namespace Prisma {
     outLocation?: SortOrder
     outLatitude?: SortOrder
     outLongtiude?: SortOrder
+    outAddress?: SortOrder
     toOnduty?: SortOrder
     createdBy?: SortOrder
     modifiedBy?: SortOrder
@@ -22010,6 +22086,7 @@ export namespace Prisma {
     inLocation?: SortOrder
     inLatitude?: SortOrder
     inLongtiude?: SortOrder
+    inAddress?: SortOrder
     vehicleNo?: SortOrder
     bunk?: SortOrder
     startKm?: SortOrder
@@ -22017,6 +22094,7 @@ export namespace Prisma {
     outLocation?: SortOrder
     outLatitude?: SortOrder
     outLongtiude?: SortOrder
+    outAddress?: SortOrder
     toOnduty?: SortOrder
     createdBy?: SortOrder
     modifiedBy?: SortOrder
@@ -22255,6 +22333,7 @@ export namespace Prisma {
     compCode?: SortOrder
     userId?: SortOrder
     docId?: SortOrder
+    address?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22282,6 +22361,7 @@ export namespace Prisma {
     compCode?: SortOrder
     userId?: SortOrder
     docId?: SortOrder
+    address?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22298,6 +22378,7 @@ export namespace Prisma {
     compCode?: SortOrder
     userId?: SortOrder
     docId?: SortOrder
+    address?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25046,6 +25127,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25053,6 +25135,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     rejectBy?: string | null
     approvedBy?: string | null
@@ -25088,6 +25171,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25095,6 +25179,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -25139,6 +25224,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25146,6 +25232,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     rejectBy?: string | null
     approvedBy?: string | null
@@ -25182,6 +25269,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25189,6 +25277,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     modifiedBy?: string | null
     rejectBy?: string | null
@@ -25232,6 +25321,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25239,6 +25329,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     rejectBy?: string | null
     approvedBy?: string | null
@@ -25275,6 +25366,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -25282,6 +25374,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     rejectBy?: string | null
@@ -25637,6 +25730,7 @@ export namespace Prisma {
     inLocation?: StringNullableFilter<"Onduty"> | string | null
     inLatitude?: StringNullableFilter<"Onduty"> | string | null
     inLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    inAddress?: StringNullableFilter<"Onduty"> | string | null
     vehicleNo?: StringNullableFilter<"Onduty"> | string | null
     bunk?: StringNullableFilter<"Onduty"> | string | null
     startKm?: StringNullableFilter<"Onduty"> | string | null
@@ -25644,6 +25738,7 @@ export namespace Prisma {
     outLocation?: StringNullableFilter<"Onduty"> | string | null
     outLatitude?: StringNullableFilter<"Onduty"> | string | null
     outLongtiude?: StringNullableFilter<"Onduty"> | string | null
+    outAddress?: StringNullableFilter<"Onduty"> | string | null
     toOnduty?: BoolFilter<"Onduty"> | boolean
     createdBy?: StringNullableFilter<"Onduty"> | string | null
     modifiedBy?: StringNullableFilter<"Onduty"> | string | null
@@ -26601,6 +26696,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -26608,6 +26704,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     rejectBy?: string | null
     approvedBy?: string | null
@@ -26644,6 +26741,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -26651,6 +26749,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -28690,6 +28789,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -28697,6 +28797,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -28733,6 +28834,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -28740,6 +28842,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     modifiedBy?: string | null
     rejectBy?: string | null
@@ -28775,6 +28878,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -28782,6 +28886,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     rejectBy?: string | null
@@ -29663,6 +29768,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29670,6 +29776,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29705,6 +29812,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29712,6 +29820,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29747,6 +29856,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29754,6 +29864,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29788,6 +29899,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29795,6 +29907,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29831,6 +29944,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29838,6 +29952,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29873,6 +29988,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29880,6 +29996,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29913,6 +30030,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29920,6 +30038,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29956,6 +30075,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29963,6 +30083,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29998,6 +30119,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30005,6 +30127,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30304,6 +30427,7 @@ export namespace Prisma {
     inLocation?: string | null
     inLatitude?: string | null
     inLongtiude?: string | null
+    inAddress?: string | null
     vehicleNo?: string | null
     bunk?: string | null
     startKm?: string | null
@@ -30311,6 +30435,7 @@ export namespace Prisma {
     outLocation?: string | null
     outLatitude?: string | null
     outLongtiude?: string | null
+    outAddress?: string | null
     toOnduty?: boolean
     createdBy?: string | null
     modifiedBy?: string | null
@@ -30344,6 +30469,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30351,6 +30477,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     rejectBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30387,6 +30514,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30394,6 +30522,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30429,6 +30558,7 @@ export namespace Prisma {
     inLocation?: NullableStringFieldUpdateOperationsInput | string | null
     inLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     inLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    inAddress?: NullableStringFieldUpdateOperationsInput | string | null
     vehicleNo?: NullableStringFieldUpdateOperationsInput | string | null
     bunk?: NullableStringFieldUpdateOperationsInput | string | null
     startKm?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30436,6 +30566,7 @@ export namespace Prisma {
     outLocation?: NullableStringFieldUpdateOperationsInput | string | null
     outLatitude?: NullableStringFieldUpdateOperationsInput | string | null
     outLongtiude?: NullableStringFieldUpdateOperationsInput | string | null
+    outAddress?: NullableStringFieldUpdateOperationsInput | string | null
     toOnduty?: BoolFieldUpdateOperationsInput | boolean
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: NullableStringFieldUpdateOperationsInput | string | null

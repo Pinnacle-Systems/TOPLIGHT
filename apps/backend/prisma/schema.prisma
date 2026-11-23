@@ -97,6 +97,7 @@ model Onduty {
   inLocation     String?
   inLatitude     String?
   inLongtiude    String?
+  inAddress      String?       @db.Text
   vehicleNo      String?
   bunk           String?
   startKm        String?
@@ -104,6 +105,7 @@ model Onduty {
   outLocation    String?
   outLatitude    String?
   outLongtiude   String?
+  outAddress     String?       @db.Text
   toOnduty       Boolean       @default(false)
   createdBy      String?
   createdByUser  User?         @relation("create_User", fields: [createdBy], references: [idCard], onDelete: Cascade)
@@ -183,6 +185,7 @@ model Location {
   compCode  String?
   userId    String?
   docId     String?
+  address   String?  @db.Text
   createdAt DateTime @default(now())
 }
 

@@ -83,6 +83,7 @@ def defaultApiUrl = envProperties.getProperty("API_URL")
 def locationApiUrl = envProperties.getProperty("LOCATION_API_URL") 
 def locationInterval = envProperties.getProperty("LOCATION_INTERVAL") ?: "5000"
 def locationFastestInterval = envProperties.getProperty("LOCATION_FASTEST_INTERVAL") ?: "3000"
+def locationMinDistance = envProperties.getProperty("LOCATION_MIN_DISTANCE") ?: "3.0"
 def locationNotifTitle = envProperties.getProperty("LOCATION_NOTIFICATION_TITLE") ?: "OnDuty Active"
 
 android {
@@ -105,6 +106,7 @@ android {
         buildConfigField "String", "API_URL", "\"${defaultApiUrl}\""
         buildConfigField "String", "LOCATION_INTERVAL", "\"${locationInterval}\""
         buildConfigField "String", "LOCATION_FASTEST_INTERVAL", "\"${locationFastestInterval}\""
+        buildConfigField "String", "LOCATION_MIN_DISTANCE", "\"${locationMinDistance}\""
         buildConfigField "String", "LOCATION_NOTIFICATION_TITLE", "\"${locationNotifTitle}\""
     }
     signingConfigs {

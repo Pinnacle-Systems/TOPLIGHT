@@ -1,10 +1,12 @@
 import { Server } from 'socket.io';
 
+let ioInstance = null;
+
 /**
- * socket.handler.js
+ * socketHandler.js
  *
  * Central Socket.IO initialization and real-time event router.
- * Handles WebRTC peer signaling, push notifications, and request/approval broadcasts.
+ * Handles WebRTC peer signaling, live employee location tracking, and broadcasts.
  */
 export function initializeSocket(server) {
   const peers = {};
@@ -15,6 +17,8 @@ export function initializeSocket(server) {
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
     },
   });
+
+  ioInstance = io;
 
   io.on('connection', (client) => {
     // ── WebRTC Signaling & Room Management ───────────────────────────────────
@@ -59,6 +63,12 @@ export function initializeSocket(server) {
     // ── Live Location Updates ────────────────────────────────────────────────
     client.on('locationUpdate', (data) => {
       console.log('[Socket] Location update received:', data);
+      if (data) {
+        io.emit('location_update', data);
+        if (data.userId) {
+          io.emit(`location_update:${data.userId}`, data);
+        }
+      }
     });
 
     // ── On-Duty Requests & Approvals ─────────────────────────────────────────
@@ -86,6 +96,10 @@ export function initializeSocket(server) {
   });
 
   return io;
+}
+
+export function getIO() {
+  return ioInstance;
 }
 
 export default initializeSocket;

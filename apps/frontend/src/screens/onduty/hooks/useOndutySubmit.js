@@ -25,7 +25,7 @@ import { _FCM_SENDER } from '../../../components/utils/Fcm';
 import socket from '../../../utils/Socket';
 import { formatUserFriendlyError } from '../../../utils/UserFriendlyError';
 import OndutyRTk from '../../../store/api/OndutyApi';
-import { NavRef } from '../../../components/utils/NavigationRef';
+import { CustomNavigation } from '../../../components/utils/NavigationRef';
 
 const ONDUTY_API = `${BASE_URL}/onduty/requestOnduty`;
 
@@ -36,15 +36,16 @@ export function useOndutySubmit({
     setUploadProgress,  // local state setter
     refetchFCMTokens,   // { refToken, hodFCMToken }
     setCompressedPhoto,  // local state setter for compressed photo URI
+    navigation,         // react-navigation object
 }) {
     const dispatch = useDispatch();
     const isSubmittingRef = useRef(false);
 
     const UserSelect = useSelector(st => st?.UserDetails);
-    const formState  = useSelector(st => st?.ondutyInput);
+    const formState = useSelector(st => st?.ondutyInput);
 
     const { refetch: refetchDocId } = useGetDocIDQuery();
-    const { refetch: refetchIn    } = useGetInQuery();
+    const { refetch: refetchIn } = useGetInQuery();
     const { refetch: refetchVehicles } = useGet__VechileQuery(
         {
             params: { where: JSON.stringify({ USEDBY: UserSelect?.EMPNAME }) },
@@ -88,7 +89,7 @@ export function useOndutySubmit({
                 longitude: 0,
                 address: (formState.address && formState.address !== 'Location unavailable' && !formState.address.includes('Unknown'))
                     ? formState.address
-                    : 'Location Unavailable',
+                    : 'Location unavailable',
             };
         } catch {
             const formLat = Number(formState.latitude) || 0;
@@ -99,7 +100,7 @@ export function useOndutySubmit({
                 longitude: formLon,
                 address: isFormResolved
                     ? formState.address
-                    : (formLat !== 0 || formLon !== 0 ? `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}` : 'Location Unavailable'),
+                    : (formLat !== 0 || formLon !== 0 ? `Near ${formLat.toFixed(4)}, ${formLon.toFixed(4)}` : 'Location unavailable'),
             };
         }
     }, [formState.latitude, formState.longitude, formState.address]);
@@ -216,33 +217,34 @@ export function useOndutySubmit({
             formData.append('hr', hr || '');
             formData.append('approval', approvalType);
 
-            formData.append('userId',       UserSelect?.UserId || '0');
-            formData.append('idcard',       UserSelect?.UserId || '0');
-            formData.append('docdate',      new Date().toISOString());
-            formData.append('others',       formState.others   || 'No reason provided');
-            formData.append('create',       '1');
-            formData.append('docid',        finalDocId);
+            formData.append('userId', UserSelect?.UserId || '0');
+            formData.append('idcard', UserSelect?.UserId || '0');
+            formData.append('docdate', new Date().toISOString());
+            formData.append('others', formState.others || 'No reason provided');
+            formData.append('create', '1');
+            formData.append('docid', finalDocId);
 
             // KM Entry: only pass vehicle and start_km when isKmEntryEnabled is true
             const hasKmEnabled = Boolean(formState.isKmEntryEnabled);
-            formData.append('vechileno',    hasKmEnabled ? (formState.vechileno || '') : '');
-            formData.append('start_km',     hasKmEnabled ? (formState.start_km || '0') : '0');
-            formData.append('Svechilekm',   hasKmEnabled ? (formState.start_km || '0') : '0');
+            formData.append('vechileno', hasKmEnabled ? (formState.vechileno || '') : '');
+            formData.append('start_km', hasKmEnabled ? (formState.start_km || '0') : '0');
+            formData.append('Svechilekm', hasKmEnabled ? (formState.start_km || '0') : '0');
 
-            formData.append('bunk',         formState.bunk      || '');
-            formData.append('compCode',     UserSelect?.GCOMPCODE || '');
-            formData.append('inout',        'IN');
-            formData.append('empname',      UserSelect?.EMPNAME || 'Employee');
-            formData.append('category',     String(formState.category || '0'));
+            formData.append('bunk', formState.bunk || '');
+            formData.append('compCode', UserSelect?.GCOMPCODE || '');
+            formData.append('inout', 'IN');
+            formData.append('empname', UserSelect?.EMPNAME || 'Employee');
+            formData.append('category', String(formState.category || '0'));
             const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
-            formData.append('in_location',  coords.address || (hasValidCoords ? `Near ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : 'Location Unavailable'));
-            formData.append('in_latitude',  hasValidCoords ? String(coords.latitude) : '');
+            formData.append('in_location', coords.address || (hasValidCoords ? `Near ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : 'Location Unavailable'));
+            formData.append('in_address', coords.address || '');
+            formData.append('in_latitude', hasValidCoords ? String(coords.latitude) : '');
             formData.append('in_longtiude', hasValidCoords ? String(coords.longitude) : '');
-            formData.append('docCount',     String(latestCount));
+            formData.append('docCount', String(latestCount));
 
             const safeName = String(UserSelect?.EMPNAME || 'emp').replace(/\s/g, '_');
             formData.append('file', {
-                uri:  compressedPhotoUri,
+                uri: compressedPhotoUri,
                 type: 'image/jpeg',
                 name: `${UserSelect?.GCOMPCODE}_${safeName}_onduty.jpg`,
             });
@@ -250,11 +252,11 @@ export function useOndutySubmit({
             setUploadProgress(30);
 
             const response = await fetch(ONDUTY_API, {
-                method:  'POST',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'compcode': UserSelect?.GCOMPCODE,
-                    'Idcard':   UserSelect?.UserId,
+                    'Idcard': UserSelect?.UserId,
                 },
                 body: formData,
             });
@@ -268,18 +270,18 @@ export function useOndutySubmit({
 
                 const employeeName = UserSelect?.EMPNAME || UserSelect?.userName || 'Employee';
                 socket.emit('onduty_request', {
-                    hod:      effectiveHod,
-                    hr:       hr || '',
+                    hod: effectiveHod,
+                    hr: hr || '',
                     approval: approvalType,
                     compcode: UserSelect?.GCOMPCODE,
                     ...data?.data,
-                    empName:  data?.data?.empName || data?.data?.empname || employeeName,
-                    empname:  data?.data?.empname || data?.data?.empName || employeeName,
+                    empName: data?.data?.empName || data?.data?.empname || employeeName,
+                    empname: data?.data?.empname || data?.data?.empName || employeeName,
                     userdata: {
-                        email:    '',
+                        email: '',
                         username: UserSelect?.userName || employeeName,
-                        Idcard:   UserSelect?.UserId,
-                        mobile:   UserSelect?.MOBNO,
+                        Idcard: UserSelect?.UserId,
+                        mobile: UserSelect?.MOBNO,
                         ...(data?.data?.userdata || {}),
                     },
                 });
@@ -291,10 +293,10 @@ export function useOndutySubmit({
                     const noteMsg = `OnDuty By: ${UserSelect?.EMPNAME}`;
                     const fcmTasks = [];
                     if ((approvalType === 'HOD' || approvalType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
-                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {}));
+                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => { }));
                     }
                     if ((approvalType === 'HR' || approvalType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
-                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {}));
+                        fcmTasks.push(_FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => { }));
                     }
                     await Promise.allSettled(fcmTasks);
                 }
@@ -351,13 +353,14 @@ export function useOndutySubmit({
             const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestOndutyOut({
-                docid:         targetDocId,
-                out_latitude:  hasValidCoords ? String(coords.latitude) : null,
+                docid: targetDocId,
+                out_latitude: hasValidCoords ? String(coords.latitude) : null,
                 out_longtiude: hasValidCoords ? String(coords.longitude) : null,
-                out_location:  hasValidCoords ? coords.address : null,
-                end_km:        hasKmEnabled ? (endKm || formState.end_km || '0') : '0',
-                inout:         'OUT',
-                to_onduty:     toOnduty,
+                out_location: hasValidCoords ? coords.address : null,
+                out_address: hasValidCoords ? coords.address : null,
+                end_km: hasKmEnabled ? (endKm || formState.end_km || '0') : '0',
+                inout: 'OUT',
+                to_onduty: toOnduty,
             }).unwrap();
 
             if (response?.status === 1) {
@@ -370,10 +373,10 @@ export function useOndutySubmit({
                     const noteMsg = `OnDuty Out: ${UserSelect?.EMPNAME}`;
                     const appType = refetchFCMTokens?.approvalType || 'HOD';
                     if ((appType === 'HOD' || appType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
-                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {});
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => { });
                     }
                     if ((appType === 'HR' || appType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
-                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {});
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => { });
                     }
                 }
 
@@ -400,14 +403,15 @@ export function useOndutySubmit({
             const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestReachedOut({
-                docid:         docId,
-                end_km:        hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
-                Evechilekm:    hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
-                VEHICLENO:     hasKmEnabled ? (vehicleNo || formState.vechileno || '') : '',
+                docid: docId,
+                end_km: hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
+                Evechilekm: hasKmEnabled ? (reachedKm || formState.reached_km || '0') : '0',
+                VEHICLENO: hasKmEnabled ? (vehicleNo || formState.vechileno || '') : '',
                 ...(hasValidCoords ? {
-                    out_latitude:  String(coords.latitude),
+                    out_latitude: String(coords.latitude),
                     out_longtiude: String(coords.longitude),
-                    out_location:  coords.address,
+                    out_location: coords.address,
+                    out_address: coords.address,
                 } : {}),
             }).unwrap();
 
@@ -421,16 +425,25 @@ export function useOndutySubmit({
                     const noteMsg = `OnDuty Reached: ${UserSelect?.EMPNAME}`;
                     const appType = refetchFCMTokens?.approvalType || 'HOD';
                     if ((appType === 'HOD' || appType === 'BOTH') && refetchFCMTokens?.hodFCMToken) {
-                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => {});
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hodFCMToken, noteMsg).catch(() => { });
                     }
                     if ((appType === 'HR' || appType === 'BOTH') && refetchFCMTokens?.hrFCMToken) {
-                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => {});
+                        _FCM_SENDER(senderToken, refetchFCMTokens.hrFCMToken, noteMsg).catch(() => { });
                     }
                 }
-                if(NavRef.isReady()){
-                     NavRef.resetRoot({index:0 , routes:[{name: "HOME"}]})
-                }
+
                 await refreshAndReset();
+
+                // Navigate directly to Home screen
+                try {
+                    if (navigation?.navigate) {
+                        navigation.navigate('HOME');
+                    } else {
+                        CustomNavigation('HOME');
+                    }
+                } catch {
+                    CustomNavigation('HOME');
+                }
 
             } else {
                 const friendly = formatUserFriendlyError(response?.message || 'Failed', 'Operation failed');
@@ -442,7 +455,7 @@ export function useOndutySubmit({
         } finally {
             setIsSubmitting(false);
         }
-    }, [fetchCoords, requestReachedOut, formState.isKmEntryEnabled, formState.reached_km, formState.vechileno, onStopTracking, refreshAndReset, refetchFCMTokens, UserSelect, setIsSubmitting]);
+    }, [fetchCoords, requestReachedOut, formState.isKmEntryEnabled, formState.reached_km, formState.vechileno, onStopTracking, refreshAndReset, refetchFCMTokens, UserSelect, setIsSubmitting, navigation]);
 
     return { handleSubmitIN, handleSubmitOUT, handleReached };
 }

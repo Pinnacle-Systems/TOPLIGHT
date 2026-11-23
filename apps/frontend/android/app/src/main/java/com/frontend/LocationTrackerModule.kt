@@ -3,14 +3,19 @@ package com.frontend
 import android.content.Intent
 import android.content.Context
 import android.content.SharedPreferences
+import android.location.Geocoder
+import android.location.Location
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import java.util.Locale
+import java.util.concurrent.Executors
 
 class LocationTrackerModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -19,6 +24,7 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
     }
     
     private val handler = Handler(Looper.getMainLooper())
+    private val executor = Executors.newFixedThreadPool(2)
 
     override fun getName(): String = "LocationTracker"
 
@@ -149,6 +155,67 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    private fun getHumanReadableAddress(lat: Double, lon: Double): String {
+        return try {
+            if (!Geocoder.isPresent()) {
+                return String.format(Locale.US, "Near %.4f, %.4f", lat, lon)
+            }
+            val geocoder = Geocoder(reactContext, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(lat, lon, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val addr = addresses[0]
+                val sb = StringBuilder()
+                for (i in 0..addr.maxAddressLineIndex) {
+                    if (i > 0) sb.append(", ")
+                    sb.append(addr.getAddressLine(i))
+                }
+                val res = sb.toString().trim()
+                if (res.isNotEmpty()) res else String.format(Locale.US, "Near %.4f, %.4f", lat, lon)
+            } else {
+                String.format(Locale.US, "Near %.4f, %.4f", lat, lon)
+            }
+        } catch (e: Exception) {
+            Log.w("LocationTracker", "Geocoder lookup failed: ${e.message}")
+            String.format(Locale.US, "Near %.4f, %.4f", lat, lon)
+        }
+    }
+
+    private fun resolveLocationWithAddress(location: Location, promise: Promise) {
+        executor.execute {
+            try {
+                val addressStr = getHumanReadableAddress(location.latitude, location.longitude)
+                val map = Arguments.createMap().apply {
+                    putDouble("latitude", location.latitude)
+                    putDouble("longitude", location.longitude)
+                    putDouble("accuracy", location.accuracy.toDouble())
+                    putString("address", addressStr)
+                    putString("locationName", addressStr)
+                }
+                promise.resolve(map)
+            } catch (e: Exception) {
+                val fallbackMap = Arguments.createMap().apply {
+                    putDouble("latitude", location.latitude)
+                    putDouble("longitude", location.longitude)
+                    putDouble("accuracy", location.accuracy.toDouble())
+                    putString("address", String.format(Locale.US, "Near %.4f, %.4f", location.latitude, location.longitude))
+                }
+                promise.resolve(fallbackMap)
+            }
+        }
+    }
+
+    @ReactMethod
+    fun getAddressFromCoords(latitude: Double, longitude: Double, promise: Promise) {
+        executor.execute {
+            try {
+                val addressStr = getHumanReadableAddress(latitude, longitude)
+                promise.resolve(addressStr)
+            } catch (e: Exception) {
+                promise.reject("GEOCODE_ERROR", e.message ?: "Failed to resolve address")
+            }
+        }
+    }
+
     @ReactMethod
     fun getCurrentLocation(promise: Promise) {
         try {
@@ -157,24 +224,14 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
             // 1. Immediately check lastLocation first (returns in < 15ms!)
             fusedClient.lastLocation.addOnSuccessListener { lastLoc ->
                 if (lastLoc != null) {
-                    val map = Arguments.createMap().apply {
-                        putDouble("latitude", lastLoc.latitude)
-                        putDouble("longitude", lastLoc.longitude)
-                        putDouble("accuracy", lastLoc.accuracy.toDouble())
-                    }
-                    promise.resolve(map)
+                    resolveLocationWithAddress(lastLoc, promise)
                 } else {
                     // 2. Fallback to fresh location request
                     val cts = CancellationTokenSource()
                     fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
                         .addOnSuccessListener { location ->
                             if (location != null) {
-                                val map = Arguments.createMap().apply {
-                                    putDouble("latitude", location.latitude)
-                                    putDouble("longitude", location.longitude)
-                                    putDouble("accuracy", location.accuracy.toDouble())
-                                }
-                                promise.resolve(map)
+                                resolveLocationWithAddress(location, promise)
                             } else {
                                 promise.reject("LOCATION_NULL", "Unable to get location")
                             }
@@ -188,12 +245,7 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
                 fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
                     .addOnSuccessListener { location ->
                         if (location != null) {
-                            val map = Arguments.createMap().apply {
-                                putDouble("latitude", location.latitude)
-                                putDouble("longitude", location.longitude)
-                                putDouble("accuracy", location.accuracy.toDouble())
-                            }
-                            promise.resolve(map)
+                            resolveLocationWithAddress(location, promise)
                         } else {
                             promise.reject("LOCATION_NULL", "Unable to get location")
                         }

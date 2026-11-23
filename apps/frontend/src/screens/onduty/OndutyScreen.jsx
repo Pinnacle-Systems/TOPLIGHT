@@ -163,6 +163,7 @@ export default function OndutyScreen() {
             hrFCMToken: hrToken?.data?.fcm,
             approvalType,
         },
+        navigation,
     });
 
     // ── Sync KM Entry Setting from AsyncStorage on mount ────────────────────────

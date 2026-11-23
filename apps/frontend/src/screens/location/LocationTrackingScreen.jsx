@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Linking,
@@ -21,6 +21,7 @@ import {
     useGet_tracking_usersQuery,
 } from '../../store/api/OndutyApi';
 import { useAppTheme } from '../../theme';
+import socket from '../../utils/Socket';
 
 const isValidPoint = point =>
     Number.isFinite(Number(point?.latitude)) &&
@@ -35,7 +36,7 @@ function createMapHtml(points, mode) {
         timestamp: point.timestamp == null ? point.createdAt : Number(point.timestamp),
         accuracy: point.accuracy == null ? null : Number(point.accuracy),
         label: point.label || null,
-        location: point.location || point.locationName || null,
+        location: point.address || point.location || point.locationName || null,
         isLive: Boolean(point.isLive),
     }));
     const serializedPoints = JSON.stringify(safePoints).replace(/</g, '\\u003c');
@@ -241,6 +242,44 @@ export default function LocationTrackingScreen() {
         || staff.find(person => String(person.UserId || person.userId || person.idCard) === selectedUserId);
 
     const isSelectedLive = Boolean(selectedStaff?.isLive);
+    const [socketPoint, setSocketPoint] = useState(null);
+
+    // Reset socket point on employee or mode switch
+    useEffect(() => {
+        setSocketPoint(null);
+    }, [selectedUserId, mode]);
+
+    // Real-time WebSocket movement listener
+    useEffect(() => {
+        if (mode !== 'live' || !selectedUserId) return;
+
+        const onLiveUpdate = (data) => {
+            if (!data) return;
+            const updateUserId = String(data.userId || data.UserId || data.idCard || '');
+            if (updateUserId === String(selectedUserId) && isValidPoint(data)) {
+                const liveAddr = data.address || data.locationName || null;
+                setSocketPoint({
+                    ...data,
+                    latitude: Number(data.latitude),
+                    longitude: Number(data.longitude),
+                    address: liveAddr,
+                    locationName: liveAddr,
+                    isLive: true,
+                    timestamp: data.timeStamp || data.timestamp || Date.now(),
+                    timeStamp: data.timeStamp || data.timestamp || Date.now(),
+                });
+            }
+        };
+
+        socket.on('location_update', onLiveUpdate);
+        socket.on(`location_update:${selectedUserId}`, onLiveUpdate);
+
+        return () => {
+            socket.off('location_update', onLiveUpdate);
+            socket.off(`location_update:${selectedUserId}`, onLiveUpdate);
+        };
+    }, [mode, selectedUserId]);
+
     const {
         data: liveResponse,
         isLoading: liveLoading,
@@ -251,7 +290,7 @@ export default function LocationTrackingScreen() {
         { userId: selectedUserId },
         { skip: mode !== 'live' || !selectedUserId || !isSelectedLive, pollingInterval: 10000 },
     );
-    const livePoint = Array.isArray(liveResponse) ? liveResponse.find(isValidPoint) : null;
+    const livePoint = socketPoint || (Array.isArray(liveResponse) ? liveResponse.find(isValidPoint) : null);
 
     const historyDate = moment(date).format('YYYY-MM-DD');
     const {
@@ -259,6 +298,7 @@ export default function LocationTrackingScreen() {
         isLoading: historyLoading,
         isFetching: historyFetching,
         isError: historyError,
+        refetch: refreshHistory,
     } = useGet_history_locationQuery(
         { date: historyDate, userId: selectedUserId },
         { skip: mode !== 'history' || !selectedUserId },
@@ -272,6 +312,28 @@ export default function LocationTrackingScreen() {
             .map(([docId, points]) => [docId, Array.isArray(points) ? points.filter(isValidPoint) : []])
             .filter(([, points]) => points.length > 0);
     }, [historyResponse]);
+
+    const handleRefresh = useCallback(() => {
+        try {
+            if (!staffLoading && typeof refetch === 'function') {
+                refetch();
+            }
+        } catch (_) {}
+
+        if (mode === 'live' && selectedUserId && isSelectedLive) {
+            try {
+                if (!liveLoading && typeof refreshLive === 'function') {
+                    refreshLive();
+                }
+            } catch (_) {}
+        } else if (mode === 'history' && selectedUserId) {
+            try {
+                if (!historyLoading && typeof refreshHistory === 'function') {
+                    refreshHistory();
+                }
+            } catch (_) {}
+        }
+    }, [mode, selectedUserId, isSelectedLive, staffLoading, liveLoading, historyLoading, refetch, refreshLive, refreshHistory]);
 
     useEffect(() => {
         if (displayedStaff.length > 0) {
@@ -351,10 +413,7 @@ export default function LocationTrackingScreen() {
                         <TouchableOpacity
                             accessibilityRole="button"
                             accessibilityLabel="Refresh employee list"
-                            onPress={() => {
-                                refetch();
-                                if (mode === 'live') refreshLive();
-                            }}
+                            onPress={handleRefresh}
                             style={styles.headerBtn}
                         >
                             <MaterialCommunityIcons name="refresh" size={21} color={theme.colors.textSecondary} />
@@ -587,19 +646,36 @@ export default function LocationTrackingScreen() {
                     <View style={styles.historyControls}>
                         <DateInput date={date} setDate={setDate} />
                         {trips.length > 1 && (
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tripList}>
-                                {trips.map(([docId], index) => (
-                                    <TouchableOpacity
-                                        key={docId || `trip-${index}`}
-                                        onPress={() => setSelectedDocId(docId)}
-                                        style={[styles.tripChip, selectedDocId === docId && styles.tripChipSelected]}
-                                    >
-                                        <Text style={[styles.tripText, selectedDocId === docId && styles.tripTextSelected]}>
-                                            Trip {index + 1}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
+                            <View style={styles.tripSectionWrap}>
+                                <Text style={styles.availableDatesTitle}>Select trip session:</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tripList}>
+                                    {trips.map(([docId, points], index) => {
+                                        const firstPoint = points[0];
+                                        const pointTime = firstPoint?.timestamp || firstPoint?.timeStamp || firstPoint?.createdAt;
+                                        const timeStr = pointTime ? moment(pointTime).format('hh:mm A') : '';
+                                        const shortDoc = docId && docId.includes('/') ? docId.split('/').pop() : docId;
+                                        const isSelected = selectedDocId === docId;
+                                        return (
+                                            <TouchableOpacity
+                                                key={docId || `trip-${index}`}
+                                                onPress={() => setSelectedDocId(docId)}
+                                                style={[styles.tripChip, isSelected && styles.tripChipSelected]}
+                                                accessibilityRole="button"
+                                                accessibilityState={{ selected: isSelected }}
+                                            >
+                                                <MaterialCommunityIcons
+                                                    name="map-marker-distance"
+                                                    size={14}
+                                                    color={isSelected ? theme.colors.brand : theme.colors.textSecondary}
+                                                />
+                                                <Text style={[styles.tripText, isSelected && styles.tripTextSelected]}>
+                                                    Trip {index + 1}{timeStr ? ` (${timeStr})` : (shortDoc ? ` (#${shortDoc})` : '')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
                         )}
                         {availableDates.length > 0 && (
                             <View style={styles.availableDatesWrap}>
@@ -647,7 +723,7 @@ export default function LocationTrackingScreen() {
                         {mode === 'live' && livePoint && (
                             <View style={styles.livePill}>
                                 <View style={styles.statusDotActive} />
-                                <Text style={styles.livePillText}>LIVE</Text>
+                                <Text style={styles.livePillText}>{socketPoint ? 'LIVE • REALTIME' : 'LIVE'}</Text>
                             </View>
                         )}
                     </View>
@@ -666,7 +742,7 @@ export default function LocationTrackingScreen() {
                                 <Text style={styles.placeholderTitle}>Could not load location data</Text>
                                 <Text style={styles.placeholderText}>Check your connection and try again.</Text>
                                 <TouchableOpacity
-                                    onPress={mode === 'live' ? refreshLive : () => {}}
+                                    onPress={handleRefresh}
                                     style={styles.retryButton}
                                 >
                                     <Text style={styles.retryText}>Retry</Text>
@@ -675,7 +751,7 @@ export default function LocationTrackingScreen() {
                         ) : mapPoints.length ? (
                             <>
                                 <WebView
-                                    key={`${mode}-${selectedUserId}-${selectedDocId || historyDate}-${mapPoints.length}`}
+                                    key={`${mode}-${selectedUserId}-${selectedDocId || historyDate}-${mapPoints.length}-${livePoint?.timestamp || ''}`}
                                     originWhitelist={['*']}
                                     source={{ html: createMapHtml(mapPoints, mode) }}
                                     style={styles.map}
@@ -761,11 +837,11 @@ export default function LocationTrackingScreen() {
                                     <Text style={styles.staleNote}>Off-duty / Stationary</Text>
                                 )}
                             </View>
-                            {Boolean(livePoint.locationName) && (
+                            {Boolean(livePoint.address || livePoint.locationName) && (
                                 <View style={styles.locationRow}>
                                     <MaterialCommunityIcons name="map-marker-radius" size={15} color={theme.colors.brand} />
                                     <Text style={styles.locationText} numberOfLines={2}>
-                                        {livePoint.locationName}
+                                        {livePoint.address || livePoint.locationName}
                                     </Text>
                                 </View>
                             )}
@@ -775,7 +851,9 @@ export default function LocationTrackingScreen() {
                         <View style={styles.statsRow}>
                             <View style={styles.statCell}>
                                 <MaterialCommunityIcons name="map-marker-path" size={17} color={theme.colors.textMuted} />
-                                <Text style={styles.statText}>{historyPoints.length} location points</Text>
+                                <Text style={styles.statText}>
+                                    {selectedDocId ? `${selectedDocId} • ` : ''}{historyPoints.length} location points
+                                </Text>
                             </View>
                             <Text style={styles.distance}>{routeDistance} km</Text>
                         </View>
@@ -879,10 +957,20 @@ const createStyles = theme => StyleSheet.create({
         backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.borderSubtle,
         borderRadius: theme.radii.lg, paddingHorizontal: theme.spacing.md, marginBottom: theme.spacing.md,
     },
+    tripSectionWrap: {
+        marginBottom: 4,
+    },
     tripList: { gap: theme.spacing.sm, paddingBottom: theme.spacing.md },
     tripChip: {
-        borderRadius: theme.radii.pill, paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
-        backgroundColor: theme.colors.surfaceSunken, borderWidth: 1, borderColor: theme.colors.borderSubtle,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        borderRadius: theme.radii.pill,
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.sm,
+        backgroundColor: theme.colors.surfaceSunken,
+        borderWidth: 1,
+        borderColor: theme.colors.borderSubtle,
     },
     tripChipSelected: { backgroundColor: theme.colors.brandSoft, borderColor: theme.colors.brand },
     tripText: { ...theme.typography.caption, color: theme.colors.textSecondary },
