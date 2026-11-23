@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -7,10 +7,10 @@ import {
     RefreshControl,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 import moment from 'moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
@@ -93,7 +93,8 @@ export default function AttendanceList({ navigation }) {
     const [activeTab, setActiveTab] = useState('TEAM'); // 'TEAM' or 'MY'
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedEmployeeKey, setSelectedEmployeeKey] = useState(null);
+    const [isDropdownFocus, setIsDropdownFocus] = useState(false);
     const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'IN', 'OUT', 'NONE'
     const [expandedCardId, setExpandedCardId] = useState(null);
 
@@ -134,6 +135,55 @@ export default function AttendanceList({ navigation }) {
         return rawList;
     }, [rawList, activeTab, userIdcard]);
 
+    // ── Dropdown Options for Employee Selection ─────────────────────────────
+    const dropdownOptions = useMemo(() => {
+        if (!Array.isArray(tabFilteredList)) return [];
+
+        const seen = new Set();
+        const list = [];
+        tabFilteredList.forEach(employee => {
+            const id = String(employee?.idcard || employee?.IDCARD || '').trim();
+            const company = String(employee?.compcode || employee?.COMPCODE || '').trim().toUpperCase();
+            if (!id) return;
+
+            const key = `${company}:${id.toUpperCase()}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            const name = employee?.empname || employee?.EMPNAME || 'Employee';
+            const dept = employee?.deptname || employee?.DEPTNAME || '';
+            const comp = employee?.compcode || employee?.COMPCODE || '';
+            const label = dept ? `${name} (${id}) - ${dept}` : `${name} (${id})`;
+
+            list.push({
+                label,
+                value: key,
+                id,
+                name,
+                dept,
+                comp,
+            });
+        });
+
+        return [
+            {
+                label: 'Select Employee',
+                value: 'ALL',
+                isAll: true,
+                count: list.length,
+            },
+            ...list,
+        ];
+    }, [tabFilteredList]);
+
+    const hasFilter = Boolean(selectedEmployeeKey);
+
+    useEffect(() => {
+        if (selectedEmployeeKey && !dropdownOptions.some(opt => opt.value === selectedEmployeeKey)) {
+            setSelectedEmployeeKey(null);
+        }
+    }, [dropdownOptions, selectedEmployeeKey]);
+
     // KPI Counts
     const kpiStats = useMemo(() => {
         let inCount = 0;
@@ -155,7 +205,7 @@ export default function AttendanceList({ navigation }) {
         };
     }, [tabFilteredList]);
 
-    // Search and Status Filters
+    // Filter by Employee Dropdown and Status Filter
     const filteredList = useMemo(() => {
         return tabFilteredList.filter(item => {
             const inout = item?.lastInout != null ? String(item.lastInout) : null;
@@ -163,18 +213,16 @@ export default function AttendanceList({ navigation }) {
             if (statusFilter === 'OUT' && inout !== '0') return false;
             if (statusFilter === 'NONE' && (inout === '1' || inout === '0')) return false;
 
-            if (searchQuery.trim()) {
-                const q = searchQuery.trim().toLowerCase();
-                const matchName = String(item?.empname || item?.EMPNAME || '').toLowerCase().includes(q);
-                const matchId = String(item?.idcard || item?.IDCARD || '').toLowerCase().includes(q);
-                const matchDept = String(item?.deptname || item?.DEPTNAME || '').toLowerCase().includes(q);
-                const matchComp = String(item?.compcode || item?.COMPCODE || '').toLowerCase().includes(q);
-                if (!matchName && !matchId && !matchDept && !matchComp) return false;
+            if (selectedEmployeeKey) {
+                const id = String(item?.idcard || item?.IDCARD || '').trim().toUpperCase();
+                const comp = String(item?.compcode || item?.COMPCODE || '').trim().toUpperCase();
+                const key = `${comp}:${id}`;
+                if (key !== selectedEmployeeKey && id !== selectedEmployeeKey) return false;
             }
 
             return true;
         });
-    }, [tabFilteredList, statusFilter, searchQuery]);
+    }, [tabFilteredList, statusFilter, selectedEmployeeKey]);
 
     // Export Handlers
     const currentExportData = useMemo(() => {
@@ -297,7 +345,10 @@ export default function AttendanceList({ navigation }) {
             <View style={styles.tabBar}>
                 <TouchableOpacity
                     style={[styles.tabButton, activeTab === 'TEAM' && styles.tabButtonActive]}
-                    onPress={() => setActiveTab('TEAM')}
+                    onPress={() => {
+                        setActiveTab('TEAM');
+                        setSelectedEmployeeKey(null);
+                    }}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: activeTab === 'TEAM' }}
                 >
@@ -313,7 +364,10 @@ export default function AttendanceList({ navigation }) {
 
                 <TouchableOpacity
                     style={[styles.tabButton, activeTab === 'MY' && styles.tabButtonActive]}
-                    onPress={() => setActiveTab('MY')}
+                    onPress={() => {
+                        setActiveTab('MY');
+                        setSelectedEmployeeKey(null);
+                    }}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: activeTab === 'MY' }}
                 >
@@ -371,22 +425,104 @@ export default function AttendanceList({ navigation }) {
                 />
             )}
 
-            {/* ── Search Input ── */}
-            <View style={styles.searchBar}>
-                <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textMuted} />
-                <TextInput
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    placeholder="Search employee name, ID or department..."
-                    placeholderTextColor={theme.colors.placeholder}
-                    style={styles.searchInput}
-                    returnKeyType="search"
+            {/* ── Employee Selectable Dropdown ── */}
+            <View style={styles.dropdownWrapper}>
+                <Dropdown
+                    style={[
+                        styles.dropdownControl,
+                        isDropdownFocus && styles.dropdownControlFocus,
+                    ]}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    selectedTextStyle={styles.dropdownSelectedText}
+                    inputSearchStyle={styles.dropdownSearchInput}
+                    iconStyle={styles.dropdownIcon}
+                    data={dropdownOptions}
+                    search
+                    maxHeight={350}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Employee"
+                    searchPlaceholder="Search by name, ID or department..."
+                    value={selectedEmployeeKey}
+                    onFocus={() => setIsDropdownFocus(true)}
+                    onBlur={() => setIsDropdownFocus(false)}
+                    onChange={item => {
+                        setSelectedEmployeeKey(item.isAll ? null : item.value);
+                        setIsDropdownFocus(false);
+                    }}
+                    renderLeftIcon={() => (
+                        <MaterialCommunityIcons
+                            name={hasFilter ? 'account' : 'account-search-outline'}
+                            size={21}
+                            color={isDropdownFocus ? theme.colors.brand : theme.colors.textMuted}
+                            style={styles.dropdownLeftIcon}
+                        />
+                    )}
+                    renderRightIcon={() => (
+                        <View style={styles.dropdownRightRow}>
+                            {hasFilter && (
+                                <TouchableOpacity
+                                    onPress={() => setSelectedEmployeeKey(null)}
+                                    style={styles.dropdownClearBtn}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Reset to Select Employee"
+                                >
+                                    <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textDisabled} />
+                                </TouchableOpacity>
+                            )}
+                            <MaterialCommunityIcons
+                                name={isDropdownFocus ? 'chevron-up' : 'chevron-down'}
+                                size={20}
+                                color={theme.colors.textMuted}
+                            />
+                        </View>
+                    )}
+                    renderItem={(item) => {
+                        const isSelected = item.value === selectedEmployeeKey || (!selectedEmployeeKey && item.isAll);
+                        if (item.isAll) {
+                            return (
+                                <View style={[styles.dropdownItemRow, isSelected && styles.dropdownItemRowSelected]}>
+                                    <View style={[styles.dropdownItemAvatar, styles.dropdownItemAvatarAll]}>
+                                        <MaterialCommunityIcons name="account-group-outline" size={18} color={theme.colors.brand} />
+                                    </View>
+                                    <View style={styles.dropdownItemContent}>
+                                        <Text style={[styles.dropdownItemTitle, isSelected && styles.dropdownItemTitleSelected]}>
+                                            Select Employee
+                                        </Text>
+                                    </View>
+                                    {isSelected && (
+                                        <MaterialCommunityIcons name="check" size={18} color={theme.colors.brand} />
+                                    )}
+                                </View>
+                            );
+                        }
+                        return (
+                            <View style={[styles.dropdownItemRow, isSelected && styles.dropdownItemRowSelected]}>
+                                <View style={styles.dropdownItemAvatar}>
+                                    <MaterialCommunityIcons name="account-outline" size={18} color={theme.colors.brand} />
+                                </View>
+                                <View style={styles.dropdownItemContent}>
+                                    <Text style={[styles.dropdownItemTitle, isSelected && styles.dropdownItemTitleSelected]} numberOfLines={1}>
+                                        {item.name}
+                                    </Text>
+                                    <Text style={styles.dropdownItemSubtitle} numberOfLines={1}>
+                                        ID: {item.id}{item.dept ? ` · ${item.dept}` : ''}{item.comp ? ` · ${item.comp}` : ''}
+                                    </Text>
+                                </View>
+                                {isSelected && (
+                                    <MaterialCommunityIcons name="check" size={18} color={theme.colors.brand} />
+                                )}
+                            </View>
+                        );
+                    }}
+                    containerStyle={styles.dropdownMenuContainer}
+                    activeColor={theme.colors.surfaceSelected || '#EFF6FF'}
+                    selectedTextProps={{ numberOfLines: 1 }}
+                    flatListProps={{
+                        keyboardShouldPersistTaps: 'always',
+                    }}
                 />
-                {!!searchQuery && (
-                    <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityRole="button">
-                        <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textDisabled} />
-                    </TouchableOpacity>
-                )}
             </View>
 
             {/* ── KPI Summary Badges ── */}
@@ -756,25 +892,111 @@ const createStyles = (theme) => StyleSheet.create({
         color: theme.colors.brand,
         fontWeight: theme.fontWeights.bold,
     },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    dropdownWrapper: {
+        marginHorizontal: theme.spacing.md,
+        marginTop: 6,
+        marginBottom: 8,
+    },
+    dropdownControl: {
+        height: 46,
         backgroundColor: theme.colors.inputBackground,
         borderWidth: 1,
         borderColor: theme.colors.inputBorder,
         borderRadius: theme.radii.md,
-        marginHorizontal: theme.spacing.md,
-        marginTop: 6,
-        marginBottom: 6,
         paddingHorizontal: theme.spacing.sm + 4,
-        height: 42,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    searchInput: {
-        flex: 1,
-        paddingVertical: 6,
-        paddingHorizontal: theme.spacing.sm,
+    dropdownControlFocus: {
+        borderColor: theme.colors.brand,
+    },
+    dropdownPlaceholder: {
+        ...theme.typography.bodySmall,
+        color: theme.colors.textSecondary || theme.colors.placeholder,
+        fontWeight: theme.fontWeights.medium,
+    },
+    dropdownSelectedText: {
         ...theme.typography.bodySmall,
         color: theme.colors.text,
+        fontWeight: theme.fontWeights.medium,
+        flex: 1,
+    },
+    dropdownLeftIcon: {
+        marginRight: theme.spacing.sm,
+    },
+    dropdownRightRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    dropdownClearBtn: {
+        padding: 2,
+    },
+    dropdownIcon: {
+        width: 20,
+        height: 20,
+    },
+    dropdownSearchInput: {
+        height: 44,
+        borderRadius: theme.radii.sm,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.backgroundSubtle || '#F9FAFB',
+        ...theme.typography.bodySmall,
+        color: theme.colors.text,
+        paddingHorizontal: theme.spacing.sm,
+        marginHorizontal: theme.spacing.xs,
+        marginTop: theme.spacing.xs,
+    },
+    dropdownMenuContainer: {
+        borderRadius: theme.radii.md,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    dropdownItemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: theme.spacing.sm + 4,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.borderSubtle,
+    },
+    dropdownItemRowSelected: {
+        backgroundColor: theme.colors.surfaceSelected || '#EFF6FF',
+    },
+    dropdownItemAvatar: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: theme.colors.brandSoft,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: theme.spacing.sm,
+    },
+    dropdownItemAvatarAll: {
+        backgroundColor: '#E0E7FF',
+    },
+    dropdownItemContent: {
+        flex: 1,
+    },
+    dropdownItemTitle: {
+        ...theme.typography.label,
+        color: theme.colors.text,
+        fontWeight: theme.fontWeights.semiBold,
+    },
+    dropdownItemTitleSelected: {
+        color: theme.colors.brand,
+        fontWeight: theme.fontWeights.bold,
+    },
+    dropdownItemSubtitle: {
+        ...theme.typography.caption,
+        color: theme.colors.textMuted,
+        marginTop: 1,
     },
     kpiRow: {
         flexDirection: 'row',

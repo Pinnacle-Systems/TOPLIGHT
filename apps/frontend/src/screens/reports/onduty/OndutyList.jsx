@@ -21,7 +21,6 @@ import { LinearGradient } from 'react-native-linear-gradient';
 import { Dropdown } from '../../../components/reusable_components/Inputs';
 import moment from 'moment';
 import { screenWidth } from '../../../components/utils/Screens';
-import { useGetEmployeeidsQuery } from '../../../store/api/UserApi';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useSelector } from 'react-redux';
@@ -93,15 +92,26 @@ const ONDUTY_COLUMNS = [
     { key: 'reason', label: 'Purpose', getValue: (item) => item?.others || item?.reason || '-' },
 ];
 
+const STATUS_OPTIONS = {
+  data: [
+    { label: 'All Statuses', value: '' },
+    { label: '✔ Approved', value: 'approved' },
+    { label: '❌ Rejected', value: 'rejected' },
+    { label: '⏳ Pending', value: 'pending' },
+  ],
+};
+
 const OndutyList = ({ navigation }) => {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   // State management
   const [Idcard_filter, setIdCard_Idcard] = useState([]);
   const [selected_item_status, setSelected_item_status] = useState("");
-  const [status_filter, set_status_filter] = useState();
+  const [status_filter, set_status_filter] = useState('');
+  const [filterDate, setFilterDate] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [current_Date, setCurrent_Date] = useState(new Date());
+  const [pickerTarget, setPickerTarget] = useState('filter');
   const [My_onduty, set_My_onduty] = useState(true);
   const [My_Summary, set_My_Summary] = useState(false);
   const [more_model, setmore_model] = useState(false);
@@ -120,16 +130,68 @@ const OndutyList = ({ navigation }) => {
 
   // Redux data
   const UserSelect = useSelector((state) => state?.UserDetails);
-  const { data: employee, isLoading: loading_employee } = useGetEmployeeidsQuery();
   const { data, isLoading, isFetching } = useGetHod_showable_dataQuery({ 
     params: My_onduty ? { id: UserSelect?.UserId } : { hod: UserSelect?.UserId } 
   });
+
+  // Derive available employees only from loaded onduty records (not all from DB query)
+  const availableEmployees = useMemo(() => {
+    const list = data?.data || [];
+    if (!Array.isArray(list) || list.length === 0) {
+      return { data: [] };
+    }
+
+    const seen = new Set();
+    const result = [];
+
+    list.forEach(item => {
+      const empId = String(item.userId || item.idCard || item.userData?.idCard || '').trim();
+      const empName = String(item.empname || item.empName || item.createdBy_user?.username || item.userData?.userName || '').trim();
+      const compCode = String(item.compCode || '').trim();
+
+      if (!empId && !empName) return;
+
+      const key = compCode && empId ? `${compCode}-${empId}` : (empId || empName);
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      const label = empName 
+        ? (empId ? `${empName} (${empId})` : empName)
+        : key;
+
+      result.push({
+        label,
+        value: key,
+        id: empId,
+        name: empName,
+        comp: compCode,
+      });
+    });
+
+    result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return { data: result };
+  }, [data?.data]);
+
+  // Clean up selected employees if no longer present in available employees
+  useEffect(() => {
+    if (Array.isArray(Idcard_filter) && Idcard_filter.length > 0 && availableEmployees.data?.length > 0) {
+      const validSet = new Set(availableEmployees.data.map(opt => opt.value));
+      const remaining = Idcard_filter.filter(v => {
+        const val = typeof v === 'object' && v !== null ? (v.value || v.id) : v;
+        return validSet.has(val);
+      });
+      if (remaining.length !== Idcard_filter.length) {
+        setIdCard_Idcard(remaining);
+      }
+    }
+  }, [availableEmployees]);
 
   // Filter functions
   const clearFilters = () => {
     setSearchQuery('');
     setIdCard_Idcard([]);
-    set_status_filter(null);
+    set_status_filter('');
+    setFilterDate(null);
   };
 
   const getStatusColor = (status) => {
@@ -168,29 +230,126 @@ const OndutyList = ({ navigation }) => {
 
   const handleDateChange = (event, selectedDate) => {
     setshowPicker(false);
-    const chosenDate = selectedDate || current_Date;
-    setCurrent_Date(chosenDate);
+    if (event?.type === 'dismissed') return;
+    if (selectedDate) {
+      if (pickerTarget === 'summary') {
+        setCurrent_Date(selectedDate);
+      } else {
+        setFilterDate(selectedDate);
+        setCurrent_Date(selectedDate);
+      }
+    }
   };
 
-  // Enhanced filter logic
-  const Filtered_data = data?.data?.length > 0 ? data.data.filter(item => {
-    const itemId = `${UserSelect?.GCOMPCODE}-${item.userId || item.idCard || ''}`.trim();
-    const matchesId = Idcard_filter?.length === 0 || 
-                     Idcard_filter.some(filterId => 
-                         filterId.toString().includes(itemId) || 
-                         itemId.includes(filterId.toString())
-                     );
+  // Normalized selected employee filter values
+  const selectedEmployeeValues = useMemo(() => {
+    if (!Idcard_filter) return [];
+    const list = Array.isArray(Idcard_filter) ? Idcard_filter : [Idcard_filter];
+    return list
+      .map(v => {
+        if (!v) return '';
+        if (typeof v === 'object') return String(v.value || v.id || '').trim();
+        return String(v).trim();
+      })
+      .filter(Boolean);
+  }, [Idcard_filter]);
 
-    const matchesStatus = !status_filter || item.approvalStatus === status_filter;
+  // Robust matching helpers
+  const matchEmployee = (item) => {
+    if (selectedEmployeeValues.length === 0) return true;
 
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-                         (item?.docid && item.docid.toLowerCase().includes(searchLower)) ||
-                         (item?.empname && item.empname.toLowerCase().includes(searchLower)) ||
-                         (item?.in_location && item.in_location.toLowerCase().includes(searchLower));
+    const itemUserId = String(item.userId || item.idCard || item.idcard || item.userData?.idCard || '').trim();
+    const itemComp = String(item.compCode || '').trim();
+    const itemFull = itemComp && itemUserId ? `${itemComp}-${itemUserId}` : '';
+    const itemEmpName = String(item.empname || item.empName || item.userData?.userName || '').toLowerCase().trim();
 
-    return matchesId && matchesStatus && matchesSearch;
-  }) : [];
+    return selectedEmployeeValues.some(filterVal => {
+      const fStr = String(filterVal).trim();
+      const fLower = fStr.toLowerCase();
+
+      // Exact match on full code (e.g. "TLT-181")
+      if (itemFull && itemFull.toLowerCase() === fLower) return true;
+
+      // Exact match on user id / idcard (e.g. "181")
+      if (itemUserId && itemUserId.toLowerCase() === fLower) return true;
+
+      // Cleaned ID extracted from "TLT-181" -> "181"
+      const cleanedFilterId = fStr.includes('-') ? fStr.split('-').pop().trim() : fStr;
+      if (itemUserId && (itemUserId.toLowerCase() === cleanedFilterId.toLowerCase())) return true;
+
+      // Parentheses or hyphen format: "TLT(181)" or "TLT-181"
+      if (itemUserId && (fStr.includes(`(${itemUserId})`) || fStr.endsWith(`-${itemUserId}`))) return true;
+
+      // Substring match on employee name
+      if (itemEmpName && (fLower.includes(itemEmpName) || (itemEmpName.length > 3 && itemEmpName.includes(fLower)))) return true;
+
+      return false;
+    });
+  };
+
+  const matchStatus = (item) => {
+    const rawVal = typeof status_filter === 'object' && status_filter !== null
+      ? (status_filter.value ?? '')
+      : String(status_filter || '');
+    const cleanFilter = String(rawVal).trim().toLowerCase();
+
+    if (!cleanFilter || cleanFilter === 'all') return true;
+
+    const itemStatus = String(item.approvalStatus || item.status || 'pending').trim().toLowerCase();
+    return itemStatus === cleanFilter;
+  };
+
+  const matchDate = (item, targetDate) => {
+    if (!targetDate) return true;
+    const target = moment(targetDate).format('YYYY-MM-DD');
+    const rawDate = item.docdate || item.docDate || item.createdAt;
+    if (!rawDate) return false;
+    return moment(rawDate).format('YYYY-MM-DD') === target;
+  };
+
+  const matchSearch = (item) => {
+    if (!searchQuery || !searchQuery.trim()) return true;
+    const q = searchQuery.trim().toLowerCase();
+
+    const docId = String(item.docid || item.docId || '').toLowerCase();
+    const empName = String(item.empname || item.empName || item.createdBy_user?.username || '').toLowerCase();
+    const userId = String(item.userId || item.idCard || item.idcard || '').toLowerCase();
+    const inLoc = String(item.in_location || item.inLocation || '').toLowerCase();
+    const outLoc = String(item.out_location || item.outLocation || '').toLowerCase();
+    const purpose = String(item.others || item.reason || '').toLowerCase();
+    const vehicle = String(item.vechileno || '').toLowerCase();
+
+    return (
+      docId.includes(q) ||
+      empName.includes(q) ||
+      userId.includes(q) ||
+      inLoc.includes(q) ||
+      outLoc.includes(q) ||
+      purpose.includes(q) ||
+      vehicle.includes(q)
+    );
+  };
+
+  // Has active filters
+  const hasActiveFilters = Boolean(
+    selectedEmployeeValues.length > 0 ||
+    (typeof status_filter === 'object' && status_filter !== null ? Boolean(status_filter.value) : Boolean(status_filter)) ||
+    Boolean(searchQuery?.trim()) ||
+    Boolean(filterDate)
+  );
+
+  // Filtered data
+  const Filtered_data = useMemo(() => {
+    const list = data?.data || [];
+    if (!Array.isArray(list) || list.length === 0) return [];
+
+    return list.filter(item => (
+      matchEmployee(item) &&
+      matchStatus(item) &&
+      matchDate(item, filterDate) &&
+      matchSearch(item)
+    ));
+  }, [data?.data, selectedEmployeeValues, status_filter, filterDate, searchQuery]);
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({window}) => {
@@ -199,26 +358,18 @@ const OndutyList = ({ navigation }) => {
     return () => subscription?.remove();
   }, []);
 
-  const Filtered_sumary_data = data?.data?.length > 0 ? data.data.filter(item => {
-    const itemId = `${UserSelect?.GCOMPCODE}-${item.userId || item.idCard || ''}`.trim();
-    const matchesId = Idcard_filter?.length === 0 || 
-                     Idcard_filter.some(filterId => 
-                         filterId.toString().includes(itemId) || 
-                         itemId.includes(filterId.toString())
-                     );
+  const Filtered_sumary_data = useMemo(() => {
+    const list = data?.data || [];
+    if (!Array.isArray(list) || list.length === 0) return [];
 
-    const matchesStatus = !status_filter || item.approvalStatus === status_filter;
-
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-                         (item?.docid && item.docid.toLowerCase().includes(searchLower)) ||
-                         (item?.empname && item.empname.toLowerCase().includes(searchLower)) ||
-                         (item?.in_location && item.in_location.toLowerCase().includes(searchLower));
-
-    const date_match = moment(current_Date).format('DD MM YYYY') === moment(item.docdate).format('DD MM YYYY');
-    
-    return matchesId && matchesStatus && matchesSearch && date_match;
-  }) : [];
+    const summaryDate = filterDate || current_Date;
+    return list.filter(item => (
+      matchEmployee(item) &&
+      matchStatus(item) &&
+      matchDate(item, summaryDate) &&
+      matchSearch(item)
+    ));
+  }, [data?.data, selectedEmployeeValues, status_filter, filterDate, current_Date, searchQuery]);
 
   const currentExportData = (My_Summary ? Filtered_sumary_data : Filtered_data) || [];
   const currentExportSubtitle = My_Summary ? 'Daily Summary' : (My_onduty ? 'My Onduties' : 'Team Onduties');
@@ -401,7 +552,7 @@ const OndutyList = ({ navigation }) => {
             style={[
               styles.filterToggleBtn,
               showFilters && styles.filterToggleBtnActive,
-              (Idcard_filter.length > 0 || status_filter || searchQuery) && styles.filterToggleBtnBadge,
+              hasActiveFilters && styles.filterToggleBtnBadge,
             ]}
             onPress={() => setShowFilters(!showFilters)}
             activeOpacity={0.7}
@@ -409,8 +560,11 @@ const OndutyList = ({ navigation }) => {
             <MaterialCommunityIcons
               name={showFilters ? "filter-remove" : "filter-variant"}
               size={18}
-              color={showFilters ? theme.colors.danger : theme.colors.brand}
+              color={showFilters ? theme.colors.danger : (hasActiveFilters ? theme.colors.brand : theme.colors.text)}
             />
+            {hasActiveFilters && !showFilters && (
+              <View style={styles.activeFilterDot} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -453,27 +607,39 @@ const OndutyList = ({ navigation }) => {
       {/* Enhanced Filter Section */}
       {showFilters && (
         <View style={styles.filterSection}>
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
-            placeholder="Search by Doc ID, Name, or Location..."
-            placeholderTextColor="#999"
-          />
+          <View style={styles.searchContainer}>
+            <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+              placeholder="Search by Doc ID, Name, ID, or Location..."
+              placeholderTextColor={theme.colors.placeholder || "#999"}
+              returnKeyType="search"
+            />
+            {Boolean(searchQuery) && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textMuted || "#999"} />
+              </TouchableOpacity>
+            )}
+          </View>
 
           <View style={styles.filterRow}>
             <Dropdown
               selected={Idcard_filter}
-              isLoading={loading_employee}
+              isLoading={isLoading || isFetching}
               label="Filter by Employee"
               multiple
-              width={screenWidth * 0.8}
+              width="100%"
+              _label="label"
+              _value="value"
               setSelected={setIdCard_Idcard}
-              options={employee}
+              options={availableEmployees}
               zIndex={300}
               style={styles.dropdown}
+              placeholder={availableEmployees.data.length > 0 ? "Select Employee" : "No employees in report"}
               searchable
-              searchPlaceholder="Search employees..."
+              searchPlaceholder="Search available employees..."
             />
           </View>
 
@@ -481,42 +647,110 @@ const OndutyList = ({ navigation }) => {
             <Dropdown
               selected={status_filter}
               label="Filter by Status"
-              width={screenWidth * 0.8}
+              width="100%"
               _label="label"
               _value="value"
               setSelected={set_status_filter}
-              options={{
-                data: [
-                  { label: '✔ Approved', value: 'approved' },
-                  { label: '❌ Rejected', value: 'rejected' },
-                  { label: '⏳ Pending', value: 'pending' },
-                ],
-              }}
+              options={STATUS_OPTIONS}
               zIndex={299}
               style={styles.dropdown}
+              placeholder="All Statuses"
             />
           </View>
 
           <View style={styles.filterRow}>
-            <TouchableOpacity 
-              style={styles.dateFilterButton}
-              onPress={() => setshowPicker(true)}
-            >
-              <MaterialCommunityIcons name="calendar" size={20} color="#3B82F6" />
-              <Text style={styles.dateFilterText}>Select Date</Text>
-            </TouchableOpacity>
+            <View style={styles.dateFilterContainer}>
+              <TouchableOpacity 
+                style={[
+                  styles.dateFilterButton,
+                  filterDate && styles.dateFilterButtonActive,
+                ]}
+                onPress={() => {
+                  setPickerTarget('filter');
+                  setshowPicker(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons 
+                  name="calendar" 
+                  size={20} 
+                  color={filterDate ? theme.colors.brand : "#3B82F6"} 
+                />
+                <Text style={[
+                  styles.dateFilterText,
+                  filterDate && styles.dateFilterTextActive,
+                ]}>
+                  {filterDate ? `Date: ${moment(filterDate).format('DD MMM YYYY')}` : 'Select Date (All Dates)'}
+                </Text>
+              </TouchableOpacity>
+              {filterDate && (
+                <TouchableOpacity
+                  style={styles.clearDateBtn}
+                  onPress={() => setFilterDate(null)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons name="close-circle" size={22} color={theme.colors.danger} />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
+
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <View style={styles.activeChipsContainer}>
+              <Text style={styles.activeChipsTitle}>Active:</Text>
+              {selectedEmployeeValues.length > 0 && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>
+                    {selectedEmployeeValues.length === 1
+                      ? (availableEmployees.data.find(e => e.value === selectedEmployeeValues[0])?.name || selectedEmployeeValues[0])
+                      : `Emp: ${selectedEmployeeValues.length}`}
+                  </Text>
+                  <TouchableOpacity onPress={() => setIdCard_Idcard([])} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <MaterialCommunityIcons name="close" size={12} color={theme.colors.brand} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {Boolean(status_filter && (typeof status_filter === 'object' ? status_filter.value : status_filter)) && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>Status: {typeof status_filter === 'object' ? status_filter.label : status_filter}</Text>
+                  <TouchableOpacity onPress={() => set_status_filter('')} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <MaterialCommunityIcons name="close" size={12} color={theme.colors.brand} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {Boolean(filterDate) && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>{moment(filterDate).format('DD MMM YYYY')}</Text>
+                  <TouchableOpacity onPress={() => setFilterDate(null)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <MaterialCommunityIcons name="close" size={12} color={theme.colors.brand} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {Boolean(searchQuery.trim()) && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>"{searchQuery.trim()}"</Text>
+                  <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <MaterialCommunityIcons name="close" size={12} color={theme.colors.brand} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
 
           <View style={styles.filterActions}>
             <TouchableOpacity 
               style={[styles.filterActionButton, styles.clearButton]} 
               onPress={clearFilters}
+              activeOpacity={0.7}
             >
               <Text style={styles.clearButtonText}>Clear All Filters</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.filterActionButton, styles.applyButton]}
               onPress={() => setShowFilters(false)}
+              activeOpacity={0.7}
             >
               <Text style={styles.applyButtonText}>Apply Filters</Text>
             </TouchableOpacity>
@@ -527,7 +761,7 @@ const OndutyList = ({ navigation }) => {
       {/* Date Picker */}
       {showPicker && (
         <DateTimePicker
-          value={current_Date}
+          value={pickerTarget === 'summary' ? (filterDate || current_Date) : (filterDate || new Date())}
           mode="date"
           display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
           onChange={handleDateChange}
@@ -550,27 +784,34 @@ const OndutyList = ({ navigation }) => {
               <MaterialCommunityIcons name="file-document-outline" size={48} color="#9E9E9E" />
               <Text style={styles.emptyStateTitle}>No Onduty Requests Found</Text>
               <Text style={styles.emptyStateText}>
-                {showFilters ? 
-                  "Try adjusting your filters" : 
+                {hasActiveFilters ? 
+                  "No requests match the selected filters" : 
                   "Check back later for new requests"}
               </Text>
-              {showFilters && (
+              {hasActiveFilters && (
                 <TouchableOpacity style={styles.emptyStateButton} onPress={clearFilters}>
-                  <Text style={styles.emptyStateButtonText}>Clear Filters</Text>
+                  <Text style={styles.emptyStateButtonText}>Clear All Filters</Text>
                 </TouchableOpacity>
               )}
             </View>
           )}</>  
         ) : (
           <View style={styles.summaryContainer}>
-            <View style={[styles.summaryHeader, tailwind`flex flex-row justify-center`]}>
+            <View style={[styles.summaryHeader, tailwind`flex flex-row justify-center items-center`]}>
               <Text style={styles.summaryTitle}>Daily Summary -</Text>
-              <Text 
-                onPress={() => setshowPicker(!showPicker)} 
-                style={[styles.dateText, tailwind`bg-gray-200 p-1 ml-2 text-lg rounded-xl`]}
+              <TouchableOpacity 
+                onPress={() => {
+                  setPickerTarget('summary');
+                  setshowPicker(true);
+                }} 
+                style={[styles.dateText, tailwind`bg-gray-200 p-2 ml-2 rounded-xl flex-row items-center`]}
+                activeOpacity={0.7}
               >
-                {moment(current_Date).format('DD MMM YYYY')}
-              </Text>
+                <MaterialCommunityIcons name="calendar" size={16} color={theme.colors.brand} style={{ marginRight: 6 }} />
+                <Text style={{ fontSize: 15, fontWeight: '700', color: theme.colors.text }}>
+                  {moment(filterDate || current_Date).format('DD MMM YYYY')}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Responsive Table */}
@@ -884,6 +1125,15 @@ const createStyles = (theme) =>
       justifyContent: 'center',
       position: 'relative',
     },
+    activeFilterDot: {
+      position: 'absolute',
+      top: 6,
+      right: 6,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: theme.colors.danger || '#EF4444',
+    },
     filterToggleBtnActive: {
       backgroundColor: theme.colors.dangerSoft,
     },
@@ -933,16 +1183,28 @@ const createStyles = (theme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.borderSubtle,
     },
-    searchInput: {
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
       height: 44,
       backgroundColor: theme.colors.surfaceSunken,
       borderRadius: theme.radii.md || 10,
-      paddingHorizontal: 14,
-      fontSize: 13,
-      color: theme.colors.text,
-      marginBottom: 10,
+      paddingHorizontal: 12,
       borderWidth: 1,
       borderColor: theme.colors.borderSubtle,
+      marginBottom: 10,
+    },
+    searchIcon: {
+      marginRight: 6,
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: 13,
+      color: theme.colors.text,
+      paddingVertical: 0,
+    },
+    clearSearchBtn: {
+      padding: 4,
     },
     filterRow: {
       marginBottom: 10,
@@ -951,7 +1213,13 @@ const createStyles = (theme) =>
       backgroundColor: theme.colors.surfaceSunken,
       borderRadius: theme.radii.sm || 8,
     },
+    dateFilterContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
     dateFilterButton: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       padding: 12,
@@ -960,10 +1228,53 @@ const createStyles = (theme) =>
       borderWidth: 1,
       borderColor: theme.colors.borderSubtle,
     },
+    dateFilterButtonActive: {
+      borderColor: theme.colors.brand,
+      backgroundColor: theme.colors.brandSoft,
+    },
     dateFilterText: {
       marginLeft: 8,
       color: theme.colors.text,
       fontSize: 13,
+    },
+    dateFilterTextActive: {
+      color: theme.colors.brand,
+      fontWeight: '600',
+    },
+    clearDateBtn: {
+      padding: 6,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    activeChipsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 2,
+      marginBottom: 10,
+    },
+    activeChipsTitle: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.textSecondary || '#888',
+      marginRight: 2,
+    },
+    activeChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.brandSoft || '#EFF6FF',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.borderSubtle,
+      gap: 4,
+    },
+    activeChipText: {
+      fontSize: 11,
+      color: theme.colors.brand,
+      fontWeight: '600',
     },
     filterActions: {
       flexDirection: 'row',

@@ -945,8 +945,21 @@ async function getPermittedTrackingUsers(access) {
   });
   const trackersByUser = new Map(trackers.map(tracker => [tracker.userId, tracker]));
 
+  // Verify active onduty sessions (inOut === 'IN') so isLive reflects active live onduty
+  const activeSessions = await prisma_Connector.onduty.findMany({
+    where: {
+      compCode: access.COMPCODE,
+      userId: { in: access.allowedUserIds },
+      inOut: 'IN',
+    },
+    select: { userId: true, docId: true },
+  });
+  const activeDocByUser = new Map(activeSessions.map(s => [s.userId, s.docId]));
+
   return access.allowedUsers.map(user => {
     const tracker = trackersByUser.get(user.idCard);
+    const activeDocId = activeDocByUser.get(user.idCard);
+    const isLive = Boolean(tracker?.isLive || activeDocId);
     return {
       ...(tracker || {}),
       userId: user.idCard,
@@ -954,8 +967,9 @@ async function getPermittedTrackingUsers(access) {
       idCard: user.idCard,
       empName: tracker?.empName || user.userName || user.idCard,
       empname: tracker?.empName || user.userName || user.idCard,
-      isLive: Boolean(tracker?.isLive),
-      docid: tracker?.isLive ? tracker.docid : null,
+      isLive,
+      docid: isLive ? (tracker?.docId || activeDocId) : null,
+      docId: isLive ? (tracker?.docId || activeDocId) : null,
     };
   });
 }
@@ -1004,20 +1018,73 @@ export async function get_live_location(req, res) {
     }
 
     const tracker = await prisma_Connector.trackers.findFirst({
-      where: { compCode: access.COMPCODE, userId: userId, isLive: true },
-    });
-    if (!tracker) return res.json([]);
-
-    const latestLocation = await prisma_Connector.location.findFirst({
       where: { compCode: access.COMPCODE, userId: userId },
+    });
+    const activeOnduty = await prisma_Connector.onduty.findFirst({
+      where: { compCode: access.COMPCODE, userId: userId, inOut: 'IN' },
       orderBy: { createdAt: 'desc' },
     });
+    const isLive = Boolean(tracker?.isLive || activeOnduty);
+
+    // Strictly enforce: only live duty records show in get_live_location
+    if (!isLive) {
+      return res.json([]);
+    }
+
+    const currentDocId = tracker?.docId || activeOnduty?.docId;
+
+    let latestLocation = null;
+    if (currentDocId) {
+      latestLocation = await prisma_Connector.location.findFirst({
+        where: { compCode: access.COMPCODE, userId: userId, docId: currentDocId },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    if (!latestLocation) {
+      latestLocation = await prisma_Connector.location.findFirst({
+        where: { compCode: access.COMPCODE, userId: userId },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    if (!latestLocation && activeOnduty) {
+      const hasIn = Number.isFinite(Number(activeOnduty.inLatitude)) && Number.isFinite(Number(activeOnduty.inLongtiude));
+      if (hasIn) {
+        const time = activeOnduty.docDate || activeOnduty.createdAt;
+        latestLocation = {
+          id: `onduty-in-${activeOnduty.docId}`,
+          userId: userId,
+          compCode: access.COMPCODE,
+          latitude: Number(activeOnduty.inLatitude),
+          longitude: Number(activeOnduty.inLongtiude),
+          docId: activeOnduty.docId,
+          locationName: activeOnduty.inLocation,
+          createdAt: time,
+          timeStamp: new Date(time).getTime(),
+          timestamp: new Date(time).getTime(),
+        };
+      }
+    }
 
     if (!latestLocation) return res.json([]);
+
+    const timestampNum = latestLocation.timeStamp != null
+      ? Number(latestLocation.timeStamp)
+      : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime());
+
     return res.json([{
-      ...latestLocation,
-      timestamp: latestLocation.timeStamp != null ? Number(latestLocation.timeStamp) : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime()),
-      timeStamp: latestLocation.timeStamp != null ? Number(latestLocation.timeStamp) : (latestLocation.timestamp != null ? Number(latestLocation.timestamp) : new Date(latestLocation.createdAt).getTime()),
+      id: latestLocation.id,
+      userId: latestLocation.userId,
+      compCode: latestLocation.compCode,
+      latitude: Number(latestLocation.latitude),
+      longitude: Number(latestLocation.longitude),
+      docId: latestLocation.docId,
+      isLive: true,
+      locationName: latestLocation.locationName || latestLocation.location || null,
+      createdAt: latestLocation.createdAt,
+      timestamp: timestampNum,
+      timeStamp: timestampNum,
     }]);
   } catch (error) {
     logServiceError('OnDutyService:get_live_location', error, req);
@@ -1212,6 +1279,21 @@ export async function get_history_location(req, res) {
     }
 
     const allowedIds = requestedUserId ? [requestedUserId] : access.allowedUserIds;
+
+    // Retrieve available trip dates for this employee so the UI can navigate between dates
+    const tripDatesRows = await prisma_Connector.onduty.findMany({
+      where: {
+        compCode: access.COMPCODE,
+        userId: { in: allowedIds },
+      },
+      select: { docDate: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 60,
+    });
+    const availableDates = Array.from(new Set(
+      tripDatesRows.map(r => (r.docDate || r.createdAt)?.toISOString()?.slice(0, 10)).filter(Boolean)
+    ));
+
     const groupByDocId = dataArray => dataArray.reduce(
       (acc, item) => {
         if (!item.docId) return acc;
@@ -1220,6 +1302,8 @@ export async function get_history_location(req, res) {
         acc.groupedData[docId] = acc.groupedData[docId] || [];
         acc.groupedData[docId].push({
           ...item,
+          latitude: Number(item.latitude),
+          longitude: Number(item.longitude),
           timestamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
           timeStamp: item.timeStamp != null ? Number(item.timeStamp) : (item.timestamp != null ? Number(item.timestamp) : (item.createdAt ? new Date(item.createdAt).getTime() : null)),
         });
@@ -1238,12 +1322,73 @@ export async function get_history_location(req, res) {
       orderBy: { createdAt: 'asc' },
     });
 
-    if (dbResults.length > 0) {
-      const { groupedData, docIds } = groupByDocId(dbResults);
+    const { groupedData, docIds } = groupByDocId(dbResults);
+
+    // Also retrieve onduty trips for this date to ensure start and end check-in/out route points are present
+    const ondutyTrips = await prisma_Connector.onduty.findMany({
+      where: {
+        compCode: access.COMPCODE,
+        userId: { in: allowedIds },
+        OR: [
+          { docDate: { gte: startOfDay, lte: endOfDay } },
+          { createdAt: { gte: startOfDay, lte: endOfDay } },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    for (const trip of ondutyTrips) {
+      const docId = trip.docId;
+      if (!docId) continue;
+      if (!docIds.includes(docId)) docIds.push(docId);
+      groupedData[docId] = groupedData[docId] || [];
+
+      const hasIn = Number.isFinite(Number(trip.inLatitude)) && Number.isFinite(Number(trip.inLongtiude));
+      const hasOut = Number.isFinite(Number(trip.outLatitude)) && Number.isFinite(Number(trip.outLongtiude));
+
+      // If no location points exist yet for this trip, add start and end points from onduty
+      if (groupedData[docId].length === 0) {
+        if (hasIn) {
+          groupedData[docId].push({
+            id: `onduty-in-${docId}`,
+            docId,
+            userId: trip.userId,
+            compCode: trip.compCode,
+            latitude: Number(trip.inLatitude),
+            longitude: Number(trip.inLongtiude),
+            location: trip.inLocation,
+            createdAt: trip.docDate || trip.createdAt,
+            timestamp: new Date(trip.docDate || trip.createdAt).getTime(),
+            timeStamp: new Date(trip.docDate || trip.createdAt).getTime(),
+            kind: 'start',
+            label: 'Start (Check-in)'
+          });
+        }
+        if (hasOut) {
+          groupedData[docId].push({
+            id: `onduty-out-${docId}`,
+            docId,
+            userId: trip.userId,
+            compCode: trip.compCode,
+            latitude: Number(trip.outLatitude),
+            longitude: Number(trip.outLongtiude),
+            location: trip.outLocation,
+            createdAt: trip.createdAt,
+            timestamp: new Date(trip.createdAt).getTime(),
+            timeStamp: new Date(trip.createdAt).getTime(),
+            kind: 'end',
+            label: 'End (Check-out)'
+          });
+        }
+      }
+    }
+
+    if (docIds.length > 0 && Object.keys(groupedData).length > 0) {
       return res.json({
         status: 1,
         data: [groupedData],
         meta: docIds,
+        availableDates,
         source: 'db',
       });
     }
@@ -1270,7 +1415,7 @@ export async function get_history_location(req, res) {
     }
 
     if (!fileContent?.trim()) {
-      return res.json({ status: 0, data: [], meta: [], message: 'No data found for this date.' });
+      return res.json({ status: 0, data: [], meta: [], availableDates, message: 'No data found for this date.' });
     }
 
     let jsonData;
@@ -1286,6 +1431,7 @@ export async function get_history_location(req, res) {
         status: 0,
         data: [],
         meta: [],
+        availableDates,
         message: 'Failed to parse location history.',
       });
     }
@@ -1297,15 +1443,17 @@ export async function get_history_location(req, res) {
         status: 0,
         data: [],
         meta: [],
+        availableDates,
         message: 'No location data found for this date.',
       });
     }
 
-    const { groupedData, docIds } = groupByDocId(filtered);
+    const { groupedData: fileGrouped, docIds: fileDocIds } = groupByDocId(filtered);
     return res.json({
       status: 1,
-      data: [groupedData],
-      meta: docIds.filter(Boolean),
+      data: [fileGrouped],
+      meta: fileDocIds.filter(Boolean),
+      availableDates,
       source: 'file',
     });
   } catch (err) {
