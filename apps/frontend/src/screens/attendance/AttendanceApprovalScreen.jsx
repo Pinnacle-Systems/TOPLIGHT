@@ -6,6 +6,7 @@ import {
     Linking,
     Modal,
     PanResponder,
+    Platform,
     RefreshControl,
     StyleSheet,
     Text,
@@ -18,6 +19,8 @@ import moment from 'moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 import { showMessage } from 'react-native-flash-message';
+import { Dropdown } from 'react-native-element-dropdown';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useGetEmployeeIdsWithAttQuery } from '../../store/api/UserApi';
 import { useGetAttendanceApprovalListQuery, useRequestAttendance_ApprovalMutation } from '../../store/api/AttendanceApi';
 import { useAppTheme } from '../../theme';
@@ -388,6 +391,10 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTab, setSelectedTab] = useState('all'); // 'all' | 'in' | 'out' | deptName
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+    const [isEmployeeDropdownFocus, setIsEmployeeDropdownFocus] = useState(false);
     const [processedIds, setProcessedIds] = useState(new Set());
     const [processingId, setProcessingId] = useState(null);
 
@@ -560,13 +567,70 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
         return Array.from(set);
     }, [pendingList]);
 
-    // Filtered attendance list by search & tab
+    // Unique employees for employee filter dropdown
+    const employeeOptions = useMemo(() => {
+        const map = new Map();
+        pendingList.forEach(item => {
+            const id = String(item?.idcard || item?.idCard || item?.IDCARD || item?.userId || '').trim();
+            const name = item?.empname || item?.empName || item?.userName || item?.username || id;
+            const dept = item?.deptname || item?.deptName || item?.DEPTNAME || '';
+            const comp = item?.compcode || item?.COMPCODE || '';
+            if (id && !map.has(id.toUpperCase())) {
+                map.set(id.toUpperCase(), {
+                    label: `${name} (${id})`,
+                    value: id,
+                    name,
+                    id,
+                    dept,
+                    comp,
+                });
+            }
+        });
+
+        if (Array.isArray(employeeAttendanceData?.data)) {
+            employeeAttendanceData.data.forEach(item => {
+                const id = String(item?.idcard || item?.idCard || item?.IDCARD || '').trim();
+                const name = item?.empname || item?.empName || item?.username || id;
+                const comp = item?.compcode || item?.COMPCODE || '';
+                if (id && !map.has(id.toUpperCase())) {
+                    map.set(id.toUpperCase(), {
+                        label: `${name} (${id})`,
+                        value: id,
+                        name,
+                        id,
+                        comp,
+                    });
+                }
+            });
+        }
+
+        const list = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+        return [
+            { label: 'All Employees', value: 'ALL', isAll: true },
+            ...list,
+        ];
+    }, [pendingList, employeeAttendanceData?.data]);
+
+    // Filtered attendance list by search, tab, date & employee
     const filteredList = useMemo(() => {
         return pendingList.filter(item => {
             const lastInout = item?.lastInout == null ? null : String(item.lastInout);
             const dept = String(item?.deptname || item?.deptName || item?.DEPTNAME || '').trim();
             const rawDate = item?.dateStr || item?.attDateStr || item?.docdate || '';
             const isToday = rawDate ? moment(rawDate).isSame(moment(), 'day') : false;
+
+            // Date filter
+            if (selectedDate) {
+                const filterDateFormatted = moment(selectedDate).format('YYYY-MM-DD');
+                const itemDateFormatted = rawDate ? moment(rawDate).format('YYYY-MM-DD') : '';
+                if (itemDateFormatted !== filterDateFormatted) return false;
+            }
+
+            // Employee filter
+            if (selectedEmployeeId && selectedEmployeeId !== 'ALL') {
+                const itemEmpId = String(item?.idcard || item?.idCard || item?.IDCARD || item?.userId || '').trim().toLowerCase();
+                if (itemEmpId !== selectedEmployeeId.toLowerCase()) return false;
+            }
 
             if (selectedTab === 'in' && lastInout !== '1') return false;
             if (selectedTab === 'out' && lastInout !== '0') return false;
@@ -599,7 +663,7 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                 formattedDate.includes(q)
             );
         });
-    }, [pendingList, selectedTab, searchQuery]);
+    }, [pendingList, selectedTab, searchQuery, selectedDate, selectedEmployeeId]);
 
     // Handle Approve Action (Updates APPROVAL_STATUS in PSSATT)
     const handleApprove = useCallback(async (item) => {
@@ -816,8 +880,120 @@ export default function AttendanceApprovalScreen({ route, navigation }) {
                     )}
                 </View>
 
+                {/* Date & Employee Filter Controls */}
+                <View style={styles.filterControlsRow}>
+                    {/* Employee Dropdown */}
+                    <View style={styles.filterCol}>
+                        <Dropdown
+                            style={[
+                                styles.dropdownControl,
+                                isEmployeeDropdownFocus && styles.dropdownControlFocus,
+                                selectedEmployeeId && styles.dropdownControlActive,
+                            ]}
+                            placeholderStyle={styles.dropdownPlaceholder}
+                            selectedTextStyle={styles.dropdownSelectedText}
+                            inputSearchStyle={styles.dropdownSearchInput}
+                            data={employeeOptions}
+                            search
+                            maxHeight={300}
+                            labelField="label"
+                            valueField="value"
+                            placeholder="All Employees"
+                            searchPlaceholder="Search employee..."
+                            value={selectedEmployeeId || 'ALL'}
+                            onFocus={() => setIsEmployeeDropdownFocus(true)}
+                            onBlur={() => setIsEmployeeDropdownFocus(false)}
+                            onChange={item => {
+                                setSelectedEmployeeId(item.isAll ? null : item.value);
+                                setIsEmployeeDropdownFocus(false);
+                            }}
+                            renderLeftIcon={() => (
+                                <MaterialCommunityIcons
+                                    name={selectedEmployeeId ? "account-check" : "account-outline"}
+                                    size={16}
+                                    color={selectedEmployeeId ? theme.colors.brand : theme.colors.textMuted}
+                                    style={{ marginRight: 6 }}
+                                />
+                            )}
+                            renderRightIcon={() => (
+                                selectedEmployeeId ? (
+                                    <TouchableOpacity
+                                        onPress={() => setSelectedEmployeeId(null)}
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    >
+                                        <MaterialCommunityIcons name="close-circle" size={15} color={theme.colors.textMuted} />
+                                    </TouchableOpacity>
+                                ) : (
+                                    <MaterialCommunityIcons name="chevron-down" size={16} color={theme.colors.textMuted} />
+                                )
+                            )}
+                        />
+                    </View>
+
+                    {/* Date Picker Button */}
+                    <View style={styles.filterCol}>
+                        <TouchableOpacity
+                            style={[styles.datePickerBtn, selectedDate && styles.datePickerBtnActive]}
+                            onPress={() => setShowDatePicker(true)}
+                            activeOpacity={0.7}
+                        >
+                            <MaterialCommunityIcons
+                                name="calendar-month-outline"
+                                size={16}
+                                color={selectedDate ? theme.colors.brand : theme.colors.textMuted}
+                            />
+                            <Text
+                                style={[styles.datePickerText, selectedDate && styles.datePickerTextActive]}
+                                numberOfLines={1}
+                            >
+                                {selectedDate ? moment(selectedDate).format('DD MMM YYYY') : 'All Dates'}
+                            </Text>
+                            {selectedDate ? (
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation?.();
+                                        setSelectedDate(null);
+                                    }}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                >
+                                    <MaterialCommunityIcons name="close-circle" size={15} color={theme.colors.textMuted} />
+                                </TouchableOpacity>
+                            ) : (
+                                <MaterialCommunityIcons name="chevron-down" size={16} color={theme.colors.textMuted} />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={selectedDate || new Date()}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={(event, date) => {
+                            setShowDatePicker(false);
+                            if (event?.type === 'set' && date) {
+                                setSelectedDate(date);
+                            }
+                        }}
+                    />
+                )}
+
                 {/* Filter Chips */}
                 <View style={styles.filterChipsRow}>
+                    {(selectedDate || selectedEmployeeId) && (
+                        <TouchableOpacity
+                            style={[styles.chip, styles.chipReset]}
+                            onPress={() => {
+                                setSelectedDate(null);
+                                setSelectedEmployeeId(null);
+                            }}
+                            activeOpacity={0.7}
+                        >
+                            <MaterialCommunityIcons name="filter-remove-outline" size={12} color={theme.colors.danger} style={{ marginRight: 3 }} />
+                            <Text style={[styles.chipText, { color: theme.colors.danger }]}>Clear Filters</Text>
+                        </TouchableOpacity>
+                    )}
                     <TouchableOpacity
                         style={[styles.chip, selectedTab === 'all' && styles.chipActive]}
                         onPress={() => setSelectedTab('all')}
@@ -1056,6 +1232,80 @@ const createStyles = theme =>
             color: theme.colors.text,
         },
         clearBtn: { padding: 4 },
+        filterControlsRow: {
+            flexDirection: 'row',
+            gap: 8,
+            alignItems: 'center',
+        },
+        filterCol: {
+            flex: 1,
+        },
+        dropdownControl: {
+            height: 38,
+            backgroundColor: theme.colors.surfaceSunken,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+            borderRadius: theme.radii.sm + 2,
+            paddingHorizontal: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        dropdownControlFocus: {
+            borderColor: theme.colors.brand,
+        },
+        dropdownControlActive: {
+            borderColor: theme.colors.brand,
+            backgroundColor: theme.colors.surfaceSelected || theme.colors.surfaceSunken,
+        },
+        dropdownPlaceholder: {
+            ...theme.typography.caption,
+            fontSize: 11.5,
+            color: theme.colors.textMuted,
+        },
+        dropdownSelectedText: {
+            ...theme.typography.caption,
+            fontSize: 11.5,
+            color: theme.colors.text,
+            fontWeight: theme.fontWeights.medium,
+        },
+        dropdownSearchInput: {
+            height: 36,
+            fontSize: 12,
+            color: theme.colors.text,
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.borderSubtle,
+            borderRadius: theme.radii.sm,
+            paddingHorizontal: 8,
+        },
+        datePickerBtn: {
+            height: 38,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            backgroundColor: theme.colors.surfaceSunken,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+            borderRadius: theme.radii.sm + 2,
+            paddingHorizontal: 8,
+        },
+        datePickerBtnActive: {
+            borderColor: theme.colors.brand,
+            backgroundColor: theme.colors.surfaceSelected || theme.colors.surfaceSunken,
+        },
+        datePickerText: {
+            ...theme.typography.caption,
+            fontSize: 11.5,
+            color: theme.colors.textMuted,
+            flex: 1,
+        },
+        datePickerTextActive: {
+            color: theme.colors.brand,
+            fontWeight: theme.fontWeights.medium,
+        },
+        chipReset: {
+            borderColor: '#FCA5A5',
+            backgroundColor: '#FEF2F2',
+        },
         filterChipsRow: {
             flexDirection: 'row',
             flexWrap: 'wrap',

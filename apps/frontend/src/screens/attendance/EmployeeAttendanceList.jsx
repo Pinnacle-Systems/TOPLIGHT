@@ -2,17 +2,14 @@ import React, { useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
-    Modal,
     Platform,
     RefreshControl,
     StyleSheet,
     Text,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showMessage } from 'react-native-flash-message';
@@ -282,13 +279,6 @@ export default function EmployeeAttendanceList({
         ];
     }, [employees]);
 
-    // ── Punch Modal State ──────────────────────────────────────────────────
-    const [punchModalVisible, setPunchModalVisible] = useState(false);
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [punchType, setPunchType] = useState('IN'); // 'IN' or 'OUT'
-    const [selectedTime, setSelectedTime] = useState(new Date());
-    const [showTimePicker, setShowTimePicker] = useState(false);
-
     const employeeList = useMemo(() => {
         if (!Array.isArray(employees)) return [];
 
@@ -312,64 +302,8 @@ export default function EmployeeAttendanceList({
 
     const errorText = error?.data?.message || error?.data?.error || error?.error;
 
-    // Triggered when HOD taps PUNCH IN or PUNCH OUT on an employee card
-    const handleInitiatePunch = (employee, type) => {
-        setSelectedEmployee(employee);
-        setPunchType(type);
-        setSelectedTime(new Date());
-        setShowTimePicker(false);
-        setPunchModalVisible(true);
-    };
-
-    // Find in-time of current active punch session for validation when punching out
-    const activePunch = useMemo(() => {
-        const punches = Array.isArray(selectedEmployee?.punches) ? selectedEmployee.punches : [];
-        return punches.length > 0 ? punches[punches.length - 1] : null;
-    }, [selectedEmployee]);
-
-    const activeInTimeStr = useMemo(() => {
-        return (
-            activePunch?.inTime ||
-            activePunch?.INTIME ||
-            activePunch?.atttime ||
-            activePunch?.ATTTIME ||
-            activePunch?.atttimeFormatted ||
-            selectedEmployee?.punchIn ||
-            selectedEmployee?.PUNCHIN ||
-            null
-        );
-    }, [activePunch, selectedEmployee]);
-
-    const inMinutes = useMemo(() => {
-        return parseTimeToMinutes(activeInTimeStr);
-    }, [activeInTimeStr]);
-
-    // Validation rules:
-    // 1. Future time NOT allowed (cannot select time above current time)
-    // 2. Punch Out time must be after Punch In time
-    const validation = useMemo(() => {
-        const now = new Date();
-        const nowMinutes = now.getHours() * 60 + now.getMinutes();
-        const selMinutes = selectedTime.getHours() * 60 + selectedTime.getMinutes();
-
-        if (selMinutes > nowMinutes) {
-            return {
-                isValid: false,
-                message: `Future time is not allowed. Time cannot be after current time (${moment().format('hh:mm A')}).`,
-            };
-        }
-
-        if (punchType === 'OUT' && inMinutes != null && selMinutes <= inMinutes) {
-            return {
-                isValid: false,
-                message: `Punch-out time must be after punch-in time (${formatTimeIST(activeInTimeStr)}).`,
-            };
-        }
-
-        return { isValid: true, message: null };
-    }, [selectedTime, punchType, inMinutes, activeInTimeStr]);
-
-    const handleEmployeePunch = async (employee, type, customTime) => {
+    // Direct 1-tap punch for employee using backend exact system time (IST)
+    const handleEmployeePunch = async (employee, type) => {
         const idcard = String(employee?.idcard || employee?.IDCARD || '').trim();
         const compcode = String(employee?.compcode || employee?.COMPCODE || '').trim();
         const empname = employee?.empname || employee?.EMPNAME || 'Employee';
@@ -391,9 +325,8 @@ export default function EmployeeAttendanceList({
                 empname,
                 latitude: '0',
                 longitude: '0',
-                location: 'Manually by HOD',
+                location: 'By HOD/Admin',
                 manual: true,
-                time: customTime,
             };
             const result = type === 'IN'
                 ? await punchIn(payload).unwrap()
@@ -408,10 +341,11 @@ export default function EmployeeAttendanceList({
                 return;
             }
 
-            const formattedTime = customTime ? formatTimeIST(customTime) : 'Recorded';
+            const recordedTime = result?.data?.inTime || result?.data?.outTime;
+            const formattedTime = recordedTime ? formatTimeIST(recordedTime) : 'Recorded';
             showMessage({
                 message: `${empname} punched ${type.toLowerCase()}`,
-                description: `Time: ${formattedTime}`,
+                description: `Time: ${formattedTime} (IST)`,
                 type: 'success',
             });
             try {
@@ -443,20 +377,6 @@ export default function EmployeeAttendanceList({
         } finally {
             setPunchingEmployeeId(null);
         }
-    };
-
-    const handleConfirmPunch = async () => {
-        if (!validation.isValid || !selectedEmployee) return;
-
-        const hh = String(selectedTime.getHours()).padStart(2, '0');
-        const mm = String(selectedTime.getMinutes()).padStart(2, '0');
-        const timeStr = `${hh}:${mm}:00`;
-
-        const emp = selectedEmployee;
-        const type = punchType;
-
-        setPunchModalVisible(false);
-        await handleEmployeePunch(emp, type, timeStr);
     };
 
     const hasFilter = Boolean(selectedEmployeeKey && selectedEmployeeKey !== 'ALL');
@@ -585,7 +505,7 @@ export default function EmployeeAttendanceList({
                     renderItem={({ item }) => (
                         <EmployeeCard
                             employee={item}
-                            onPunch={handleInitiatePunch}
+                            onPunch={handleEmployeePunch}
                             isPunching={punchingEmployeeId === String(item?.idcard || item?.IDCARD || '').trim()}
                             isPunchBusy={Boolean(punchingEmployeeId)}
                             theme={theme}
@@ -629,202 +549,6 @@ export default function EmployeeAttendanceList({
                     )}
                 />
             )}
-            {/* ── Manual Punch Time Selection Modal ── */}
-            <Modal
-                visible={punchModalVisible}
-                transparent
-                animationType="fade"
-                onRequestClose={() => {
-                    if (!punchingEmployeeId) setPunchModalVisible(false);
-                }}
-            >
-                <TouchableWithoutFeedback
-                    onPress={() => {
-                        if (!punchingEmployeeId) setPunchModalVisible(false);
-                    }}
-                >
-                    <View style={styles.modalBackdrop}>
-                        <TouchableWithoutFeedback onPress={() => {}}>
-                            <View style={styles.modalCard}>
-                                {/* Header Badge & Title */}
-                                <View style={styles.modalHeader}>
-                                    <View
-                                        style={[
-                                            styles.modalHeaderIconWrap,
-                                            punchType === 'OUT'
-                                                ? styles.modalHeaderIconWrapOut
-                                                : styles.modalHeaderIconWrapIn,
-                                        ]}
-                                    >
-                                        <MaterialCommunityIcons
-                                            name={punchType === 'OUT' ? 'logout' : 'login'}
-                                            size={22}
-                                            color={punchType === 'OUT' ? theme.colors.danger : theme.colors.success}
-                                        />
-                                    </View>
-                                    <View style={styles.modalHeaderTextWrap}>
-                                        <Text style={styles.modalTitle}>
-                                            Manual Punch {punchType}
-                                        </Text>
-                                        <Text style={styles.modalSubtitle}>
-                                            Select attendance time for employee
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                {/* Employee Info Card */}
-                                <View style={styles.modalEmployeeCard}>
-                                    <View style={styles.modalAvatar}>
-                                        <MaterialCommunityIcons
-                                            name="account-outline"
-                                            size={20}
-                                            color={theme.colors.brand}
-                                        />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.modalEmployeeName} numberOfLines={1}>
-                                            {selectedEmployee?.empname || selectedEmployee?.EMPNAME || 'Employee'}
-                                        </Text>
-                                        <Text style={styles.modalEmployeeId}>
-                                            ID: {selectedEmployee?.idcard || selectedEmployee?.IDCARD || '—'}
-                                            {selectedEmployee?.compcode || selectedEmployee?.COMPCODE
-                                                ? ` · ${selectedEmployee?.compcode || selectedEmployee?.COMPCODE}`
-                                                : ''}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                {/* Punch-In Time Reference (for Punch Out) */}
-                                {punchType === 'OUT' && activeInTimeStr && (
-                                    <View style={styles.modalInTimeInfo}>
-                                        <MaterialCommunityIcons
-                                            name="information-outline"
-                                            size={16}
-                                            color={theme.colors.brand}
-                                        />
-                                        <Text style={styles.modalInTimeText}>
-                                            Punched In at: <Text style={styles.modalInTimeBold}>{formatTimeIST(activeInTimeStr)}</Text>
-                                        </Text>
-                                    </View>
-                                )}
-
-                                {/* Time Selection Input */}
-                                <Text style={styles.modalFieldLabel}>SELECT PUNCH TIME *</Text>
-                                <TouchableOpacity
-                                    style={styles.timePickerCard}
-                                    onPress={() => setShowTimePicker(true)}
-                                    activeOpacity={0.7}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={`Select punch time, currently ${moment(selectedTime).format('hh:mm A')}`}
-                                >
-                                    <View style={styles.timePickerLeft}>
-                                        <MaterialCommunityIcons
-                                            name="clock-time-four-outline"
-                                            size={24}
-                                            color={punchType === 'OUT' ? theme.colors.danger : theme.colors.success}
-                                        />
-                                        <Text style={styles.timePickerValue}>
-                                            {moment(selectedTime).format('hh:mm A')}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.timePickerBadge}>
-                                        <MaterialCommunityIcons
-                                            name="pencil-outline"
-                                            size={13}
-                                            color={theme.colors.brand}
-                                        />
-                                        <Text style={styles.timePickerBadgeText}>Change</Text>
-                                    </View>
-                                </TouchableOpacity>
-
-                                {/* Set to Current Time Shortcut */}
-                                <TouchableOpacity
-                                    style={styles.nowShortcut}
-                                    onPress={() => setSelectedTime(new Date())}
-                                    activeOpacity={0.7}
-                                >
-                                    <MaterialCommunityIcons name="clock-fast" size={14} color={theme.colors.brand} />
-                                    <Text style={styles.nowShortcutText}>
-                                        Set to Current Time ({moment().format('hh:mm A')})
-                                    </Text>
-                                </TouchableOpacity>
-
-                                {/* Real-time Validation Error Banner */}
-                                {validation.message && (
-                                    <View style={styles.modalWarningBox}>
-                                        <MaterialCommunityIcons
-                                            name="alert-circle-outline"
-                                            size={17}
-                                            color="#DC2626"
-                                        />
-                                        <Text style={styles.modalWarningText}>
-                                            {validation.message}
-                                        </Text>
-                                    </View>
-                                )}
-
-                                {/* DateTimePicker on Android / iOS */}
-                                {showTimePicker && (
-                                    <DateTimePicker
-                                        value={selectedTime}
-                                        mode="time"
-                                        is24Hour={false}
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        maximumDate={new Date()}
-                                        onChange={(event, date) => {
-                                            setShowTimePicker(false);
-                                            if (event?.type === 'set' && date) {
-                                                setSelectedTime(date);
-                                            }
-                                        }}
-                                    />
-                                )}
-
-                                {/* Modal Actions */}
-                                <View style={styles.modalActionsRow}>
-                                    <TouchableOpacity
-                                        style={styles.modalCancelBtn}
-                                        onPress={() => setPunchModalVisible(false)}
-                                        disabled={Boolean(punchingEmployeeId)}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Text style={styles.modalCancelText}>Cancel</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.modalConfirmBtn,
-                                            punchType === 'OUT'
-                                                ? styles.modalConfirmBtnOut
-                                                : styles.modalConfirmBtnIn,
-                                            (!validation.isValid || Boolean(punchingEmployeeId)) &&
-                                                styles.modalConfirmBtnDisabled,
-                                        ]}
-                                        onPress={handleConfirmPunch}
-                                        disabled={!validation.isValid || Boolean(punchingEmployeeId)}
-                                        activeOpacity={0.7}
-                                    >
-                                        {punchingEmployeeId ? (
-                                            <ActivityIndicator size="small" color="#FFFFFF" />
-                                        ) : (
-                                            <>
-                                                <MaterialCommunityIcons
-                                                    name={punchType === 'OUT' ? 'logout' : 'login'}
-                                                    size={16}
-                                                    color="#FFFFFF"
-                                                />
-                                                <Text style={styles.modalConfirmText}>
-                                                    Confirm Punch {punchType}
-                                                </Text>
-                                            </>
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableWithoutFeedback>
-            </Modal>
         </View>
     );
 }
@@ -1143,220 +867,5 @@ const createStyles = theme => StyleSheet.create({
     retryText: {
         ...theme.typography.label,
         color: theme.colors.brandContrast,
-    },
-    // ── Modal Styles ────────────────────────────────────────────────────────
-    modalBackdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(15, 23, 42, 0.65)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: theme.spacing.lg,
-    },
-    modalCard: {
-        width: '100%',
-        maxWidth: 400,
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.radii.lg,
-        padding: theme.spacing.lg,
-        ...theme.styles.shadow,
-        elevation: 8,
-    },
-    modalHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: theme.spacing.md,
-    },
-    modalHeaderIconWrap: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: theme.spacing.sm + 2,
-    },
-    modalHeaderIconWrapIn: {
-        backgroundColor: '#DCFCE7',
-    },
-    modalHeaderIconWrapOut: {
-        backgroundColor: '#FEE2E2',
-    },
-    modalHeaderTextWrap: {
-        flex: 1,
-    },
-    modalTitle: {
-        ...theme.typography.title,
-        color: theme.colors.text,
-        fontWeight: theme.fontWeights.bold,
-    },
-    modalSubtitle: {
-        ...theme.typography.caption,
-        color: theme.colors.textMuted,
-        marginTop: 1,
-    },
-    modalEmployeeCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: theme.colors.backgroundSubtle,
-        borderRadius: theme.radii.md,
-        padding: theme.spacing.sm,
-        marginBottom: theme.spacing.sm,
-        borderWidth: 1,
-        borderColor: theme.colors.borderSubtle,
-    },
-    modalAvatar: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: theme.colors.brandSoft,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: theme.spacing.sm,
-    },
-    modalEmployeeName: {
-        ...theme.typography.label,
-        color: theme.colors.text,
-        fontWeight: theme.fontWeights.bold,
-    },
-    modalEmployeeId: {
-        ...theme.typography.caption,
-        color: theme.colors.textMuted,
-        marginTop: 1,
-    },
-    modalInTimeInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        backgroundColor: theme.colors.surfaceSelected || '#EFF6FF',
-        borderRadius: theme.radii.sm,
-        paddingHorizontal: theme.spacing.sm,
-        paddingVertical: 6,
-        marginBottom: theme.spacing.sm,
-        borderLeftWidth: 3,
-        borderLeftColor: theme.colors.brand,
-    },
-    modalInTimeText: {
-        ...theme.typography.caption,
-        color: theme.colors.textSecondary,
-    },
-    modalInTimeBold: {
-        color: theme.colors.brand,
-        fontWeight: theme.fontWeights.bold,
-    },
-    modalFieldLabel: {
-        ...theme.typography.overline,
-        color: theme.colors.textMuted,
-        letterSpacing: 0.5,
-        marginBottom: 6,
-        marginTop: 4,
-    },
-    timePickerCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: theme.colors.inputBackground,
-        borderWidth: 1.5,
-        borderColor: theme.colors.border,
-        borderRadius: theme.radii.md,
-        paddingHorizontal: theme.spacing.md,
-        paddingVertical: theme.spacing.md,
-    },
-    timePickerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing.sm,
-    },
-    timePickerValue: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: theme.colors.text,
-        letterSpacing: 0.5,
-    },
-    timePickerBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: theme.colors.brandSoft || '#E0F2FE',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: theme.radii.pill,
-    },
-    timePickerBadgeText: {
-        ...theme.typography.caption,
-        color: theme.colors.brand,
-        fontWeight: theme.fontWeights.bold,
-    },
-    nowShortcut: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        alignSelf: 'flex-start',
-        marginTop: 6,
-        paddingVertical: 2,
-    },
-    nowShortcutText: {
-        ...theme.typography.caption,
-        color: theme.colors.brand,
-        fontWeight: theme.fontWeights.semiBold,
-    },
-    modalWarningBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        backgroundColor: '#FEF2F2',
-        borderWidth: 1,
-        borderColor: '#FCA5A5',
-        borderRadius: theme.radii.sm,
-        paddingHorizontal: theme.spacing.sm,
-        paddingVertical: 7,
-        marginTop: theme.spacing.sm,
-    },
-    modalWarningText: {
-        ...theme.typography.caption,
-        color: '#B91C1C',
-        flex: 1,
-        fontWeight: theme.fontWeights.medium,
-    },
-    modalActionsRow: {
-        flexDirection: 'row',
-        gap: theme.spacing.sm,
-        marginTop: theme.spacing.lg,
-    },
-    modalCancelBtn: {
-        flex: 1,
-        minHeight: 44,
-        borderRadius: theme.radii.md,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.colors.surface,
-    },
-    modalCancelText: {
-        ...theme.typography.label,
-        color: theme.colors.textSecondary,
-    },
-    modalConfirmBtn: {
-        flex: 1.6,
-        minHeight: 44,
-        borderRadius: theme.radii.md,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        paddingHorizontal: theme.spacing.sm,
-    },
-    modalConfirmBtnIn: {
-        backgroundColor: theme.colors.success,
-    },
-    modalConfirmBtnOut: {
-        backgroundColor: theme.colors.danger,
-    },
-    modalConfirmBtnDisabled: {
-        opacity: 0.45,
-    },
-    modalConfirmText: {
-        ...theme.typography.label,
-        color: '#FFFFFF',
-        fontWeight: theme.fontWeights.bold,
     },
 });

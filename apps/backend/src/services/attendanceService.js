@@ -134,15 +134,17 @@ function parseTimeToOracleString(timeInput, fallbackDate = new Date()) {
 async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, atttime, empname, location }) {
   const UNQID = String(generateUniqueId_Number());
   const now = new Date();
-  const dd = String(now.getDate()).padStart(2, "0");
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const yyyy = now.getFullYear();
+  const istFormatted = formatDateToOracle(now) || "";
+  const [istDatePart, istTime] = istFormatted.split(" ");
+  const [yyyy, mm, dd] = (istDatePart || "").split("-");
   const dateStr = `${dd}-${mm}-${yyyy}`;
+  const actualTime = atttime || istTime;
+
   const CHK = String(Idcard).substring(0, 10)
     + dateStr
-    + String(atttime).substring(0, 8);
+    + String(actualTime).substring(0, 8);
 
-  const attDateTimeStr = `${yyyy}-${mm}-${dd} ${atttime}`;
+  const attDateTimeStr = `${yyyy}-${mm}-${dd} ${actualTime}`;
 
   const sql = `
     INSERT INTO PSSATT (
@@ -156,7 +158,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
 
   const binds = {
     ATTDATE_TIME: attDateTimeStr,
-    ATTTIME: atttime,
+    ATTTIME: actualTime,
     COMPCODE,
     IDCARD: Idcard,
     USERNAME: empname ?? null,
@@ -164,7 +166,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
     INOUT: inout,               // 1 = IN, 0 = OUT
     PMNO: pmno,
     UNQID,
-    CHK,                                                        // âœ… max 28 chars
+    CHK,                        // max 28 chars
     DTYPE: "MOB-ACTUAL",
   };
 
@@ -204,10 +206,10 @@ export async function punchIn(req, res) {
     }
 
     // 2. lastPunch is null (no punch today) OR lastPunch.inout === 0 (last was OUT)
-    //    Both cases allow a new PUNCH IN
+    //    Both cases allow a new PUNCH IN — use exact backend system time (IST)
     const now = new Date();
-    const requestedTime = req.body.time || req.body.punchTime || req.body.atttime;
-    const inTime = parseTimeToOracleString(requestedTime, now);
+    const istFormatted = formatDateToOracle(now) || "";
+    const inTime = istFormatted.split(" ")[1];
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
@@ -284,10 +286,10 @@ export async function punchOut(req, res) {
       });
     }
 
-    // 2. lastPunch.inout === 1 â†’ valid, insert OUT row
+    // 2. lastPunch.inout === 1 → valid, insert OUT row — use exact backend system time (IST)
     const now = new Date();
-    const requestedTime = req.body.time || req.body.punchTime || req.body.atttime;
-    const outTime = parseTimeToOracleString(requestedTime, now);
+    const istFormatted = formatDateToOracle(now) || "";
+    const outTime = istFormatted.split(" ")[1];
 
     const { result, UNQID } = await insertPunchRow(connection, {
       COMPCODE,
