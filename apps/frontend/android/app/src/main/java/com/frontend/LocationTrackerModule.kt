@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.*
@@ -269,6 +271,39 @@ class LocationTrackerModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun hasActiveTracking(promise: Promise) {
         promise.resolve(sharedPref.getString("docId", null) != null)
+    }
+
+    @ReactMethod
+    fun isLocationEnabled(promise: Promise) {
+        try {
+            val locationManager = reactContext.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            if (locationManager == null) {
+                promise.resolve(false)
+                return
+            }
+            val isEnabled = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                locationManager.isLocationEnabled
+            } else {
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            }
+            promise.resolve(isEnabled)
+        } catch (e: Exception) {
+            promise.resolve(false)
+        }
+    }
+
+    @ReactMethod
+    fun openLocationSettings(promise: Promise) {
+        try {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            reactContext.startActivity(intent)
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("SETTINGS_ERROR", e.message ?: "Failed to open location settings")
+        }
     }
 
     @ReactMethod

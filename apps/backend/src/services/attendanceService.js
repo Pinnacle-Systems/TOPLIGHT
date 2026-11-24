@@ -78,7 +78,7 @@ async function getLastPunchToday(connection, COMPCODE, Idcard) {
     `SELECT INOUT, ATTTIME, UNQID
      FROM (
        SELECT INOUT, ATTTIME, UNQID
-       FROM PSSATT
+       FROM ${COMPCODE}ATT
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
@@ -147,7 +147,7 @@ async function insertPunchRow(connection, { COMPCODE, Idcard, inout, pmno, attti
   const attDateTimeStr = `${yyyy}-${mm}-${dd} ${actualTime}`;
 
   const sql = `
-    INSERT INTO PSSATT (
+    INSERT INTO ${COMPCODE}ATT (
       ATTDATE, ATTTIME, COMPCODE, IDCARD,
       USERNAME, IPADD, INOUT, PMNO, UNQID, CHK, DTYPE
     ) VALUES (
@@ -348,7 +348,7 @@ export async function getAttendanceStatus(req, res) {
     // Fetch all today's rows ordered oldestâ†’newest
     const result = await connection.execute(
       `SELECT INOUT, ATTTIME
-       FROM PSSATT
+       FROM ${COMPCODE}ATT
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
@@ -411,7 +411,7 @@ export async function getPunchSummary(req, res) {
   try {
     const result = await connection.execute(
       `SELECT INOUT, ATTTIME, ATTDATE
-       FROM PSSATT
+       FROM ${COMPCODE}ATT
        WHERE COMPCODE = :COMPCODE
          AND IDCARD   = :IDCARD
          AND TRUNC(ATTDATE) = TRUNC(SYSDATE)
@@ -567,7 +567,7 @@ function formatHumanDuration(totalSeconds) {
 // ---------------------------------------------------------------------------
 // GET ATTENDANCE APPROVAL LIST FROM PSSATT
 // ---------------------------------------------------------------------------
-export async function fetchAttendanceApprovalItems(connection) {
+export async function fetchAttendanceApprovalItems(connection,{COMPCODE}) {
   const sql = `
     SELECT 
       TO_CHAR(ATTDATE, 'YYYY-MM-DD') AS ATTDATE_STR,
@@ -583,7 +583,7 @@ export async function fetchAttendanceApprovalItems(connection) {
       APPROVAL_STATUS
     FROM (
       SELECT ATTDATE, ATTTIME, COMPCODE, IDCARD, INOUT, PMNO, UNQID, USERNAME, DTYPE, APPROVAL_STATUS
-      FROM PSSATT
+      FROM ${COMPCODE}ATT
       WHERE IDCARD IS NOT NULL
         AND (APPROVAL_STATUS IS NULL OR LOWER(APPROVAL_STATUS) NOT IN ('approved', 'rejected'))
       ORDER BY ATTDATE DESC, ATTTIME DESC
@@ -699,10 +699,11 @@ export async function fetchAttendanceApprovalItems(connection) {
 export async function getAttendanceApprovalList(req, res) {
   let connection;
   try {
+      const COMPCODE = String(req?.headers?.compcode).toUpperCase();
     connection = await getConnection();
     if (!connection) return res.status(500).json({ status: 0, message: "Database connection failed", data: [] });
 
-    const data = await fetchAttendanceApprovalItems(connection);
+    const data = await fetchAttendanceApprovalItems(connection,{COMPCODE:COMPCODE});
     return res.status(200).json({ status: 1, data });
   } catch (err) {
     logServiceError("AttendanceService:getAttendanceApprovalList", err, req);
@@ -737,6 +738,7 @@ export async function requestAttendance_Approval(req, res) {
       rejectReason,
       reason,
     } = req.body || {};
+     const COMPCODE = String(req?.headers?.compcode).toUpperCase();
 
     const approvalStatus = String(approval || status || '').trim().toLowerCase();
     if (!['approved', 'rejected', 'pending'].includes(approvalStatus)) {
@@ -799,7 +801,7 @@ export async function requestAttendance_Approval(req, res) {
       bindObj.rejectRemark = effectiveRejectReason;
 
       const sqlByUnqid = `
-        UPDATE PSSTLT.PSSATT
+        UPDATE PSSTLT.${COMPCODE}ATT
         SET 
           APPROVAL_STATUS = :approvalStatus,
           APPROVED_BY     = :approvedBy,
@@ -816,7 +818,7 @@ export async function requestAttendance_Approval(req, res) {
     if (rowsAffected === 0 && idcard && attdate) {
       const cleanDate = String(attdate).slice(0, 10);
       const sqlByDate = `
-        UPDATE PSSTLT.PSSATT
+        UPDATE PSSTLT.${COMPCODE}ATT
         SET 
           APPROVAL_STATUS = :approvalStatus,
           APPROVED_BY     = :approvedBy,

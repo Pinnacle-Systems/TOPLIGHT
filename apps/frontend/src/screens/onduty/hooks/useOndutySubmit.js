@@ -204,6 +204,19 @@ export function useOndutySubmit({
             }
 
             const coords = await fetchCoords();
+            const hasValidCoords = Boolean(coords?.latitude && coords?.longitude && !(coords.latitude === 0 && coords.longitude === 0));
+
+            if (!hasValidCoords) {
+                isSubmittingRef.current = false;
+                setIsSubmitting(false);
+                showMessage({
+                    message: 'Location Required',
+                    description: 'Cannot start OnDuty without valid GPS location. Please turn on device location.',
+                    type: 'danger',
+                    duration: 4000,
+                });
+                return;
+            }
 
             const latestDocQuery = await refetchDocId();
             const latestCount = latestDocQuery?.data?.data?.count || 0;
@@ -235,7 +248,6 @@ export function useOndutySubmit({
             formData.append('inout', 'IN');
             formData.append('empname', UserSelect?.EMPNAME || 'Employee');
             formData.append('category', String(formState.category || '0'));
-            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
             formData.append('in_location', coords.address || (hasValidCoords ? `Near ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` : 'Location Unavailable'));
             formData.append('in_address', coords.address || '');
             formData.append('in_latitude', hasValidCoords ? String(coords.latitude) : '');
@@ -350,7 +362,7 @@ export function useOndutySubmit({
             const coords = await fetchCoords();
             const targetDocId = overrideDocId || docId;
             const hasKmEnabled = Boolean(formState.isKmEntryEnabled);
-            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
+            const hasValidCoords = Boolean(coords?.latitude && coords?.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestOndutyOut({
                 docid: targetDocId,
@@ -400,7 +412,7 @@ export function useOndutySubmit({
         try {
             const coords = await fetchCoords();
             const hasKmEnabled = Boolean(formState.isKmEntryEnabled);
-            const hasValidCoords = Boolean(coords.latitude && coords.longitude && !(coords.latitude === 0 && coords.longitude === 0));
+            const hasValidCoords = Boolean(coords?.latitude && coords?.longitude && !(coords.latitude === 0 && coords.longitude === 0));
 
             const response = await requestReachedOut({
                 docid: docId,

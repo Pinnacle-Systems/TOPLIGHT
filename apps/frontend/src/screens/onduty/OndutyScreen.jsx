@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -7,6 +7,9 @@ import {
     ActivityIndicator,
     TouchableOpacity,
     Alert,
+    Platform,
+    Linking,
+    AppState,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +36,12 @@ import {
 } from '../../store/slices/OndutyInputSlice';
 
 // Utilities
-import { getCurrentLocationAsync } from '../../components/utils/CustomLocation';
+import {
+    getCurrentLocationAsync,
+    requestLocationPermission,
+    openDeviceLocationSettings,
+} from '../../components/utils/CustomLocation';
+import { CustomNavigation } from '../../components/utils/NavigationRef';
 import { getKmEntrySetting } from '../../utils/KmSettings';
 import socket from '../../utils/Socket';
 
@@ -206,15 +214,107 @@ export default function OndutyScreen() {
         }
     }, [allVehicles, dispatch]);
 
-    // ── Initial GPS Location Fetch ──────────────────────────────────────────────
-    const fetchLocation = useCallback(async () => {
+    const isAlertShowingRef = useRef(false);
+    const isCheckingLocationRef = useRef(false);
+
+    // ── Helper to navigate back to Home screen on cancel ─────────────────────────
+    const goBackToHome = useCallback(() => {
+        isAlertShowingRef.current = false;
         try {
-            setLoadingLocation(true);
+            navigation.navigate('HOME');
+        } catch {
+            try {
+                CustomNavigation('HOME');
+            } catch {
+                if (navigation.canGoBack()) {
+                    navigation.goBack();
+                }
+            }
+        }
+    }, [navigation]);
+
+    // ── Show Location Required Alert (Forces enable; on cancel -> Home) ─────────
+    const showLocationRequiredAlert = useCallback((title, message, isPermission = false) => {
+        if (isAlertShowingRef.current) return;
+        isAlertShowingRef.current = true;
+
+        Alert.alert(
+            title,
+            message,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                    onPress: () => {
+                        goBackToHome();
+                    },
+                },
+                {
+                    text: isPermission ? 'Open Settings' : 'Turn On Location',
+                    onPress: async () => {
+                        isAlertShowingRef.current = false;
+                        if (isPermission) {
+                            try {
+                                await Linking.openSettings();
+                            } catch {
+                                await openDeviceLocationSettings();
+                            }
+                        } else {
+                            await openDeviceLocationSettings();
+                        }
+                    },
+                },
+            ],
+            {
+                cancelable: true,
+                onDismiss: () => {
+                    goBackToHome();
+                },
+            }
+        );
+    }, [goBackToHome]);
+
+    // ── Force Check & Request Location ──────────────────────────────────────────
+    const checkAndForceEnableLocation = useCallback(async () => {
+        if (isCheckingLocationRef.current) return false;
+        isCheckingLocationRef.current = true;
+        setLoadingLocation(true);
+
+        try {
+            // 1. Check & Request Permissions
+            const hasPermission = await requestLocationPermission();
+            if (!hasPermission) {
+                setLoadingLocation(false);
+                isCheckingLocationRef.current = false;
+                showLocationRequiredAlert(
+                    'Location Permission Required',
+                    'OnDuty trips require location permission to track your travel. Please grant permission in settings to proceed.',
+                    true
+                );
+                return false;
+            }
+
+            // 2. Fetch coordinates (triggers Google Play Services location dialog if GPS is off)
             const coords = await getCurrentLocationAsync(10000);
             const lat = Number(coords?.latitude) || 0;
             const lon = Number(coords?.longitude) || 0;
             const hasCoords = lat !== 0 || lon !== 0;
 
+            if (!hasCoords || coords?.address === 'Location unavailable' || coords?.address === 'Location permission not granted') {
+                setLoadingLocation(false);
+                isCheckingLocationRef.current = false;
+                const isPerm = coords?.permissionDenied || false;
+                showLocationRequiredAlert(
+                    isPerm ? 'Location Permission Required' : 'Location Required',
+                    isPerm
+                        ? 'OnDuty requires location permission to track your trip. Please enable permission in settings.'
+                        : 'Device location (GPS) is turned off or unavailable. OnDuty requires location to be enabled to start your trip. Please turn on location.',
+                    isPerm
+                );
+                return false;
+            }
+
+            // 3. Valid coordinates obtained!
             let resolvedAddress = 'Location unavailable';
             if (coords?.address && coords.address !== 'Location unavailable' && !coords.address.includes('Unknown')) {
                 resolvedAddress = coords.address;
@@ -227,16 +327,48 @@ export default function OndutyScreen() {
                 longitude: lon,
                 address: resolvedAddress,
             }));
+            isAlertShowingRef.current = false;
+            return true;
         } catch (err) {
-            console.log('[OndutyScreen] Location fetch:', err?.message);
+            console.log('[OndutyScreen] Location fetch error:', err?.message);
+            showLocationRequiredAlert(
+                'Location Required',
+                'Unable to detect your location. Please ensure GPS / Location is turned on to proceed.',
+                false
+            );
+            return false;
         } finally {
             setLoadingLocation(false);
+            isCheckingLocationRef.current = false;
         }
-    }, [dispatch,isSubmitting]);
+    }, [dispatch, showLocationRequiredAlert]);
 
+    // ── Check on initial mount for new entry ────────────────────────────────────
     useEffect(() => {
-        fetchLocation();
-    }, [fetchLocation,isSubmitting]);
+        if (loadingIn) return;
+        // Only run for new entry form (no active or reached trip)
+        if (!data_IN?.data?.docid && !reachedData?.data?.docid) {
+            checkAndForceEnableLocation();
+        }
+    }, [loadingIn, data_IN?.data?.docid, reachedData?.data?.docid, checkAndForceEnableLocation]);
+
+    // ── AppState Listener: Re-verify when user returns from Settings ────────────
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'active') {
+                if (!data_IN?.data?.docid && !reachedData?.data?.docid) {
+                    const numLat = Number(formState.latitude) || 0;
+                    const numLon = Number(formState.longitude) || 0;
+                    if (numLat === 0 && numLon === 0) {
+                        checkAndForceEnableLocation();
+                    }
+                }
+            }
+        });
+        return () => {
+            subscription.remove();
+        };
+    }, [checkAndForceEnableLocation, data_IN, reachedData, formState.latitude, formState.longitude]);
 
     // ── Socket Approval Notification ───────────────────────────────────────────
     useEffect(() => {
@@ -318,7 +450,21 @@ export default function OndutyScreen() {
         dispatch(setOndutyField({ reached_km: val }));
     };
 
-    const handleStartOnduty = () => {
+    const handleStartOnduty = async () => {
+        const numLat = Number(formState.latitude) || 0;
+        const numLon = Number(formState.longitude) || 0;
+        const hasValidLocation = (numLat !== 0 || numLon !== 0) &&
+            formState.address &&
+            formState.address !== 'Location unavailable' &&
+            formState.address !== 'Location Unavailable';
+
+        if (!hasValidLocation) {
+            const isOk = await checkAndForceEnableLocation();
+            if (!isOk) {
+                return;
+            }
+        }
+
         if (formState.isKmEntryEnabled) {
             const hasVehicle = Boolean(formState.vechileno);
             const hasStartKm = Boolean(formState.start_km && String(formState.start_km).trim() !== '');
@@ -435,7 +581,7 @@ export default function OndutyScreen() {
                             latitude={formState.latitude}
                             longitude={formState.longitude}
                             loadingLocation={loadingLocation}
-                            onRefreshLocation={fetchLocation}
+                            onRefreshLocation={checkAndForceEnableLocation}
                             // KM Entry Props (Conditional)
                             isKmEntryEnabled={formState.isKmEntryEnabled}
                             vehicleOptions={formState.category_vechileno}

@@ -1029,6 +1029,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
     const rawHr  = req?.query?.hr;
     const rawId  = req?.query?.idCard || req?.query?.Idcard;
     const supervisorId = (rawHod || rawHr || rawId) ? String(rawHod || rawHr || rawId).trim() : null;
+     const COMPCODE = String(req?.headers?.compcode).toUpperCase();
 
     if (!supervisorId) {
       return res.json({ status: 1, statusCode: 0, data: [] });
@@ -1181,7 +1182,7 @@ export async function getEmployeeIdsWithAtt(req, res) {
             INOUT,
             ATTTIME,
             ATTDATE
-          FROM PSSATT
+          FROM ${COMPCODE}ATT
           WHERE IDCARD IN (${bindPlaceholders})
             ${dateCondition}
           ORDER BY IDCARD, ATTDATE ASC, ATTTIME ASC

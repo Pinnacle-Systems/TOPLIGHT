@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
-import { 
-    View, 
-    Text, 
-    StyleSheet, 
-    TouchableOpacity, 
-    TextInput, 
-    Image, 
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    TextInput,
+    Image,
     ActivityIndicator,
-    Platform 
+    Platform
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -55,14 +55,17 @@ export default function OndutyEntryForm({
     const hasCoords = numLat !== 0 || numLon !== 0;
 
     const isAddressResolved = Boolean(
-        locationAddress && 
-        locationAddress !== 'Location unavailable' && 
+        locationAddress &&
+        locationAddress !== 'Location unavailable' &&
         !locationAddress.includes('Unknown') &&
         !locationAddress.startsWith('Near ') &&
-        locationAddress !== 'Location Unavailable'
+        locationAddress !== 'Location unavailable'
     );
 
     const displayLocation = useMemo(() => {
+        if (loadingLocation) {
+            return 'Acquiring GPS location...';
+        }
         if (isAddressResolved) {
             return locationAddress;
         }
@@ -72,8 +75,8 @@ export default function OndutyEntryForm({
         if (hasCoords) {
             return `Near ${numLat.toFixed(4)}, ${numLon.toFixed(4)}`;
         }
-        return 'Location Unavailable';
-    }, [locationAddress, isAddressResolved, hasCoords, numLat, numLon]);
+        return 'Location Disabled — Tap to Enable Location';
+    }, [loadingLocation, locationAddress, isAddressResolved, hasCoords, numLat, numLon]);
 
     // Map categories for DropDownPicker
     const categoryItems = (categoryOptions || []).map(item => ({
@@ -98,8 +101,8 @@ export default function OndutyEntryForm({
                     <Text style={styles.headerSubtitle}>Fill in details to start your trip</Text>
                 </View>
                 {isAdmin ? (
-                    <TouchableOpacity 
-                        style={styles.browseBtn} 
+                    <TouchableOpacity
+                        style={styles.browseBtn}
                         onPress={onOpenBrowseModal}
                         activeOpacity={0.8}
                     >
@@ -143,40 +146,46 @@ export default function OndutyEntryForm({
                     ) : null}
                 </View>
 
-                <View style={styles.locationBox}>
+                <TouchableOpacity 
+                    style={styles.locationBox}
+                    onPress={onRefreshLocation}
+                    activeOpacity={hasCoords ? 1 : 0.7}
+                    disabled={loadingLocation}
+                >
                     <View style={styles.locationIconCircle}>
                         <MaterialCommunityIcons
-                            name={isAddressResolved ? "map-marker-radius" : (hasCoords ? "crosshairs-gps" : "office-building")}
+                            name={loadingLocation ? "crosshairs-gps" : (isAddressResolved ? "map-marker-radius" : (hasCoords ? "crosshairs-gps" : "map-marker-alert-outline"))}
                             size={22}
-                            color={theme.colors.brand}
+                            color={!hasCoords && !loadingLocation ? theme.colors.danger : theme.colors.brand}
                         />
                     </View>
                     <View style={styles.locationContent}>
                         <View style={styles.locationStatusRow}>
                             <Text style={styles.locationTypeLabel}>
-                                {isAddressResolved ? 'RESOLVED ADDRESS' : (hasCoords ? 'GPS COORDINATES' : 'DEFAULT BASE')}
+                                {loadingLocation ? 'DETECTING GPS' : (isAddressResolved ? 'RESOLVED ADDRESS' : (hasCoords ? 'GPS COORDINATES' : 'LOCATION REQUIRED'))}
                             </Text>
                             <View style={[
-                                styles.locationBadge, 
-                                isAddressResolved 
-                                    ? styles.locationBadgeSuccess 
-                                    : (hasCoords ? styles.locationBadgeWarning : styles.locationBadgeNeutral)
+                                styles.locationBadge,
+                                isAddressResolved
+                                    ? styles.locationBadgeSuccess
+                                    : (hasCoords ? styles.locationBadgeWarning : styles.locationBadgeDanger)
                             ]}>
                                 <Text style={[
-                                    styles.locationBadgeText, 
-                                    isAddressResolved 
-                                        ? styles.locationBadgeTextSuccess 
-                                        : (hasCoords ? styles.locationBadgeTextWarning : styles.locationBadgeTextNeutral)
+                                    styles.locationBadgeText,
+                                    isAddressResolved
+                                        ? styles.locationBadgeTextSuccess
+                                        : (hasCoords ? styles.locationBadgeTextWarning : styles.locationBadgeTextDanger)
                                 ]}>
-                                    {isAddressResolved ? 'GPS RESOLVED' : (hasCoords ? 'COORDINATES ONLY' : 'Location Not Found')}
+                                    {loadingLocation ? 'SEARCHING...' : (isAddressResolved ? 'GPS RESOLVED' : (hasCoords ? 'COORDINATES ONLY' : 'TAP TO ENABLE'))}
                                 </Text>
                             </View>
                         </View>
-                        <Text style={styles.locationMainText} selectable>
+                        <Text style={[styles.locationMainText, !hasCoords && !loadingLocation && { color: theme.colors.danger }]} selectable>
                             {displayLocation}
                         </Text>
+                      
                     </View>
-                </View>
+                </TouchableOpacity>
             </View>
 
             {/* Trip Details Card */}
@@ -296,8 +305,8 @@ export default function OndutyEntryForm({
                                 <Feather name="check" size={theme.fontSizes.xs} color={theme.colors.brandContrast} />
                                 <Text style={styles.photoCapturedText}>PHOTO READY</Text>
                             </View>
-                            <TouchableOpacity 
-                                style={styles.retakeBtn} 
+                            <TouchableOpacity
+                                style={styles.retakeBtn}
                                 onPress={onOpenCamera}
                                 activeOpacity={0.8}
                             >
@@ -307,8 +316,8 @@ export default function OndutyEntryForm({
                         </View>
                     </View>
                 ) : (
-                    <TouchableOpacity 
-                        style={styles.cameraPlaceholder} 
+                    <TouchableOpacity
+                        style={styles.cameraPlaceholder}
                         onPress={onOpenCamera}
                         activeOpacity={0.8}
                     >
@@ -495,6 +504,9 @@ const createStyles = theme => StyleSheet.create({
     locationBadgeNeutral: {
         backgroundColor: theme.colors.borderSubtle,
     },
+    locationBadgeDanger: {
+        backgroundColor: theme.colors.dangerSoft,
+    },
     locationBadgeText: {
         ...theme.typography.caption,
         fontSize: 9,
@@ -508,6 +520,9 @@ const createStyles = theme => StyleSheet.create({
     },
     locationBadgeTextNeutral: {
         color: theme.colors.textMuted,
+    },
+    locationBadgeTextDanger: {
+        color: theme.colors.danger,
     },
     locationMainText: {
         ...theme.typography.bodySmall,

@@ -1,7 +1,43 @@
 import Geolocation from 'react-native-geolocation-service';
-import { PermissionsAndroid, Platform, NativeModules } from 'react-native';
+import { PermissionsAndroid, Platform, NativeModules, Linking } from 'react-native';
 
 const { LocationTracker } = NativeModules;
+
+/**
+ * Check if location services (GPS) are enabled on the device.
+ */
+export async function isLocationServiceEnabled() {
+    if (Platform.OS === 'android' && LocationTracker?.isLocationEnabled) {
+        try {
+            const enabled = await LocationTracker.isLocationEnabled();
+            return Boolean(enabled);
+        } catch {}
+    }
+    return null;
+}
+
+/**
+ * Open the device's location / GPS settings screen.
+ */
+export async function openDeviceLocationSettings() {
+    if (Platform.OS === 'android' && LocationTracker?.openLocationSettings) {
+        try {
+            await LocationTracker.openLocationSettings();
+            return true;
+        } catch {}
+    }
+    try {
+        if (Platform.OS === 'android') {
+            await Linking.sendIntent('android.settings.LOCATION_SOURCE_SETTINGS');
+            return true;
+        }
+    } catch {}
+    try {
+        await Linking.openSettings();
+        return true;
+    } catch {}
+    return false;
+}
 
 /**
  * Request location permissions.
@@ -60,7 +96,24 @@ export function getCurrentLocationAsync(timeout = 10000) {
         try {
             const hasPermission = await requestLocationPermission();
             if (!hasPermission) {
-                resolve({ latitude: 0, longitude: 0, address: 'Location permission not granted' });
+                resolve({
+                    latitude: 0,
+                    longitude: 0,
+                    address: 'Location permission not granted',
+                    permissionDenied: true,
+                });
+                return;
+            }
+
+            // Quick check if location service is disabled on device
+            const serviceEnabled = await isLocationServiceEnabled();
+            if (serviceEnabled === false) {
+                resolve({
+                    latitude: 0,
+                    longitude: 0,
+                    address: 'Location unavailable',
+                    locationDisabled: true,
+                });
                 return;
             }
 
@@ -86,34 +139,36 @@ export function getCurrentLocationAsync(timeout = 10000) {
                     });
                     return;
                 }
-                resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
+                resolve({ latitude: 0, longitude: 0, address: 'Location unavailable', locationDisabled: true });
             };
 
-            // 1. Instant check: Geolocation.getLastKnownPosition (< 50ms)
-            try {
-                const lastKnown = await new Promise((res) => {
-                    Geolocation.getLastKnownPosition(
-                        (pos) => {
-                            if (pos?.coords?.latitude || pos?.coords?.longitude) {
-                                res(pos.coords);
-                            } else {
-                                res(null);
-                            }
-                        },
-                        () => res(null),
-                        { maxAge: 3600000 }
-                    );
-                });
-                if (lastKnown && (Number(lastKnown.latitude) !== 0 || Number(lastKnown.longitude) !== 0)) {
-                    await finishWithCoords(lastKnown.latitude, lastKnown.longitude);
-                    return;
+            // 1. Instant check: Geolocation.getLastKnownPosition (< 50ms) ONLY if service enabled
+            if (serviceEnabled !== false) {
+                try {
+                    const lastKnown = await new Promise((res) => {
+                        Geolocation.getLastKnownPosition(
+                            (pos) => {
+                                if (pos?.coords?.latitude || pos?.coords?.longitude) {
+                                    res(pos.coords);
+                                } else {
+                                    res(null);
+                                }
+                            },
+                            () => res(null),
+                            { maxAge: 60000 }
+                        );
+                    });
+                    if (lastKnown && (Number(lastKnown.latitude) !== 0 || Number(lastKnown.longitude) !== 0)) {
+                        await finishWithCoords(lastKnown.latitude, lastKnown.longitude);
+                        return;
+                    }
+                } catch (lkErr) {
+                    console.log('[CustomLocation] getLastKnownPosition fallback:', lkErr);
                 }
-            } catch (lkErr) {
-                console.log('[CustomLocation] getLastKnownPosition fallback:', lkErr);
             }
 
             // 2. Native LocationTracker module (direct Play Services - max 3s wait)
-            if (LocationTracker?.getCurrentLocation) {
+            if (LocationTracker?.getCurrentLocation && serviceEnabled !== false) {
                 try {
                     const nativePromise = LocationTracker.getCurrentLocation();
                     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Native location timeout')), 3000));
@@ -142,24 +197,43 @@ export function getCurrentLocationAsync(timeout = 10000) {
                     await finishWithCoords(position.coords.latitude, position.coords.longitude);
                 },
                 (error) => {
-                    console.warn('[CustomLocation] Geolocation high accuracy failed, trying low accuracy fallback:', error?.message);
+                    console.warn('[CustomLocation] Geolocation high accuracy failed:', error?.message, 'code:', error?.code);
+                    const isLocationDisabled = error?.code === 2 || error?.code === 5;
+                    const isPermissionDenied = error?.code === 1;
+
                     // 4. Fallback to network/cell tower location if GPS satellite timed out
-                    Geolocation.getCurrentPosition(
-                        async (lowPos) => {
-                            await finishWithCoords(lowPos.coords.latitude, lowPos.coords.longitude);
-                        },
-                        (lowErr) => {
-                            console.warn('[CustomLocation] Geolocation low accuracy also failed:', lowErr?.message);
-                            resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
-                        },
-                        {
-                            enableHighAccuracy: false,
-                            timeout: 6000,
-                            maximumAge: 60000,
-                            forceRequestLocation: true,
-                            showLocationDialog: true,
-                        }
-                    );
+                    if (!isLocationDisabled && !isPermissionDenied) {
+                        Geolocation.getCurrentPosition(
+                            async (lowPos) => {
+                                await finishWithCoords(lowPos.coords.latitude, lowPos.coords.longitude);
+                            },
+                            (lowErr) => {
+                                console.warn('[CustomLocation] Geolocation low accuracy also failed:', lowErr?.message);
+                                resolve({
+                                    latitude: 0,
+                                    longitude: 0,
+                                    address: 'Location unavailable',
+                                    locationDisabled: lowErr?.code === 2 || lowErr?.code === 5,
+                                    permissionDenied: lowErr?.code === 1,
+                                });
+                            },
+                            {
+                                enableHighAccuracy: false,
+                                timeout: 6000,
+                                maximumAge: 60000,
+                                forceRequestLocation: true,
+                                showLocationDialog: true,
+                            }
+                        );
+                    } else {
+                        resolve({
+                            latitude: 0,
+                            longitude: 0,
+                            address: isPermissionDenied ? 'Location permission not granted' : 'Location unavailable',
+                            locationDisabled: isLocationDisabled,
+                            permissionDenied: isPermissionDenied,
+                        });
+                    }
                 },
                 {
                     enableHighAccuracy: true,
@@ -171,7 +245,7 @@ export function getCurrentLocationAsync(timeout = 10000) {
             );
         } catch (e) {
             console.warn('[CustomLocation] Exception in getCurrentLocationAsync:', e);
-            resolve({ latitude: 0, longitude: 0, address: 'Location unavailable' });
+            resolve({ latitude: 0, longitude: 0, address: 'Location unavailable', locationDisabled: true });
         }
     });
 }
